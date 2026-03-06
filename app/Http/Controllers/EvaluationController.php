@@ -296,7 +296,29 @@ class EvaluationController extends Controller
             $record->setRelation('karyawan', $employee); // Attach employee so JS can read employment_scheme/name
         }
 
-        return response()->json($record);
+        // YTD (Year-to-Date) attendance totals — sum from Jan up to the selected month
+        $ytd = EvaluationData::where('NIK', $nik)
+            ->whereYear('Month', $year)
+            ->where('Month', '<=', Carbon::create($year, $month, 1)->endOfMonth())
+            ->selectRaw('
+                COALESCE(SUM(Alpha), 0) AS ytd_alpha,
+                COALESCE(SUM(Telat), 0) AS ytd_telat,
+                COALESCE(SUM(Izin),  0) AS ytd_izin,
+                COALESCE(SUM(Sakit), 0) AS ytd_sakit,
+                COUNT(*)               AS ytd_months
+            ')
+            ->first();
+
+        return response()->json(array_merge(
+            $record->toArray(),
+            [
+                'ytd_alpha'  => (int) ($ytd->ytd_alpha  ?? 0),
+                'ytd_telat'  => (int) ($ytd->ytd_telat  ?? 0),
+                'ytd_izin'   => (int) ($ytd->ytd_izin   ?? 0),
+                'ytd_sakit'  => (int) ($ytd->ytd_sakit  ?? 0),
+                'ytd_months' => (int) ($ytd->ytd_months ?? 0),
+            ]
+        ));
     }
 
     // ──────────────────────────────────────────────────────

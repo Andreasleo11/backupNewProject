@@ -137,6 +137,20 @@ class DisciplineDataTable extends DataTable
                     <i class=\"bx {$icon}\"></i> {$label}
                 </button>";
             })
+            ->addColumn('approval_status', function (Employee $row) {
+                $evalData = $row->evaluationData->first();
+                $status   = $evalData?->approval_status ?? 'pending';
+
+                [$label, $classes] = match ($status) {
+                    'graded'         => ['Graded',       'bg-amber-100 text-amber-800 border-amber-200'],
+                    'dept_approved'  => ['Dept Approved','bg-sky-100 text-sky-800 border-sky-200'],
+                    'fully_approved' => ['Final',        'bg-emerald-100 text-emerald-800 border-emerald-200'],
+                    'rejected'       => ['Rejected',     'bg-rose-100 text-rose-800 border-rose-200'],
+                    default          => ['Pending',      'bg-slate-100 text-slate-500 border-slate-200'],
+                };
+
+                return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ' . $classes . '">' . $label . '</span>';
+            })
             ->addColumn('absence_summary', function (Employee $row) {
                 $evalData = $row->evaluationData->first();
                 if (! $evalData) {
@@ -159,7 +173,7 @@ class DisciplineDataTable extends DataTable
                 $evalData = $row->evaluationData->first();
                 return $evalData ? $evalData->total : 0;
             })
-            ->rawColumns(['grade', 'absence_summary', 'action'])
+            ->rawColumns(['grade', 'approval_status', 'absence_summary', 'action'])
             ->setRowId('nik');
 
         // Regular: add old-system computed columns (split attendance + criteria)
@@ -385,6 +399,12 @@ class DisciplineDataTable extends DataTable
                 ->exportable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
+            Column::computed('approval_status')
+                ->title('Status')
+                ->exportable(false)
+                ->searchable(false)
+                ->addClass('align-middle text-center')
+                ->orderable(false),
             Column::computed('action')
                 ->title('Aksi')
                 ->exportable(false)
@@ -428,10 +448,16 @@ class DisciplineDataTable extends DataTable
                 ->addClass('align-middle text-center border-x border-slate-100 bg-slate-50/50')
                 ->orderable(false),
             Column::make('pengawas')
-                ->title('Approved By')
+                ->title('Graded By')
                 ->searchable(false)
                 ->exportable(false)
                 ->addClass('align-middle text-center text-sm font-medium text-slate-600')
+                ->orderable(false),
+            Column::computed('approval_status')
+                ->title('Status')
+                ->exportable(false)
+                ->searchable(false)
+                ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::computed('action')
                 ->title('Aksi')

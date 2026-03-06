@@ -95,49 +95,44 @@
     {{-- ═══════════════════════════════════════════════════════════════
          TABS & ACTION BAR
     ═══════════════════════════════════════════════════════════════ --}}
-    <div class="glass-card overflow-hidden shadow-sm border border-slate-200/60 relative mb-6">
+    <div class="glass-card overflow-hidden shadow-sm border border-slate-200/60 relative mb-6"
+         x-data="evalTabs()" x-init="init()" @tab-changed.window="onTabChanged($event.detail.type)">
         <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
-        
+
         <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+
             {{-- Tabs --}}
-            <ul class="nav nav-tabs flex items-center gap-2 p-1 bg-slate-100/80 rounded-xl" id="evalTabs" role="tablist" style="border-bottom: none;">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300" 
-                            id="tab-regular" data-bs-toggle="tab" data-bs-target="#pane-regular" role="tab" data-type="regular"
-                            style="border:none;">
-                        Regular
+            <div class="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl" role="tablist">
+                <template x-for="tab in tabs" :key="tab.id">
+                    <button type="button" role="tab"
+                        :id="'tab-' + tab.id"
+                        :data-type="tab.id"
+                        @click="switchTab(tab.id)"
+                        :aria-selected="activeTab === tab.id"
+                        :class="activeTab === tab.id
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-500 hover:text-indigo-600 hover:bg-white/50'"
+                        class="px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none">
+                        <span x-text="tab.label"></span>
                     </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 hover:bg-white/50 transition-all duration-300" 
-                            id="tab-yayasan" data-bs-toggle="tab" data-bs-target="#pane-yayasan" role="tab" data-type="yayasan"
-                            style="border:none;">
-                        Yayasan
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 hover:bg-white/50 transition-all duration-300" 
-                            id="tab-magang" data-bs-toggle="tab" data-bs-target="#pane-magang" role="tab" data-type="magang"
-                            style="border:none;">
-                        Magang
-                    </button>
-                </li>
-            </ul>
+                </template>
+            </div>
 
             {{-- Action Bar --}}
             <div class="flex flex-wrap items-center gap-2" id="batch-action-bar">
-                
+
                 {{-- Dept Head: Approve All Graded --}}
                 @if($canApproveDept)
                 <form method="POST" action="{{ route('evaluation.approve-dept') }}" class="m-0" id="approve-dept-form">
                     @csrf
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year"  value="{{ $year }}">
-                    <input type="hidden" name="type"  id="approve-dept-type" value="">
+                    <input type="hidden" name="type"  id="approve-dept-type" :value="activeTab">
 
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition-all hover:-translate-y-0.5 group">
                         <i class="bx bx-check-double text-lg group-hover:scale-110 transition-transform"></i>
                         Approve Semua
+                        <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold" id="approve-dept-count">{{ $summary['graded'] ?? 0 }}</span>
                     </button>
                 </form>
                 @endif
@@ -148,52 +143,48 @@
                     @csrf
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year"  value="{{ $year }}">
-                    <input type="hidden" name="type"  id="approve-hrd-type" value="">
+                    <input type="hidden" name="type"  id="approve-hrd-type" :value="activeTab">
 
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
                         <i class="bx bx-check-shield text-lg group-hover:scale-110 transition-transform"></i>
                         Final Approve
+                        <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold" id="approve-hrd-count">{{ $summary['dept_approved'] ?? 0 }}</span>
                     </button>
                 </form>
                 @endif
 
                 <div class="h-6 w-px bg-slate-200 mx-1"></div>
 
-                {{-- Bulk Import (Regular tab only) --}}
-                <div id="import-btn-wrapper">
+                {{-- Bulk Import (Yayasan tab only) --}}
+                <div id="import-btn-wrapper" x-show="activeTab === 'yayasan'" x-cloak>
                     <button type="button"
                         data-bs-toggle="modal" data-bs-target="#import-excel-modal"
                         class="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-sm border border-amber-200 transition-all hover:bg-amber-100 hover:-translate-y-0.5 group">
                         <i class="bx bx-cloud-upload text-lg group-hover:scale-110 transition-transform"></i>
                         <span>Import Excel</span>
                     </button>
-                    {{-- This divider is inside the wrapper so it hides together with the button on Yayasan/Magang tabs --}}
                     <span class="inline-block h-6 w-px bg-slate-200 mx-1 align-middle"></span>
                 </div>
 
                 {{-- Focus Mode Toggle Button --}}
-                <button type="button" onclick="
-                    const type = document.querySelector('.nav-tabs .nav-link.active').dataset.type;
-                    window.dispatchEvent(new CustomEvent('open-focus-mode', { 
-                        detail: { type: type, month: {{ $month }}, year: {{ $year }} }
-                    }));
-                " class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group" >
+                <button type="button" @click="
+                    $dispatch('open-focus-mode', { type: activeTab, month: {{ $month }}, year: {{ $year }} })
+                " class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group">
                     <i class="bx bx-scan text-lg group-hover:scale-110 transition-transform"></i>
                     <span>Mode Fokus</span>
                 </button>
 
                 {{-- Advanced Toggle Button --}}
-                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-advanced-sidebar'))" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5" >
+                <button type="button" @click="$dispatch('open-advanced-sidebar')" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5">
                     <i class="bx bx-slider-alt text-lg text-slate-500"></i>
                     <span>Tingkat Lanjut</span>
                 </button>
 
                 {{-- Export — only when fully approved --}}
                 @if($canExport)
-                <a href="#" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5" id="export-btn" onclick="
-                    const type = document.querySelector('.nav-tabs .nav-link.active').dataset.type;
-                    this.href = '{{ route('evaluation.export') }}?month={{ $month }}&year={{ $year }}&type=' + type;
-                ">
+                <a href="#" id="export-btn"
+                   class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5"
+                   @click="$el.href = '{{ route('evaluation.export') }}?month={{ $month }}&year={{ $year }}&type=' + activeTab">
                     <i class="bx bx-export text-lg text-emerald-600"></i>
                     <span>Export Excel</span>
                 </a>
@@ -201,25 +192,24 @@
             </div>
         </div>
 
-        {{-- Tab panes --}}
-        <div class="tab-content p-4" id="evalTabContent">
-
+        {{-- Tab panes (Alpine x-show) --}}
+        <div class="p-4">
             {{-- Regular --}}
-            <div class="tab-pane fade show active" id="pane-regular" role="tabpanel">
+            <div x-show="activeTab === 'regular'" x-cloak>
                 <div class="premium-datatable-wrapper overflow-x-auto custom-scrollbar pb-4 block w-full">
                     <table id="evaluation-regular-table" class="table table-hover table-striped w-full nowrap"></table>
                 </div>
             </div>
 
             {{-- Yayasan --}}
-            <div class="tab-pane fade" id="pane-yayasan" role="tabpanel">
+            <div x-show="activeTab === 'yayasan'" x-cloak>
                 <div class="premium-datatable-wrapper overflow-x-auto custom-scrollbar pb-4 block w-full">
                     <table id="evaluation-yayasan-table" class="table table-hover table-striped w-full nowrap"></table>
                 </div>
             </div>
 
             {{-- Magang --}}
-            <div class="tab-pane fade" id="pane-magang" role="tabpanel">
+            <div x-show="activeTab === 'magang'" x-cloak>
                 <div class="premium-datatable-wrapper overflow-x-auto custom-scrollbar pb-4 block w-full">
                     <table id="evaluation-magang-table" class="table table-hover table-striped w-full nowrap"></table>
                 </div>
@@ -259,7 +249,7 @@
             <div class="absolute inset-0 overflow-hidden">
                 <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
                     <div x-show="advancedOpen" x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="pointer-events-auto w-screen max-w-md">
-                        <div class="flex h-full flex-col overflow-y-auto custom-scrollbar bg-white shadow-xl shadow-slate-900/20 border-l border-slate-200" @click.outside="advancedOpen = false">
+                        <div class="flex h-full flex-col overflow-y-auto custom-scrollbar bg-white shadow-xl shadow-slate-900/20 border-l border-slate-200">
                             
                             {{-- Header --}}
                             <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
@@ -339,21 +329,42 @@
                                             <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
                                         </h6>
                                         @php
-                                            $total = $summary['total'] ?? 0;
-                                            $graded = ($summary['graded'] ?? 0) + ($summary['dept_approved'] ?? 0) + ($summary['fully_approved'] ?? 0);
-                                            $pending = $summary['pending'] ?? 0;
-                                            $rejected = $summary['rejected'] ?? 0;
+                                            $total    = $summary['total']         ?? 0;
+                                            $graded   = ($summary['graded']         ?? 0)
+                                                      + ($summary['dept_approved']  ?? 0)
+                                                      + ($summary['fully_approved'] ?? 0);
+                                            $pending  = $summary['pending']        ?? 0;
+                                            $rejected = $summary['rejected']       ?? 0;
+                                            $pct      = $total > 0 ? round($graded / $total * 100) : 0;
                                         @endphp
+
+                                        {{-- Progress bar --}}
+                                        <div class="mb-3">
+                                            <div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+                                                <span>Progress penilaian</span>
+                                                <span class="text-indigo-600 font-bold">{{ $pct }}%</span>
+                                            </div>
+                                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                                <div class="bg-indigo-500 h-2 rounded-full transition-all" style="width: {{ $pct }}%"></div>
+                                            </div>
+                                        </div>
+
                                         <div class="space-y-2">
                                             @foreach([
-                                                ['label' => 'Sudah Dinilai',   'count' => $graded,   'color' => 'emerald'],
-                                                ['label' => 'Belum Dinilai',   'count' => $pending,  'color' => 'amber'],
-                                                ['label' => 'Ditolak',         'count' => $rejected, 'color' => 'rose'],
-                                                ['label' => 'Total Karyawan',  'count' => $total,    'color' => 'indigo'],
+                                                ['label' => 'Sudah Dinilai',  'desc' => 'Graded, dept-approved, atau final', 'count' => $graded,   'icon' => 'bx-check-circle',  'color' => 'emerald'],
+                                                ['label' => 'Belum Dinilai',  'desc' => 'Menunggu penilaian dari atasan',   'count' => $pending,  'icon' => 'bx-time-five',     'color' => 'amber'],
+                                                ['label' => 'Ditolak',        'desc' => 'Perlu diisi ulang oleh penilai',   'count' => $rejected, 'icon' => 'bx-x-circle',      'color' => 'rose'],
+                                                ['label' => 'Total Karyawan', 'desc' => 'Karyawan aktif di departemen',     'count' => $total,    'icon' => 'bx-group',         'color' => 'indigo'],
                                             ] as $stat)
-                                            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-{{ $stat['color'] }}-50 border border-{{ $stat['color'] }}-100">
-                                                <span class="text-xs font-semibold text-{{ $stat['color'] }}-700">{{ $stat['label'] }}</span>
-                                                <span class="text-sm font-black text-{{ $stat['color'] }}-800">{{ $stat['count'] }}</span>
+                                            <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-{{ $stat['color'] }}-50 border border-{{ $stat['color'] }}-100">
+                                                <div class="h-8 w-8 rounded-lg bg-{{ $stat['color'] }}-100 flex items-center justify-center shrink-0">
+                                                    <i class="bx {{ $stat['icon'] }} text-{{ $stat['color'] }}-600 text-base"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-xs font-bold text-{{ $stat['color'] }}-800 leading-none">{{ $stat['label'] }}</p>
+                                                    <p class="text-[10px] text-{{ $stat['color'] }}-600 mt-0.5 leading-tight">{{ $stat['desc'] }}</p>
+                                                </div>
+                                                <span class="text-base font-black text-{{ $stat['color'] }}-800 shrink-0">{{ $stat['count'] }}</span>
                                             </div>
                                             @endforeach
                                         </div>
@@ -390,6 +401,39 @@
     })));
 </script>
 @endif
+
+{{-- ── Alpine: evalTabs component ─────────────────────────────────────── --}}
+<script>
+function evalTabs() {
+    return {
+        activeTab: 'regular',
+        tabs: [
+            { id: 'regular', label: 'Regular'  },
+            { id: 'yayasan', label: 'Yayasan'  },
+            { id: 'magang',  label: 'Magang'   },
+        ],
+
+        init() {
+            // Expose to module-scoped refreshSummary
+            window.evalActiveTab = this.activeTab;
+        },
+
+        switchTab(id) {
+            if (this.activeTab === id) return;
+            this.activeTab    = id;
+            window.evalActiveTab = id;
+            // Notify the module script (lazy DataTable init + chip refresh)
+            window.dispatchEvent(new CustomEvent('tab-changed', { detail: { type: id } }));
+        },
+
+        onTabChanged(type) {
+            // Called via @tab-changed.window — keeps state in sync if dispatched externally
+            this.activeTab    = type;
+            window.evalActiveTab = type;
+        },
+    };
+}
+</script>
 
 <script type="module">
 (function () {
@@ -430,31 +474,30 @@
         columnsRegular
     );
 
-    // Yayasan and Magang tables are initialised lazily (on tab show)
+    // Yayasan and Magang tables are initialised lazily (on tab-changed event)
     let dtYayasan = null;
     let dtMagang  = null;
 
-    document.getElementById('tab-yayasan')?.addEventListener('shown.bs.tab', function () {
-        if (!dtYayasan) {
+    window.addEventListener('tab-changed', function (e) {
+        const type = e.detail.type;
+        if (type === 'yayasan' && !dtYayasan) {
             dtYayasan = makeTable(
                 'evaluation-yayasan-table',
                 '{{ route("evaluation.data.yayasan") }}',
                 columnsYayasan
             );
         }
-    });
-
-    document.getElementById('tab-magang')?.addEventListener('shown.bs.tab', function () {
-        if (!dtMagang) {
+        if (type === 'magang' && !dtMagang) {
             dtMagang = makeTable(
                 'evaluation-magang-table',
                 '{{ route("evaluation.data.magang") }}',
                 columnsMagang
             );
         }
+        refreshSummary();
     });
 
-    // ── Period selector ───────────────────────────────────────────────────────
+    // Period selector
     document.getElementById('apply-period')?.addEventListener('click', function () {
         const month = document.getElementById('period-month').value;
         const year  = document.getElementById('period-year').value;
@@ -515,45 +558,21 @@
         });
     });
 
-    // ── Update batch-action hidden type inputs and tab styling from active tab ────────
-    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
-        btn.addEventListener('shown.bs.tab', function (e) {
-            // Update inputs
-            const type = this.dataset.type;
-            document.getElementById('approve-dept-type').value = type;
-            document.getElementById('approve-hrd-type').value  = type;
-
-            // Restyle ALL tabs to inactive
-            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(b => {
-                b.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-                b.classList.add('text-slate-500');
-            });
-            
-            // Style ACTIVE tab
-            this.classList.remove('text-slate-500');
-            this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-        });
-    });
-    // Set initial value for Regular tab
-    document.getElementById('approve-dept-type').value = 'regular';
-    document.getElementById('approve-hrd-type').value  = 'regular';
-    
-    // Initial active styling for default tab
-    const activeTab = document.querySelector('.nav-link.active');
-    if(activeTab) {
-        activeTab.classList.remove('text-slate-500');
-        activeTab.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-    }
-
-    // ── Status chip AJAX refresh ──────────────────────────────────────────────
+    // ── Status chip AJAX refresh ────────────────────────────────────────────
     function refreshSummary() {
+        const activeType = window.evalActiveTab || 'regular';
+
         axios.get('{{ route("evaluation.summary") }}', {
-            params: { month: currentMonth, year: currentYear }
+            params: { month: currentMonth, year: currentYear, type: activeType }
         }).then(({ data }) => {
             ['pending','graded','dept_approved','fully_approved','rejected','total'].forEach(k => {
                 const el = document.querySelector('[data-chip="' + k + '"]');
                 if (el) el.textContent = data[k] ?? 0;
             });
+            const deptBtnCount = document.getElementById('approve-dept-count');
+            if (deptBtnCount) deptBtnCount.textContent = data['graded'] ?? 0;
+            const hrdBtnCount = document.getElementById('approve-hrd-count');
+            if (hrdBtnCount) hrdBtnCount.textContent = data['dept_approved'] ?? 0;
         });
     }
 
@@ -565,16 +584,8 @@
         refreshSummary();
     };
 
-    // ── Show import button only on Regular tab ────────────────────────────────
-    const importWrapper = document.getElementById('import-btn-wrapper');
-    function syncImportButton() {
-        const activeType = document.querySelector('.nav-tabs .nav-link.active')?.dataset.type;
-        if (importWrapper) importWrapper.style.display = (activeType === 'regular') ? '' : 'none';
-    }
-    syncImportButton(); // run on load
-    document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
-        tab.addEventListener('shown.bs.tab', syncImportButton);
-    });
+    // Initial chip load
+    refreshSummary();
 
 })();
 </script>

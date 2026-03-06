@@ -86,24 +86,19 @@
                             </div>
                         </div>
                         
-                        {{-- Absence Mini-Cards --}}
-                        <div class="flex items-center gap-2">
-                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
-                                <div class="text-[10px] uppercase font-bold text-slate-400">Alpha</div>
-                                <div class="font-bold text-rose-600" x-text="record.alpha">0</div>
-                            </div>
-                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
-                                <div class="text-[10px] uppercase font-bold text-slate-400">Telat</div>
-                                <div class="font-bold text-amber-600" x-text="record.telat">0</div>
-                            </div>
-                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
-                                <div class="text-[10px] uppercase font-bold text-slate-400">Izin</div>
-                                <div class="font-bold text-sky-600" x-text="record.izin">0</div>
-                            </div>
-                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
-                                <div class="text-[10px] uppercase font-bold text-slate-400">Sakit</div>
-                                <div class="font-bold text-indigo-600" x-text="record.sakit">0</div>
-                            </div>
+                        {{-- Absence Mini-Cards row --}}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <template x-for="item in absenceItems" :key="item.key">
+                                <div class="text-center px-3 py-2 bg-white rounded-lg border shadow-sm min-w-[72px]"
+                                     :class="item.borderClass">
+                                    <div class="text-[10px] uppercase font-bold text-slate-400" x-text="item.label"></div>
+                                    <div class="font-bold text-lg leading-none mt-0.5" :class="item.valueClass" x-text="item.value"></div>
+                                    <div class="text-[9px] text-slate-400 mt-1 font-semibold uppercase tracking-wide">bulan ini</div>
+                                    <div class="mt-1 pt-1 border-t border-slate-100 text-[10px] text-slate-500">
+                                        YTD: <span class="font-bold" :class="item.ytdClass" x-text="item.ytd"></span>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
@@ -254,10 +249,21 @@ document.addEventListener('alpine:init', () => {
             name: '',
             typeBadge: '',
             isNewSystem: false,
-            alpha: 0,
-            telat: 0,
-            izin: 0,
-            sakit: 0
+            alpha: 0, telat: 0, izin: 0, sakit: 0,
+            ytd_alpha: 0, ytd_telat: 0, ytd_izin: 0, ytd_sakit: 0, ytd_months: 0
+        },
+
+        get absenceItems() {
+            return [
+                { key: 'alpha', label: 'Alpha',  value: this.record.alpha, ytd: this.record.ytd_alpha,
+                  borderClass: 'border-rose-200',    valueClass: 'text-rose-600',   ytdClass: this.record.ytd_alpha  > 0 ? 'text-rose-600'   : 'text-slate-400' },
+                { key: 'telat', label: 'Telat',  value: this.record.telat, ytd: this.record.ytd_telat,
+                  borderClass: 'border-amber-200',   valueClass: 'text-amber-600',  ytdClass: this.record.ytd_telat  > 0 ? 'text-amber-600'  : 'text-slate-400' },
+                { key: 'izin',  label: 'Izin',   value: this.record.izin,  ytd: this.record.ytd_izin,
+                  borderClass: 'border-sky-200',     valueClass: 'text-sky-600',    ytdClass: this.record.ytd_izin   > 0 ? 'text-sky-600'    : 'text-slate-400' },
+                { key: 'sakit', label: 'Sakit',  value: this.record.sakit, ytd: this.record.ytd_sakit,
+                  borderClass: 'border-indigo-200',  valueClass: 'text-indigo-600', ytdClass: this.record.ytd_sakit  > 0 ? 'text-indigo-600' : 'text-slate-400' },
+            ];
         },
         
         form: {},
@@ -296,11 +302,18 @@ document.addEventListener('alpine:init', () => {
             axios.get(fetchUrl)
                 .then(({ data }) => {
                     // Populate headers
-                    this.record.name = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';
+                    this.record.name  = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';
                     this.record.alpha = data.Alpha ?? 0;
                     this.record.telat = data.Telat ?? 0;
-                    this.record.izin = data.Izin ?? 0;
+                    this.record.izin  = data.Izin  ?? 0;
                     this.record.sakit = data.Sakit ?? 0;
+
+                    // YTD attendance totals
+                    this.record.ytd_alpha  = data.ytd_alpha  ?? 0;
+                    this.record.ytd_telat  = data.ytd_telat  ?? 0;
+                    this.record.ytd_izin   = data.ytd_izin   ?? 0;
+                    this.record.ytd_sakit  = data.ytd_sakit  ?? 0;
+                    this.record.ytd_months = data.ytd_months ?? 0;
 
                     const scheme = data.karyawan?.employment_scheme ?? '';
                     this.record.isNewSystem = scheme.includes('YAYASAN') || scheme.includes('MAGANG');
