@@ -21,6 +21,8 @@ class RoleIndex extends Component
 
     public array $selectedPermissions = [];
 
+    // ── Computed Properties ────────────────────────────────────────────────────
+
     public function getRolesProperty()
     {
         return Role::query()
@@ -35,6 +37,57 @@ class RoleIndex extends Component
     public function getPermissionsProperty()
     {
         return Permission::orderBy('name')->get();
+    }
+
+    /**
+     * Returns permissions grouped by module for the UI matrix.
+     * Each group key maps to an array of Permission objects.
+     */
+    public function getGroupedPermissionsProperty(): array
+    {
+        $all    = Permission::orderBy('name')->get();
+        $groups = [];
+        $used   = [];
+
+        foreach (config('permission_groups.groups', []) as $label => $prefixes) {
+            $prefixes = (array) $prefixes;
+            $matched  = $all->filter(fn ($p) =>
+                collect($prefixes)->contains(fn ($px) => str_starts_with($p->name, $px))
+            );
+            if ($matched->isNotEmpty()) {
+                $groups[$label] = $matched->values();
+                $used           = array_merge($used, $matched->pluck('name')->toArray());
+            }
+        }
+
+        // Catch-all: any permissions not matched by any group
+        $other = $all->whereNotIn('name', $used);
+        if ($other->isNotEmpty()) {
+            $groups['Other'] = $other->values();
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Toggle all permissions within a named group.
+     * If all are already selected → deselect. Otherwise → select all.
+     */
+    public function toggleGroup(string $label): void
+    {
+        $group     = $this->groupedPermissions[$label] ?? collect();
+        $names     = collect($group)->pluck('name')->toArray();
+        $allChosen = collect($names)->every(fn ($n) => in_array($n, $this->selectedPermissions));
+
+        if ($allChosen) {
+            $this->selectedPermissions = array_values(
+                array_diff($this->selectedPermissions, $names)
+            );
+        } else {
+            $this->selectedPermissions = array_values(
+                array_unique(array_merge($this->selectedPermissions, $names))
+            );
+        }
     }
 
     public function openCreateModal(): void
@@ -124,8 +177,9 @@ class RoleIndex extends Component
     public function render()
     {
         return view('livewire.admin.roles.role-index', [
-            'roles' => $this->roles,
-            'permissions' => $this->permissions,
+            'roles'              => $this->roles,
+            'permissions'        => $this->permissions,
+            'groupedPermissions' => $this->groupedPermissions,
         ]);
     }
 }

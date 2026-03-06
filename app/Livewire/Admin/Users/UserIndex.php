@@ -12,9 +12,11 @@ use App\Application\User\UseCases\ToggleUserStatus;
 use App\Application\User\UseCases\UpdateUser;
 use App\Domain\Employee\Repositories\EmployeeRepository;
 use App\Domain\User\Repositories\UserRepository;
+use App\Infrastructure\Persistence\Eloquent\Models\User as EloquentUser;
 use App\Presentation\Http\Requests\UserRequest;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserIndex extends Component
@@ -67,30 +69,57 @@ class UserIndex extends Component
 
     public ?string $selectedEmployeeLabel = null;
 
-    // protected $listeners = [
-    //     'refreshUsers' => '$refresh',
-    // ];
+    // Direct per-user permissions (fine-grained overrides on top of roles)
+    /** @var string[] */
+    public array $selectedDirectPermissions = [];
 
-    // Reset page when search/filter changes
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
+    // Modal tab state: 'roles' | 'permissions'
+    public string $modalTab = 'roles';
 
-    public function updatedOnlyActive(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedPerPage(): void
-    {
-        $this->resetPage();
-    }
+    /** Human-readable descriptions for each role (used as tooltips in the UI). */
+    protected array $roleDescriptions = [];
 
     public function mount(): void
     {
-        // Load all roles (you can filter or sort if needed)
-        $this->availableRoles = Role::query()->orderBy('name')->pluck('name')->toArray();
+        $this->availableRoles    = Role::query()->orderBy('name')->pluck('name')->toArray();
+        $this->roleDescriptions  = config('permission_groups.role_descriptions', []);
+    }
+
+    // Reset page when search/filter changes
+    public function updatedSearch(): void    { $this->resetPage(); }
+    public function updatedOnlyActive(): void { $this->resetPage(); }
+    public function updatedPerPage(): void   { $this->resetPage(); }
+
+    /** Grouped permissions for the Direct Permissions tab in the user modal. */
+    public function getGroupedPermissionsProperty(): array
+    {
+        $all    = Permission::orderBy('name')->get();
+        $groups = [];
+        $used   = [];
+
+        foreach (config('permission_groups.groups', []) as $label => $prefixes) {
+            $prefixes = (array) $prefixes;
+            $matched  = $all->filter(fn ($p) =>
+                collect($prefixes)->contains(fn ($px) => str_starts_with($p->name, $px))
+            );
+            if ($matched->isNotEmpty()) {
+                $groups[$label] = $matched->values();
+                $used           = array_merge($used, $matched->pluck('name')->toArray());
+            }
+        }
+
+        $other = $all->whereNotIn('name', $used);
+        if ($other->isNotEmpty()) {
+            $groups['Other'] = $other->values();
+        }
+
+        return $groups;
+    }
+
+    /** Returns the role description tooltip string. */
+    public function getRoleDescription(string $role): string
+    {
+        return $this->roleDescriptions[$role] ?? ucfirst(str_replace('-', ' ', $role));
     }
 
     protected function rules(): array
@@ -127,10 +156,13 @@ class UserIndex extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['name', 'email', 'selectedRoles', 'active', 'password', 'password_confirmation', 'employeeId', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel']);
+        $this->reset(['name', 'email', 'selectedRoles', 'active', 'password', 'password_confirmation',
+            'employeeId', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
+            'selectedDirectPermissions', 'modalTab']);
 
-        $this->active = true;
+        $this->active    = true;
         $this->selectedRoles = [];
+        $this->modalTab  = 'roles';
     }
 
     public function updatedEmployeeSearch(SearchEmployees $searchEmployees): void
@@ -201,6 +233,14 @@ class UserIndex extends Component
         $this->selectedRoles = $user->roles();
         $this->employeeId = method_exists($user, 'employeeId') ? $user->employeeId() : null;
 
+        // Load direct (non-role) permissions for the user
+        $eloquent = EloquentUser::find($user->id());
+        $this->selectedDirectPermissions = $eloquent
+            ? $eloquent->getDirectPermissions()->pluck('name')->toArray()
+            : [];
+
+        $this->modalTab = 'roles';
+
         if ($this->employeeId) {
             $employee = $employees->findById($this->employeeId);
 
@@ -226,7 +266,9 @@ class UserIndex extends Component
     public function updatedShowModal($value)
     {
         if (! $value) {
-            $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active', 'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel');
+            $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active',
+                'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
+                'selectedDirectPermissions', 'modalTab');
             $this->resetValidation();
         }
 
@@ -259,6 +301,13 @@ class UserIndex extends Component
             $this->dispatch('flash', type: 'success', message: 'User created successfully.');
         } else {
             $updateUser->execute($this->editingId, $dto);
+
+            // Sync direct permissions (overrides on top of role permissions)
+            $eloquent = EloquentUser::find($this->editingId);
+            if ($eloquent) {
+                $eloquent->syncPermissions($this->selectedDirectPermissions);
+            }
+
             $this->dispatch('flash', type: 'success', message: 'User updated successfully.');
         }
 
@@ -292,7 +341,8 @@ class UserIndex extends Component
         $users = $listUsers->execute($filter);
 
         return view('livewire.admin.users.user-index', [
-            'users' => $users,
+            'users'              => $users,
+            'groupedPermissions' => $this->groupedPermissions,
         ])->layout('new.layouts.app');
     }
 }
