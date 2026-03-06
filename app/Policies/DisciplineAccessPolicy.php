@@ -59,6 +59,60 @@ class DisciplineAccessPolicy
             || $this->isSuperAccessUser($user);
     }
 
+    /**
+     * Determine if the user can see the Regular employee tab.
+     *
+     * Logic:
+     *  - Super access / HRD / GM always see all tabs.
+     *  - If the user has ANY explicit evaluation.view-* permission assigned,
+     *    only the tabs they are explicitly granted are shown (fine-grained mode).
+     *  - Otherwise, any user who can access the evaluation page sees all three tabs.
+     */
+    public function viewRegular(User $user): bool
+    {
+        if ($this->isSuperAccessUser($user) || $user->is_gm || $this->isHrdApprover($user)) {
+            return true;
+        }
+
+        if ($this->hasExplicitTabPermissions($user)) {
+            return $user->can('evaluation.view-regular');
+        }
+
+        return $this->viewDepartment($user) || $this->viewAny($user);
+    }
+
+    /**
+     * Determine if the user can see the Yayasan employee tab.
+     */
+    public function viewYayasan(User $user): bool
+    {
+        if ($this->isSuperAccessUser($user) || $user->is_gm || $this->isHrdApprover($user)) {
+            return true;
+        }
+
+        if ($this->hasExplicitTabPermissions($user)) {
+            return $user->can('evaluation.view-yayasan');
+        }
+
+        return $this->viewDepartment($user) || $this->viewAny($user);
+    }
+
+    /**
+     * Determine if the user can see the Magang employee tab.
+     */
+    public function viewMagang(User $user): bool
+    {
+        if ($this->isSuperAccessUser($user) || $user->is_gm || $this->isHrdApprover($user)) {
+            return true;
+        }
+
+        if ($this->hasExplicitTabPermissions($user)) {
+            return $user->can('evaluation.view-magang');
+        }
+
+        return $this->viewDepartment($user) || $this->viewAny($user);
+    }
+
     // ──────────────────────────────────────────────────────
     // Legacy Config Checks (Preserved as unmigrated fallbacks)
     // ──────────────────────────────────────────────────────
@@ -73,6 +127,17 @@ class DisciplineAccessPolicy
         return in_array($user->email, config('discipline.super_access_emails', []), true)
             || in_array($user->id, config('discipline.special_access_ids', []), true)
             || $user->hasRole('super-admin');
+    }
+
+    /**
+     * True if the user has ANY explicit tab-scoped permission assigned.
+     * When true, they are in "restricted mode" — only explicitly granted tabs are shown.
+     */
+    private function hasExplicitTabPermissions(User $user): bool
+    {
+        return $user->can('evaluation.view-regular')
+            || $user->can('evaluation.view-yayasan')
+            || $user->can('evaluation.view-magang');
     }
 }
 

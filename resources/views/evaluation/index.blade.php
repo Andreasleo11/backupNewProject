@@ -404,31 +404,38 @@
 
 {{-- ── Alpine: evalTabs component ─────────────────────────────────────── --}}
 <script>
+// Server-injected: which tabs this user is allowed to see
+const ALLOWED_TABS = @json($allowedTabs);
+
 function evalTabs() {
+    // All possible tabs in display order — filter to only allowed ones
+    const ALL_TABS = [
+        { id: 'regular', label: 'Regular' },
+        { id: 'yayasan', label: 'Yayasan' },
+        { id: 'magang',  label: 'Magang'  },
+    ];
+
     return {
-        activeTab: 'regular',
-        tabs: [
-            { id: 'regular', label: 'Regular'  },
-            { id: 'yayasan', label: 'Yayasan'  },
-            { id: 'magang',  label: 'Magang'   },
-        ],
+        activeTab: ALLOWED_TABS[0] ?? 'regular',
+        tabs: ALL_TABS.filter(t => ALLOWED_TABS.includes(t.id)),
 
         init() {
-            // Expose to module-scoped refreshSummary
             window.evalActiveTab = this.activeTab;
+            // Trigger lazy DataTable init for the default active tab
+            this.$nextTick(() => {
+                window.dispatchEvent(new CustomEvent('tab-changed', { detail: { type: this.activeTab } }));
+            });
         },
 
         switchTab(id) {
             if (this.activeTab === id) return;
-            this.activeTab    = id;
+            this.activeTab       = id;
             window.evalActiveTab = id;
-            // Notify the module script (lazy DataTable init + chip refresh)
             window.dispatchEvent(new CustomEvent('tab-changed', { detail: { type: id } }));
         },
 
         onTabChanged(type) {
-            // Called via @tab-changed.window — keeps state in sync if dispatched externally
-            this.activeTab    = type;
+            this.activeTab       = type;
             window.evalActiveTab = type;
         },
     };

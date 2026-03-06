@@ -62,7 +62,22 @@ class EvaluationController extends Controller
         $canApproveDept  = $this->policy->approveDepartment($user);
         $canApproveFinal = $this->policy->approveFinal($user);
 
-        return view('evaluation.index', compact('month', 'year', 'user', 'summary', 'canExport', 'canApproveDept', 'canApproveFinal'));
+        // Which tabs is this user allowed to see?
+        $allowedTabs = array_values(array_filter([
+            $this->policy->viewRegular($user) ? 'regular' : null,
+            $this->policy->viewYayasan($user) ? 'yayasan' : null,
+            $this->policy->viewMagang($user)  ? 'magang'  : null,
+        ]));
+
+        if (empty($allowedTabs)) {
+            abort(403, 'No evaluation tabs accessible for your account.');
+        }
+
+        return view('evaluation.index', compact(
+            'month', 'year', 'user', 'summary',
+            'canExport', 'canApproveDept', 'canApproveFinal',
+            'allowedTabs'
+        ));
     }
 
     // ──────────────────────────────────────────────────────
@@ -75,6 +90,8 @@ class EvaluationController extends Controller
      */
     public function dataRegular(DisciplineDataTable $dataTable, Request $request)
     {
+        abort_unless($this->policy->viewRegular(Auth::user()), 403, 'Unauthorized to view Regular evaluations.');
+
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
@@ -87,6 +104,8 @@ class EvaluationController extends Controller
      */
     public function dataYayasan(DisciplineDataTable $dataTable, Request $request)
     {
+        abort_unless($this->policy->viewYayasan(Auth::user()), 403, 'Unauthorized to view Yayasan evaluations.');
+
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
@@ -99,6 +118,8 @@ class EvaluationController extends Controller
      */
     public function dataMagang(DisciplineDataTable $dataTable, Request $request)
     {
+        abort_unless($this->policy->viewMagang(Auth::user()), 403, 'Unauthorized to view Magang evaluations.');
+
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
