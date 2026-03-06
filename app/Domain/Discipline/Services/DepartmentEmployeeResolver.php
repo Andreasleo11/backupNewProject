@@ -5,15 +5,12 @@ namespace App\Domain\Discipline\Services;
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Enums\DepartmentCode;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Policies\DisciplineAccessPolicy;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 
 class DepartmentEmployeeResolver
 {
     public function __construct(
         public EvaluationDataRepositoryContract $repository,
-        public DisciplineAccessPolicy           $policy
     ) {}
 
     /**
@@ -21,9 +18,9 @@ class DepartmentEmployeeResolver
      */
     public function resolveForUser(User $user): Collection
     {
-        // Super Admins see all regular employees regardless of department
-        if ($this->policy->viewAny($user)) {
-            return $this->repository->getAllNonYayasan(); // Defaults to level 5
+        // Super Admins / HRD / GM see all regular employees
+        if ($user->can('evaluation.view-any')) {
+            return $this->repository->getAllNonYayasan();
         }
 
         if ($this->isSpecialAccessId($user)) {
@@ -33,7 +30,7 @@ class DepartmentEmployeeResolver
             ]);
         }
 
-        if ($user->department && $this->policy->viewDepartment($user)) {
+        if ($user->department && $user->can('evaluation.view-department')) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -45,7 +42,7 @@ class DepartmentEmployeeResolver
             return $this->repository->getByDepartmentCodes($codes);
         }
 
-        throw new AuthorizationException('Only Department Heads can access this');
+        throw new \Illuminate\Auth\Access\AuthorizationException('Only Department Heads can access this');
     }
 
     /**
@@ -53,8 +50,7 @@ class DepartmentEmployeeResolver
      */
     public function resolveYayasanForUser(User $user): Collection
     {
-        // GM, Super Admins, or HRD approvers see all Yayasan
-        if ($this->policy->viewAny($user)) {
+        if ($user->can('evaluation.view-any')) {
             return $this->repository->getAllYayasanEmployees();
         }
 
@@ -62,7 +58,7 @@ class DepartmentEmployeeResolver
             return $this->repository->getYayasanEmployees($this->getQcQaCodes($user));
         }
 
-        if ($user->department && $this->policy->viewDepartment($user)) {
+        if ($user->department && $user->can('evaluation.view-department')) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -82,8 +78,7 @@ class DepartmentEmployeeResolver
      */
     public function resolveMagangForUser(User $user): Collection
     {
-        // GM or Super Admins see all Magang
-        if ($this->policy->viewAny($user)) {
+        if ($user->can('evaluation.view-any')) {
             return $this->repository->getAllMagangEmployees();
         }
 
@@ -91,7 +86,7 @@ class DepartmentEmployeeResolver
             return $this->repository->getMagangEmployees($this->getQcQaCodes($user));
         }
 
-        if ($user->department && $this->policy->viewDepartment($user)) {
+        if ($user->department && $user->can('evaluation.view-department')) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -161,51 +156,6 @@ class DepartmentEmployeeResolver
     private function isSpecialAccessId(User $user): bool
     {
         return in_array($user->id, config('discipline.special_access_ids', []), true);
-    }
-
-    /**
-     * Fetch filtered employees for department head based on department and month.
-     */
-    public function fetchForDepartmentHead(string $deptNo, int $month): Collection
-    {
-        return $this->repository->getByDepartmentAndMonth($deptNo, $month);
-    }
-
-    /**
-     * Fetch filtered Yayasan employees for GM based on dept+month.
-     */
-    public function fetchForGeneralManager(string $deptNo, int $month): Collection
-    {
-        return $this->repository->getByDepartmentAndMonth(
-            $deptNo,
-            $month,
-            statuses: ['YAYASAN', 'YAYASAN KARAWANG']
-        );
-    }
-
-    /**
-     * Fetch Yayasan employees based on user's role and filters.
-     */
-    public function fetchYayasanEmployees(
-        int $month,
-        int $year,
-        bool $isGM,
-        ?string $deptNo = null
-    ): Collection {
-        if ($isGM) {
-            return $this->repository->getYayasanByMonthAndYear($month, $year);
-        }
-
-        if (! $deptNo) {
-            throw new \InvalidArgumentException('Department number required for non-GM users');
-        }
-
-        return $this->repository->getByDepartmentAndMonth(
-            $deptNo,
-            $month,
-            $year,
-            ['YAYASAN', 'YAYASAN KARAWANG']
-        );
     }
 }
 

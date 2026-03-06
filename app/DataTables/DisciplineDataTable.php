@@ -72,7 +72,7 @@ class DisciplineDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         $calculator = app(DisciplineScoreCalculatorService::class);
-        $canGrade   = app(\App\Policies\DisciplineAccessPolicy::class)->grade(Auth::user());
+        $canGrade   = Auth::user()?->can('evaluation.grade') ?? false;
         $type       = $this->type;
 
         $dt = (new EloquentDataTable($query))

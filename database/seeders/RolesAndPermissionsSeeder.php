@@ -73,6 +73,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'evaluation.grade',
             'evaluation.approve-department',
             'evaluation.approve-final',
+            // Tab-scoped access (fine-grained override per user/role)
+            'evaluation.view-regular',
+            'evaluation.view-yayasan',
+            'evaluation.view-magang',
         ];
 
         foreach ($permissions as $permName) {
@@ -139,16 +143,26 @@ class RolesAndPermissionsSeeder extends Seeder
                 'evaluation.view-department',
                 'evaluation.grade',
                 'evaluation.approve-department',
+                // Dept heads see all 3 tabs for their own department
+                'evaluation.view-regular',
+                'evaluation.view-yayasan',
+                'evaluation.view-magang',
             ],
 
             'hrd-manager' => [
                 'evaluation.view-any',
                 'evaluation.approve-final',
+                'evaluation.view-regular',
+                'evaluation.view-yayasan',
+                'evaluation.view-magang',
             ],
 
             'general-manager' => [
                 'evaluation.view-any',
                 'evaluation.approve-final',
+                'evaluation.view-regular',
+                'evaluation.view-yayasan',
+                'evaluation.view-magang',
             ],
         ];
 

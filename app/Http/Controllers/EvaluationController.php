@@ -8,7 +8,6 @@ use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Domain\Discipline\Services\EvaluationApprovalService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
-use App\Policies\DisciplineAccessPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -29,7 +28,6 @@ class EvaluationController extends Controller
 {
     public function __construct(
         private DepartmentEmployeeResolver $resolver,
-        private DisciplineAccessPolicy     $policy,
         private EvaluationApprovalService  $approvalService,
     ) {}
 
@@ -45,10 +43,6 @@ class EvaluationController extends Controller
     public function index(Request $request, ?int $month = null, ?int $year = null)
     {
         $user = Auth::user();
-        
-        if (! $this->policy->viewDepartment($user) && ! $this->policy->viewAny($user)) {
-            abort(403, 'Unauthorized access to Evaluation module.');
-        }
 
         $month  ??= (int) now()->format('m');
         $year   ??= (int) now()->format('Y');
@@ -59,14 +53,14 @@ class EvaluationController extends Controller
 
         // Can export? Only when all records for this dept+period are fully_approved
         $canExport       = $deptNo ? $this->approvalService->canExport($month, $year, $deptNo) : false;
-        $canApproveDept  = $this->policy->approveDepartment($user);
-        $canApproveFinal = $this->policy->approveFinal($user);
+        $canApproveDept  = $user->can('evaluation.approve-department');
+        $canApproveFinal = $user->can('evaluation.approve-final');
 
         // Which tabs is this user allowed to see?
         $allowedTabs = array_values(array_filter([
-            $this->policy->viewRegular($user) ? 'regular' : null,
-            $this->policy->viewYayasan($user) ? 'yayasan' : null,
-            $this->policy->viewMagang($user)  ? 'magang'  : null,
+            $user->can('evaluation.view-regular') ? 'regular' : null,
+            $user->can('evaluation.view-yayasan') ? 'yayasan' : null,
+            $user->can('evaluation.view-magang')  ? 'magang'  : null,
         ]));
 
         if (empty($allowedTabs)) {
@@ -90,8 +84,6 @@ class EvaluationController extends Controller
      */
     public function dataRegular(DisciplineDataTable $dataTable, Request $request)
     {
-        abort_unless($this->policy->viewRegular(Auth::user()), 403, 'Unauthorized to view Regular evaluations.');
-
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
@@ -104,8 +96,6 @@ class EvaluationController extends Controller
      */
     public function dataYayasan(DisciplineDataTable $dataTable, Request $request)
     {
-        abort_unless($this->policy->viewYayasan(Auth::user()), 403, 'Unauthorized to view Yayasan evaluations.');
-
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
@@ -118,8 +108,6 @@ class EvaluationController extends Controller
      */
     public function dataMagang(DisciplineDataTable $dataTable, Request $request)
     {
-        abort_unless($this->policy->viewMagang(Auth::user()), 403, 'Unauthorized to view Magang evaluations.');
-
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
 
@@ -169,11 +157,9 @@ class EvaluationController extends Controller
 
     private function processGrading(Request $request, EvaluationData $record)
     {
-        $user = Auth::user();
+        $this->authorize('evaluation.grade');
 
-        if (! $this->policy->grade($user)) {
-            abort(403, 'Unauthorized to grade evaluations.');
-        }
+        $user = Auth::user();
 
         $fields = $record->useNewScoringSystem()
             ? ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
@@ -210,13 +196,10 @@ class EvaluationController extends Controller
      */
     public function approveDept(Request $request)
     {
-        $user    = Auth::user();
+        $this->authorize('evaluation.approve-department');
 
-        if (! $this->policy->approveDepartment($user)) {
-            abort(403, 'Unauthorized to batch approve department.');
-        }
-
-        $deptNo  = $user->department->dept_no;
+        $user   = Auth::user();
+        $deptNo = $user->department->dept_no;
         $month   = $request->integer('month');
         $year    = $request->integer('year');
         $type    = $request->input('type'); // regular|yayasan|magang|null (all)
@@ -236,12 +219,9 @@ class EvaluationController extends Controller
      */
     public function approveHrd(Request $request)
     {
+        $this->authorize('evaluation.approve-final');
+
         $user   = Auth::user();
-
-        if (! $this->policy->approveFinal($user)) {
-            abort(403, 'Unauthorized to issue final HRD approval.');
-        }
-
         $deptNo = $user->department->dept_no;
         $month  = $request->integer('month');
         $year   = $request->integer('year');
@@ -262,8 +242,7 @@ class EvaluationController extends Controller
      */
     public function reject(Request $request, int $id)
     {
-        $user = Auth::user();
-        if (! $this->policy->approveDepartment($user) && ! $this->policy->approveFinal($user)) {
+        if (! Auth::user()->canAny(['evaluation.approve-department', 'evaluation.approve-final'])) {
             abort(403, 'Unauthorized to reject evaluations.');
         }
 
@@ -285,6 +264,8 @@ class EvaluationController extends Controller
      */
     public function show(int $id)
     {
+        $this->authorize('evaluation.grade');
+
         $record = EvaluationData::with('karyawan')->findOrFail($id);
 
         return response()->json($record);
@@ -297,6 +278,8 @@ class EvaluationController extends Controller
      */
     public function showByNik(string $nik, int $month, int $year)
     {
+        $this->authorize('evaluation.grade');
+
         $employee = Employee::where('nik', $nik)->firstOrFail();
         $record = EvaluationData::with('karyawan')
             ->where('NIK', $nik)
@@ -372,6 +355,8 @@ class EvaluationController extends Controller
      */
     public function export(Request $request, DisciplineDataTable $dataTable)
     {
+        $this->authorize('evaluation.approve-final');
+
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
         $type  = $request->query('type', 'regular');
@@ -390,11 +375,7 @@ class EvaluationController extends Controller
      */
     public function import(Request $request)
     {
-        $user = Auth::user();
-
-        if (! $this->policy->grade($user)) {
-            abort(403, 'Unauthorized to import evaluations.');
-        }
+        $this->authorize('evaluation.grade');
 
         $request->validate([
             'excel_files'   => 'required|array|min:1',
