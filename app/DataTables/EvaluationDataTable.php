@@ -5,7 +5,6 @@ namespace App\DataTables;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
@@ -15,13 +14,13 @@ use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
 /**
- * DisciplineDataTable
+ * EvaluationDataTable
  *
  * A single, configurable DataTable for all three discipline evaluation types:
  * 'regular', 'yayasan', and 'magang'.
  *
  * Usage:
- *   $dataTable = app(DisciplineDataTable::class)->forType('yayasan');
+ *   $dataTable = app(EvaluationDataTable::class)->forType('yayasan');
  *   return $dataTable->render('setting.disciplineyayasanindex', compact(...));
  *
  * What changes per type:
@@ -31,7 +30,7 @@ use Yajra\DataTables\Services\DataTable;
  *   - row colours  → approval status row highlighting (yayasan/magang only)
  *   - table HTML id → unique per type so JS doesn't conflict
  */
-class DisciplineDataTable extends DataTable
+class EvaluationDataTable extends DataTable
 {
     /**
      * Evaluation type: 'regular' | 'yayasan' | 'magang'

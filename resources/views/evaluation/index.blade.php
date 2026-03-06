@@ -450,9 +450,9 @@ function evalTabs() {
     const currentYear  = {{ $year }};
 
     // ── DataTable column definitions (injected from controller via JSON) ──────
-    const columnsRegular  = @json(\App\DataTables\DisciplineDataTable::columnsForJs('regular'));
-    const columnsYayasan  = @json(\App\DataTables\DisciplineDataTable::columnsForJs('yayasan'));
-    const columnsMagang   = @json(\App\DataTables\DisciplineDataTable::columnsForJs('magang'));
+    const columnsRegular  = @json(\App\DataTables\EvaluationDataTable::columnsForJs('regular'));
+    const columnsYayasan  = @json(\App\DataTables\EvaluationDataTable::columnsForJs('yayasan'));
+    const columnsMagang   = @json(\App\DataTables\EvaluationDataTable::columnsForJs('magang'));
 
     // ── Build each DataTable ──────────────────────────────────────────────────
     function makeTable(tableId, ajaxRoute, columns) {

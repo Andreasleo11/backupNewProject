@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\DisciplineDataTable;
+use App\DataTables\EvaluationDataTable;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Domain\Discipline\Services\EvaluationApprovalService;
@@ -82,7 +82,7 @@ class EvaluationController extends Controller
      * DataTable data for the Regular tab.
      * Route: GET /evaluation/data/regular
      */
-    public function dataRegular(DisciplineDataTable $dataTable, Request $request)
+    public function dataRegular(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
@@ -94,7 +94,7 @@ class EvaluationController extends Controller
      * DataTable data for the Yayasan tab.
      * Route: GET /evaluation/data/yayasan
      */
-    public function dataYayasan(DisciplineDataTable $dataTable, Request $request)
+    public function dataYayasan(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
@@ -106,7 +106,7 @@ class EvaluationController extends Controller
      * DataTable data for the Magang tab.
      * Route: GET /evaluation/data/magang
      */
-    public function dataMagang(DisciplineDataTable $dataTable, Request $request)
+    public function dataMagang(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year',  now()->year);
@@ -353,7 +353,7 @@ class EvaluationController extends Controller
      * Export the evaluation data for a specific period to Excel.
      * Route: GET /evaluation/export
      */
-    public function export(Request $request, DisciplineDataTable $dataTable)
+    public function export(Request $request, EvaluationDataTable $dataTable)
     {
         $this->authorize('evaluation.approve-final');
 
