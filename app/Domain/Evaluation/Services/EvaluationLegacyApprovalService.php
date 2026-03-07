@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Discipline\Services;
+namespace App\Domain\Evaluation\Services;
 
 use App\Models\EvaluationData;
 use Illuminate\Support\Collection;

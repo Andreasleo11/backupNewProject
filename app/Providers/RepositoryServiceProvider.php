@@ -15,7 +15,7 @@ final class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(UserSignatureRepository::class, EloquentUserSignatureRepository::class);
 
         $this->app->bind(
-            \App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract::class,
+            \App\Domain\Evaluation\Repositories\EvaluationDataRepositoryContract::class,
             \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEvaluationDataRepository::class
         );
     }

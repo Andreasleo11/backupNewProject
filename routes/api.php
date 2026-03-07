@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\EvaluationApiController;
 use App\Http\Controllers\Api\V1\PurchaseRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,12 +25,5 @@ Route::prefix('v1')->group(function () {
         Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve']);
         Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject']);
         Route::get('/purchase-requests/{id}/history', [PurchaseRequestController::class, 'history']);
-
-        // Discipline Evaluations
-        Route::apiResource('evaluations', EvaluationApiController::class)->except(['destroy']);
-        Route::post('/evaluations/approve/dept-head', [EvaluationApiController::class, 'approveDeptHead']);
-        Route::post('/evaluations/approve/gm', [EvaluationApiController::class, 'approveGM']);
-        Route::post('/evaluations/reject/dept-head', [EvaluationApiController::class, 'rejectDeptHead']);
-        Route::get('/evaluations/export', [EvaluationApiController::class, 'export']);
     });
 });

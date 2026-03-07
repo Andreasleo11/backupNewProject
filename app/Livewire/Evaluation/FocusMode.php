@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Evaluation;
 
-use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\EvaluationLegacyApprovalService;
-use App\Domain\Discipline\Services\EvaluationScoreCalculatorService;
+use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
+use App\Domain\Evaluation\Services\EvaluationLegacyApprovalService;
+use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Models\EvaluationData;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

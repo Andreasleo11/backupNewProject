@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Discipline\Services;
+namespace App\Domain\Evaluation\Services;
 
-use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
+use App\Domain\Evaluation\Repositories\EvaluationDataRepositoryContract;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\EvaluationData;
 use Carbon\Carbon;

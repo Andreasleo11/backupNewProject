@@ -113,7 +113,7 @@
          Values are pulled from EvaluationScoreCalculatorService — no hardcoding.
     ═══════════════════════════════════════════════════════════════ --}}
     @php
-        use App\Domain\Discipline\Services\EvaluationScoreCalculatorService as Calc;
+        use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService as Calc;
         $penalties   = Calc::getPenalties();
         $newMaps     = Calc::getScoreMaps();
         $oldMaps     = Calc::getOldScoreMaps();

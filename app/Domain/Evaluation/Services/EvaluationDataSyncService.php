@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Discipline\Services;
+namespace App\Domain\Evaluation\Services;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;

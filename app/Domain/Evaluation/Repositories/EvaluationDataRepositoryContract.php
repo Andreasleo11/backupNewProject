@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Discipline\Repositories;
+namespace App\Domain\Evaluation\Repositories;
 
 use Illuminate\Support\Collection;
 

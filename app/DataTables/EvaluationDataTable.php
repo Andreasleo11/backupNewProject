@@ -2,8 +2,8 @@
 
 namespace App\DataTables;
 
-use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\EvaluationScoreCalculatorService;
+use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
+use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;

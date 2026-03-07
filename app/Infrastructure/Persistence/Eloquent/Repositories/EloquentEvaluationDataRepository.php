@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 
-use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
+use App\Domain\Evaluation\Repositories\EvaluationDataRepositoryContract;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Support\Collection;
