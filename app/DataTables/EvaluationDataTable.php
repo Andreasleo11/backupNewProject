@@ -5,11 +5,12 @@ namespace App\DataTables;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -173,7 +174,31 @@ class EvaluationDataTable extends DataTable
                 return $evalData ? $evalData->total : 0;
             })
             ->rawColumns(['grade', 'approval_status', 'absence_summary', 'action'])
-            ->setRowId('nik');
+            ->setRowId('nik')
+            ->orderColumn('total', function ($query, $order) {
+                // Server-side sort for the computed 'total' column via a correlated sub-query.
+                $month = $this->filterMonth;
+                $year  = $this->filterYear;
+
+                $sub = EvaluationData::select('total')
+                    ->whereColumn('nik', 'employees.nik')
+                    ->when($month, fn ($q) => $q->whereMonth('Month', $month))
+                    ->when($year,  fn ($q) => $q->whereYear('Month', $year))
+                    ->limit(1);
+
+                $query->orderBy($sub, $order);
+            })
+            ->filterColumn('total', function ($query, $keyword) {
+                // Allow filtering/searching by numeric total value.
+                $month = $this->filterMonth;
+                $year  = $this->filterYear;
+
+                $query->whereHas('evaluationData', function ($q) use ($keyword, $month, $year) {
+                    $q->when($month, fn ($q) => $q->whereMonth('Month', $month))
+                      ->when($year,  fn ($q) => $q->whereYear('Month', $year))
+                      ->where('total', 'like', "%{$keyword}%");
+                });
+            });
 
         // Regular: add old-system computed columns (split attendance + criteria)
         if ($type === 'regular') {
@@ -288,16 +313,8 @@ class EvaluationDataTable extends DataTable
             ->setTableId($this->tableId())
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0, 'asc') // NIK default index 
-            ->orderBy(5, 'asc') // Total index 
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
-                Button::make('reset'),
-                Button::make('reload'),
-            ]);
+            ->orderBy(0, 'asc')
+            ->buttons([]); // Export handled via the action bar button
     }
 
     /**
@@ -444,7 +461,7 @@ class EvaluationDataTable extends DataTable
                 ->title('Grade')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center border-x border-slate-100 bg-slate-50/50')
+                ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::make('pengawas')
                 ->title('Graded By')

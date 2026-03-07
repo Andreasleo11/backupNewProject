@@ -103,75 +103,130 @@
                     </div>
 
                     {{-- Grading Guide Popover (Collapsible) --}}
+                    @php
+                        use App\Domain\Discipline\Services\DisciplineScoreCalculatorService as Calc;
+                        $modalPenalties = Calc::getPenalties();
+                        $modalNewMaps   = Calc::getScoreMaps();
+                        $modalOldMaps   = Calc::getOldScoreMaps();
+
+                        $modalNewFieldLabels = [
+                            'kemampuan_kerja'   => 'Kemampuan Kerja',
+                            'kecerdasan_kerja'  => 'Kecerdasan Kerja',
+                            'qualitas_kerja'    => 'Kualitas Kerja',
+                            'disiplin_kerja'    => 'Disiplin Kerja',
+                            'kepatuhan_kerja'   => 'Kepatuhan Kerja',
+                            'lembur'            => 'Lembur',
+                            'efektifitas_kerja' => 'Efektifitas Kerja',
+                            'relawan'           => 'Relawan',
+                            'integritas'        => 'Integritas',
+                        ];
+
+                        $modalOldFieldLabels = [
+                            'kerajinan_kerja' => 'Kerajinan Kerja',
+                            'kerapian_kerja'  => 'Kerapian Kerja',
+                            'prestasi'        => 'Prestasi',
+                            'loyalitas'       => 'Loyalitas',
+                            'perilaku_kerja'  => 'Perilaku Kerja',
+                        ];
+
+                        $modalGradeCutoffs = [
+                            'A' => ['range' => '91 – 100', 'color' => 'green'],
+                            'B' => ['range' => '71 – 90',  'color' => 'blue'],
+                            'C' => ['range' => '61 – 70',  'color' => 'yellow'],
+                            'D' => ['range' => '< 61',     'color' => 'red'],
+                        ];
+                    @endphp
                     <div x-show="showGuide" x-collapse style="display: none;" class="mb-6">
                         <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm text-sm text-indigo-900 flex flex-col gap-4">
-                            
-                            {{-- Unified Absence Header --}}
+
+                            {{-- Absence Penalties — from Calc::getPenalties() --}}
                             <div>
-                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-time'></i> Penilaian Absensi (Otomatis)</h6>
-                                <p class="mb-0 text-indigo-700">Total Poin Kehadiran Maksimal: <strong class="text-indigo-900">40</strong></p>
-                                <ul class="list-disc pl-5 mt-1 space-y-0.5 text-indigo-700">
-                                    <li>1 Alpha = <strong>-10 Poin</strong></li>
-                                    <li>1 Izin = <strong>-2 Poin</strong></li>
-                                    <li>1 Sakit = <strong>-1 Poin</strong></li>
-                                    <li>1 Terlambat = <strong>-0.5 Poin</strong></li>
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2">
+                                    <i class='bx bx-time'></i> Penilaian Absensi (Otomatis)
+                                </h6>
+                                <p class="mb-1 text-indigo-700">Total Poin Kehadiran Maksimal: <strong class="text-indigo-900">40</strong></p>
+                                <ul class="list-disc pl-5 space-y-0.5 text-indigo-700">
+                                    <li>1 Alpha = <strong>−{{ $modalPenalties['alpha'] }} Poin</strong></li>
+                                    <li>1 Izin = <strong>−{{ $modalPenalties['izin'] }} Poin</strong></li>
+                                    <li>1 Sakit = <strong>−{{ $modalPenalties['sakit'] }} Poin</strong></li>
+                                    <li>1 Terlambat = <strong>−{{ $modalPenalties['telat'] }} Poin</strong></li>
                                 </ul>
                             </div>
 
-                            <hr class="border-indigo-200/50 my-1">
+                            <hr class="border-indigo-200/50">
 
-                            {{-- NEW SYSTEM: Yayasan / Magang --}}
+                            {{-- NEW SYSTEM: Yayasan / Magang — from Calc::getScoreMaps() --}}
                             <div x-show="record.isNewSystem" style="display: none;">
-                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai Alphabet (Sistem Baru)</h6>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Kemampuan Kerja</p>
-                                        <p class="mb-0">A=17, B=14, C=11, D=8, E=0</p>
-                                    </div>
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Kecerdasan Kerja</p>
-                                        <p class="mb-0">A=16, B=13, C=10, D=7, E=0</p>
-                                    </div>
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Kualitas Kerja</p>
-                                        <p class="mb-0">A=11, B=9, C=7, D=4, E=0</p>
-                                    </div>
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Disiplin Kerja & Integritas</p>
-                                        <p class="mb-0">A=8, B=6, C=5, D=3, E=0</p>
-                                    </div>
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs sm:col-span-2">
-                                        <p class="font-bold text-slate-700 mb-1">Kepatuhan, Lembur, Efektifitas & Relawan</p>
-                                        <p class="mb-0">A=10, B=8, C=6, D=4, E=0</p>
-                                    </div>
+                                <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
+                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Baru — Yayasan / Magang)
+                                </h6>
+                                <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
+                                    <table class="w-full text-xs bg-white/60">
+                                        <thead class="bg-indigo-100/60">
+                                            <tr>
+                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria</th>
+                                                @foreach (['A','B','C','D','E'] as $g)
+                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">{{ $g }}</th>
+                                                @endforeach
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-indigo-100/50">
+                                            @foreach ($modalNewMaps as $field => $scores)
+                                                <tr>
+                                                    <td class="px-3 py-1.5 font-medium text-slate-700">{{ $modalNewFieldLabels[$field] ?? $field }}</td>
+                                                    @foreach (['A','B','C','D','E'] as $g)
+                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">{{ $scores[$g] ?? 0 }}</td>
+                                                    @endforeach
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
-                            {{-- OLD SYSTEM: Regular --}}
+                            {{-- OLD SYSTEM: Regular — from Calc::getOldScoreMaps() --}}
                             <div x-show="!record.isNewSystem" style="display: none;">
-                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai Alphabet (Sistem Lama)</h6>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Prestasi</p>
-                                        <p class="mb-0">A=20, B=15, C=10, D=5, E=0</p>
-                                    </div>
-                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
-                                        <p class="font-bold text-slate-700 mb-1">Lainnya (Kerajinan, Kerapian, Loyalitas, Perilaku)</p>
-                                        <p class="mb-0">A=10, B=7.5, C=5, D=2.5, E=0</p>
-                                    </div>
+                                <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
+                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Lama — Regular)
+                                </h6>
+                                <p class="text-xs text-indigo-700 mb-2">Base score: <strong>40</strong> + jumlah kriteria − penalti absensi.</p>
+                                <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
+                                    <table class="w-full text-xs bg-white/60">
+                                        <thead class="bg-indigo-100/60">
+                                            <tr>
+                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria</th>
+                                                @foreach (['A','B','C','D','E'] as $g)
+                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">{{ $g }}</th>
+                                                @endforeach
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-indigo-100/50">
+                                            @foreach ($modalOldMaps as $field => $scores)
+                                                <tr>
+                                                    <td class="px-3 py-1.5 font-medium text-slate-700">{{ $modalOldFieldLabels[$field] ?? $field }}</td>
+                                                    @foreach (['A','B','C','D','E'] as $g)
+                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">{{ $scores[$g] ?? 0 }}</td>
+                                                    @endforeach
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
-                            <hr class="border-indigo-200/50 my-1">
-                            
-                            {{-- Grade Target --}}
+                            <hr class="border-indigo-200/50">
+
+                            {{-- Grade cut-offs --}}
                             <div>
-                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-target-lock'></i> Target Grade Akhir</h6>
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2">
+                                    <i class='bx bx-target-lock'></i> Target Grade Akhir
+                                </h6>
                                 <div class="flex flex-wrap gap-2 text-xs">
-                                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded font-semibold border border-green-200">A : 91 - 100</span>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded font-semibold border border-blue-200">B : 71 - 90</span>
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded font-semibold border border-yellow-200">C : 61 - 70</span>
-                                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded font-semibold border border-red-200">D : < 60</span>
+                                    @foreach ($modalGradeCutoffs as $g => $info)
+                                        <span class="px-2.5 py-1 bg-{{ $info['color'] }}-100 text-{{ $info['color'] }}-700 rounded-lg font-bold border border-{{ $info['color'] }}-200">
+                                            {{ $g }} : {{ $info['range'] }}
+                                        </span>
+                                    @endforeach
                                 </div>
                             </div>
 

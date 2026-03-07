@@ -29,13 +29,24 @@
 
             {{-- Period navigation (Sleek Inline Controls) --}}
             <div class="relative z-10 flex flex-wrap items-center gap-2 bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/60 shadow-sm">
-                
+                @php
+                    $prevMonthCarbon = \Carbon\Carbon::now()->subMonth();
+                    $allowedYear     = $prevMonthCarbon->year;  // year of previous month
+                    $allowedMaxMonth = $prevMonthCarbon->month; // last grading month in that year
+                @endphp
+
                 {{-- Month selector --}}
                 <div class="relative">
                     <i class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none"></i>
                     <select id="period-month" style="padding-left: 2.25rem;" class="form-select form-select-sm border-0 bg-transparent py-1.5 pr-6 text-sm font-semibold text-slate-700 focus:ring-0 cursor-pointer w-auto shadow-none">
                         @foreach (range(1, 12) as $m)
-                            <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
+                            @php
+                                // For restricted users: disable months beyond the prevMonth in the allowed year
+                                $isDisabled = !$isElevated && ($m > $allowedMaxMonth);
+                            @endphp
+                            <option value="{{ $m }}"
+                                {{ $month == $m ? 'selected' : '' }}
+                                {{ $isDisabled ? 'disabled' : '' }}>
                                 {{ \Carbon\Carbon::createFromDate($year, $m, 1)->translatedFormat('F') }}
                             </option>
                         @endforeach
@@ -47,9 +58,14 @@
                 {{-- Year selector --}}
                 <div class="relative">
                     <select id="period-year" class="form-select form-select-sm border-0 bg-transparent py-1.5 pl-3 pr-6 text-sm font-semibold text-slate-700 focus:ring-0 cursor-pointer w-auto shadow-none">
-                        @for ($y = now()->year; $y >= now()->year - 3; $y--)
-                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
+                        @if ($isElevated)
+                            @for ($y = now()->year; $y >= now()->year - 3; $y--)
+                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        @else
+                            {{-- Restricted: only allow prevMonth's year (handles Dec/Jan cross-year) --}}
+                            <option value="{{ $allowedYear }}" selected>{{ $allowedYear }}</option>
+                        @endif
                     </select>
                 </div>
 
@@ -93,11 +109,249 @@
     </div>
 
     {{-- ═══════════════════════════════════════════════════════════════
+         LEGEND & FORMULA PANELS
+         Values are pulled from DisciplineScoreCalculatorService — no hardcoding.
+    ═══════════════════════════════════════════════════════════════ --}}
+    @php
+        use App\Domain\Discipline\Services\DisciplineScoreCalculatorService as Calc;
+        $penalties   = Calc::getPenalties();
+        $newMaps     = Calc::getScoreMaps();
+        $oldMaps     = Calc::getOldScoreMaps();
+
+        // Grade cut-offs used in EvaluationDataTable
+        $gradeCutoffs = [
+            'A' => ['min' => 91, 'max' => 100, 'color' => 'emerald'],
+            'B' => ['min' => 71, 'max' => 90,  'color' => 'sky'],
+            'C' => ['min' => 61, 'max' => 70,  'color' => 'amber'],
+            'D' => ['min' => 0,  'max' => 60,  'color' => 'rose'],
+        ];
+
+        // Human-readable absence labels
+        $absenceLabels = [
+            'alpha' => ['label' => 'Alpha (A)', 'desc' => 'Absen tanpa keterangan', 'color' => 'rose'],
+            'izin'  => ['label' => 'Izin (I)',  'desc' => 'Izin resmi',              'color' => 'sky'],
+            'sakit' => ['label' => 'Sakit (S)', 'desc' => 'Sakit dengan surat',     'color' => 'indigo'],
+            'telat' => ['label' => 'Telat (T)', 'desc' => 'Terlambat masuk',        'color' => 'amber'],
+        ];
+
+        // Human-readable field labels for new system
+        $newFieldLabels = [
+            'kemampuan_kerja'   => 'Kemampuan Kerja',
+            'kecerdasan_kerja'  => 'Kecerdasan Kerja',
+            'qualitas_kerja'    => 'Kualitas Kerja',
+            'disiplin_kerja'    => 'Disiplin Kerja',
+            'kepatuhan_kerja'   => 'Kepatuhan Kerja',
+            'lembur'            => 'Lembur',
+            'efektifitas_kerja' => 'Efektifitas Kerja',
+            'relawan'           => 'Relawan',
+            'integritas'        => 'Integritas',
+        ];
+
+        $oldFieldLabels = [
+            'kerajinan_kerja' => 'Kerajinan Kerja',
+            'kerapian_kerja'  => 'Kerapian Kerja',
+            'prestasi'        => 'Prestasi',
+            'loyalitas'       => 'Loyalitas',
+            'perilaku_kerja'  => 'Perilaku Kerja',
+        ];
+    @endphp
+
+    <div class="space-y-3" x-data="{ showLegend: false, showFormula: false }">
+        {{-- Legend toggle row --}}
+        <div class="flex gap-2 flex-wrap">
+            <button type="button" @click="showLegend = !showLegend"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+                <i class="bx bx-book-open text-sm text-indigo-500"></i>
+                <span x-text="showLegend ? 'Sembunyikan Legenda' : 'Lihat Legenda Singkatan'"></span>
+            </button>
+            <button type="button" @click="showFormula = !showFormula"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+                <i class="bx bx-calculator text-sm text-indigo-500"></i>
+                <span x-text="showFormula ? 'Sembunyikan Formula' : 'Cara Perhitungan Nilai'"></span>
+            </button>
+        </div>
+
+        {{-- Legend Panel --}}
+        <div x-show="showLegend" x-transition class="glass-card p-5 border border-slate-200/60 space-y-4">
+            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <i class="bx bx-info-circle text-indigo-500"></i>
+                Legenda &amp; Singkatan
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {{-- Absence abbreviations --}}
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Kolom Kehadiran</p>
+                    <div class="space-y-1.5">
+                        @foreach ($absenceLabels as $key => $info)
+                            <div class="flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-8 h-6 rounded font-bold text-xs
+                                    bg-{{ $info['color'] }}-100 text-{{ $info['color'] }}-700 border border-{{ $info['color'] }}-200">
+                                    {{ strtoupper(substr($key, 0, 1)) }}
+                                </span>
+                                <div class="text-xs text-slate-700">
+                                    <strong>{{ $info['label'] }}</strong>
+                                    <span class="text-slate-400 ml-1">— {{ $info['desc'] }}</span>
+                                    <span class="ml-1 text-rose-600 font-semibold">−{{ $penalties[$key] }}/hari</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Grade cut-offs --}}
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Grade Nilai Akhir</p>
+                    <div class="space-y-1.5">
+                        @foreach ($gradeCutoffs as $g => $range)
+                            <div class="flex items-center gap-3">
+                                <span class="inline-flex items-center justify-center w-8 h-6 rounded font-bold text-xs
+                                    bg-{{ $range['color'] }}-100 text-{{ $range['color'] }}-800 border border-{{ $range['color'] }}-200">
+                                    {{ $g }}
+                                </span>
+                                <span class="text-xs text-slate-700">
+                                    Total {{ $range['min'] }}{{ $g === 'A' ? '–100' : ("–" . $range['max']) }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Formula Panel --}}
+        <div x-show="showFormula" x-transition class="glass-card p-5 border border-slate-200/60 space-y-5">
+            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <i class="bx bx-calculator text-indigo-500"></i>
+                Cara Perhitungan Nilai
+            </h3>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {{-- Regular (old system) --}}
+                @if(in_array('regular', $allowedTabs))
+                <div>
+                    <p class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+                        <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">Regular</span>
+                        Sistem Lama (5 Kriteria)
+                    </p>
+                    <div class="text-xs text-slate-600 mb-2">
+                        <strong>Total = 40 (base)</strong> + Jumlah Kriteria − Penalti Kehadiran
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="text-left px-3 py-2 text-slate-500 font-semibold">Kriteria</th>
+                                    @foreach (['A','B','C','D'] as $g)
+                                        <th class="px-3 py-2 text-center text-slate-500 font-semibold">{{ $g }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach ($oldMaps as $field => $scores)
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-3 py-1.5 font-medium text-slate-700">{{ $oldFieldLabels[$field] ?? $field }}</td>
+                                        @foreach (['A','B','C','D'] as $g)
+                                            <td class="px-3 py-1.5 text-center text-indigo-600 font-bold">{{ $scores[$g] ?? '—' }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                                <tr class="bg-rose-50">
+                                    <td class="px-3 py-1.5 font-semibold text-rose-700" colspan="5">
+                                        Penalti: Alpha×{{ $penalties['alpha'] }} · Izin×{{ $penalties['izin'] }} · Sakit×{{ $penalties['sakit'] }} · Telat×{{ $penalties['telat'] }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Yayasan/Magang (new system) --}}
+                @if(count(array_intersect(['yayasan','magang'], $allowedTabs)) > 0)
+                <div>
+                    <p class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 ring-1 ring-inset ring-indigo-500/10">Yayasan / Magang</span>
+                        Sistem Baru (9 Kriteria)
+                    </p>
+                    <div class="text-xs text-slate-600 mb-2">
+                        <strong>Total = Jumlah Kriteria</strong> − Penalti Kehadiran
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="text-left px-3 py-2 text-slate-500 font-semibold">Kriteria</th>
+                                    @foreach (['A','B','C','D'] as $g)
+                                        <th class="px-3 py-2 text-center text-slate-500 font-semibold">{{ $g }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach ($newMaps as $field => $scores)
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-3 py-1.5 font-medium text-slate-700">{{ $newFieldLabels[$field] ?? $field }}</td>
+                                        @foreach (['A','B','C','D'] as $g)
+                                            <td class="px-3 py-1.5 text-center text-indigo-600 font-bold">{{ $scores[$g] ?? '—' }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                                <tr class="bg-rose-50">
+                                    <td class="px-3 py-1.5 font-semibold text-rose-700" colspan="5">
+                                        Penalti: Alpha×{{ $penalties['alpha'] }} · Izin×{{ $penalties['izin'] }} · Sakit×{{ $penalties['sakit'] }} · Telat×{{ $penalties['telat'] }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════════════════════════════════════════════════════════════
+         NO-DATA GUARD
+    ═══════════════════════════════════════════════════════════════ --}}
+    @if (!$hasData)
+    <div class="glass-card border border-amber-200 bg-amber-50/60 px-8 py-10 text-center space-y-4">
+        <div class="mx-auto h-16 w-16 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-500 shadow">
+            <i class="bx bx-data text-4xl"></i>
+        </div>
+        <div>
+            <h2 class="text-lg font-bold text-slate-800">Data Belum Tersedia</h2>
+            <p class="mt-1 text-sm text-slate-600 max-w-lg mx-auto">
+                Data evaluasi untuk periode
+                <strong>{{ \Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y') }}</strong>
+                belum diupload. Penilaian tidak dapat dilakukan sampai data absensi tersedia.
+            </p>
+        </div>
+        <div class="text-sm text-slate-500 bg-white/70 border border-amber-100 rounded-xl px-5 py-3 inline-block text-left">
+            <p class="font-semibold text-slate-700 mb-2">Cara mendapatkan data:</p>
+            <ul class="space-y-1 list-disc list-inside text-slate-600">
+                <li>Hubungi <strong>Admin</strong> untuk upload data absensi via Excel</li>
+                <li>Gunakan fitur <strong>P&amp;E Monthly</strong> untuk import data bulanan</li>
+            </ul>
+        </div>
+        <div class="flex items-center justify-center gap-3 pt-2">
+            @php
+                $prevPeriod = \Carbon\Carbon::createFromDate($year, $month, 1)->subMonth();
+            @endphp
+            <a href="{{ route('evaluation.period', ['month' => $prevPeriod->month, 'year' => $prevPeriod->year]) }}"
+                class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+                <i class="bx bx-chevron-left"></i> Periode Sebelumnya
+            </a>
+        </div>
+    </div>
+    @else
+
+    {{-- ═══════════════════════════════════════════════════════════════
          TABS & ACTION BAR
     ═══════════════════════════════════════════════════════════════ --}}
     <div class="glass-card overflow-hidden shadow-sm border border-slate-200/60 relative mb-6"
          x-data="evalTabs()" x-init="init()" @tab-changed.window="onTabChanged($event.detail.type)">
         <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
+
 
         <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
@@ -216,6 +470,7 @@
             </div>
         </div>
     </div>
+    @endif {{-- $hasData --}}
 
 {{-- Grade / Edit Modal --}}
 @push('modals')
@@ -470,7 +725,9 @@ function evalTabs() {
             order: [[1, 'asc']],
             responsive: true,
             language: {
-                processing: '<div class="spinner-border spinner-border-sm text-primary"></div>',
+                processing:        '<div class="spinner-border spinner-border-sm text-primary"></div>',
+                searchPlaceholder: 'Cari NIK, Nama, atau Departemen…',
+                search:            '',
             },
         });
     }

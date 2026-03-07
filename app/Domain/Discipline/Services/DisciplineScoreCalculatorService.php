@@ -105,4 +105,24 @@ class DisciplineScoreCalculatorService
     {
         return array_keys(self::OLD_SCORE_MAPS);
     }
+
+    // ── Public static accessors (used by blade for synced legends/formulas) ──
+
+    /** Full NEW scoring map: field => [grade => points]. */
+    public static function getScoreMaps(): array
+    {
+        return self::NEW_SCORE_MAPS;
+    }
+
+    /** Full OLD scoring map (Regular): field => [grade => points]. */
+    public static function getOldScoreMaps(): array
+    {
+        return self::OLD_SCORE_MAPS;
+    }
+
+    /** Penalty multipliers per absence type. */
+    public static function getPenalties(): array
+    {
+        return self::PENALTIES;
+    }
 }

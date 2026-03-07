@@ -42,14 +42,36 @@ class EvaluationController extends Controller
      */
     public function index(Request $request, ?int $month = null, ?int $year = null)
     {
-        $user = Auth::user();
+        $user      = Auth::user();
+        $prevMonth = now()->subMonth();
 
-        $month  ??= (int) now()->format('m');
-        $year   ??= (int) now()->format('Y');
-        $deptNo   = $user->department?->dept_no;
+        // Default: previous month (so grading in current month evaluates prior period).
+        // subMonth() handles Jan→Dec cross-year automatically.
+        $month ??= (int) $prevMonth->format('m');
+        $year  ??= (int) $prevMonth->format('Y');
+
+        $isElevated = $user->canAny(['evaluation.view-any', 'evaluation.approve-final']);
+
+        // YTD restriction for non-elevated users:
+        // Allowed window = Jan 1 of prevMonth.year  →  prevMonth (handles Dec/Jan edge).
+        if (! $isElevated) {
+            $allowedStart = $prevMonth->copy()->startOfYear();
+            $selected     = \Carbon\Carbon::createFromDate($year, $month, 1);
+
+            if ($selected->lt($allowedStart) || $selected->gt($prevMonth->copy()->endOfMonth())) {
+                return redirect()->route('evaluation.index');
+            }
+        }
+
+        $deptNo  = $user->department?->dept_no;
 
         // Status summary for the header chips
         $summary = $this->approvalService->statusSummary($month, $year, $deptNo);
+
+        // Check if any evaluation records exist for this period
+        $hasData = EvaluationData::whereMonth('Month', $month)
+            ->whereYear('Month', $year)
+            ->exists();
 
         // Can export? Only when all records for this dept+period are fully_approved
         $canExport       = $deptNo ? $this->approvalService->canExport($month, $year, $deptNo) : false;
@@ -70,7 +92,7 @@ class EvaluationController extends Controller
         return view('evaluation.index', compact(
             'month', 'year', 'user', 'summary',
             'canExport', 'canApproveDept', 'canApproveFinal',
-            'allowedTabs'
+            'allowedTabs', 'hasData', 'isElevated'
         ));
     }
 
