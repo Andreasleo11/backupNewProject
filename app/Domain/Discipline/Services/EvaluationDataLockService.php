@@ -5,7 +5,7 @@ namespace App\Domain\Discipline\Services;
 use App\Models\EvaluationData;
 use Illuminate\Support\Collection;
 
-class DisciplineDataLockService
+class EvaluationDataLockService
 {
     /**
      * Lock evaluation data for a department and month.

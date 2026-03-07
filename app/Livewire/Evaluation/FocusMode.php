@@ -3,8 +3,8 @@
 namespace App\Livewire\Evaluation;
 
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\DisciplineApprovalService;
-use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
+use App\Domain\Discipline\Services\EvaluationLegacyApprovalService;
+use App\Domain\Discipline\Services\EvaluationScoreCalculatorService;
 use App\Models\EvaluationData;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -237,7 +237,7 @@ class FocusMode extends Component
         $record->fill($cleanForm);
 
         // Recalculate
-        $scoreCalculator = app(DisciplineScoreCalculatorService::class);
+        $scoreCalculator = app(EvaluationScoreCalculatorService::class);
         if ($this->isNewSystem) {
             $total = $scoreCalculator->calculateTotal($cleanForm, $record);
         } else {
@@ -251,7 +251,7 @@ class FocusMode extends Component
         $record->save();
 
         // Reset approval flags so it proceeds
-        app(DisciplineApprovalService::class)->resetRejectedApprovals($record);
+        app(EvaluationLegacyApprovalService::class)->resetRejectedApprovals($record);
 
         // Flash toast over Livewire
         $this->dispatch('toast', type: 'success', message: "Nilai {$record->karyawan->name} berhasil disimpan.");

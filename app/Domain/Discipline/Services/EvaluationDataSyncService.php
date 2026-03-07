@@ -6,7 +6,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use App\Models\EvaluationDataWeekly;
 
-class DisciplineDataSyncService
+class EvaluationDataSyncService
 {
     /**
      * Sync department field in EvaluationData from Employee master data.

@@ -6,7 +6,7 @@ use App\Models\EvaluationData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class DisciplineApprovalService
+class EvaluationLegacyApprovalService
 {
     /**
      * Approve evaluation records for a department by the department head.

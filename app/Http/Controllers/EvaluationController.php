@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EvaluationDataTable;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
+use App\Domain\Discipline\Services\EvaluationScoreCalculatorService;
+use App\Domain\Discipline\Services\EvaluationExcelService;
 use App\Domain\Discipline\Services\EvaluationApprovalService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
@@ -191,7 +192,7 @@ class EvaluationController extends Controller
         $scores = $request->only($fields);
 
         // Recalculate total
-        $calculator = app(DisciplineScoreCalculatorService::class);
+        $calculator = app(EvaluationScoreCalculatorService::class);
         $total = $record->useNewScoringSystem()
             ? $calculator->calculateTotal($scores, $record)
             : $calculator->calculateTotalOld($scores, $record);
@@ -406,7 +407,7 @@ class EvaluationController extends Controller
             'year'          => 'required|integer|min:2000',
         ]);
 
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
+        $excelService = app(\App\Domain\Discipline\Services\EvaluationExcelService::class);
         $excelService->importRegularData(
             $request->file('excel_files'),
             $request->integer('month'),

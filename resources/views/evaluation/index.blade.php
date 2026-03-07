@@ -110,10 +110,10 @@
 
     {{-- ═══════════════════════════════════════════════════════════════
          LEGEND & FORMULA PANELS
-         Values are pulled from DisciplineScoreCalculatorService — no hardcoding.
+         Values are pulled from EvaluationScoreCalculatorService — no hardcoding.
     ═══════════════════════════════════════════════════════════════ --}}
     @php
-        use App\Domain\Discipline\Services\DisciplineScoreCalculatorService as Calc;
+        use App\Domain\Discipline\Services\EvaluationScoreCalculatorService as Calc;
         $penalties   = Calc::getPenalties();
         $newMaps     = Calc::getScoreMaps();
         $oldMaps     = Calc::getOldScoreMaps();
@@ -474,7 +474,7 @@
 
 {{-- Grade / Edit Modal --}}
 @push('modals')
-    @include('partials.edit-discipline-modal')
+    @include('partials.edit-evaluation-modal')
 
     {{-- ═══════════════════════════════════════════════════════════════
         ADVANCED SIDEBAR (AlpineJS + Tailwind)

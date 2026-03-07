@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
-use App\Domain\Discipline\Services\DisciplineApprovalService;
-use App\Domain\Discipline\Services\DisciplineExcelService;
+use App\Domain\Discipline\Services\EvaluationLegacyApprovalService;
+use App\Domain\Discipline\Services\EvaluationExcelService;
 use App\Http\Resources\V1\EvaluationDataResource;
 use App\Models\EvaluationData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-final class DisciplineController extends Controller
+final class EvaluationApiController extends Controller
 {
     public function __construct(
         private readonly EvaluationDataRepositoryContract $repository,
-        private readonly DisciplineApprovalService $approvalService,
-        private readonly DisciplineExcelService $excelService
+        private readonly EvaluationLegacyApprovalService $approvalService,
+        private readonly EvaluationExcelService $excelService
     ) {}
 
     /**

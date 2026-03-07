@@ -104,7 +104,7 @@
 
                     {{-- Grading Guide Popover (Collapsible) --}}
                     @php
-                        use App\Domain\Discipline\Services\DisciplineScoreCalculatorService as Calc;
+                        use App\Domain\Discipline\Services\EvaluationScoreCalculatorService as Calc;
                         $modalPenalties = Calc::getPenalties();
                         $modalNewMaps   = Calc::getScoreMaps();
                         $modalOldMaps   = Calc::getOldScoreMaps();

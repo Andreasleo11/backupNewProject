@@ -1,4 +1,4 @@
-<div class="modal fade" id="upload-excel-file-discipline-modal">
+<div class="modal fade" id="upload-evaluation-excel-modal">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">

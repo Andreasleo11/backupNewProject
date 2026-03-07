@@ -3,7 +3,7 @@
 namespace App\DataTables;
 
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
+use App\Domain\Discipline\Services\EvaluationScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -71,7 +71,7 @@ class EvaluationDataTable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        $calculator = app(DisciplineScoreCalculatorService::class);
+        $calculator = app(EvaluationScoreCalculatorService::class);
         $canGrade   = Auth::user()?->can('evaluation.grade') ?? false;
         $type       = $this->type;
 

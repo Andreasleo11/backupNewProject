@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\DataTables\EvaluationDataDataTable;
 use App\Exports\EvaluationDataExp;
 use App\Imports\EvaluationDataImport;
-use App\Domain\Discipline\Services\DisciplineDepartmentStatusService;
-use App\Domain\Discipline\Services\DisciplineExcelService;
+use App\Domain\Discipline\Services\EvaluationDepartmentStatusService;
+use App\Domain\Discipline\Services\EvaluationExcelService;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
@@ -199,7 +199,7 @@ class EvaluationDataController extends Controller
     public function getDepartmentStatusYayasan(Request $request)
     {
         try {
-            $statusService = app(DisciplineDepartmentStatusService::class);
+            $statusService = app(EvaluationDepartmentStatusService::class);
 
             $month = $request->input('month') ?? $request->input('filter_month');
             $year  = $request->input('year') ?? $request->input('filter_year');
@@ -225,7 +225,7 @@ class EvaluationDataController extends Controller
 
     public function exportYayasanJpayroll(Request $request)
     {
-        $statusService = app(DisciplineDepartmentStatusService::class);
+        $statusService = app(EvaluationDepartmentStatusService::class);
 
         $selectedMonth    = $request->input('month');
         $currentYear      = $request->input('year');
@@ -236,7 +236,7 @@ class EvaluationDataController extends Controller
 
     public function exportYayasanJpayrollFunction(Request $request)
     {
-        $excelService = app(DisciplineExcelService::class);
+        $excelService = app(EvaluationExcelService::class);
 
         $selectedMonth = $request->input('filter_status');
         $currentYear   = $request->input('year');

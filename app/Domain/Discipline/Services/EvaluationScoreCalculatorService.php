@@ -4,7 +4,7 @@ namespace App\Domain\Discipline\Services;
 
 use App\Models\EvaluationData;
 
-class DisciplineScoreCalculatorService
+class EvaluationScoreCalculatorService
 {
     /**
      * Score mapping for NEW evaluation criteria (Yayasan/Magang).

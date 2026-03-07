@@ -7,7 +7,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\EvaluationData;
 use Carbon\Carbon;
 
-class DisciplineDepartmentStatusService
+class EvaluationDepartmentStatusService
 {
     public function __construct(
         private EvaluationDataRepositoryContract $repository

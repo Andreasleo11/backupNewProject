@@ -9,7 +9,7 @@ use App\Models\EvaluationData;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
-class DisciplineExcelService
+class EvaluationExcelService
 {
     /**
      * Import regular employee discipline data from Excel files.
@@ -265,7 +265,7 @@ class DisciplineExcelService
         $currentDate = \Carbon\Carbon::now()->format('d-m-y');
         $fileName = "DataYayasan_{$currentDate}.xlsx";
 
-        return Excel::download(new \App\Exports\YayasanDisciplineExport($result), $fileName);
+        return Excel::download(new \App\Exports\YayasanEvaluationExport($result), $fileName);
     }
 
     /**
@@ -290,7 +290,7 @@ class DisciplineExcelService
         $currentDate = \Carbon\Carbon::now()->format('d-m-y');
         $fileName = "DataYayasanFull_{$currentDate}.xlsx";
 
-        return Excel::download(new \App\Exports\YayasanDisciplineFullExport($employees), $fileName);
+        return Excel::download(new \App\Exports\YayasanEvaluationFullExport($employees), $fileName);
     }
 
     /**
@@ -316,7 +316,7 @@ class DisciplineExcelService
         $currentDate = \Carbon\Carbon::now()->format('d-m-y');
         $fileName = "DataYayasan_{$currentDate}.xlsx";
 
-        return Excel::download(new \App\Exports\YayasanDisciplineExport($result), $fileName);
+        return Excel::download(new \App\Exports\YayasanEvaluationExport($result), $fileName);
     }
 
     /**

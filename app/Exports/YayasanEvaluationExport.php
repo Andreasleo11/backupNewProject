@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 
-class YayasanDisciplineExport implements FromCollection, WithCustomStartCell, WithHeadings, WithMapping, WithStrictNullComparison
+class YayasanEvaluationExport implements FromCollection, WithCustomStartCell, WithHeadings, WithMapping, WithStrictNullComparison
 {
     protected $result;
 
