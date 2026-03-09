@@ -107,7 +107,7 @@ class DepartmentEmployeeResolver
      */
     private function getDepartmentCodesForType(DepartmentCode $code, User $user): array
     {
-        $combined = config('discipline.combined_dept_heads', []);
+        $combined = config('evaluation.combined_dept_heads', []);
 
         // Check if this user has a custom multi-department mapping (values are dept codes)
         if (isset($combined[$user->name])) {
@@ -141,7 +141,7 @@ class DepartmentEmployeeResolver
      */
     private function getQcQaCodes(User $user): array
     {
-        $combined = config('discipline.combined_dept_heads', []);
+        $combined = config('evaluation.combined_dept_heads', []);
 
         if (isset($combined[$user->name])) {
             return $combined[$user->name];
@@ -155,7 +155,7 @@ class DepartmentEmployeeResolver
      */
     private function isSpecialAccessId(User $user): bool
     {
-        return in_array($user->id, config('discipline.special_access_ids', []), true);
+        return in_array($user->id, config('evaluation.special_access_ids', []), true);
     }
 }
 

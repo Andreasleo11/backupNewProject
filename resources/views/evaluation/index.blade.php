@@ -92,7 +92,7 @@
         @endphp
 
         @foreach ($chips as $key => $chip)
-        <div class="glass-card bg-white/80 p-4 border border-{{ $chip['color'] }}-100 group hover:-translate-y-1 transition-all duration-300">
+        <div class="glass-card bg-white/80 p-4 border border-{{ $chip['color'] }}-100 group hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer stat-chip" data-status="{{ $key }}">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">{{ $chip['label'] }}</p>
@@ -719,6 +719,7 @@ function evalTabs() {
                 data: function(d) {
                     d.month = currentMonth;
                     d.year  = currentYear;
+                    d.status = window.evalStatusFilter;
                 }
             },
             columns: columns,
@@ -847,6 +848,27 @@ function evalTabs() {
         dtMagang?.ajax.reload(null, false);
         refreshSummary();
     };
+
+    // ── Status chip clicks (DataTable filter) ───────────────────────────────
+    window.evalStatusFilter = '';
+
+    document.querySelectorAll('.stat-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const status = this.getAttribute('data-status');
+            window.evalStatusFilter = (status === 'total') ? '' : status;
+            
+            // Visual toggle: remove highlight from all, add to clicked (unless 'total' which resembles 'clear filter')
+            document.querySelectorAll('.stat-chip').forEach(c => {
+                c.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
+            });
+            
+            if (status !== 'total') {
+                this.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2');
+            }
+            
+            window.reloadEvaluationTables();
+        });
+    });
 
     // Initial chip load
     refreshSummary();

@@ -304,6 +304,28 @@ class EvaluationDataTable extends DataTable
             }
         }]);
 
+        // 3. Apply optional status filter from stats cards click
+        if ($statusFilter = $this->request()->get('status')) {
+            if ($statusFilter === 'pending') {
+                $query->where(function($q) {
+                    $q->whereDoesntHave('evaluationData', function ($sub) {
+                        if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
+                        if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                    })->orWhereHas('evaluationData', function ($sub) {
+                        if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
+                        if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                        $sub->where('approval_status', 'pending');
+                    });
+                });
+            } else {
+                $query->whereHas('evaluationData', function ($sub) use ($statusFilter) {
+                    if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
+                    if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                    $sub->where('approval_status', $statusFilter);
+                });
+            }
+        }
+
         return $query;
     }
 
