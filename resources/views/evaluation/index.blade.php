@@ -383,7 +383,7 @@
                     <input type="hidden" name="year"  value="{{ $year }}">
                     <input type="hidden" name="type"  id="approve-dept-type" :value="activeTab">
 
-                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition-all hover:-translate-y-0.5 group">
+                    <button type="submit" id="btn-approve-dept" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition-all hover:-translate-y-0.5 group disabled:opacity-50 disabled:pointer-events-none" {{ ($summary['graded'] ?? 0) == 0 ? 'disabled' : '' }}>
                         <i class="bx bx-check-double text-lg group-hover:scale-110 transition-transform"></i>
                         Approve Semua
                         <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold" id="approve-dept-count">{{ $summary['graded'] ?? 0 }}</span>
@@ -399,7 +399,7 @@
                     <input type="hidden" name="year"  value="{{ $year }}">
                     <input type="hidden" name="type"  id="approve-hrd-type" :value="activeTab">
 
-                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group" title="Approve semua data department di tab ini">
+                    <button type="submit" id="btn-approve-hrd" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group disabled:opacity-50 disabled:pointer-events-none" title="Approve semua data department di tab ini" {{ ($summary['dept_approved'] ?? 0) == 0 ? 'disabled' : '' }}>
                         <i class="bx bx-check-shield text-lg group-hover:scale-110 transition-transform"></i>
                         Final Approve (All Dept)
                         <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold" id="approve-hrd-count">{{ $summary['dept_approved'] ?? 0 }}</span>
@@ -841,9 +841,20 @@ function evalTabs() {
                 if (el) el.textContent = data[k] ?? 0;
             });
             const deptBtnCount = document.getElementById('approve-dept-count');
-            if (deptBtnCount) deptBtnCount.textContent = data['graded'] ?? 0;
+            const deptBtn = document.getElementById('btn-approve-dept');
+            if (deptBtnCount) {
+                const count = data['graded'] ?? 0;
+                deptBtnCount.textContent = count;
+                if (deptBtn) deptBtn.disabled = count === 0;
+            }
+            
             const hrdBtnCount = document.getElementById('approve-hrd-count');
-            if (hrdBtnCount) hrdBtnCount.textContent = data['dept_approved'] ?? 0;
+            const hrdBtn = document.getElementById('btn-approve-hrd');
+            if (hrdBtnCount) {
+                const count = data['dept_approved'] ?? 0;
+                hrdBtnCount.textContent = count;
+                if (hrdBtn) hrdBtn.disabled = count === 0;
+            }
         });
     }
 
