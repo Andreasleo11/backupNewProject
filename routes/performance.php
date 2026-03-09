@@ -74,6 +74,11 @@ Route::middleware(['auth', 'evaluation.access'])->group(function () {
     // Reject a single record
     Route::post('/evaluation/{id}/reject', [EvaluationController::class, 'reject'])->name('evaluation.reject');
 
+    // Activity history (super-admin only — must be before wildcard {month}/{year})
+    Route::get('/evaluation/history', [EvaluationController::class, 'historyData'])
+        ->middleware('role:super-admin')
+        ->name('evaluation.history');
+
     // Parameterized period route (must come AFTER all literal /evaluation/... routes)
     Route::get('/evaluation/{month}/{year}', [EvaluationController::class, 'index'])->name('evaluation.period');
 

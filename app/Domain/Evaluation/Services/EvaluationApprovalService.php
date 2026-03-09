@@ -49,10 +49,16 @@ class EvaluationApprovalService
             $query->where('evaluation_type', $evaluationType);
         }
 
-        return $query->update([
-            'depthead'       => $approver->name,   // keep old column for legacy compatibility
-            'approval_status' => 'dept_approved',
-        ]);
+        $records = $query->get();
+
+        return DB::transaction(function () use ($records, $approver) {
+            $records->each(fn ($record) => $record->update([
+                'depthead'        => $approver->name,
+                'approval_status' => 'dept_approved',
+            ]));
+
+            return $records->count();
+        });
     }
 
     /**
@@ -73,10 +79,16 @@ class EvaluationApprovalService
             $query->where('evaluation_type', $evaluationType);
         }
 
-        return $query->update([
-            'generalmanager'  => $approver->name,  // keep old column for legacy compatibility
-            'approval_status' => 'fully_approved',
-        ]);
+        $records = $query->get();
+
+        return DB::transaction(function () use ($records, $approver) {
+            $records->each(fn ($record) => $record->update([
+                'generalmanager'  => $approver->name,
+                'approval_status' => 'fully_approved',
+            ]));
+
+            return $records->count();
+        });
     }
 
     /**

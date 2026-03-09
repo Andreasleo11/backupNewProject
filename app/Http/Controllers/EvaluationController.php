@@ -371,6 +371,66 @@ class EvaluationController extends Controller
     }
 
     // ──────────────────────────────────────────────────────
+    // Activity History (super-admin only)
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Return paginated Spatie activity log entries for evaluation records.
+     * Route: GET /evaluation/history
+     */
+    public function historyData(Request $request)
+    {
+        abort_unless(auth()->user()?->hasRole('super-admin'), 403);
+
+        $query = \Spatie\Activitylog\Models\Activity::with('causer')
+            ->where('log_name', 'evaluation')
+            ->latest();
+
+        // Optional search (subject_id / NIK / causer name / description)
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('subject_id', 'like', "%{$search}%")
+                  ->orWhereHas('causer', fn($q2) => $q2->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $perPage = (int) $request->get('per_page', 50);
+        $page    = (int) $request->get('page', 1);
+
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+        $data = $paginated->getCollection()->map(function ($activity) {
+            $props = $activity->properties ?? collect();
+            $old   = $props->get('old', []);
+            $new   = $props->get('attributes', []);
+
+            // Build a readable diff string
+            $changes = [];
+            foreach ($new as $field => $val) {
+                $prev = $old[$field] ?? '—';
+                $changes[] = "{$field}: {$prev} → {$val}";
+            }
+
+            return [
+                'id'          => $activity->id,
+                'date'        => $activity->created_at->format('d M Y H:i'),
+                'causer'      => $activity->causer?->name ?? 'System',
+                'description' => $activity->description,
+                'subject_id'  => $activity->subject_id,
+                'changes'     => implode("\n", $changes) ?: '—',
+            ];
+        });
+
+        return response()->json([
+            'data'         => $data,
+            'current_page' => $paginated->currentPage(),
+            'last_page'    => $paginated->lastPage(),
+            'total'        => $paginated->total(),
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────
     // Export (Excel)
     // ──────────────────────────────────────────────────────
 

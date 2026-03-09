@@ -6,6 +6,8 @@ use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  *
@@ -54,7 +56,27 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EvaluationData extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        // For new system
+        $newFields = ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
+                      'kepatuhan_kerja','lembur','efektifitas_kerja','relawan','integritas'];
+        
+        // For old system
+        $oldFields = ['kerajinan_kerja','kerapian_kerja','prestasi','loyalitas','perilaku_kerja'];
+
+        return LogOptions::defaults()
+            ->logOnly(array_merge(
+                ['approval_status', 'total', 'remark', 'NIK', 'depthead', 'pengawas', 'generalmanager'],
+                $newFields,
+                $oldFields
+            ))
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('evaluation');
+    }
 
     protected $table = 'evaluation_datas';
 

@@ -443,6 +443,15 @@
                     <span>Export Excel</span>
                 </a>
                 @endif
+
+                {{-- History button (super-admin only) --}}
+                @role('super-admin')
+                <button type="button" id="open-history-modal-btn"
+                    class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5">
+                    <i class="bx bx-history text-lg text-indigo-500"></i>
+                    <span>History</span>
+                </button>
+                @endrole
             </div>
         </div>
 
@@ -475,6 +484,70 @@
 {{-- Grade / Edit Modal --}}
 @push('modals')
     @include('partials.edit-evaluation-modal')
+
+    {{-- ═══ HISTORY MODAL (super-admin) ════════════════════════════════ --}}
+    @role('super-admin')
+    <div id="history-modal" class="fixed inset-0 z-[9999] hidden" aria-modal="true" role="dialog">
+        {{-- Backdrop --}}
+        <div id="history-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+        {{-- Sheet --}}
+        <div class="absolute inset-y-0 right-0 w-full max-w-5xl bg-white shadow-2xl flex flex-col">
+            {{-- Header --}}
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="bx bx-history text-xl"></i> Evaluation Activity History
+                    </h2>
+                    <p class="text-indigo-100 text-xs mt-0.5">Semua perubahan grade, approval, & rejection tercatat di sini</p>
+                </div>
+                <button id="close-history-modal-btn" class="text-white/70 hover:text-white transition-colors">
+                    <i class="bx bx-x text-2xl"></i>
+                </button>
+            </div>
+
+            {{-- Search bar --}}
+            <div class="px-6 py-3 border-b border-slate-100 bg-slate-50">
+                <div class="relative">
+                    <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input id="history-search" type="text" placeholder="Cari nama karyawan, user, deskripsi..."
+                        class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+            </div>
+
+            {{-- Table --}}
+            <div class="flex-1 overflow-auto px-6 py-4">
+                <table class="w-full text-sm border-collapse" id="history-table">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-left">
+                            <th class="py-2 pr-3 font-semibold text-slate-500 text-xs uppercase tracking-wider whitespace-nowrap">Waktu</th>
+                            <th class="py-2 pr-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Aksi oleh</th>
+                            <th class="py-2 pr-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Deskripsi</th>
+                            <th class="py-2 pr-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">Record ID</th>
+                            <th class="py-2 font-semibold text-slate-500 text-xs uppercase tracking-wider">Perubahan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody" class="divide-y divide-slate-100">
+                        <tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="bx bx-loader-alt bx-spin text-2xl"></i></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Pagination --}}
+            <div class="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-sm text-slate-500">
+                <span id="history-info"></span>
+                <div class="flex gap-2">
+                    <button id="history-prev" class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none" disabled>
+                        <i class="bx bx-chevron-left"></i>
+                    </button>
+                    <button id="history-next" class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none" disabled>
+                        <i class="bx bx-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endrole
 
     {{-- ═══════════════════════════════════════════════════════════════
         ADVANCED SIDEBAR (AlpineJS + Tailwind)
@@ -889,6 +962,70 @@ function evalTabs() {
 
     // Initial chip load
     refreshSummary();
+
+    // ── History Modal (super-admin only) ─────────────────────────────────────
+    (function () {
+        const modal     = document.getElementById('history-modal');
+        const tbody     = document.getElementById('history-tbody');
+        const infoEl    = document.getElementById('history-info');
+        const prevBtn   = document.getElementById('history-prev');
+        const nextBtn   = document.getElementById('history-next');
+        const searchEl  = document.getElementById('history-search');
+        const openBtn   = document.getElementById('open-history-modal-btn');
+        const closeBtn  = document.getElementById('close-history-modal-btn');
+        const backdrop  = document.getElementById('history-backdrop');
+
+        if (!modal) return; // not super-admin, modal not rendered
+
+        let currentPage = 1;
+        let searchTimer = null;
+
+        function openModal()  { modal.classList.remove('hidden'); fetchHistory(); }
+        function closeModal() { modal.classList.add('hidden'); }
+
+        openBtn?.addEventListener('click', openModal);
+        closeBtn?.addEventListener('click', closeModal);
+        backdrop?.addEventListener('click', closeModal);
+
+        prevBtn?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; fetchHistory(); } });
+        nextBtn?.addEventListener('click', () => { currentPage++; fetchHistory(); });
+
+        searchEl?.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => { currentPage = 1; fetchHistory(); }, 400);
+        });
+
+        function fetchHistory() {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="bx bx-loader-alt bx-spin text-2xl"></i></td></tr>';
+
+            axios.get('{{ route("evaluation.history") }}', {
+                params: { page: currentPage, per_page: 50, search: searchEl?.value || '' }
+            }).then(({ data }) => {
+                if (!data.data.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">Belum ada data history.</td></tr>';
+                    infoEl.textContent = '';
+                    prevBtn.disabled = nextBtn.disabled = true;
+                    return;
+                }
+
+                tbody.innerHTML = data.data.map(row => `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-2 pr-3 text-xs text-slate-500 whitespace-nowrap">${row.date}</td>
+                        <td class="py-2 pr-3 text-sm font-medium text-slate-700">${row.causer}</td>
+                        <td class="py-2 pr-3 text-sm text-slate-600">${row.description}</td>
+                        <td class="py-2 pr-3 text-xs text-slate-500 font-mono">#${row.subject_id ?? '—'}</td>
+                        <td class="py-2 text-xs text-slate-500 whitespace-pre-line leading-relaxed">${row.changes}</td>
+                    </tr>
+                `).join('');
+
+                infoEl.textContent = `Halaman ${data.current_page} dari ${data.last_page} (${data.total} entri)`;
+                prevBtn.disabled = data.current_page <= 1;
+                nextBtn.disabled = data.current_page >= data.last_page;
+            }).catch(() => {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-rose-400">Gagal memuat history.</td></tr>';
+            });
+        }
+    })();
 
 })();
 </script>
