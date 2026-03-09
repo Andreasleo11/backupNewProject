@@ -454,8 +454,8 @@ class EvaluationController extends Controller
     // ──────────────────────────────────────────────────────
 
     /**
-     * Bulk-import graded scores for regular employees from Excel.
-     * Graders with 100+ employees can fill in a template and upload here.
+     * Bulk-import graded scores from Excel.
+     * Supports 'regular' and 'yayasan' types, dispatching to the correct service method.
      * Route: POST /evaluation/import
      */
     public function import(Request $request)
@@ -467,15 +467,45 @@ class EvaluationController extends Controller
             'excel_files.*' => 'required|file|mimes:xlsx,xls',
             'month'         => 'required|integer|between:1,12',
             'year'          => 'required|integer|min:2000',
+            'type'          => 'required|in:regular,yayasan,magang',
         ]);
 
-        $excelService = app(\App\Domain\Evaluation\Services\EvaluationExcelService::class);
-        $excelService->importRegularData(
-            $request->file('excel_files'),
-            $request->integer('month'),
-            $request->integer('year'),
-        );
+        $excelService = app(EvaluationExcelService::class);
+        $type  = $request->input('type');
+        $month = $request->integer('month');
+        $year  = $request->integer('year');
+        $files = $request->file('excel_files');
 
-        return back()->with('success', 'Evaluation data imported successfully.');
+        match ($type) {
+            'yayasan', 'magang' => $excelService->importYayasanData($files, $month, $year),
+            default             => $excelService->importRegularData($files, $month, $year),
+        };
+
+        return back()->with('success', ucfirst($type) . ' evaluation data imported successfully.');
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Download Excel Template
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Download a blank grading template pre-filled with the employee list.
+     * Route: GET /evaluation/template
+     */
+    public function downloadTemplate(Request $request)
+    {
+        $this->authorize('evaluation.grade');
+
+        $type  = $request->query('type', 'regular');
+        $month = $request->integer('month', now()->month);
+        $year  = $request->integer('year',  now()->year);
+
+        $typeLabel = ucfirst($type);
+        $filename  = "Template_Evaluasi_{$typeLabel}_{$year}-{$month}.xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\EvaluationTemplateExport($type, $month, $year),
+            $filename
+        );
     }
 }

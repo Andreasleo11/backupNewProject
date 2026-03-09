@@ -1038,13 +1038,17 @@ function evalTabs() {
         <div class="modal-content border-0 shadow-2xl rounded-2xl overflow-hidden">
 
             {{-- Header --}}
-            <div class="modal-header bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-6 py-4">
+            <div class="modal-header bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-6 py-4"
+                 x-data x-init>
                 <div class="flex items-center gap-3">
                     <div class="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
                         <i class="bx bx-cloud-upload text-xl"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title font-bold text-base" id="importModalLabel">Import Nilai — Regular</h5>
+                        <h5 class="modal-title font-bold text-base" id="importModalLabel">
+                            Import Nilai —
+                            <span x-text="($store.evalTabs?.activeTab ?? 'yayasan').charAt(0).toUpperCase() + ($store.evalTabs?.activeTab ?? 'yayasan').slice(1)"></span>
+                        </h5>
                         <p class="text-xs text-white/80 m-0">Upload template Excel untuk input nilai massal</p>
                     </div>
                 </div>
@@ -1052,8 +1056,9 @@ function evalTabs() {
             </div>
 
             {{-- Body --}}
-            <form method="POST" action="{{ route('evaluation.import') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('evaluation.import') }}" enctype="multipart/form-data" x-data>
                 @csrf
+                <input type="hidden" name="type" :value="$store.evalTabs?.activeTab ?? ''">
                 <div class="modal-body px-6 py-5 space-y-4 bg-white">
 
                     {{-- Info tip --}}
@@ -1101,12 +1106,23 @@ function evalTabs() {
                 </div>
 
                 {{-- Footer --}}
-                <div class="modal-footer bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-2">
-                    <button type="button" class="btn btn-sm btn-light rounded-xl px-4 border-slate-200" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-all">
-                        <i class="bx bx-upload"></i>
-                        Upload &amp; Proses
-                    </button>
+                <div class="modal-footer bg-slate-50 border-t border-slate-100 px-6 py-4 flex items-center justify-between gap-2">
+                    {{-- Download template on the left --}}
+                    <a href="#"
+                       id="download-template-link"
+                       target="_blank"
+                       onclick="this.href='{{ route('evaluation.template') }}?type='+(window.evalActiveTab||'regular')+'&month={{ $month }}&year={{ $year }}'"
+                       class="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                        <i class="bx bx-download text-base"></i>
+                        Download Template
+                    </a>
+                    <div class="flex gap-2">
+                        <button type="button" class="btn btn-sm btn-light rounded-xl px-4 border-slate-200" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-all">
+                            <i class="bx bx-upload"></i>
+                            Upload &amp; Proses
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

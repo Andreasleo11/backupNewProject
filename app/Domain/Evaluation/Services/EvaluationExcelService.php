@@ -29,14 +29,14 @@ class EvaluationExcelService
     /**
      * Import Yayasan employee discipline data from Excel files.
      */
-    public function importYayasanData(array $files): string
+    public function importYayasanData(array $files, int $month, int $year): string
     {
         $processedData = $this->processYayasanFiles($files);
         $filename = 'DisciplineDataYayasan.xlsx';
 
         Excel::store(new DesciplineDataExp($processedData), 'public/Evaluation/' . $filename);
 
-        $this->importYayasanFromFile($filename);
+        $this->importYayasanFromFile($filename, $month, $year);
 
         return 'Excel file imported successfully.';
     }
@@ -149,14 +149,17 @@ class EvaluationExcelService
     /**
      * Import Yayasan employee data from stored Excel file.
      */
-    private function importYayasanFromFile(string $filename): void
+    private function importYayasanFromFile(string $filename, int $month, int $year): void
     {
         $import = new DesciplineYayasanDataImport;
         $data = Excel::toArray($import, 'public/Evaluation/' . $filename)[0];
         $pengawas = Auth::user();
+        $monthDate = \Carbon\Carbon::create($year, $month, 1)->format('Y-m-d');
 
         $uniqueNIKs = array_unique(array_column($data, 0));
-        $existingRecords = EvaluationData::whereIn('NIK', $uniqueNIKs)->get();
+        $existingRecords = EvaluationData::whereIn('NIK', $uniqueNIKs)
+            ->where('Month', $monthDate)
+            ->get();
 
         // Replace nulls with zeros
         foreach ($data as &$dat) {
@@ -167,13 +170,13 @@ class EvaluationExcelService
             }
         }
 
-        $this->processYayasanImport($data, $existingRecords, $pengawas);
+        $this->processYayasanImport($data, $existingRecords, $pengawas, $monthDate);
     }
 
     /**
      * Process Yayasan employee import data and update database.
      */
-    private function processYayasanImport(array $data, $existingRecords, $pengawas): void
+    private function processYayasanImport(array $data, $existingRecords, $pengawas, string $monthDate): void
     {
         $scoringSystem = [
             2 => ['A' => 17, 'B' => 14, 'C' => 11, 'D' => 8, 'E' => 0],
@@ -189,7 +192,7 @@ class EvaluationExcelService
 
         foreach ($data as $row) {
             foreach ($existingRecords as $record) {
-                if ($record->nik === $row[0] && $record->Month === $row[1]) {
+                if ($record->NIK === (string) $row[0] && $record->Month->format('Y-m-d') === $monthDate) {
                     $calculatedPoints = $record->Alpha * 10 + $record->Izin * 2 +
                                       $record->Sakit + $record->Telat * 0.5;
 
