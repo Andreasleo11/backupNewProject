@@ -362,7 +362,7 @@ class NavigationService
                         'route' => 'evaluation.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('evaluation.*'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'manager'],
+                        'permission' => ['evaluation.view-any', 'evaluation.view-department'],
                     ],
                     [
                         'label' => 'Individual Evaluations (All IN)',
@@ -510,9 +510,15 @@ class NavigationService
         // Resolve visibility: 'permission' beats 'roles'
         $canSee = function (array $item) use ($user): bool {
             if (isset($item['permission'])) {
+                if (is_array($item['permission'])) {
+                    return $user->hasAnyPermission($item['permission']);
+                }
                 return $user->can($item['permission']);
             }
             if (isset($item['roles'])) {
+                if (in_array('all', $item['roles'], true)) {
+                    return true;
+                }
                 return $user->hasAnyRole($item['roles']);
             }
 
