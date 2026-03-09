@@ -399,9 +399,9 @@
                     <input type="hidden" name="year"  value="{{ $year }}">
                     <input type="hidden" name="type"  id="approve-hrd-type" :value="activeTab">
 
-                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group" title="Approve semua data department di tab ini">
                         <i class="bx bx-check-shield text-lg group-hover:scale-110 transition-transform"></i>
-                        Final Approve
+                        Final Approve (All Dept)
                         <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold" id="approve-hrd-count">{{ $summary['dept_approved'] ?? 0 }}</span>
                     </button>
                 </form>
@@ -780,10 +780,16 @@ function evalTabs() {
             const typeValue  = this.querySelector('input[name="type"]').value;
             const typeLabel  = typeValue.charAt(0).toUpperCase() + typeValue.slice(1);
 
+            let alertText = `Apakah Anda yakin ingin melakukan <strong>${actionText}</strong> untuk tab <strong>${typeLabel}</strong> bulan ini?`;
+            
+            if (id === 'approve-hrd-form') {
+                alertText += `<br><br><span class="text-sm text-rose-600 font-semibold"><i class="bx bx-error pb-1"></i> Peringatan: Tindakan ini akan meng-approve semua data "Dept Approved" di SELURUH departemen.</span>`;
+            }
+
             Swal.fire({
                 title: 'Konfirmasi Approval',
-                html: `Apakah Anda yakin ingin melakukan <strong>${actionText}</strong> untuk tab <strong>${typeLabel}</strong> bulan ini?`,
-                icon: 'question',
+                html: alertText,
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#4f46e5', // Indigo-600
                 cancelButtonColor: '#ef4444',  // Red-500

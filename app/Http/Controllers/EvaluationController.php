@@ -64,7 +64,7 @@ class EvaluationController extends Controller
             }
         }
 
-        $deptNo  = $user->department?->dept_no;
+        $deptNo  = $isElevated ? null : $user->department?->dept_no;
 
         // Status summary for the header chips
         $summary = $this->approvalService->statusSummary($month, $year, $deptNo);
@@ -74,8 +74,8 @@ class EvaluationController extends Controller
             ->whereYear('Month', $year)
             ->exists();
 
-        // Can export? Only when all records for this dept+period are fully_approved
-        $canExport       = $deptNo ? $this->approvalService->canExport($month, $year, $deptNo) : false;
+        // Can export? All records for this period must be fully_approved (if deptNo is null, it checks company-wide)
+        $canExport       = $this->approvalService->canExport($month, $year, $deptNo);
         $canApproveDept  = $user->can('evaluation.approve-department');
         $canApproveFinal = $user->can('evaluation.approve-final');
 
@@ -245,12 +245,11 @@ class EvaluationController extends Controller
         $this->authorize('evaluation.approve-final');
 
         $user   = Auth::user();
-        $deptNo = $user->department->dept_no;
         $month  = $request->integer('month');
         $year   = $request->integer('year');
         $type   = $request->input('type');
 
-        $count = $this->approvalService->approveHrd($month, $year, $deptNo, $user, $type);
+        $count = $this->approvalService->approveHrd($month, $year, $user, $type);
 
         return back()->with('success', "{$count} records fully approved.");
     }
@@ -360,8 +359,11 @@ class EvaluationController extends Controller
     {
         $month  = $request->integer('month', now()->month);
         $year   = $request->integer('year',  now()->year);
-        $deptNo = Auth::user()->department?->dept_no;
         $type   = $request->input('type');
+        
+        $deptNo = Auth::user()->canAny(['evaluation.view-any', 'evaluation.approve-final'])
+            ? null 
+            : Auth::user()->department?->dept_no;
 
         return response()->json(
             $this->approvalService->statusSummary($month, $year, $deptNo, $type)

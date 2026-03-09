@@ -62,11 +62,11 @@ class EvaluationApprovalService
     public function approveHrd(
         int $month,
         int $year,
-        string $deptNo,
         User $approver,
         ?string $evaluationType = null
     ): int {
-        $query = $this->baseQuery($deptNo, $month, $year)
+        $query = EvaluationData::whereMonth('Month', $month)
+            ->whereYear('Month', $year)
             ->where('approval_status', 'dept_approved');
 
         if ($evaluationType) {
@@ -113,7 +113,7 @@ class EvaluationApprovalService
      * Whether all records for a dept+month are fully approved
      * (i.e., export is allowed).
      */
-    public function canExport(int $month, int $year, string $deptNo, ?string $type = null): bool
+    public function canExport(int $month, int $year, ?string $deptNo = null, ?string $type = null): bool
     {
         $query = $this->baseQuery($deptNo, $month, $year);
 
@@ -169,10 +169,15 @@ class EvaluationApprovalService
     // Private helpers
     // ──────────────────────────────────────────────────────
 
-    private function baseQuery(string $deptNo, int $month, int $year)
+    private function baseQuery(?string $deptNo, int $month, int $year)
     {
-        return EvaluationData::where('dept', $deptNo)
-            ->whereMonth('Month', $month)
+        $q = EvaluationData::whereMonth('Month', $month)
             ->whereYear('Month', $year);
+            
+        if ($deptNo) {
+            $q->where('dept', $deptNo);
+        }
+        
+        return $q;
     }
 }
