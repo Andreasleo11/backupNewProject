@@ -77,6 +77,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'evaluation.view-regular',
             'evaluation.view-yayasan',
             'evaluation.view-magang',
+            'evaluation.export-jpayroll',
         ];
 
         foreach ($permissions as $permName) {

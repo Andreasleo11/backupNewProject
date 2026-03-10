@@ -365,11 +365,11 @@ class NavigationService
                         'permission' => ['evaluation.view-any', 'evaluation.view-department'],
                     ],
                     [
-                        'label' => 'Export Yayasan JPayroll',
-                        'route' => 'exportyayasan.dateinput',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('exportyayasan.dateinput'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'finance'],
+                        'label'  => 'Export JPayroll',
+                        'route'  => 'evaluation.jpayroll.select',
+                        'icon'   => 'arrow-down-tray',
+                        'active' => request()->routeIs('evaluation.jpayroll.*'),
+                        'permission' => ['evaluation.export-jpayroll']
                     ],
                 ],
             ],

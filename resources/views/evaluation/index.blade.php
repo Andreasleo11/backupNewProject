@@ -632,7 +632,7 @@
                                             Export Yayasan
                                         </h6>
                                         <div class="relative space-y-2.5">
-                                            <a href="{{ route('exportyayasan.dateinput') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
+                                            <a href="{{ route('evaluation.jpayroll.select') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
                                                 <span>Export Data ke JPayroll</span>
                                                 <i class="bx bx-right-arrow-alt text-xl text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
                                             </a>

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\DataTables\EvaluationDataDataTable;
 use App\Exports\EvaluationDataExp;
 use App\Imports\EvaluationDataImport;
-use App\Domain\Evaluation\Services\EvaluationDepartmentStatusService;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
@@ -13,7 +12,6 @@ use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationDataController extends Controller
 {
@@ -195,89 +193,5 @@ class EvaluationDataController extends Controller
         return view('evaluasiPerpanjanganKaryawan', compact('employees', 'year', 'magang'));
     }
 
-    public function getDepartmentStatusYayasan(Request $request)
-    {
-        try {
-            $statusService = app(EvaluationDepartmentStatusService::class);
-
-            $month = $request->input('month') ?? $request->input('filter_month');
-            $year  = $request->input('year') ?? $request->input('filter_year');
-
-            $departmentStatus = $statusService->getDepartmentStatusForMonth($month, $year);
-
-            return response()->json([
-                'status' => 'success',
-                'data'   => $departmentStatus,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function dateExport()
-    {
-        return view('setting.inputDateExportYayasan');
-    }
-
-    public function exportYayasanJpayroll(Request $request)
-    {
-        $statusService = app(EvaluationDepartmentStatusService::class);
-
-        $selectedMonth    = (int) ($request->input('month') ?? $request->input('filter_status'));
-        $currentYear      = (int) $request->input('year');
-        $departmentStatus = $statusService->getJpayrollDepartmentStatus($selectedMonth, $currentYear);
-
-        return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
-    }
-
-    public function exportYayasanJpayrollFunction(Request $request)
-    {
-        $selectedMonth = (int) $request->input('filter_status');
-        $currentYear   = (int) $request->input('year');
-
-        $cutoffDate = \Carbon\Carbon::createFromDate($currentYear, $selectedMonth, 1)
-            ->copy()
-            ->subMonths(6)
-            ->startOfMonth();
-
-        $employees = EvaluationData::with('karyawan')
-            ->whereHas('karyawan', function ($q) use ($cutoffDate) {
-                $q->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
-                  ->where('start_date', '<', $cutoffDate);
-            })
-            ->whereMonth('Month', $selectedMonth)
-            ->whereYear('Month', $currentYear)
-            ->get();
-
-        // Categorize each employee's total into A/B tiers for JPayroll
-        $result = [];
-        foreach ($employees as $data) {
-            $nik = $data->karyawan?->nik;
-            if (! $nik) continue;
-
-            if (! isset($result[$nik])) {
-                $result[$nik] = ['employee_id' => $nik, 'nilai_A' => 0, 'nilai_B' => 0];
-            }
-
-            $total = $data->total;
-            if ($total >= 91) {
-                $result[$nik]['nilai_A'] = 1;
-                $result[$nik]['nilai_B'] = 0;
-            } elseif ($total >= 71) {
-                $result[$nik]['nilai_A'] = 0;
-                $result[$nik]['nilai_B'] = 1;
-            }
-        }
-
-        $currentDate = \Carbon\Carbon::now()->format('d-m-y');
-        $fileName    = "DataYayasan_{$currentDate}.xlsx";
-
-        return Excel::download(
-            new \App\Exports\YayasanEvaluationExport(array_values($result)),
-            $fileName
-        );
-    }
 }
+
