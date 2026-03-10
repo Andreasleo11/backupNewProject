@@ -50,12 +50,6 @@ Route::middleware(['auth', 'evaluation.access'])->group(function () {
     // Export Excel
     Route::get('/evaluation/export', [EvaluationController::class, 'export'])->name('evaluation.export');
 
-    // Download grading template Excel
-    Route::get('/evaluation/template', [EvaluationController::class, 'downloadTemplate'])->name('evaluation.template');
-
-    // Bulk import Excel (Regular — grader submits filled template)
-    Route::post('/evaluation/import', [EvaluationController::class, 'import'])->name('evaluation.import');
-
     // Batch approve (dept head — before {month}/{year})
     Route::post('/evaluation/approve-dept', [EvaluationController::class, 'approveDept'])->name('evaluation.approve-dept');
 
