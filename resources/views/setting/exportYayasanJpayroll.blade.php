@@ -11,15 +11,14 @@
             </div>
         </div>
 
-        <form id="exportForm" action="{{ route('export.yayasan.jpayroll') }}" method="GET">
+        <form id="exportForm" action="{{ route('exportyayasan.download') }}" method="POST">
             @csrf
-            <!-- Hidden inputs to pass selected month and year -->
+            {{-- Pass selected month and year to the download handler --}}
             <input type="hidden" name="filter_status" value="{{ $selectedMonth }}">
             <input type="hidden" name="year" value="{{ $currentYear }}">
 
             <div class="row">
                 <div class="col-md-6 d-flex justify-content-start">
-                    <!-- Submit Button to Export Data -->
                     <button type="submit" class="btn btn-primary">
                         <i class="bx bx-download"></i> Export Yayasan Data
                     </button>

@@ -5,7 +5,7 @@
         <h2 class="text-2xl font-semibold">Export Yayasan Data</h2>
 
         <!-- Form for selecting month and year -->
-        <form action="{{ route('exportyayasan.summary') }}" method="GET" class="mt-6">
+        <form action="{{ route('export.yayasan.jpayroll') }}" method="GET" class="mt-6">
             @csrf
             <div class="flex space-x-4">
                 <!-- Month Selection -->
