@@ -42,10 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
     Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
     Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
-    Route::get('/requirements/departments', RequirementDepartments::class)->name('requirements.departments');
+    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)->name('requirements.departments');
 
     // Requirement Uploads
-    Route::post('/upload/requirements/{requirementDepartmentId}', [RequirementUploadDownloadController::class, 'upload'])->name('upload.requirements');
-    Route::delete('/delete/requirements/{requirementUploadId}', [RequirementUploadDownloadController::class, 'delete'])->name('delete.requirements');
     Route::get('/requirement-uploads/review', ReviewUploads::class)->name('requirement-uploads.review');
 });
