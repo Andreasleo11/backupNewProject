@@ -3,288 +3,294 @@
 @section('title', 'Detail Laporan Harian')
 
 @section('content')
-    <div
-        class="mx-auto max-w-6xl px-3 py-5 sm:px-4 lg:px-0"
-        x-data="{ showFilters: true }"
-    >
-        {{-- Back + header --}}
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <a
-                href="{{ route('daily-reports.index') }}"
-                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     class="h-4 w-4"
-                     viewBox="0 0 20 20"
-                     fill="currentColor">
-                    <path fill-rule="evenodd"
-                          d="M9.707 14.707a1 1 0 01-1.414 0L3.586 10l4.707-4.707a1 1 0 011.414 1.414L6.414 9H16a1 1 0 110 2H6.414l3.293 3.293a1 1 0 010 1.414z"
-                          clip-rule="evenodd" />
-                </svg>
-                <span>Kembali ke Daftar Karyawan</span>
-            </a>
-
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="text-right">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Detail Laporan Harian
-                    </p>
-                    <p class="text-base font-semibold text-slate-800">
-                        Karyawan {{ $employee_id }}
-                    </p>
-                </div>
-                <span
-                    class="inline-flex items-center rounded-full border border-slate-200 bg-slate-800 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                    <span class="mr-1 inline-flex h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-emerald-200"></span>
-                    NIK: {{ $employee_id }}
-                </span>
-            </div>
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8" x-data="{ showFilters: false }">
+    
+    {{-- Header Section (Premium Dashboard Style) --}}
+    <div class="relative z-50 rounded-3xl bg-slate-900 shadow-2xl">
+        {{-- Background glow with overflow hidden to prevent spilling --}}
+        <div class="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+            <div class="absolute right-0 top-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-16 -mb-16 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl"></div>
         </div>
 
-        {{-- FILTER KARTU --}}
-        <div class="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {{-- Header filter --}}
-            <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
+        <div class="relative px-8 py-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            {{-- Left: title & back button --}}
+            <div class="flex items-start gap-6">
+                <a href="{{ route('daily-reports.index') }}" class="mt-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white shadow-sm ring-1 ring-white/20 transition-all hover:bg-white/20 hover:scale-105 shrink-0" title="Kembali">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                
                 <div>
-                    <p class="text-sm font-semibold text-slate-800">Filter Periode</p>
-                    <p class="text-[11px] text-slate-500">
-                        Pilih rentang tanggal untuk melihat laporan harian karyawan ini.
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl flex items-center gap-3">
+                        Detail Analisis
+                        <span class="inline-flex items-center rounded-full bg-emerald-400/10 px-3 py-1 text-sm font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-400/20">
+                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            NIK: {{ $employee_id }}
+                        </span>
+                    </h1>
+                    <p class="mt-2 max-w-2xl text-[15px] font-medium text-slate-400">
+                        Memantau performa kehadiran dan aktivitas khusus untuk Karyawan <strong class="text-slate-300">{{ $employee_id }}</strong>.
                     </p>
                 </div>
+            </div>
 
-                {{-- Toggle mobile --}}
+            {{-- Right: Filter Toggle --}}
+            <div class="flex items-center z-50">
                 <button
                     type="button"
-                    class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 sm:hidden"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-slate-700 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors w-full sm:w-auto"
                     @click="showFilters = !showFilters"
                 >
-                    <span x-show="showFilters">Sembunyikan</span>
-                    <span x-show="!showFilters">Tampilkan</span>
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         class="h-3 w-3"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 9l-7 7-7-7"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
+                    <span>Rentang Tanggal</span>
                 </button>
             </div>
+        </div>
+    </div>
 
-            {{-- Body filter --}}
-            <div
-                class="px-4 pb-4 pt-3 sm:px-5 sm:pt-4"
-                x-show="showFilters"
-                x-transition
-                x-cloak
-            >
-                <form method="GET" class="grid gap-3 md:grid-cols-12 md:items-end">
-                    {{-- Tanggal mulai --}}
-                    <div class="md:col-span-4">
-                        <label
-                            for="filter_start_date"
-                            class="mb-1 block text-xs font-medium text-slate-700"
-                        >
-                            Tanggal Mulai
-                        </label>
-                        <input
-                            type="date"
-                            id="filter_start_date"
-                            name="filter_start_date"
-                            value="{{ $filter_start_date }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                        >
-                    </div>
+    {{-- Advanced Filters Panel (Date Range) --}}
+    <div
+        x-show="showFilters"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-4"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-4"
+        x-cloak
+        class="relative z-40 -mt-10 pt-10"
+    >
+        <div class="rounded-b-3xl border border-t-0 border-slate-200 bg-white p-6 shadow-xl">
+            <form method="GET" class="grid gap-5 md:grid-cols-12 md:items-end">
+                {{-- Tanggal Mulai --}}
+                <div class="md:col-span-4">
+                    <label for="filter_start_date" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Tanggal Mulai
+                    </label>
+                    <input
+                        type="date"
+                        id="filter_start_date"
+                        name="filter_start_date"
+                        value="{{ $filter_start_date }}"
+                        class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-3 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-colors"
+                    >
+                </div>
 
-                    {{-- Tanggal selesai --}}
-                    <div class="md:col-span-4">
-                        <label
-                            for="filter_end_date"
-                            class="mb-1 block text-xs font-medium text-slate-700"
-                        >
-                            Tanggal Selesai
-                        </label>
-                        <input
-                            type="date"
-                            id="filter_end_date"
-                            name="filter_end_date"
-                            value="{{ $filter_end_date }}"
-                            class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                        >
-                    </div>
+                {{-- Tanggal Selesai --}}
+                <div class="md:col-span-4">
+                    <label for="filter_end_date" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Tanggal Selesai
+                    </label>
+                    <input
+                        type="date"
+                        id="filter_end_date"
+                        name="filter_end_date"
+                        value="{{ $filter_end_date }}"
+                        class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 px-3 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-colors"
+                    >
+                </div>
 
-                    {{-- Tombol --}}
-                    <div class="flex gap-2 md:col-span-4 md:justify-end">
-                        <button
-                            type="submit"
-                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 md:mt-0 md:w-auto"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="h-4 w-4"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor">
-                                <path
-                                    d="M3 3a1 1 0 011-1h12a1 1 0 01.8 1.6l-3.1 4.65A2 2 0 0013 9.6V14l-3.724-1.862A1 1 0 008 13V9.6a2 2 0 00-.7-1.5L4.2 3.6A1 1 0 013 3z"/>
-                            </svg>
-                            <span>Terapkan</span>
-                        </button>
+                {{-- Buttons --}}
+                <div class="md:col-span-4 flex items-center justify-end gap-3">
+                    <a
+                        href="{{ route('daily-reports.depthead.show', $employee_id) }}"
+                        class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-50"
+                    >
+                        Reset
+                    </a>
+                    <button
+                        type="submit"
+                        class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-indigo-600 transition-all hover:bg-indigo-700"
+                    >
+                        Terapkan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                        <a
-                            href="{{ route('daily-reports.depthead.show', $employee_id) }}"
-                            class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 md:mt-0 md:w-auto"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="h-4 w-4"
-                                 viewBox="0 0 20 20"
-                                 fill="currentColor">
-                                <path fill-rule="evenodd"
-                                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293A1 1 0 014.293 14.293L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                      clip-rule="evenodd" />
-                            </svg>
-                            <span>Reset</span>
-                        </a>
-                    </div>
-                </form>
+    {{-- KPI Cards Row (Moved to top as per analysis) --}}
+    <div class="relative z-0 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {{-- Days Logged --}}
+        <div class="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 transition-all group-hover:scale-150"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">Total Kehadiran</h3>
+                    <p class="mt-3 text-3xl font-black text-slate-900 leading-none">
+                        {{ $submittedDates->count() }} <span class="text-base font-semibold text-slate-500">Hari</span>
+                    </p>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shadow-inner">
+                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
             </div>
         </div>
 
-        {{-- KONTEN --}}
-        @if ($reports->isEmpty())
-            <div
-                class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
-                <div class="flex items-start gap-2">
-                    <span class="mt-0.5 text-lg">⚠️</span>
-                    <div>
-                        <p class="font-semibold">Tidak ada laporan untuk karyawan ini.</p>
-                        <p class="text-xs text-amber-700">
-                            Coba ubah rentang tanggal di atas untuk memastikan tidak ada laporan yang terlewat.
-                        </p>
+        {{-- Days Missing --}}
+        <div class="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-rose-50 transition-all group-hover:scale-150"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">Hari Tanpa Laporan</h3>
+                    <p class="mt-3 text-3xl font-black text-rose-600 leading-none">
+                        {{ $missingDates->count() }} <span class="text-base font-semibold text-slate-500">Hari</span>
+                    </p>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-inner">
+                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- Period --}}
+        <div class="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-sky-50 transition-all group-hover:scale-150"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">Periode Data</h3>
+                    <p class="mt-3 text-lg font-black text-slate-900 leading-tight">
+                        {{ $startDate->format('d M') }} <span class="text-slate-400 px-1">&rarr;</span> {{ $endDate->format('d M Y') }}
+                    </p>
+                </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 shadow-inner">
+                    <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if ($reports->isEmpty())
+        <div class="rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50 to-orange-50 px-6 py-8 text-center shadow-sm">
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100/50 text-amber-500 mb-4">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-sm font-bold text-amber-800 uppercase tracking-wide">Tidak Ada Rekaman</h3>
+            <p class="mt-1 text-sm text-amber-600/80">
+                Karyawan ini tidak memiliki laporan di rentang tanggal yang dipilih.
+            </p>
+        </div>
+    @else
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {{-- Main Content: Table --}}
+            <div class="lg:col-span-8 space-y-8">
+                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/40">
+                    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-slate-800">Daftar Laporan Harian</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-100 text-sm">
+                            <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">Tanggal</th>
+                                    <th class="px-6 py-4 text-left">Deskripsi</th>
+                                    <th class="px-6 py-4 text-center">Durasi</th>
+                                    <th class="px-6 py-4 text-center">Status File</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+                                @foreach ($reports as $report)
+                                    <tr class="transition-colors hover:bg-slate-50/80 group">
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <div class="font-bold text-slate-900">{{ \Carbon\Carbon::parse($report->work_date)->format('d M Y') }}</div>
+                                            <div class="text-[11px] font-medium text-slate-400 mt-0.5">Disubmit: {{ \Carbon\Carbon::parse($report->submitted_at)->format('H:i') }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-slate-700 leading-relaxed">{{ $report->work_description }}</p>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4 text-center">
+                                            <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-500/10">
+                                                {{ $report->work_time }}
+                                            </span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4 text-center">
+                                            @if ($report->proof_url)
+                                                <a
+                                                    href="{{ $report->proof_url }}"
+                                                    target="_blank"
+                                                    class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-sky-600 shadow-sm ring-1 ring-inset ring-sky-200 transition-all hover:bg-sky-50 group-hover:shadow-md"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                                                        <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                                                    </svg>
+                                                    Lampiran
+                                                </a>
+                                            @else
+                                                <span class="text-[11px] font-medium text-slate-400">—</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        @else
-            {{-- FullCalendar CSS --}}
-            <link
-                href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css"
-                rel="stylesheet"
-            >
 
-            {{-- FullCalendar JS --}}
-            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+            {{-- Sidebar: Calendar --}}
+            <div class="lg:col-span-4">
+                <div class="sticky top-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/40">
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Visualisasi Kehadiran</h2>
+                    
+                    {{-- FullCalendar Assets (Kept as minimal impact change per instructions, styled elegantly) --}}
+                    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+                    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 
-            {{-- Calendar --}}
-            <div
-                id="calendar"
-                class="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
-            ></div>
+                    <style>
+                        /* Minimal overrides to make FullCalendar look premium */
+                        .fc .fc-toolbar-title { font-size: 1rem !important; font-weight: 800 !important; color: #1e293b !important; }
+                        .fc .fc-button-primary { background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #475569 !important; font-size: 0.75rem !important; font-weight: 600 !important; text-transform: uppercase !important; border-radius: 0.5rem !important; padding: 0.25rem 0.75rem !important; transition: all 0.2s !important; }
+                        .fc .fc-button-primary:hover { background-color: #e2e8f0 !important; color: #1e293b !important; }
+                        .fc .fc-button-active { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; }
+                        .fc-theme-standard th { border: none !important; border-bottom: 1px solid #f1f5f9 !important; padding: 0.5rem 0 !important; font-size: 0.7rem !important; text-transform: uppercase !important; color: #94a3b8 !important; font-weight: 700 !important;}
+                        .fc-theme-standard td { border: 1px solid #f8fafc !important; }
+                        .fc-daygrid-day-number { font-size: 0.8rem !important; font-weight: 600 !important; color: #475569 !important; padding: 4px 8px !important; }
+                        .fc-event { border-radius: 4px !important; font-size: 0.65rem !important; font-weight: 700 !important; border: inset 1px rgba(0,0,0,0.1) !important; padding: 1px 3px !important; }
+                        .fc-day-today { background-color: #f8fafc !important; }
+                        .fc-scroller::-webkit-scrollbar { width: 4px; height: 4px; }
+                        .fc-scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+                    </style>
 
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const calendarEl = document.getElementById('calendar');
-                    if (!calendarEl) return;
+                    <div id="calendar" class="fc-custom-theme"></div>
 
-                    const calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'dayGridMonth',
-                        height: 500,
-                        headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: ''
-                        },
-                        events: @json($calendarEvents)
-                    });
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const calendarEl = document.getElementById('calendar');
+                            if (!calendarEl) return;
 
-                    calendar.render();
-                });
-            </script>
+                            const calendar = new FullCalendar.Calendar(calendarEl, {
+                                initialView: 'dayGridMonth',
+                                height: 400,
+                                contentHeight: 'auto',
+                                aspectRatio: 1.2,
+                                headerToolbar: {
+                                    left: 'prev,next',
+                                    center: 'title',
+                                    right: 'today'
+                                },
+                                events: @json($calendarEvents),
+                                eventDisplay: 'block'
+                            });
 
-            {{-- Statistik kecil --}}
-            <div class="mb-4 grid gap-3 sm:grid-cols-3">
-                <div
-                    class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 shadow-sm">
-                    <p class="text-xs font-medium uppercase tracking-wide text-emerald-600">
-                        Total Hari dengan Laporan
-                    </p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {{ $submittedDates->count() }} <span class="text-sm font-semibold">hari</span>
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 shadow-sm">
-                    <p class="text-xs font-medium uppercase tracking-wide text-rose-600">
-                        Hari Tanpa Laporan
-                    </p>
-                    <p class="mt-1 text-2xl font-bold text-rose-700">
-                        {{ $missingDates->count() }} <span class="text-sm font-semibold">hari</span>
-                    </p>
-                </div>
-
-                <div
-                    class="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 shadow-sm">
-                    <p class="text-xs font-medium uppercase tracking-wide text-sky-600">
-                        Periode Data
-                    </p>
-                    <p class="mt-1 text-sm font-semibold text-sky-800">
-                        {{ $startDate->format('d M Y') }} — {{ $endDate->format('d M Y') }}
-                    </p>
+                            calendar.render();
+                        });
+                    </script>
                 </div>
             </div>
-
-            {{-- Tabel laporan --}}
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 text-sm">
-                        <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            <tr>
-                                <th class="whitespace-nowrap px-3 py-2 text-left">Tanggal</th>
-                                <th class="whitespace-nowrap px-3 py-2 text-center">Jam Kerja</th>
-                                <th class="px-3 py-2 text-left">Deskripsi Pekerjaan</th>
-                                <th class="whitespace-nowrap px-3 py-2 text-center">Bukti</th>
-                                <th class="whitespace-nowrap px-3 py-2 text-center">Waktu Submit</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 bg-white">
-                            @foreach ($reports as $report)
-                                <tr class="hover:bg-slate-50/70">
-                                    <td class="whitespace-nowrap px-3 py-2 text-sm text-slate-800">
-                                        {{ \Carbon\Carbon::parse($report->work_date)->format('d M Y') }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-2 text-center text-sm font-medium text-slate-800">
-                                        {{ $report->work_time }}
-                                    </td>
-                                    <td class="px-3 py-2 text-sm text-slate-700">
-                                        {{ $report->work_description }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-2 text-center text-sm">
-                                        @if ($report->proof_url)
-                                            <a
-                                                href="{{ $report->proof_url }}"
-                                                target="_blank"
-                                                class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-100"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                     class="h-3.5 w-3.5"
-                                                     viewBox="0 0 20 20"
-                                                     fill="currentColor">
-                                                    <path
-                                                        d="M4 3a2 2 0 00-2 2v7a2 2 0 002 2h3l1.293 1.293a1 1 0 001.414 0L11 14h5a2 2 0 002-2V5a2 2 0 00-2-2H4z"/>
-                                                </svg>
-                                                <span>Lihat</span>
-                                            </a>
-                                        @else
-                                            <span class="text-xs text-slate-400">Tidak ada</span>
-                                        @endif
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-2 text-center text-sm text-slate-700">
-                                        {{ \Carbon\Carbon::parse($report->submitted_at)->format('d M Y H:i') }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        @endif
-    </div>
+        </div>
+    @endif
+</div>
 @endsection

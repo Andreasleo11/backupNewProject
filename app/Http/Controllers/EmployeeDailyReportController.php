@@ -88,7 +88,7 @@ class EmployeeDailyReportController extends Controller
 
         $data = $this->analyticsService->getEmployeeReports(
             $employee_id,
-            $user->department->dept_no,
+            $user->department?->dept_no,
             $filters,
             $user
         );
