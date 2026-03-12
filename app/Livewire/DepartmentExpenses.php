@@ -9,6 +9,7 @@ use App\Domain\Expenses\UseCases\GetRollingDepartmentTotals;
 use App\Domain\Expenses\UseCases\ListAvailableMonths;
 use App\Domain\Expenses\UseCases\ListPrSigners;
 use Carbon\Carbon;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class DepartmentExpenses extends Component
@@ -20,10 +21,6 @@ class DepartmentExpenses extends Component
     public ?int $deptId = null;
 
     public ?string $prSigner = null;
-
-    public array $prSigners = [];
-
-    public ?string $chartKeySent = null;
 
     public ?string $chartMonthSent = null; // track the last month we fed to the chart
 
@@ -41,13 +38,13 @@ class DepartmentExpenses extends Component
 
     public bool $skipChartClearOnce = false;
 
-    public array $monthOptions = [];
-
-    public function mount(ListAvailableMonths $listMonths): void
+    public function mount(): void
     {
         // initial options (no signer yet)
-        $this->monthOptions = $listMonths->execute(null, 24);
-        $this->month = $this->monthOptions[0]['value'] ?? now()->format('Y-m'); // latest with data, else today
+        $listMonths = app(ListAvailableMonths::class);
+        $options = $listMonths->execute(null, 24);
+        
+        $this->month = $options[0]['value'] ?? now()->format('Y-m'); // latest with data, else today
 
         // compare defaults
         $this->endMonth = $this->month;
@@ -65,18 +62,18 @@ class DepartmentExpenses extends Component
         $this->skipChartClearOnce = false;
     }
 
-    public function updatedPrSigner(ListAvailableMonths $listMonths): void
+    public function updatedPrSigner(): void
     {
+        $listMonths = app(ListAvailableMonths::class);
         // refresh month options based on signer filter
-        $this->monthOptions = $listMonths->execute($this->prSigner, 24);
+        $options = $listMonths->execute($this->prSigner, 24);
 
         // keep current month if still valid, else pick latest available
-        $valid = array_column($this->monthOptions, 'value');
+        $valid = array_column($options, 'value');
         if (! in_array($this->month, $valid, true)) {
             $this->month = $valid[0] ?? now()->format('Y-m');
         }
 
-        $this->chartKeySent = null;
         $this->compareKeySent = null;
 
         // also ensure compare range stays valid
@@ -123,25 +120,23 @@ class DepartmentExpenses extends Component
         $this->dispatch('compare:clearSelection');
     }
 
-    public function render(
-        GetDepartmentTotals $getTotals,
-        ListPrSigners $listSigners,
-        GetDepartmentMonthlyTotals $getMonthlyTotals,
-        GetRollingDepartmentTotals $getRollingTotals,
-        ListAvailableMonths $listMonths
-    ) {
-        $signers = $listSigners->execute($this->month);
-        $this->prSigners = $signers;
+    #[Computed]
+    public function monthOptions()
+    {
+        return app(ListAvailableMonths::class)->execute($this->prSigner, 24);
+    }
 
-        if ($this->prSigner !== null && ! in_array($this->prSigner, $signers, true)) {
-            $this->monthOptions = $listMonths->execute($this->prSigner, 24);
-            $this->prSigner = null;
-            $this->chartKeySent = null;
-            $this->compareKeySent = null;
-        }
+    #[Computed]
+    public function prSigners()
+    {
+        return app(ListPrSigners::class)->execute($this->month);
+    }
 
-        $totalsDto = $getTotals->execute($this->month, $this->prSigner);
-        $totals = collect($totalsDto)
+    #[Computed]
+    public function totals()
+    {
+        $totalsDto = app(GetDepartmentTotals::class)->execute($this->month, $this->prSigner);
+        return collect($totalsDto)
             ->map(fn (DepartmentTotal $d) => (object) [
                 'dept_id' => $d->deptId,
                 'dept_name' => $d->deptName,
@@ -150,25 +145,32 @@ class DepartmentExpenses extends Component
             ])
             ->sortByDesc('total_expense')
             ->values();
+    }
 
+    public function render(
+        GetDepartmentMonthlyTotals $getMonthlyTotals,
+        GetRollingDepartmentTotals $getRollingTotals
+    ) {
+        // Enforce valid prSigner on load or if month changes
+        if ($this->prSigner !== null && ! in_array($this->prSigner, $this->prSigners, true)) {
+            $this->prSigner = null;
+            $this->compareKeySent = null;
+        }
+
+        $validDeptIds = $this->totals->pluck('dept_id')->all();
         if ($this->deptId !== null) {
-            $validDeptIds = $totals->pluck('dept_id')->all();
             if (! in_array($this->deptId, $validDeptIds, true)) {
                 $this->deptId = null;
                 $this->dispatch('chart:clearSelection');
             }
         }
 
-        // chart data seeded when (month|signer) changes
-        $key = $this->month . '|' . ($this->prSigner ?? '');
-        if ($this->chartKeySent !== $key) {
-            $this->dispatch('chart:render', data: [
-                'labels' => $totals->pluck('dept_name')->values(),
-                'data' => $totals->pluck('total_expense')->map(fn ($v) => (float) $v)->values(),
-                'deptIds' => $totals->pluck('dept_id')->map(fn ($v) => (int) $v)->values(),
-            ]);
-            $this->chartKeySent = $key;
-        }
+        // Always push chart data natively to the frontend based on the computed totals
+        $this->dispatch('chart:render', data: [
+            'labels' => $this->totals->pluck('dept_name')->values(),
+            'data' => $this->totals->pluck('total_expense')->map(fn ($v) => (float) $v)->values(),
+            'deptIds' => $this->totals->pluck('dept_id')->map(fn ($v) => (int) $v)->values(),
+        ]);
 
         // Normalize inputs
         if ($this->compareMode === 'range') {
@@ -236,6 +238,6 @@ class DepartmentExpenses extends Component
 
         $this->compareKeySent = $cmpKey;
 
-        return view('livewire.department-expenses', compact('totals'));
+        return view('livewire.department-expenses');
     }
 }
