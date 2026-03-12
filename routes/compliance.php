@@ -46,4 +46,7 @@ Route::middleware('auth')->group(function () {
 
     // Requirement Uploads
     Route::get('/requirement-uploads/review', ReviewUploads::class)->name('requirement-uploads.review');
+    Route::get('/requirement-uploads/{upload}/download', [RequirementUploadDownloadController::class, 'show'])
+        ->name('uploads.download')
+        ->middleware('signed');
 });

@@ -1,10 +1,16 @@
 {{-- Upload Requirement Modal — Sub-component view --}}
 {{-- Tailwind & Alpine.js --}}
-<div x-data="{ open: false }"
-     @show-upload-modal.window="open = true"
+<div x-data="{ 
+        open: false,
+        openModal(detail) {
+            this.open = true;
+            $wire.open(detail);
+        }
+     }"
+     @trigger-upload-modal.window="openModal($event.detail)"
      @hide-upload-modal.window="open = false"
-     class="relative z-50"
-     style="display: none;"
+     class="relative z-[100]"
+     x-cloak
      x-show="open">
 
     {{-- Backdrop --}}

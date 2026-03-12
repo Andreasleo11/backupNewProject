@@ -125,7 +125,12 @@ class Compliance extends Component
 
     public function openUpload(int $requirementId): void
     {
-        $this->dispatch('open-upload', requirementId: $requirementId, departmentId: $this->department->id);
+        $this->dispatch('open-upload', $requirementId, $this->department->id);
+    }
+
+    public function openHistory(int $requirementId): void
+    {
+        $this->dispatch('open-recent-uploads', $requirementId, $this->department->id);
     }
 
     public function mount(Department $department, ComplianceService $svc): void

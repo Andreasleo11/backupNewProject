@@ -18,11 +18,23 @@ class RecentUploads extends Component
     public $uploads;
 
     #[On('open-recent-uploads')]
-    public function open(int $requirementId, int $departmentId): void
+    public function open($reqId = null, $deptId = null): void
     {
-        $this->department = Department::findOrFail($departmentId);
-        $this->requirement = Requirement::findOrFail($requirementId);
-        $this->load();
+        // Handle Alpine JS object payload or direct Livewire positional args
+        if (is_array($reqId)) {
+            $requirementId = $reqId['reqId'] ?? null;
+            $departmentId = $reqId['deptId'] ?? null;
+        } else {
+            $requirementId = $reqId;
+            $departmentId = $deptId;
+        }
+
+        if ($departmentId && $requirementId) {
+            $this->department = Department::findOrFail($departmentId);
+            $this->requirement = Requirement::findOrFail($requirementId);
+            $this->load();
+        }
+
         $this->dispatch('show-recent-uploads');
     }
 

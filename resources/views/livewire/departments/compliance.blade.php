@@ -151,13 +151,14 @@
                             @endif
 
                             {{-- Actions --}}
-                            <div class="flex gap-2">
-                                <button wire:click="openUpload({{ $r['id'] }})"
+                            <div class="flex gap-2" x-data>
+                                <button type="button" 
+                                    @click="$dispatch('trigger-upload-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm shadow-indigo-200 transition-all">
                                     <i class="bx bx-upload text-sm"></i> Upload
                                 </button>
-                                <button
-                                    wire:click="$dispatch('open-recent-uploads', { requirementId: {{ $r['id'] }}, departmentId: {{ $department->id }} })"
+                                <button type="button" 
+                                    @click="$dispatch('trigger-history-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
                                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold transition-all">
                                     <i class="bx bx-history text-sm"></i> History
                                     @if($r['pending'] > 0)
@@ -178,8 +179,9 @@
             @endforelse
         </div>
     </div>
-
-    {{-- Sub-components (upload slide-over, recent uploads modal) --}}
-    <livewire:requirements.upload :key="'uploader-' . $department->id" />
-    <livewire:requirements.recent-uploads />
 </div>
+@push('modals')
+{{-- Sub-components (upload slide-over, recent uploads modal) --}}
+<livewire:requirements.upload :key="'uploader-' . $department->id" />
+<livewire:requirements.recent-uploads />
+@endpush

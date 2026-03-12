@@ -1,10 +1,16 @@
 {{-- Recent Uploads Slide-Over — Livewire component view --}}
 {{-- Tailwind & Alpine.js --}}
-<div x-data="{ open: false }"
-     @show-recent-uploads.window="open = true"
+<div x-data="{ 
+        open: false,
+        openModal(detail) {
+            this.open = true;
+            $wire.open(detail);
+        }
+    }"
+     @trigger-history-modal.window="openModal($event.detail)"
      @hide-recent-uploads.window="open = false"
-     class="relative z-50"
-     style="display: none;"
+     class="relative z-[100]"
+     x-cloak
      x-show="open">
 
     {{-- Backdrop --}}
