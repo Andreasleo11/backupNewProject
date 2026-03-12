@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DownloadUploadController;
 use App\Http\Controllers\PreviewUploadController;
-use App\Livewire\DailyReportIndex;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
@@ -33,7 +32,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     // Daily Reports
-    Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
+    Route::get('/daily-reports', \App\Livewire\DailyReports\Index::class)->name('daily-reports.index');
+    Route::get('/daily-reports/{employee_id}', \App\Livewire\DailyReports\Show::class)->name('daily-reports.show');
 
     // Employee Daily Reports
     Route::get('/store-data', [\App\Http\Controllers\PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');

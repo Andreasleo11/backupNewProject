@@ -55,6 +55,16 @@ class Employee extends Authenticatable
         return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'nik');
     }
 
+    public function dailyReports(): HasMany
+    {
+        return $this->hasMany(\App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport::class, 'employee_id', 'nik');
+    }
+
+    public function latestDailyReport(): HasOne
+    {
+        return $this->hasOne(\App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport::class, 'employee_id', 'nik')->latestOfMany('sort_datetime');
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_code', 'dept_no');

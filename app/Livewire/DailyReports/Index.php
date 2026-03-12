@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\DailyReports;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class DailyReportIndex extends Component
+class Index extends Component
 {
     use WithPagination;
+
+    protected $listeners = ['refreshIndex' => '$refresh'];
 
     // Query-string synced filters
     #[Url(as: 'q')]
     public ?string $search = null;
-
-    #[Url(as: 'filter_employee_id')]
-    public ?string $employeeId = null;
 
     #[Url(as: 'filter_department_no')]
     public ?string $departmentNo = null;
@@ -31,8 +31,6 @@ class DailyReportIndex extends Component
 
     #[Url(as: 'to')]
     public ?string $dateTo = null; // YYYY-MM-DD
-
-    public array $employeesDropdown = [];
 
     public array $departmentNos = []; // [['dept_no'=>..., 'name'=>...], ...]
 
@@ -59,12 +57,6 @@ class DailyReportIndex extends Component
         $validEmployees = $employeeQuery->get(['nik', 'name', 'position', 'dept_code']);
         $this->validNiks = $validEmployees->pluck('nik')->all();
 
-        // Dropdowns
-        $this->employeesDropdown = $validEmployees
-            ->map(fn ($e) => ['employee_id' => $e->nik, 'employee_name' => $e->name])
-            ->values()
-            ->all();
-
         $this->positions = $validEmployees
             ->pluck('position')
             ->filter()
@@ -84,7 +76,7 @@ class DailyReportIndex extends Component
         if (
             in_array(
                 $name,
-                ['search', 'employeeId', 'departmentNo', 'jabatan', 'dateFrom', 'dateTo'],
+                ['search', 'departmentNo', 'jabatan', 'dateFrom', 'dateTo'],
                 true,
             )
         ) {
@@ -95,7 +87,6 @@ class DailyReportIndex extends Component
     public function resetFilters()
     {
         $this->search = null;
-        $this->employeeId = null;
         $this->departmentNo = null;
         $this->jabatan = null;
         $this->dateFrom = null;
@@ -114,69 +105,38 @@ class DailyReportIndex extends Component
 
     public function render()
     {
-        // SQL that safely extracts the "end time" when you have a range "HH:MM - HH:MM",
-        // otherwise uses the single time. Works on MySQL/MariaDB.
-        $normalizedTimeSql = "
-            CASE
-                WHEN dr.work_time LIKE '%-%'
-                    THEN TRIM(SUBSTRING_INDEX(dr.work_time, '-', -1))  -- take end time
-                ELSE dr.work_time
-            END
-        ";
-
-        // Subquery to compute the latest datetime per employee (no N+1)
-        $latestSub = DB::table('employee_daily_reports as dr')
-            ->select([
-                'dr.employee_id',
-                DB::raw("MAX(CONCAT(dr.work_date, ' ', $normalizedTimeSql)) as latest_dt"),
-            ])
-            ->groupBy('dr.employee_id');
-
-        $base = DB::table('employee_daily_reports as dr')
-            ->join('employees as e', function ($join) {
-                $join
-                    ->on('dr.employee_id', '=', 'e.nik')
-                    ->whereColumn('dr.employee_name', 'e.name')
-                    ->whereColumn('dr.departement_id', 'e.dept_code');
-            })
-            ->leftJoinSub(
-                $latestSub,
-                'lr',
-                fn ($join) => $join->on('lr.employee_id', '=', 'dr.employee_id'),
-            )
-            ->when(! empty($this->validNiks), fn ($q) => $q->whereIn('e.nik', $this->validNiks))
+        $query = \App\Infrastructure\Persistence\Eloquent\Models\Employee::query()
+            ->with(['latestDailyReport'])
+            ->when(! empty($this->validNiks), fn ($q) => $q->whereIn('nik', $this->validNiks))
             // Filters
-            ->when($this->employeeId, fn ($q) => $q->where('dr.employee_id', $this->employeeId))
-            ->when(
-                $this->departmentNo,
-                fn ($q) => $q->where('dr.departement_id', $this->departmentNo),
-            )
-            ->when($this->jabatan, fn ($q) => $q->where('e.position', $this->jabatan))
+            ->when($this->departmentNo, fn ($q) => $q->where('dept_code', $this->departmentNo))
+            ->when($this->jabatan, fn ($q) => $q->where('position', $this->jabatan))
             ->when($this->search, function ($q) {
                 $term = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($term) {
-                    $w->where('dr.employee_id', 'like', $term)->orWhere('e.name', 'like', $term);
+                    $w->where('nik', 'like', $term)->orWhere('name', 'like', $term);
                 });
             })
+            // Date filtering via subquery existence or relationship filter
             ->when($this->dateFrom || $this->dateTo, function ($q) {
-                $from = $this->dateFrom ?: '1900-01-01';
-                $to = $this->dateTo ?: '2999-12-31';
-                $q->whereBetween('dr.work_date', [$from, $to]);
-            })
-            // Group by employee (one row per employee)
-            ->groupBy('dr.employee_id', 'dr.departement_id', 'e.name', 'e.position', 'lr.latest_dt')
-            ->orderByDesc('lr.latest_dt')
-            ->select([
-                'dr.employee_id',
-                'dr.departement_id',
-                'e.position',
-                DB::raw('MIN(e.name) as employee_name'),
-                DB::raw('MAX(lr.latest_dt) as latest_dt'),
-            ]);
+                $q->whereHas('dailyReports', function ($sub) {
+                    $from = $this->dateFrom ?: '1900-01-01';
+                    $to = $this->dateTo ?: '2999-12-31';
+                    $sub->whereBetween('work_date', [$from, $to]);
+                });
+            });
 
-        $employees = $base->paginate(15)->withQueryString();
+        // Optimization: Sort by latest report presence and date
+        $query->leftJoin('employee_daily_reports as dr', function ($join) {
+            $join->on('employees.nik', '=', 'dr.employee_id')
+                 ->whereRaw('dr.id = (select id from employee_daily_reports where employee_id = employees.nik order by sort_datetime desc limit 1)');
+        })
+        ->select('employees.*', 'dr.sort_datetime as latest_dt')
+        ->orderByDesc('latest_dt');
 
-        return view('livewire.daily-report-index', [
+        $employees = $query->paginate(15);
+
+        return view('livewire.daily-reports.index', [
             'employees' => $employees,
             'canPickDept' => $this->canPickDept,
         ]);

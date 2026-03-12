@@ -228,10 +228,7 @@
                 <x-sidebar.link :href="route('employee_trainings.index')" icon="bx bx-file" :active="request()->routeIs('employee_trainings.*')">Employee
                     Training</x-sidebar.link>
             </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('daily-report.form')" icon="bx bx-file" :active="request()->routeIs('daily-report.form')">Upload Daily
-                    Report</x-sidebar.link>
-            </li>
+
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('files.index')" icon="bx bx-file" :active="request()->routeIs('files.*')">Files</x-sidebar.link>
             </li>

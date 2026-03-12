@@ -332,13 +332,6 @@ class NavigationService
                         'roles' => ['admin', 'super-admin', 'operations', 'manager'],
                     ],
                     [
-                        'label' => 'Upload Daily Report',
-                        'route' => 'daily-report.form',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('daily-report.form'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'manager'],
-                    ],
-                    [
                         'label' => 'Department Expenses',
                         'route' => 'department-expenses.index',
                         'icon' => 'currency-dollar',

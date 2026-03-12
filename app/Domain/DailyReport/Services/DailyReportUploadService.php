@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\DailyReport\Services;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\EmployeeDailyReport;
-use App\Models\EmployeeDailyReportLog;
+use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
+use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReportLog;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -18,7 +18,8 @@ final class DailyReportUploadService
      */
     public function processExcelUpload($file): array
     {
-        $data = Excel::toArray([], $file)[0];
+        $spreadsheets = Excel::toArray(new \stdClass(), $file);
+        $data = $spreadsheets[0] ?? [];
 
         if (count($data) < 2) {
             return [
@@ -201,9 +202,37 @@ final class DailyReportUploadService
                 'work_time' => trim($employeeData['record'][$jamKey]),
                 'work_description' => trim($employeeData['record'][$descKey]),
                 'proof_url' => $employeeData['record'][$proofKey] ?? null,
+                'sort_datetime' => $this->calculateSortDatetime($employeeData['work_date'], trim($employeeData['record'][$jamKey])),
             ];
         }
 
         return $sessions;
+    }
+
+    /**
+     * Consistently calculate sort_datetime from date and time string.
+     */
+    private function calculateSortDatetime(string $date, string $time): ?Carbon
+    {
+        $timePart = '00:00:00';
+
+        // Handle "HH:MM - HH:MM"
+        if (str_contains($time, '-')) {
+            $parts = explode('-', $time);
+            $endTime = trim(end($parts));
+            if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $endTime, $matches)) {
+                $timePart = $matches[0] . ':00';
+            }
+        } 
+        // Handle "HH:MM"
+        elseif (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $time, $matches)) {
+            $timePart = $matches[0] . ':00';
+        }
+
+        try {
+            return Carbon::parse("$date $timePart");
+        } catch (\Exception $e) {
+            return Carbon::parse($date);
+        }
     }
 }

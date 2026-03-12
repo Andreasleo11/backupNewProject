@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,10 +21,12 @@ class EmployeeDailyReport extends Model
         'work_time',
         'work_description',
         'proof_url',
+        'sort_datetime',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
         'work_date' => 'date',
+        'sort_datetime' => 'datetime',
     ];
 }

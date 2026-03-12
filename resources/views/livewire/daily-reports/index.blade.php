@@ -51,11 +51,24 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                     </svg>
-                    <span>Filter Lanjutan</span>
+                    <span>Filter</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all w-full sm:w-auto z-10"
+                    @click="$dispatch('openUpload')"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Laporan Baru</span>
                 </button>
             </div>
         </div>
     </div>
+
+    @livewire('daily-reports.upload-overlay')
 
     {{-- Advanced Filters Panel --}}
     <div
@@ -71,26 +84,8 @@
     >
         <div class="rounded-b-3xl border border-t-0 border-slate-200 bg-white p-6 shadow-xl">
             <div class="grid gap-5 md:grid-cols-12 md:items-end">
-                {{-- Karyawan --}}
-                <div class="md:col-span-3">
-                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Karyawan
-                    </label>
-                    <select
-                        class="block w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white outline-none transition-colors"
-                        wire:model.live="employeeId"
-                    >
-                        <option value="">— Semua Karyawan —</option>
-                        @foreach ($this->employeesDropdown as $emp)
-                            <option value="{{ $emp['employee_id'] }}">
-                                {{ $emp['employee_name'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
                 {{-- Jabatan --}}
-                <div class="md:col-span-3">
+                <div class="md:col-span-4">
                     <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Jabatan
                     </label>
@@ -107,7 +102,7 @@
 
                 {{-- Dept No (optional) --}}
                 @if ($canPickDept)
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-4">
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                             Departemen
                         </label>
@@ -218,16 +213,16 @@
                             <tr class="transition-colors hover:bg-slate-50/80 group">
                                 <td class="whitespace-nowrap px-6 py-4">
                                     <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">
-                                        {{ $employee->employee_id }}
+                                        {{ $employee->nik }}
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4">
                                     <span class="text-sm font-semibold text-slate-700">
-                                        {{ $employee->departement_id }}
+                                        {{ $employee->dept_code }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-900">{{ $employee->employee_name }}</div>
+                                    <div class="font-bold text-slate-900">{{ $employee->name }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     @if (!empty($employee->position))
@@ -250,24 +245,23 @@
                                             </span>
                                         </div>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-1 rounded-md">
-                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100/50">
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            Belum Ada
+                                            BELUM PERNAH LAPORAN
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <a
-                                        href="{{ route('daily-reports.depthead.show', $employee->employee_id) }}"
-                                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-indigo-50 hover:text-indigo-700 hover:ring-indigo-300 active:scale-95 group-hover:shadow-md"
-                                    >
-                                        <span>Analisis</span>
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </a>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('daily-reports.show', $employee->nik) }}" wire:navigate class="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-black text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 transition-all hover:bg-slate-50 hover:shadow-md group/btn">
+                                            <span>Lihat Detail</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

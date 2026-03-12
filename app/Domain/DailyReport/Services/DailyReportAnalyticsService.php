@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\DailyReport\Services;
 
-use App\Models\EmployeeDailyReport;
+use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -13,19 +13,14 @@ final class DailyReportAnalyticsService
     /**
      * Get reports for employee with calendar analytics.
      */
-    public function getEmployeeReports(string $employeeId, ?string $deptNo, array $filters, $user): array
+    public function getEmployeeReports(string $employeeId, array $filters, $user): array
     {
         $query = EmployeeDailyReport::where('employee_id', $employeeId);
-
-        // Apply department filtering
-        if (! $this->canViewAllDepartments($user)) {
-            $query->where('departement_id', $deptNo);
-        }
 
         // Apply date filters
         $this->applyDateFilters($query, $filters);
 
-        $reports = $query->orderByDesc('work_date')->orderByDesc('work_time')->get();
+        $reports = $query->orderByDesc('sort_datetime')->get();
 
         // Calculate calendar data
         $calendarData = $this->calculateCalendarData($reports);

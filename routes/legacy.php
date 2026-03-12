@@ -46,12 +46,6 @@ Route::middleware('auth')->group(function () {
     // Sync Progress (utility)
     Route::get('/sync-progress/{job}/{tab}', [SyncProgressController::class, 'getProgress'])->name('sync.progress');
 
-    // not decide where to put this route
-    Route::get('/daily-reports/{employee_id}', [App\Http\Controllers\EmployeeDailyReportController::class, 'show'])->name('daily-reports.depthead.show');
-
-    Route::get('/upload-daily-report', [App\Http\Controllers\EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
-    Route::post('/daily-report/confirm-upload', [App\Http\Controllers\EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
-    Route::post('/upload-daily-report', [App\Http\Controllers\EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
     Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
     Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');

@@ -3,14 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\EmployeeDailyReport;
+use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
 use App\Models\User;
 use App\Notifications\MissingDailyReportsNotification;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
-class NofifyMissingReports extends Command
+class NotifyMissingReports extends Command
 {
     /**
      * The name and signature of the console command.
