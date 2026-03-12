@@ -194,15 +194,15 @@ final class DailyReportUploadService
 
             $sessions[] = [
                 'submitted_at' => $employeeData['submitted_at'],
-                'report_type' => 'Baru',
                 'employee_id' => $employeeData['employee_id'],
-                'employee_name' => $employeeData['employee_name'],
-                'departement_id' => $employeeData['department_id'],
                 'work_date' => $employeeData['work_date'],
                 'work_time' => trim($employeeData['record'][$jamKey]),
                 'work_description' => trim($employeeData['record'][$descKey]),
                 'proof_url' => $employeeData['record'][$proofKey] ?? null,
                 'sort_datetime' => $this->calculateSortDatetime($employeeData['work_date'], trim($employeeData['record'][$jamKey])),
+                // Keep these for UI Preview only, they will be ignored by Model::create() due to $fillable
+                'employee_name' => $employeeData['employee_name'],
+                'departement_id' => $employeeData['department_id'],
             ];
         }
 

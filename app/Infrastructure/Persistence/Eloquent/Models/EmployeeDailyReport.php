@@ -13,10 +13,7 @@ class EmployeeDailyReport extends Model
 
     protected $fillable = [
         'submitted_at',
-        'report_type',
         'employee_id',
-        'departement_id',
-        'employee_name',
         'work_date',
         'work_time',
         'work_description',
