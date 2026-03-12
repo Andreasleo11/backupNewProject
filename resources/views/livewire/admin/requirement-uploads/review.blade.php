@@ -226,112 +226,114 @@
     @endif
 
     {{-- Alpine Slide-over for Decision --}}
-    <div x-show="decisionPanelOpen" style="display: none;" class="relative z-50">
-        {{-- Backdrop --}}
-        <div x-show="decisionPanelOpen"
-            x-transition:enter="ease-in-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="ease-in-out duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="decisionPanelOpen = false"></div>
+    <template x-teleport="body">
+        <div x-show="decisionPanelOpen" class="relative z-[100]" x-cloak>
+            {{-- Backdrop --}}
+            <div x-show="decisionPanelOpen"
+                x-transition:enter="ease-in-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in-out duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="decisionPanelOpen = false"></div>
 
-        <div class="fixed inset-0 overflow-hidden">
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-                    {{-- Slide-over panel --}}
-                    <div x-show="decisionPanelOpen"
-                        x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500"
-                        x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-                        x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500"
-                        x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-                        class="pointer-events-auto w-screen max-w-md">
+            <div class="fixed inset-0 overflow-hidden">
+                <div class="absolute inset-0 overflow-hidden">
+                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                        {{-- Slide-over panel --}}
+                        <div x-show="decisionPanelOpen"
+                            x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500"
+                            x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                            x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500"
+                            x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+                            class="pointer-events-auto w-screen max-w-md">
 
-                        <div class="flex h-full flex-col bg-white shadow-2xl">
-                            {{-- Header --}}
-                            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                                <h2 class="text-lg font-bold text-slate-800">Review Submission</h2>
-                                <button @click="decisionPanelOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                                    <i class="bx bx-x text-2xl"></i>
-                                </button>
-                            </div>
+                            <div class="flex h-full flex-col bg-white shadow-2xl">
+                                {{-- Header --}}
+                                <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                    <h2 class="text-lg font-bold text-slate-800">Review Submission</h2>
+                                    <button @click="decisionPanelOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                        <i class="bx bx-x text-2xl"></i>
+                                    </button>
+                                </div>
 
-                            {{-- Content --}}
-                            <div class="flex-1 overflow-y-auto px-6 py-5">
-                                @if ($active)
-                                    <div class="space-y-6">
-                                        {{-- File context --}}
-                                        <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100/50">
-                                            <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Requirement</p>
-                                            <p class="text-sm font-bold text-slate-800">{{ $active['req_name'] }} <span class="font-normal text-slate-500">({{ $active['req_code'] }})</span></p>
+                                {{-- Content --}}
+                                <div class="flex-1 overflow-y-auto px-6 py-5">
+                                    @if ($active)
+                                        <div class="space-y-6">
+                                            {{-- File context --}}
+                                            <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100/50">
+                                                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Requirement</p>
+                                                <p class="text-sm font-bold text-slate-800">{{ $active['req_name'] }} <span class="font-normal text-slate-500">({{ $active['req_code'] }})</span></p>
 
-                                            <div class="mt-3">
-                                                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Department</p>
-                                                <p class="text-sm font-medium text-slate-800">{{ $active['dept_name'] }}</p>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Validity Claimed</p>
-                                                <p class="text-sm font-medium text-slate-800">{{ $active['valid_from'] ?? '—' }} <span class="text-slate-400 mx-1">→</span> {{ $active['valid_until'] ?? '—' }}</p>
-                                            </div>
-                                        </div>
-
-                                        {{-- File details --}}
-                                        <div>
-                                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Attached File</p>
-                                            <div class="flex items-start justify-between gap-4 p-3 rounded-xl border border-slate-200">
-                                                <div class="min-w-0 flex-1">
-                                                    <p class="text-sm font-semibold text-slate-800 truncate" title="{{ $active['original_name'] }}">{{ $active['original_name'] }}</p>
-                                                    <p class="text-xs text-slate-500 mt-0.5">{{ Str::limit($active['mime_type'], 20) }} · {{ number_format($active['size'] / 1024, 1) }} KB</p>
+                                                <div class="mt-3">
+                                                    <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Department</p>
+                                                    <p class="text-sm font-medium text-slate-800">{{ $active['dept_name'] }}</p>
                                                 </div>
-                                                <a href="{{ $active['download_url'] }}" target="_blank" rel="noopener"
-                                                    class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-indigo-600 transition-colors" title="Download">
-                                                    <i class="bx bx-download text-lg"></i>
-                                                </a>
+
+                                                <div class="mt-3">
+                                                    <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Validity Claimed</p>
+                                                    <p class="text-sm font-medium text-slate-800">{{ $active['valid_from'] ?? '—' }} <span class="text-slate-400 mx-1">→</span> {{ $active['valid_until'] ?? '—' }}</p>
+                                                </div>
                                             </div>
 
-                                            @if (Str::startsWith($active['mime_type'], 'image/'))
-                                                <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[150px]">
-                                                    <img src="{{ $active['preview_url'] }}" class="max-w-full h-auto object-contain" alt="preview">
+                                            {{-- File details --}}
+                                            <div>
+                                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Attached File</p>
+                                                <div class="flex items-start justify-between gap-4 p-3 rounded-xl border border-slate-200">
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-sm font-semibold text-slate-800 truncate" title="{{ $active['original_name'] }}">{{ $active['original_name'] }}</p>
+                                                        <p class="text-xs text-slate-500 mt-0.5">{{ Str::limit($active['mime_type'], 20) }} · {{ number_format($active['size'] / 1024, 1) }} KB</p>
+                                                    </div>
+                                                    <a href="{{ $active['download_url'] }}" target="_blank" rel="noopener"
+                                                        class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-indigo-600 transition-colors" title="Download">
+                                                        <i class="bx bx-download text-lg"></i>
+                                                    </a>
                                                 </div>
-                                            @endif
+
+                                                @if (Str::startsWith($active['mime_type'], 'image/'))
+                                                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[150px]">
+                                                        <img src="{{ $active['preview_url'] }}" class="max-w-full h-auto object-contain" alt="preview">
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            {{-- Notes --}}
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Review Notes (Optional)</label>
+                                                <textarea wire:model.defer="review_notes" rows="3"
+                                                    class="w-full rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none p-3"
+                                                    placeholder="Remarks for the department (e.g. why it was rejected)"></textarea>
+                                            </div>
                                         </div>
-
-                                        {{-- Notes --}}
-                                        <div>
-                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Review Notes (Optional)</label>
-                                            <textarea wire:model.defer="review_notes" rows="3"
-                                                class="w-full rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none p-3"
-                                                placeholder="Remarks for the department (e.g. why it was rejected)"></textarea>
+                                    @else
+                                        <div class="flex items-center justify-center h-full">
+                                            <div class="spinner-border text-indigo-500" role="status"></div>
                                         </div>
-                                    </div>
-                                @else
-                                    <div class="flex items-center justify-center h-full">
-                                        <div class="spinner-border text-indigo-500" role="status"></div>
-                                    </div>
-                                @endif
-                            </div>
+                                    @endif
+                                </div>
 
-                            {{-- Footer Actions --}}
-                            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                                <button @click="decisionPanelOpen = false" class="text-sm font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
+                                {{-- Footer Actions --}}
+                                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                                    <button @click="decisionPanelOpen = false" class="text-sm font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
 
-                                @if ($uploadId)
-                                    <div class="flex gap-2">
-                                        <button wire:click="reject({{ $uploadId }}); decisionPanelOpen = false"
-                                            class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 text-sm font-semibold transition-all">
-                                            <i class="bx bx-x text-lg"></i> Reject
-                                        </button>
-                                        <button wire:click="approve({{ $uploadId }}); decisionPanelOpen = false"
-                                            class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shadow-sm shadow-emerald-200 transition-all">
-                                            <i class="bx bx-check text-lg"></i> Approve
-                                        </button>
-                                    </div>
-                                @endif
+                                    @if ($uploadId)
+                                        <div class="flex gap-2">
+                                            <button wire:click="reject({{ $uploadId }}); decisionPanelOpen = false"
+                                                class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 text-sm font-semibold transition-all">
+                                                <i class="bx bx-x text-lg"></i> Reject
+                                            </button>
+                                            <button wire:click="approve({{ $uploadId }}); decisionPanelOpen = false"
+                                                class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shadow-sm shadow-emerald-200 transition-all">
+                                                <i class="bx bx-check text-lg"></i> Approve
+                                            </button>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
     {{-- Loading overlay --}}
     <div wire:loading.delay class="fixed inset-0 z-[100] bg-white/40 backdrop-blur-[2px] flex items-center justify-center">
