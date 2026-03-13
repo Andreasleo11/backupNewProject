@@ -49,7 +49,7 @@ class Index extends Component
         }
 
         // Scope employees to department (unless Bernadett or DIRECTOR)
-        $employeeQuery = Employee::query();
+        $employeeQuery = Employee::query()->whereNull('end_date');
         if ($user->name !== 'Bernadett' && ! $user->hasRole('DIRECTOR') && ! $user->hasRole('super-admin')) {
             $employeeQuery->where('dept_code', $user->department?->dept_no);
         }
@@ -103,9 +103,34 @@ class Index extends Component
         return true;
     }
 
+    public function getTeamStatsProperty(): array
+    {
+        $today = now()->toDateString();
+        
+        $totalEmployees = count($this->validNiks);
+        if ($totalEmployees === 0) return [
+            'submitted' => 0,
+            'total' => 0,
+            'rate' => 0
+        ];
+
+        $submittedToday = EmployeeDailyReport::whereIn('employee_id', $this->validNiks)
+            ->whereDate('work_date', $today)
+            ->whereHas('employee', fn($q) => $q->whereNull('end_date'))
+            ->distinct('employee_id')
+            ->count();
+
+        return [
+            'submitted' => $submittedToday,
+            'total' => $totalEmployees,
+            'rate' => round(($submittedToday / $totalEmployees) * 100)
+        ];
+    }
+
     public function render()
     {
         $query = \App\Infrastructure\Persistence\Eloquent\Models\Employee::query()
+            ->whereNull('end_date')
             ->with(['latestDailyReport'])
             ->when(! empty($this->validNiks), fn ($q) => $q->whereIn('nik', $this->validNiks))
             // Filters
@@ -114,7 +139,11 @@ class Index extends Component
             ->when($this->search, function ($q) {
                 $term = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($term) {
-                    $w->where('nik', 'like', $term)->orWhere('name', 'like', $term);
+                    $w->where('nik', 'like', $term)
+                      ->orWhere('name', 'like', $term)
+                      ->orWhereHas('dailyReports', function ($sub) use ($term) {
+                          $sub->where('work_description', 'like', $term);
+                      });
                 });
             })
             // Date filtering via subquery existence or relationship filter

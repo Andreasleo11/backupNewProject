@@ -1,3 +1,4 @@
+<template x-teleport="#modals-container">
 <div
     x-data="{ isOpen: @entangle('isOpen') }"
     x-show="isOpen"
@@ -198,3 +199,4 @@
         </div>
     </div>
 </div>
+</template>

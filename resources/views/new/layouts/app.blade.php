@@ -319,6 +319,7 @@
 
     {{-- Livewire scripts --}}
     @livewireScripts
+    <div id="modals-container"></div>
     @stack('modals')
     
     {{-- Toast Notification System --}}

@@ -6,7 +6,6 @@ namespace App\Domain\DailyReport\Services;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
-use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReportLog;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -59,31 +58,43 @@ final class DailyReportUploadService
     public function confirmUpload(array $rows): array
     {
         $logs = [];
+        $batchId = uniqid('upload_');
 
         foreach ($rows as $row) {
-            $logEntry = $row;
-            $logEntry['logged_at'] = now();
+            $logEntry = [
+                'employee_id' => $row['employee_id'],
+                'work_date' => $row['work_date'],
+                'work_time' => $row['work_time'],
+            ];
 
             try {
-                $isDuplicate = EmployeeDailyReport::where($row)->exists();
+                // Drop UI-only metadata from criteria
+                $criteria = collect($row)->except(['employee_name', 'departement_id'])->all();
+                $isDuplicate = EmployeeDailyReport::where($criteria)->exists();
 
                 if ($isDuplicate) {
                     $logEntry['status'] = 'Duplikat';
                     $logEntry['message'] = 'Data sudah ada, dilewati.';
+                    
+                    activity('daily_report')
+                        ->withProperties(['data' => $logEntry, 'batch' => $batchId])
+                        ->log("Duplicate report skipped for {$row['employee_id']}");
                 } else {
-                    EmployeeDailyReport::create($row);
+                    EmployeeDailyReport::create($criteria);
                     $logEntry['status'] = 'Berhasil';
                     $logEntry['message'] = null;
+                    
+                    // Note: EmployeeDailyReport creation is already logged via model trait
                 }
-
-                $logs[] = $logEntry;
-                EmployeeDailyReportLog::create($logEntry);
             } catch (\Exception $e) {
                 $logEntry['status'] = 'Gagal';
                 $logEntry['message'] = $e->getMessage();
-                $logs[] = $logEntry;
-                EmployeeDailyReportLog::create($logEntry);
+                
+                activity('daily_report')
+                    ->withProperties(['data' => $logEntry, 'error' => $e->getMessage(), 'batch' => $batchId])
+                    ->log("Failed to upload report for {$row['employee_id']}");
             }
+            $logs[] = $logEntry;
         }
 
         return $logs;
