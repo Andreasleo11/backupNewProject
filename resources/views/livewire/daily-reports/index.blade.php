@@ -68,7 +68,9 @@
         </div>
     </div>
 
-    @livewire('daily-reports.upload-overlay')
+    @push('modals')
+        @livewire('daily-reports.upload-overlay')
+    @endpush
 
     {{-- Team Stats Bar --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
