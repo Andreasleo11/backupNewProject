@@ -321,6 +321,8 @@
     @livewireScripts
     @stack('modals')
     
+    <livewire:ticketing.support-bubble />
+    
     {{-- Toast Notification System --}}
     <div x-data="toastManager()" 
          @toast.window="addToast($event.detail)"

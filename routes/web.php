@@ -87,3 +87,5 @@ require __DIR__ . '/master-data.php';
 
 // Legacy & Utility Routes
 require __DIR__ . '/legacy.php';
+
+require __DIR__ . '/ticketing.php';
