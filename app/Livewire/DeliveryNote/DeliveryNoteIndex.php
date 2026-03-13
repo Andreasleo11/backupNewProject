@@ -3,9 +3,11 @@
 namespace App\Livewire\DeliveryNote;
 
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('new.layouts.app')]
 class DeliveryNoteIndex extends Component
 {
     use WithPagination;
@@ -136,7 +138,7 @@ class DeliveryNoteIndex extends Component
         if (! auth()->check()) {
             return view('livewire.delivery-note.index', [
                 'deliveryNotes' => $deliveryNotes,
-            ])->layout('layouts.guest');
+            ]); // Returns default Layout attribute (new.layouts.app)
         }
 
         return view('livewire.delivery-note.index', [

@@ -1,3 +1,6 @@
+@section('page-title', $deliveryNote?->exists ? 'Edit Delivery Note' : 'Create Delivery Note')
+@section('page-subtitle', 'Specify branch, vehicle, and destinations for logistical estimations.')
+
 <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
     {{-- MAIN FORM AREA --}}
     <div class="flex-1 w-full lg:max-w-4xl space-y-6">

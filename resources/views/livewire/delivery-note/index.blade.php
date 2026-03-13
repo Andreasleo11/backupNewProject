@@ -1,3 +1,6 @@
+@section('page-title', 'Delivery Notes')
+@section('page-subtitle', 'Manage logistics records, assignments, and approval stages.')
+
 <div x-data="{ showFilters: false }" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
     {{-- Flash message --}}

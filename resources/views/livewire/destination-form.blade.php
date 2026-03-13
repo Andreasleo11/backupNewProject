@@ -1,3 +1,6 @@
+@section('page-title', $destinationId ? 'Edit Destination' : 'Add Destination')
+@section('page-subtitle', 'Configure data for logistical drop-off points.')
+
 <div class="max-w-2xl mx-auto px-4 py-6">
     {{-- Header --}}
     <header class="mb-4">

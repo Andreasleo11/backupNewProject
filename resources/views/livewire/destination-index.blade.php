@@ -1,3 +1,6 @@
+@section('page-title', 'Destination Dictionary')
+@section('page-subtitle', 'Manage template destination points and address locations.')
+
 <div class="max-w-5xl mx-auto px-4 py-6">
     {{-- Header --}}
     <section class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

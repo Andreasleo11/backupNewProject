@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Destination;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('new.layouts.app')]
 class DestinationForm extends Component
 {
     public $destinationId;

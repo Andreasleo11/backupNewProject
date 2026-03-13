@@ -5,10 +5,12 @@ namespace App\Livewire\DeliveryNote;
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
 use App\Infrastructure\Persistence\Eloquent\Models\Destination;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Domains\Operations\Actions\CreateDeliveryNote;
 use App\Domains\Operations\Actions\UpdateDeliveryNote;
 
+#[Layout('new.layouts.app')]
 class DeliveryNoteForm extends Component
 {
     public ?DeliveryNote $deliveryNote = null;
@@ -202,7 +204,7 @@ class DeliveryNoteForm extends Component
     public function render()
     {
         if (! auth()->check()) {
-            return view('livewire.delivery-note.form')->layout('layouts.guest');
+            return view('livewire.delivery-note.form');
         }
 
         return view('livewire.delivery-note.form');
