@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Enums\VehicleStatus;
+use App\Models\ServiceRecord;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

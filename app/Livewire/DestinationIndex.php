@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Destination;
+use App\Infrastructure\Persistence\Eloquent\Models\Destination;
 use Livewire\Component;
 
 class DestinationIndex extends Component

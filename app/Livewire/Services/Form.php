@@ -4,7 +4,7 @@ namespace App\Livewire\Services;
 
 use App\Models\ServiceRecord;
 use App\Models\ServiceRecordItem;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
 use Livewire\Component;

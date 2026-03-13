@@ -3,7 +3,7 @@
 namespace App\Livewire\Vehicles;
 
 use App\Models\ServiceRecord;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;

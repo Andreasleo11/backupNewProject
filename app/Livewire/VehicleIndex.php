@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Livewire\Component;
 
 class VehicleIndex extends Component

@@ -3,7 +3,7 @@
 namespace App\Livewire\Vehicles;
 
 use App\Enums\VehicleStatus;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
