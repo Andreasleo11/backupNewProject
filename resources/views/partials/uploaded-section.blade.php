@@ -38,7 +38,7 @@
                     <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}" class="flex-1">
                         <div
                             class="h-full w-full rounded-xl border border-slate-200 bg-slate-50/60
-                                    px-3 py-2 shadow-sm hover:bg-slate-100 transition-colors">
+                                    px-3 py-2 shadow-sm hover:bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-300 group/card">
                             <div class="flex items-center gap-2 min-h-[72px]">
                                 {{-- Icon --}}
                                 <div class="flex-shrink-0">

@@ -286,14 +286,14 @@
                                 <form action="{{ route('monthly-budget-reports.submit', $report->id) }}" method="POST">
                                     @csrf
                                     <button type="submit"
-                                            class="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
-                                        <i class="bx bx-send text-lg"></i>
+                                            class="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 group">
+                                        <i class="bx bx-send text-lg group-hover:translate-x-1 transition-transform"></i>
                                         <span>Sign & Submit</span>
                                     </button>
                                 </form>
 
                                 <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
-                                   class="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white/50 py-2.5 text-sm font-bold text-amber-800 backdrop-blur-sm transition-all hover:bg-white active:scale-95">
+                                   class="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white/50 py-2.5 text-sm font-bold text-amber-800 backdrop-blur-sm transition-all hover:bg-white hover:border-amber-300 hover:shadow-sm active:scale-95">
                                     <i class="bx bx-pencil text-lg"></i>
                                     <span>Continue Editing</span>
                                 </a>
@@ -312,20 +312,22 @@
                         </h3>
                         <div class="space-y-3">
                             <button type="button" @click="$dispatch('open-approve-modal')"
-                                    class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:scale-[1.02] active:scale-95">
-                                <i class="bx bx-check-circle text-lg"></i>
+                                    class="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95">
+                                <i class="bx bx-check-circle text-lg animate-pulse-slow"></i>
                                 <span>Approve Report</span>
                             </button>
                             
-                            <button type="button" @click="$dispatch('open-reject-modal')"
-                                    class="w-full rounded-xl border border-rose-100 bg-white/50 py-2.5 text-sm font-bold text-rose-600 backdrop-blur-sm transition-all hover:bg-rose-50 hover:border-rose-200">
-                                Reject
-                            </button>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" @click="$dispatch('open-reject-modal')"
+                                        class="flex items-center justify-center rounded-xl border border-rose-100 bg-white/50 py-2.5 text-sm font-bold text-rose-600 backdrop-blur-sm transition-all hover:bg-rose-50 hover:border-rose-200 active:scale-95">
+                                    Reject
+                                </button>
 
-                            <button type="button" @click="$dispatch('open-return-modal')"
-                                    class="w-full rounded-xl border border-orange-100 bg-white/50 py-2.5 text-sm font-bold text-orange-600 backdrop-blur-sm transition-all hover:bg-orange-50 hover:border-orange-200">
-                                Return for Revision
-                            </button>
+                                <button type="button" @click="$dispatch('open-return-modal')"
+                                        class="flex items-center justify-center rounded-xl border border-orange-100 bg-white/50 py-2.5 text-sm font-bold text-orange-600 backdrop-blur-sm transition-all hover:bg-orange-50 hover:border-orange-200 active:scale-95">
+                                    Return
+                                </button>
+                            </div>
                         </div>
                     </div>
                 @endif

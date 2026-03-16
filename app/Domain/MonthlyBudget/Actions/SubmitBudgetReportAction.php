@@ -25,8 +25,9 @@ final class SubmitBudgetReportAction
     public function execute(MonthlyBudgetReport $report, int $userId): array
     {
         try {
-            // Check if already submitted or has active workflow
-            if ($report->approvalRequest && $report->approvalRequest->status !== 'REJECTED') {
+            // Allow resubmission if not submitted, REJECTED, or RETURNED
+            $allowedStatuses = ['REJECTED', 'RETURNED'];
+            if ($report->approvalRequest && !in_array($report->approvalRequest->status, $allowedStatuses)) {
                 return [
                     'success' => false,
                     'message' => 'Report is already submitted or in review.',
@@ -47,7 +48,7 @@ final class SubmitBudgetReportAction
 
                 return [
                     'success' => true,
-                    'message' => 'Report submitted for approval successfully.',
+                    'message' => 'Monthly Budget Report has been signed and submitted for approval.',
                 ];
             });
         } catch (\Exception $e) {

@@ -136,10 +136,18 @@ class Form extends Component
             } else {
                 if ($this->reportId) {
                     $result = $service->updateReport($this->reportId, $data);
+                    
                     // Sync items (Delete and Re-create for simplicity in this TALL implementation)
                     \App\Models\MonthlyBudgetReportDetail::where('header_id', $this->reportId)->delete();
                     foreach ($this->items as $item) {
-                        \App\Models\MonthlyBudgetReportDetail::create(array_merge($item, ['header_id' => $this->reportId]));
+                        // Strip IDs and metadata to avoid conflicts and mass-assignment issues
+                        $cleanItem = collect($item)->except(['id', 'header_id', 'created_at', 'updated_at', 'deleted_at'])->toArray();
+                        
+                        // Sanitize numeric fields
+                        $cleanItem['last_recorded_stock'] = empty($cleanItem['last_recorded_stock']) ? null : $cleanItem['last_recorded_stock'];
+                        $cleanItem['quantity'] = empty($cleanItem['quantity']) ? 0 : $cleanItem['quantity'];
+                        
+                        \App\Models\MonthlyBudgetReportDetail::create(array_merge($cleanItem, ['header_id' => $this->reportId]));
                     }
                 } else {
                     $result = $service->createReport($data, $this->items);
@@ -160,8 +168,13 @@ class Form extends Component
             }
 
             DB::commit();
-            session()->flash('success', $result['message']);
-            $this->redirectRoute('monthly-budget-reports.index');
+            
+            $message = ($action === 'submit' && isset($submitResult))
+                ? $submitResult['message']
+                : 'Draft saved successfully.';
+
+            session()->flash('success', $message);
+            $this->redirectRoute('monthly-budget-reports.show', $report->id);
 
         } catch (\Exception $e) {
             DB::rollBack();

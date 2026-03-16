@@ -37,9 +37,9 @@ final class BudgetReportService
                         'name' => $item['name'],
                         'spec' => $item['spec'] ?? null,
                         'uom' => $item['uom'],
-                        'last_recorded_stock' => $item['last_recorded_stock'] ?? null,
+                        'last_recorded_stock' => empty($item['last_recorded_stock']) ? null : $item['last_recorded_stock'],
                         'usage_per_month' => $item['usage_per_month'] ?? null,
-                        'quantity' => $item['quantity'],
+                        'quantity' => empty($item['quantity']) ? 0 : $item['quantity'],
                         'remark' => $item['remark'],
                     ]);
                 }
