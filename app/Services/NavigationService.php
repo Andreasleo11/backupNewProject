@@ -449,12 +449,12 @@ class NavigationService
         if ($user->hasRole('super-admin')) {
             return collect($menu)->map(function ($item) {
                 if ($item['type'] === 'single' && isset($item['route'])) {
-                    $item['active'] = request()->routeIs($item['route']);
+                    // Item active state is already pre-calculated in getBaseMenuStructure
                 }
                 if (isset($item['children'])) {
                     $item['children'] = collect($item['children'])->map(function ($child) {
                         if (isset($child['route'])) {
-                            $child['active'] = request()->routeIs($child['route']);
+                            // Child active state is already pre-calculated in getBaseMenuStructure
                         }
 
                         return $child;
@@ -603,7 +603,7 @@ class NavigationService
                     'label' => $item['label'],
                     'route' => $item['route'],
                     'icon' => $item['icon'] ?? 'circle',
-                    'active' => request()->routeIs($item['route']),
+                    'active' => $item['active'] ?? request()->routeIs($item['route']),
                 ];
             }
 
@@ -616,7 +616,7 @@ class NavigationService
                         'label' => $child['label'],
                         'route' => $child['route'],
                         'icon' => $child['icon'] ?? 'circle',
-                        'active' => request()->routeIs($child['route']),
+                        'active' => $child['active'] ?? request()->routeIs($child['route']),
                     ];
                 }
             }
