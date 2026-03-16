@@ -255,14 +255,12 @@
         </div>
     </section>
 
-    {{-- Uploaded files section --}}
+    {{-- Related Documents Section --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
-            <i class="bx bx-paperclip text-indigo-500 text-lg"></i> Attachments
-        </h3>
-        @include('partials.uploaded-section', [
-            'showDeleteButton' => $canUpload,
+        @include('partials.file-attachments', [
             'files' => $report->files,
+            'showDelete' => $canUpload,
+            'title' => 'Related Documents'
         ])
     </div>
 </div>

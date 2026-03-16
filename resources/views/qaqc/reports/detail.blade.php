@@ -717,13 +717,14 @@
             </div>
         </section>
 
-        {{-- ========= UPLOADED FILES SECTION ========= --}}
-        <section aria-label="uploaded" class="mt-2">
-            @include('partials.uploaded-section', [
-                'showDeleteButton' => true,
+        {{-- Related Documents Section --}}
+        <div class="mt-4 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            @include('partials.file-attachments', [
                 'files' => $report->files,
+                'showDelete' => true,
+                'title' => 'Related Documents'
             ])
-        </section>
+        </div>
     </div>
 @endsection
 

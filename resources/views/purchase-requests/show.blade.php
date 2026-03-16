@@ -595,58 +595,12 @@
                         <i class="bi bi-paperclip text-indigo-500"></i> Related Documents
                     </h3>
 
-                    @if($purchaseRequest->files->isNotEmpty())
-                        <div class="space-y-3">
-                            @foreach($purchaseRequest->files as $file)
-                                <div class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-3 transition-colors hover:border-indigo-100 hover:bg-slate-50">
-                                    <div class="flex items-center gap-3 overflow-hidden">
-                                        {{-- File Icon --}}
-                                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-100">
-                                            @if(Str::contains($file->mime_type, 'image'))
-                                                <i class="bi bi-file-earmark-image text-lg text-purple-500"></i>
-                                            @elseif(Str::contains($file->mime_type, 'pdf'))
-                                                <i class="bi bi-file-earmark-pdf text-lg text-rose-500"></i>
-                                            @elseif(Str::contains($file->mime_type, 'spreadsheet') || Str::contains($file->mime_type, 'excel'))
-                                                <i class="bi bi-file-earmark-spreadsheet text-lg text-emerald-500"></i>
-                                            @else
-                                                <i class="bi bi-file-earmark-text text-lg text-slate-500"></i>
-                                            @endif
-                                        </div>
-                                        
-                                        <div class="min-w-0">
-                                            <p class="truncate text-sm font-bold text-slate-700" title="{{ $file->name }}">
-                                                {{ $file->name }}
-                                            </p>
-                                            <p class="text-[10px] text-slate-400">
-                                                {{ number_format($file->size / 1024, 2) }} KB
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <a href="{{ asset('storage/files/' . $file->name) }}" 
-                                       target="_blank"
-                                       class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-indigo-50 hover:text-indigo-600"
-                                       title="Download / View">
-                                        <i class="bi bi-download"></i>
-                                    </a>
-                                    @if($canUpload) {{-- Using same permission as upload --}}
-                                        <form action="{{ route('file.destroy', $file->id) }}" method="POST" onsubmit="return confirm('Delete this file?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg text-rose-400 transition-all hover:bg-rose-50 hover:text-rose-600" title="Delete">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="flex flex-col items-center justify-center py-6 text-center">
-                            <i class="bi bi-folder2-open text-3xl text-slate-200 mb-2"></i>
-                            <p class="text-xs font-medium text-slate-400">No documents attached.</p>
-                        </div>
-                    @endif
+                    @include('partials.file-attachments', [
+                        'files' => $purchaseRequest->files,
+                        'showDelete' => $canUpload,
+                        'title' => 'Related Documents',
+                        'gridCols' => 'grid-cols-1'
+                    ])
                 </div>
 
             </div>

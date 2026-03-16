@@ -247,10 +247,14 @@
                     ])
                 @endif
 
-                <section aria-label="uploaded">
-                    @include('partials.uploaded-section', [
-                        'showDeleteButton' => $user->id === $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER',
-                    ])
+                <section aria-label="Related Documents">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                        @include('partials.file-attachments', [
+                            'files' => $purchaseOrder->files,
+                            'showDelete' => $user->id === $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER',
+                            'title' => 'Related Documents'
+                        ])
+                    </div>
                 </section>
             </div>
         @endif

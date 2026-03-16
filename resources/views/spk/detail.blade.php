@@ -654,11 +654,12 @@
             </div>
         </div>
 
-        {{-- Uploaded files section --}}
-        <div class="mt-6">
-            @include('partials.uploaded-section', [
+        {{-- Related Documents Section --}}
+        <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            @include('partials.file-attachments', [
                 'files' => $files,
-                'showDeleteButton' => $report->pelapor === $authUser->name || $report->status_laporan === 2,
+                'showDelete' => $report->pelapor === $authUser->name || $report->status_laporan === 2,
+                'title' => 'Related Documents'
             ])
         </div>
     </div>

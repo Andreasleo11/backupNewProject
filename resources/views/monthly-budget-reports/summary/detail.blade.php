@@ -262,14 +262,12 @@
             @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
         </div>
 
-        {{-- Uploaded files section --}}
+        {{-- Related Documents Section --}}
         <div class="glass-card p-6">
-            <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
-                <i class="bx bx-paperclip text-indigo-500 text-lg"></i> Attachments
-            </h3>
-            @include('partials.uploaded-section', [
-                'showDeleteButton' => $report->status === 'DRAFT' || $report->status === 'WAITING_CREATOR',
+            @include('partials.file-attachments', [
                 'files' => $report->files,
+                'showDelete' => $report->status === 'DRAFT' || $report->status === 'WAITING_CREATOR' || (isset($statusEnum) && ($statusEnum === SummaryStatus::WAITING_CREATOR)),
+                'title' => 'Related Documents'
             ])
         </div>
     </div>
