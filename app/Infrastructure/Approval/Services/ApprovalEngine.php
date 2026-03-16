@@ -74,6 +74,36 @@ final class ApprovalEngine implements Approvals
         });
     }
 
+    public function cancel(Approvable $approvable, int $by, ?string $reason = null): void
+    {
+        /** @var ApprovalRequest|null $req */
+        $req = $approvable->approvalRequest()->with('steps')->first();
+
+        // If no approval request exists, there's nothing for the engine to cancel.
+        // The calling service might still mark the model as cancelled.
+        if (! $req) {
+            return;
+        }
+
+        DB::transaction(function () use ($req, $by, $reason) {
+            $from = $req->status;
+
+            // Mark current step as CANCELLED if it exists and is in a terminal-like state
+            $step = $req->steps()->where('sequence', $req->current_step)->first();
+            if ($step && $step->status === 'PENDING') {
+                $step->update([
+                    'status' => 'CANCELED',
+                    'acted_by' => $by,
+                    'acted_at' => now(),
+                    'remarks' => $reason,
+                ]);
+            }
+
+            $req->update(['status' => 'CANCELED']);
+            $this->log($req, $by, $from, 'CANCELED', $reason);
+        });
+    }
+
     public function submit(Approvable $approvable, int $by, array $ctx = []): ApprovalInfo
     {
         $req = DB::transaction(function () use ($approvable, $by, $ctx) {

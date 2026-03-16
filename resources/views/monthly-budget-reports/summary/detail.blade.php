@@ -306,7 +306,7 @@
             <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
                 <i class="bx bx-history text-indigo-500 text-lg"></i> Workflow History
             </h3>
-            @include('partials.pr-approval-timeline', ['pr' => $report])
+            @include('partials.workflow-timeline', ['record' => $report])
         </div>
     </div>
 </div>

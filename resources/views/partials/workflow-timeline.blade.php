@@ -3,11 +3,11 @@
     Shows visual progress through the approval workflow
     
     Props:
-    - $pr: PurchaseRequest model with approvalRequest relationship loaded
+    - $record: Model with approvalRequest relationship loaded
 --}}
 
 @php
-    $approval = $pr->approvalRequest;
+    $approval = $record->approvalRequest;
     $steps = $approval?->steps->sortBy('sequence') ?? collect();
     $currentStep = $approval?->current_step ?? 0;
     $totalSteps = $steps->count();
@@ -31,6 +31,8 @@
                     $dotColor = match(true) {
                         $isCompleted => 'bg-emerald-500 ring-emerald-100',
                         $isCurrent && $approval->status == 'RETURNED' => 'bg-orange-500 ring-orange-100', // Returned
+                        $step->status == 'CANCELED' => 'bg-rose-100 ring-rose-50 border-2 border-rose-500', // Canceled step
+                        $isCurrent && $approval->status == 'CANCELED' => 'bg-rose-500 ring-rose-100', // Current but canceled
                         $isCurrent => 'bg-white border-2 border-indigo-600 ring-indigo-50',
                         $approval->status == 'REJECTED' && $isCurrent => 'bg-rose-500 ring-rose-100', // If rejected at this step
                         default => 'bg-slate-200 ring-slate-50',
@@ -39,6 +41,7 @@
                     $icon = match(true) {
                         $isCompleted => '<i class="bi bi-check text-white text-xs"></i>',
                         $isCurrent && $approval->status == 'RETURNED' => '<i class="bi bi-arrow-return-left text-white text-xs"></i>',
+                        $step->status == 'CANCELED' || ($isCurrent && $approval->status == 'CANCELED') => '<i class="bi bi-x text-rose-600 text-xs"></i>',
                         $isCurrent => '<div class="h-2 w-2 rounded-full bg-indigo-600"></div>',
                         default => '',
                     };
@@ -131,6 +134,16 @@
                 <div class="pt-1">
                     <p class="text-xs font-bold text-orange-700">Returned for Revision</p>
                     <p class="text-[10px] text-slate-500">Please check comments and resubmit.</p>
+                </div>
+             </div>
+        @elseif($approval->status == 'CANCELED')
+             <div class="relative flex gap-4 mt-8">
+                 <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-600 ring-4 ring-rose-100">
+                    <i class="bi bi-x-circle text-white text-xs"></i>
+                </div>
+                <div class="pt-1">
+                    <p class="text-xs font-bold text-rose-700">Workflow Canceled</p>
+                    <p class="text-[10px] text-slate-500">This report is permanently terminated.</p>
                 </div>
              </div>
         @endif

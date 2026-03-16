@@ -585,7 +585,7 @@
                     
                     {{-- Using existing partial but wrapped in our container --}}
                     <div class="relative">
-                        @include('partials.pr-approval-timeline', ['pr' => $purchaseRequest])
+                        @include('partials.workflow-timeline', ['record' => $purchaseRequest])
                     </div>
                 </div>
 

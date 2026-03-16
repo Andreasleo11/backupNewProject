@@ -33,4 +33,9 @@ interface Approvals
      * Return the approvable to the creator for revision.
      */
     public function return(Approvable $approvable, int $byUserId, string $reason): void;
+
+    /**
+     * Cancel the approval workflow.
+     */
+    public function cancel(Approvable $approvable, int $byUserId, ?string $reason = null): void;
 }

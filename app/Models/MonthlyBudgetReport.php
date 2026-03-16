@@ -106,6 +106,7 @@ class MonthlyBudgetReport extends Model implements Approvable
                     $uiStatus = match ($step->status) {
                         'APPROVED' => 'signed',
                         'REJECTED' => 'rejected',
+                        'CANCELED' => 'canceled',
                         default   => 'pending',
                     };
 

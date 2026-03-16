@@ -13,6 +13,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 final class BudgetReportService
 {
+    public function __construct(private \App\Application\Approval\Contracts\Approvals $approvals) {}
+
     /**
      * Create budget report with items.
      */
@@ -165,6 +167,9 @@ final class BudgetReportService
                 'message' => 'Report not found',
             ];
         }
+
+        // Use Approval Engine to cancel if it has started
+        $this->approvals->cancel($report, auth()->id(), $reason);
 
         $report->update([
             'is_cancel' => true,

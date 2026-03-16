@@ -322,7 +322,7 @@
                             </p>
                         </div>
                     @else
-                        @include('partials.pr-approval-timeline', ['pr' => $report])
+                        @include('partials.workflow-timeline', ['record' => $report])
                     @endif
                 </div>
             </div>
