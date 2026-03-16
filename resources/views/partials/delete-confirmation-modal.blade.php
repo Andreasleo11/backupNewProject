@@ -21,53 +21,50 @@
         </button>
     @endif
 
-    @if($push)
-        @push('modals')
-    @endif
+    {{-- Teleport to body for full-screen overlay --}}
+    <template x-teleport="body">
+        <div>
+            {{-- Backdrop --}}
+            <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false"
+                @keydown.escape.window="open = false" x-cloak></div>
 
-    {{-- Backdrop --}}
-    <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false"
-        @keydown.escape.window="open = false" x-cloak></div>
+            {{-- Modal --}}
+            <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" role="dialog"
+                aria-modal="true" x-cloak>
+                <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden transform transition-all">
+                    <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
+                        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="bx bx-error-circle text-rose-500"></i>
+                            {!! $title !!}
+                        </h2>
+                        <button type="button" @click="open = false"
+                            class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                            <i class="bx bx-x text-xl"></i>
+                        </button>
+                    </div>
 
-    {{-- Modal --}}
-    <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" role="dialog"
-        aria-modal="true" x-cloak>
-        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden transform transition-all">
-            <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <i class="bx bx-error-circle text-rose-500"></i>
-                    {!! $title !!}
-                </h2>
-                <button type="button" @click="open = false"
-                    class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                    <i class="bx bx-x text-xl"></i>
-                </button>
-            </div>
+                    <div class="px-6 py-6 text-sm text-slate-600 leading-relaxed font-medium">
+                        {!! $body !!}
+                    </div>
 
-            <div class="px-6 py-6 text-sm text-slate-600 leading-relaxed font-medium">
-                {!! $body !!}
-            </div>
+                    <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50/30">
+                        <button type="button" @click="open = false"
+                            class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all hover:border-slate-400">
+                            Cancel
+                        </button>
 
-            <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50/30">
-                <button type="button" @click="open = false"
-                    class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all hover:border-slate-400">
-                    Cancel
-                </button>
-
-                <form method="POST" action="{{ route($route, $id) }}">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit"
-                        class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all hover:scale-105 active:scale-95">
-                        <i class="bx bx-trash-alt mr-1.5 text-[0.9rem]"></i>
-                        Confirm Delete
-                    </button>
-                </form>
+                        <form method="POST" action="{{ route($route, $id) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all hover:scale-105 active:scale-95">
+                                <i class="bx bx-trash-alt mr-1.5 text-[0.9rem]"></i>
+                                Confirm Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
-    @if($push)
-        @endpush
-    @endif
+    </template>
 </div>

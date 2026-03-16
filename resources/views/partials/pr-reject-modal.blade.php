@@ -6,7 +6,7 @@
     - $pr: PurchaseRequest model
 --}}
 
-<div x-data="{ open: false }" x-show="open" x-cloak
+<div x-data="{ open: false }" 
      @open-reject-modal.window="open = true"
      x-init="$watch('open', value => {
         if (value) {
@@ -15,83 +15,88 @@
             document.body.classList.remove('overflow-hidden');
         }
      })"
-     class="fixed inset-0 z-[100] overflow-y-auto" 
-     aria-labelledby="modal-title" 
-     role="dialog" 
-     aria-modal="true">
-    
-    {{-- Backdrop --}}
-    <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity"
-         @click="open = false"></div>
-    
-    {{-- Modal Panel --}}
-    <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all"
-             @click.stop>
+>
+    <template x-teleport="body">
+        <div x-show="open" x-cloak
+             class="fixed inset-0 z-[100] overflow-y-auto" 
+             aria-labelledby="modal-title" 
+             role="dialog" 
+             aria-modal="true">
             
-            {{-- Header --}}
-            <div class="bg-gradient-to-r from-rose-500 to-rose-600 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white bg-opacity-20">
-                            <i class='bx bx-x-circle text-2xl text-white'></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-white" id="modal-title">
-                            Reject Purchase Request
-                        </h3>
-                    </div>
-                    <button type="button" 
-                            @click="open = false"
-                            class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
-                        <i class='bx bx-x text-2xl'></i>
-                    </button>
-                </div>
-            </div>
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity"
+                 @click="open = false"></div>
             
-            {{-- Body --}}
-            <form method="POST" action="{{ route('purchase-requests.reject', $pr->id) }}" class="p-6">
-                @csrf
-                
-                <div class="mb-6">
-                    <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4">
-                        <i class='bx bx-info-circle text-xl text-rose-600'></i>
-                        <div class="text-sm text-rose-800">
-                            <p class="font-medium">This action cannot be undone.</p>
-                            <p class="mt-1 text-rose-700">
-                                Please provide a clear reason for rejection. This will be visible to the requester.
-                            </p>
+            {{-- Modal Panel --}}
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all"
+                     @click.stop>
+                    
+                    {{-- Header --}}
+                    <div class="bg-gradient-to-r from-rose-500 to-rose-600 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white bg-opacity-20">
+                                    <i class='bx bx-x-circle text-2xl text-white'></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-white" id="modal-title">
+                                    Reject Purchase Request
+                                </h3>
+                            </div>
+                            <button type="button" 
+                                    @click="open = false"
+                                    class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
+                                <i class='bx bx-x text-2xl'></i>
+                            </button>
                         </div>
                     </div>
                     
-                    <div class="mb-2">
-                        <label for="reject-remarks" class="block text-sm font-semibold text-slate-700">
-                            Rejection Reason <span class="text-rose-500">*</span>
-                        </label>
-                    </div>
-                    <textarea 
-                        id="reject-remarks"
-                        name="remarks" 
-                        rows="4"
-                        required
-                        placeholder="e.g., Budget constraints, incorrect specifications, duplicate request..."
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder-slate-400 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"></textarea>
-                    <p class="mt-1 text-xs text-slate-500">Minimum 10 characters</p>
+                    {{-- Body --}}
+                    <form method="POST" action="{{ route('purchase-requests.reject', $pr->id) }}" class="p-6">
+                        @csrf
+                        
+                        <div class="mb-6">
+                            <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4">
+                                <i class='bx bx-info-circle text-xl text-rose-600'></i>
+                                <div class="text-sm text-rose-800">
+                                    <p class="font-medium">This action cannot be undone.</p>
+                                    <p class="mt-1 text-rose-700">
+                                        Please provide a clear reason for rejection. This will be visible to the requester.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label for="reject-remarks" class="block text-sm font-semibold text-slate-700">
+                                    Rejection Reason <span class="text-rose-500">*</span>
+                                </label>
+                            </div>
+                            <textarea 
+                                id="reject-remarks"
+                                name="remarks" 
+                                rows="4"
+                                required
+                                placeholder="e.g., Budget constraints, incorrect specifications, duplicate request..."
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder-slate-400 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"></textarea>
+                            <p class="mt-1 text-xs text-slate-500">Minimum 10 characters</p>
+                        </div>
+                        
+                        {{-- Actions --}}
+                        <div class="flex items-center justify-end gap-3">
+                            <button type="button"
+                                    @click="open = false"
+                                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700">
+                                <i class='bx bx-x-circle'></i>
+                                <span>Reject Request</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                
-                {{-- Actions --}}
-                <div class="flex items-center justify-end gap-3">
-                    <button type="button"
-                            @click="open = false"
-                            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                            class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700">
-                        <i class='bx bx-x-circle'></i>
-                        <span>Reject Request</span>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </template>
 </div>
