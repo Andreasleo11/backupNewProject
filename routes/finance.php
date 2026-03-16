@@ -28,10 +28,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     // Monthly Budget Reports
     Route::get('monthly-budget-reports', \App\Livewire\MonthlyBudget\Index::class)->name('monthly-budget-reports.index');
-    Route::get('monthly-budget-reports/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly-budget-reports.create');
-    Route::post('monthly-budget-reports', [MonthlyBudgetReportController::class, 'store'])->name('monthly-budget-reports.store');
-    Route::get('monthly-budget-reports/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly-budget-reports.edit');
-    Route::put('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly-budget-reports.update');
+    Route::get('monthly-budget-reports/create', \App\Livewire\MonthlyBudget\Form::class)->name('monthly-budget-reports.create');
+    Route::get('monthly-budget-reports/{reportId}/edit', \App\Livewire\MonthlyBudget\Form::class)->name('monthly-budget-reports.edit');
     Route::get('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly-budget-reports.show');
     Route::delete('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly-budget-reports.delete');
     Route::put('monthly-budget-reports/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly-budget-reports.reject');
@@ -42,10 +40,6 @@ Route::middleware('auth')->group(function () {
     Route::put('monthly-budget-reports/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('monthly-budget-reports/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
-    // Monthly Budget Report Details
-    Route::post('monthly-budget-report-detail', [MonthlyBudgetReportDetailController::class, 'store'])->name('monthly.budget.report.detail.store');
-    Route::put('monthly-budget-report-detail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
-    Route::delete('monthly-budget-report-detail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 
     // Monthly Budget Summaries
     Route::prefix('monthly-budget-summaries')->group(function () {
