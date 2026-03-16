@@ -314,8 +314,28 @@
 
     {{-- Modals --}}
     @if ($canApprove)
-        @include('partials.pr-approve-modal', ['pr' => $report])
-        @include('partials.pr-reject-modal', ['pr' => $report])
-        @include('partials.pr-return-modal', ['pr' => $report])
+        @push('modals')
+            @include('partials.approval-modal', [
+                'id' => $report->id,
+                'route' => 'monthly.budget.summary.save.autograph',
+                'title' => 'Approve Budget Summary',
+                'entityName' => 'Budget Summary Report',
+                'buttonLabel' => 'Confirm Approval'
+            ])
+            @include('partials.rejection-modal', [
+                'id' => $report->id,
+                'route' => 'monthly.budget.summary.report.reject',
+                'title' => 'Reject Budget Summary',
+                'entityName' => 'Budget Summary Report',
+                'buttonLabel' => 'Confirm Rejection'
+            ])
+            @include('partials.return-modal', [
+                'id' => $report->id,
+                'route' => 'monthly.budget.summary.report.return',
+                'title' => 'Return for Revision',
+                'entityName' => 'Budget Summary Report',
+                'buttonLabel' => 'Confirm Return'
+            ])
+        @endpush
     @endif
 @endsection

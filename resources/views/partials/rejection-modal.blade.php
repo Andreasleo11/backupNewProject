@@ -1,13 +1,12 @@
-{{--
-    Purchase Request Reject Modal
-    Alpine.js modal for rejecting a PR with reason
-    
-    Props:
-    - $pr: PurchaseRequest model
---}}
+@php
+    $title = $title ?? 'Reject Request';
+    $entityName = $entityName ?? 'Request';
+    $buttonLabel = $buttonLabel ?? 'Reject Request';
+    $openEvent = $openEvent ?? 'open-reject-modal';
+@endphp
 
 <div x-data="{ open: false }" 
-     @open-reject-modal.window="open = true"
+     {{ '@' . $openEvent }}.window="open = true"
      x-init="$watch('open', value => {
         if (value) {
             document.body.classList.add('overflow-hidden');
@@ -40,7 +39,7 @@
                                     <i class='bx bx-x-circle text-2xl text-white'></i>
                                 </div>
                                 <h3 class="text-lg font-semibold text-white" id="modal-title">
-                                    Reject Purchase Request
+                                    {{ $title }}
                                 </h3>
                             </div>
                             <button type="button" 
@@ -52,16 +51,17 @@
                     </div>
                     
                     {{-- Body --}}
-                    <form method="POST" action="{{ route('purchase-requests.reject', $pr->id) }}" class="p-6">
+                    <form method="POST" action="{{ route($route, $id) }}" class="p-6">
                         @csrf
+                        @method('PUT')
                         
                         <div class="mb-6">
-                            <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4">
+                            <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4 border border-rose-100">
                                 <i class='bx bx-info-circle text-xl text-rose-600'></i>
                                 <div class="text-sm text-rose-800">
                                     <p class="font-medium">This action cannot be undone.</p>
                                     <p class="mt-1 text-rose-700">
-                                        Please provide a clear reason for rejection. This will be visible to the requester.
+                                        Please provide a clear reason for rejecting this {{ strtolower($entityName) }}. This will be visible to the requester.
                                     </p>
                                 </div>
                             </div>
@@ -77,21 +77,21 @@
                                 rows="4"
                                 required
                                 placeholder="e.g., Budget constraints, incorrect specifications, duplicate request..."
-                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm placeholder-slate-400 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"></textarea>
-                            <p class="mt-1 text-xs text-slate-500">Minimum 10 characters</p>
+                                class="block w-full rounded-xl border border-slate-200 px-4 py-3 text-sm placeholder-slate-400 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 transition-all"></textarea>
+                            <p class="mt-1 text-xs text-slate-500 font-medium">Please provide at least 10 characters.</p>
                         </div>
                         
                         {{-- Actions --}}
-                        <div class="flex items-center justify-end gap-3">
+                        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                             <button type="button"
                                     @click="open = false"
-                                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                                    class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-800">
                                 Cancel
                             </button>
                             <button type="submit"
-                                    class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700">
+                                    class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-200 transition-all hover:bg-rose-700 hover:-translate-y-0.5 hover:shadow-rose-300">
                                 <i class='bx bx-x-circle'></i>
-                                <span>Reject Request</span>
+                                <span>{{ $buttonLabel }}</span>
                             </button>
                         </div>
                     </form>

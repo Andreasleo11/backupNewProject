@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly-budget-reports.show');
     Route::delete('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly-budget-reports.delete');
     Route::put('monthly-budget-reports/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly-budget-reports.reject');
+    Route::post('monthly-budget-reports/{id}/return', [MonthlyBudgetReportController::class, 'returnForRevision'])->name('monthly-budget-reports.return');
     Route::post('monthly-budget-reports/{id}/submit', [MonthlyBudgetReportController::class, 'submit'])->name('monthly-budget-reports.submit');
     Route::post('monthly-budget-reports/{id}/approve', [MonthlyBudgetReportController::class, 'approve'])->name('monthly-budget-reports.approve');
     Route::put('monthly-budget-reports/{id}/cancel', [MonthlyBudgetReportController::class, 'cancel'])->name('monthly-budget-reports.cancel');
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
         Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
         Route::put('/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
+        Route::post('/{id}/return', [MonthlyBudgetSummaryReportController::class, 'returnForRevision'])->name('monthly.budget.summary.report.return');
         Route::put('/{id}/cancel', [MonthlyBudgetSummaryReportController::class, 'cancel'])->name('monthly.budget.summary.report.cancel');
         Route::post('/{id}/refresh', [MonthlyBudgetSummaryReportController::class, 'refresh'])->name('monthly-budget-summary.refresh');
         Route::get('/{id}/export-pdf', [MonthlyBudgetSummaryReportController::class, 'exportToPdf'])->name('monthly.budget.summary.report.export-pdf');

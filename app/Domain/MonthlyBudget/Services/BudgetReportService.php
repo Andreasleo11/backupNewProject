@@ -145,4 +145,29 @@ final class BudgetReportService
             'message' => 'Monthly Budget Report successfully deleted',
         ];
     }
+    /**
+     * Cancel budget report.
+     */
+    public function cancelReport(int $reportId, string $reason): array
+    {
+        $report = MonthlyBudgetReport::find($reportId);
+
+        if (! $report) {
+            return [
+                'success' => false,
+                'message' => 'Report not found',
+            ];
+        }
+
+        $report->update([
+            'is_cancel' => true,
+            'cancel_reason' => $reason,
+            'status' => 5, // Canceled state in legacy
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Monthly Budget Report successfully cancelled',
+        ];
+    }
 }

@@ -66,7 +66,7 @@ class MonthlyBudgetSummaryReportController extends Controller
     public function saveAutograph(Request $request, $id)
     {
         $report = MonthlyBudgetSummaryReport::findOrFail($id);
-        $this->approvals->approve($report, auth()->id(), $request->remark ?? '');
+        $this->approvals->approve($report, auth()->id(), $request->remarks ?? '');
 
         return redirect()->back()->with('success', 'Report approved successfully');
     }
@@ -74,9 +74,17 @@ class MonthlyBudgetSummaryReportController extends Controller
     public function reject(Request $request, $id)
     {
         $report = MonthlyBudgetSummaryReport::findOrFail($id);
-        $this->approvals->reject($report, auth()->id(), $request->description ?? '');
+        $this->approvals->reject($report, auth()->id(), $request->remarks ?? '');
 
         return redirect()->back()->with('success', 'Report rejected successfully');
+    }
+
+    public function returnForRevision(Request $request, $id)
+    {
+        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $this->approvals->return($report, auth()->id(), $request->reason ?? '');
+
+        return redirect()->back()->with('success', 'Report returned for revision');
     }
 
     public function cancel(Request $request, $id)

@@ -31,8 +31,6 @@ class MonthlyBudgetReport extends Model implements Approvable
         'status',
         'is_cancel',
         'cancel_reason',
-        'workflow_status',
-        'workflow_step',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -170,6 +168,60 @@ class MonthlyBudgetReport extends Model implements Approvable
     public function scopeRejected($query)
     {
         return $query->where('status', 7);
+    }
+
+    public function scopeFilteredByUser($query, $user)
+    {
+        $isHead = $user->hasRole('department-head');
+        $isGm = $user->hasRole('general-manager');
+        $isDirector = $user->hasRole('director');
+
+        if ($user->email == 'nur@daijo.co.id') {
+            return $query;
+        }
+
+        if ($isDirector) {
+            return $query->whereNotNull('is_known_autograph')
+                ->whereHas('department', function ($q) {
+                    $q->where('name', 'QA')->orWhere('name', 'QC');
+                });
+        }
+
+        if ($isGm) {
+            return $query->whereNotNull('is_known_autograph')
+                ->whereHas('department', function ($q) {
+                    $q->whereNot(function ($subQ) {
+                        $subQ->where('name', 'QA')
+                            ->orWhere('name', 'QC')
+                            ->orWhere('name', 'MOULDING');
+                    });
+                });
+        }
+
+        // Standard user/Dept head visibility
+        if ($isHead) {
+            // Logic for head if needed
+        }
+
+        // Filter by department
+        if (! ($isDirector || $isGm || $user->email === 'nur@daijo.co.id' || $user->hasRole('super-admin'))) {
+            $query->whereHas('department', function ($q) use ($user) {
+                $q->where(function ($subQ) use ($user) {
+                    $subQ->where('id', $user->department->id);
+                    if ($user->department->name === 'QA') {
+                        $subQ->orWhere('name', 'QC');
+                    }
+                });
+            });
+
+            if ($isHead && $user->department->name === 'LOGISTIC') {
+                $query->orWhere(function ($q) {
+                    $q->whereHas('department', fn ($deptQ) => $deptQ->where('name', 'STORE'));
+                });
+            }
+        }
+
+        return $query;
     }
 
     // Other

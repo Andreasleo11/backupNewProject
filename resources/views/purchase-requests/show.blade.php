@@ -754,9 +754,27 @@
     {{-- MODALS (Moved to root to fix z-index/overlay issues) --}}
     @if ($canApprove)
         @push('modals')
-            @include('partials.pr-approve-modal', ['pr' => $purchaseRequest])
-            @include('partials.pr-reject-modal', ['pr' => $purchaseRequest])
-            @include('partials.pr-return-modal', ['pr' => $purchaseRequest])
+            @include('partials.approval-modal', [
+                'id' => $purchaseRequest->id,
+                'route' => 'purchase-requests.approve',
+                'title' => 'Approve Purchase Request',
+                'entityName' => 'Purchase Request',
+                'buttonLabel' => 'Confirm Approval'
+            ])
+            @include('partials.rejection-modal', [
+                'id' => $purchaseRequest->id,
+                'route' => 'purchase-requests.reject',
+                'title' => 'Reject Purchase Request',
+                'entityName' => 'Purchase Request',
+                'buttonLabel' => 'Confirm Rejection'
+            ])
+            @include('partials.return-modal', [
+                'id' => $purchaseRequest->id,
+                'route' => 'purchase-requests.return',
+                'title' => 'Return for Revision',
+                'entityName' => 'Purchase Request',
+                'buttonLabel' => 'Confirm Return'
+            ])
         @endpush
     @endif
 

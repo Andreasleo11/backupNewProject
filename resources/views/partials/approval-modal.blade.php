@@ -1,13 +1,12 @@
-{{--
-    Purchase Request Approve Modal
-    Alpine.js modal for approving a PR with optional remarks
-    
-    Props:
-    - $pr: PurchaseRequest model
---}}
+@php
+    $title = $title ?? 'Approve Request';
+    $entityName = $entityName ?? 'Request';
+    $buttonLabel = $buttonLabel ?? 'Confirm Approval';
+    $openEvent = $openEvent ?? 'open-approve-modal';
+@endphp
 
 <div x-data="{ open: false }" 
-     @open-approve-modal.window="open = true"
+     {{ '@' . $openEvent }}.window="open = true"
      x-init="$watch('open', value => {
         if (value) {
             document.body.classList.add('overflow-hidden');
@@ -40,7 +39,7 @@
                                     <i class='bx bx-check-circle text-2xl text-white'></i>
                                 </div>
                                 <h3 class="text-lg font-semibold text-white" id="approve-modal-title">
-                                    Approve Purchase Request
+                                    {{ $title }}
                                 </h3>
                             </div>
                             <button type="button" 
@@ -52,7 +51,7 @@
                     </div>
                     
                     {{-- Body --}}
-                    <form method="POST" action="{{ route('purchase-requests.approve', $pr->id) }}" class="p-6">
+                    <form method="POST" action="{{ route($route, $id) }}" class="p-6">
                         @csrf
                         
                         <div class="mb-6 space-y-4">
@@ -60,7 +59,7 @@
                              <div class="flex items-start gap-3 rounded-lg bg-emerald-50 p-4 border border-emerald-100">
                                 <i class='bx bx-info-circle text-xl text-emerald-600 mt-0.5'></i>
                                 <div class="text-sm text-emerald-800">
-                                    <p class="font-bold">You are about to approve this request.</p>
+                                    <p class="font-bold">You are about to approve this {{ strtolower($entityName) }}.</p>
                                     <p class="mt-1 opacity-90">
                                         This will move the request to the next stage in the workflow. Your digital signature will be attached.
                                     </p>
@@ -90,7 +89,7 @@
                             <button type="submit"
                                     class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-0.5 hover:shadow-emerald-300">
                                 <i class='bx bx-check-double'></i>
-                                <span>Confirm Approval</span>
+                                <span>{{ $buttonLabel }}</span>
                             </button>
                         </div>
                     </form>

@@ -2,7 +2,6 @@
 
 namespace App\Livewire\MonthlyBudget;
 
-use App\Domain\MonthlyBudget\Services\BudgetApprovalService;
 use App\Models\MonthlyBudgetReport as Report;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Eloquent\Builder;
@@ -78,10 +77,10 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render(BudgetApprovalService $approvalService)
+    public function render()
     {
         $user = auth()->user();
-        $query = $approvalService->getFilteredReportsQuery($user);
+        $query = Report::filteredByUser($user);
 
         // Keywords
         if ($this->search) {

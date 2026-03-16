@@ -32,8 +32,6 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
         'is_cancel',
         'cancel_reason',
         'status',
-        'workflow_status',
-        'workflow_step',
     ];
 
     public function getActivitylogOptions(): LogOptions

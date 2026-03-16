@@ -265,8 +265,28 @@
 
     {{-- Modals --}}
     @if ($canApprove)
-        @include('partials.pr-approve-modal', ['pr' => $report])
-        @include('partials.pr-reject-modal', ['pr' => $report])
-        @include('partials.pr-return-modal', ['pr' => $report])
+        @push('modals')
+            @include('partials.approval-modal', [
+                'id' => $report->id,
+                'route' => 'monthly-budget-reports.approve',
+                'title' => 'Approve Budget Report',
+                'entityName' => 'Monthly Budget Report',
+                'buttonLabel' => 'Confirm Approval'
+            ])
+            @include('partials.rejection-modal', [
+                'id' => $report->id,
+                'route' => 'monthly-budget-reports.reject',
+                'title' => 'Reject Budget Report',
+                'entityName' => 'Monthly Budget Report',
+                'buttonLabel' => 'Confirm Rejection'
+            ])
+            @include('partials.return-modal', [
+                'id' => $report->id,
+                'route' => 'monthly-budget-reports.return',
+                'title' => 'Return for Revision',
+                'entityName' => 'Monthly Budget Report',
+                'buttonLabel' => 'Confirm Return'
+            ])
+        @endpush
     @endif
 @endsection
