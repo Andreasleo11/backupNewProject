@@ -33,24 +33,33 @@
 
                         {{-- Actions --}}
                         <div class="flex items-center gap-2">
-                            @if (
-                                ($authUser->id === $report->user->id && !$report->created_autograph) ||
-                                    ($authUser->is_head && !$report->is_known_autograph))
-                                <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
-                                   class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2
-                                          text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-95">
-                                    <i class="bx bx-edit text-[1rem]"></i>
-                                    <span>Edit</span>
-                                </a>
+                            @if ($authUser->id === $report->creator_id && (int)$report->is_cancel === 0)
+                                @if ($report->isDraft())
+                                    <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
+                                       class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2
+                                              text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-95">
+                                        <i class="bx bx-edit text-[1rem]"></i>
+                                        <span>Edit</span>
+                                    </a>
 
-                                @include('partials.delete-confirmation-modal', [
-                                    'id' => $report->id,
-                                    'route' => 'monthly-budget-reports.delete',
-                                    'title' => 'Delete report confirmation',
-                                    'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
-                                    'buttonLabel' => 'Delete',
-                                    'push' => false
-                                ])
+                                    @include('partials.delete-confirmation-modal', [
+                                        'id' => $report->id,
+                                        'route' => 'monthly-budget-reports.delete',
+                                        'title' => 'Delete report confirmation',
+                                        'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
+                                        'buttonLabel' => 'Delete',
+                                        'push' => false
+                                    ])
+                                @else
+                                    @include('partials.cancel-modal', [
+                                        'id' => $report->id,
+                                        'route' => 'monthly-budget-reports.cancel',
+                                        'title' => 'Cancel Budget Report',
+                                        'entityName' => 'Monthly Budget Report',
+                                        'buttonLabel' => 'Cancel Report',
+                                        'triggerClass' => 'inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-700 shadow-sm transition-all hover:bg-rose-50 hover:border-rose-300 active:scale-95'
+                                    ])
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -169,14 +178,15 @@
                                     </tbody>
                                 </table>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    </div>
 
-                    {{-- Digital Signatures Section --}}
-                    @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+                        {{-- Digital Signatures Section --}}
+                        @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+                    </div>
                 </div>
-            </div>
+            </section>
+        </div>
 
             {{-- Right Column: Actions & Timeline --}}
             <div class="space-y-6">
@@ -289,4 +299,5 @@
             ])
         @endpush
     @endif
+
 @endsection

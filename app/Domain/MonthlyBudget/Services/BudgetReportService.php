@@ -137,6 +137,13 @@ final class BudgetReportService
             ];
         }
 
+        if (!$report->isDraft()) {
+            return [
+                'success' => false,
+                'message' => 'Only reports in Draft state can be deleted.',
+            ];
+        }
+
         MonthlyBudgetReportDetail::where('header_id', $reportId)->delete();
         $report->delete();
 

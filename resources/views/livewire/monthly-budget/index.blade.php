@@ -167,14 +167,13 @@
                                             'iconOnly' => true,
                                             'push' => false
                                         ])
-                                    @elseif (!$report->is_cancel && !$report->is_known_autograph && !$isDraft)
+                                    @elseif ($authUser->id === $report->user->id && !$report->is_cancel && !$isDraft)
                                         {{-- Cancel --}}
-                                        @include('partials.cancel-confirmation-modal', [
+                                        @include('partials.cancel-modal', [
                                             'id' => $report->id,
-                                            'route' => route('monthly-budget-reports.cancel', $report->id),
-                                            'title' => 'Cancel Confirmation',
-                                            'iconOnly' => true,
-                                            'push' => false
+                                            'route' => 'monthly-budget-reports.cancel',
+                                            'title' => "Cancel Report: <strong>{$report->doc_num}</strong>",
+                                            'iconOnly' => true
                                         ])
                                     @endif
                                 </div>

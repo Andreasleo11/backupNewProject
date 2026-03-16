@@ -58,6 +58,13 @@ class Form extends Component
         if ($reportId) {
             $this->reportId = $reportId;
             $report = Report::with('details')->findOrFail($reportId);
+
+            if (!$report->isDraft()) {
+                session()->flash('error', 'Only reports in Draft state can be edited.');
+                $this->redirectRoute('monthly-budget-reports.show', $reportId);
+                return;
+            }
+
             $this->dept_no = $report->dept_no;
             $this->report_date = $report->report_date;
             $this->items = $report->details->toArray();
