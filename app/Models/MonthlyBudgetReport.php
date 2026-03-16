@@ -57,6 +57,41 @@ class MonthlyBudgetReport extends Model implements Approvable
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function files()
+    {
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
+    }
+
+    /**
+     * Get combined activities from Report, Files, and Approval Actions.
+     */
+    public function getCombinedActivitiesAttribute()
+    {
+        // 1. Get Report Logs
+        $reportLogs = $this->activities;
+
+        // 2. Get File Logs
+        $fileIds = File::where('doc_id', $this->doc_num)->pluck('id');
+        $fileLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', File::class)
+            ->whereIn('subject_id', $fileIds)
+            ->with('causer')
+            ->get();
+
+        // 3. Get Approval Actions
+        $approvalActions = collect();
+        if ($this->approvalRequest) {
+            $approvalActions = $this->approvalRequest->actions()
+                ->with('causer')
+                ->get();
+        }
+
+        // 4. Merge & Sort desc
+        return $reportLogs
+            ->concat($fileLogs)
+            ->concat($approvalActions)
+            ->sortByDesc('created_at');
+    }
+
     /**
      * Get workflow status from approval request.
      */

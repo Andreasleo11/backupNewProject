@@ -8,6 +8,8 @@
     @php
         /** @var \App\Models\User $authUser */
         $authUser = auth()->user();
+        
+        $canUpload = ($authUser->id === $report->creator_id || $authUser->hasRole('super-admin')) && (int)$report->is_cancel === 0;
     @endphp
 
     <div class="space-y-6">
@@ -60,6 +62,16 @@
                                         'triggerClass' => 'inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-700 shadow-sm transition-all hover:bg-rose-50 hover:border-rose-300 active:scale-95'
                                     ])
                                 @endif
+                            @endif
+
+                            @if($canUpload)
+                                <button type="button"
+                                        class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 hover:-translate-y-0.5 active:scale-95"
+                                        x-data
+                                        @click="$dispatch('open-upload-modal')">
+                                    <i class="bx bx-upload text-[1rem]"></i>
+                                    <span>Upload Files</span>
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -242,7 +254,18 @@
             @endif
         </div>
     </section>
-        </div>
+
+    {{-- Uploaded files section --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
+            <i class="bx bx-paperclip text-indigo-500 text-lg"></i> Attachments
+        </h3>
+        @include('partials.uploaded-section', [
+            'showDeleteButton' => $canUpload,
+            'files' => $report->files,
+        ])
+    </div>
+</div>
 
             {{-- Right Column: Actions & Timeline --}}
             <div class="space-y-6">
@@ -356,4 +379,9 @@
         @endpush
     @endif
 
+    @if ($canUpload)
+        @push('modals')
+            @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
+        @endpush
+    @endif
 @endsection
