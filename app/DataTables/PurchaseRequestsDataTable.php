@@ -31,7 +31,7 @@ class PurchaseRequestsDataTable extends DataTable
             })
             ->addColumn('action', 'purchaserequests.action')
             ->editColumn('status', function ($pr) {
-                return view('partials.pr-status-badge', ['pr' => $pr])->render();
+                return view('partials.workflow-status-badge', ['pr' => $pr])->render();
             })
             ->editColumn('action', function ($pr) {
                 return view('partials.pr-action-buttons', [
@@ -54,7 +54,7 @@ class PurchaseRequestsDataTable extends DataTable
                     return '<span class="text-slate-400 text-xs">-</span>';
                 }
 
-                $badge = view('partials.pr-status-badge', ['pr' => $pr])->render();
+                $badge = view('partials.workflow-status-badge', ['pr' => $pr])->render();
 
                 // Add current approver if in review
                 if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {

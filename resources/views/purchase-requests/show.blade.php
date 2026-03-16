@@ -591,9 +591,6 @@
 
                 {{-- RELATED FILES --}}
                 <div class="glass-card p-6">
-                    <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
-                        <i class="bi bi-paperclip text-indigo-500"></i> Related Documents
-                    </h3>
 
                     @include('partials.file-attachments', [
                         'files' => $purchaseRequest->files,

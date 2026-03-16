@@ -21,7 +21,7 @@
 
         {{-- Report card --}}
         <section aria-label="report">
-            <div class="mt-4">
+            <div>
                 <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-200/70">
                     <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-3">
                         <div>
