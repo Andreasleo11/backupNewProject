@@ -64,9 +64,18 @@
                         </div>
                     </div>
 
-                    <div class="px-4 py-5 space-y-5">
+                    <div class="px-4 py-5 space-y-5 relative {{ $report->is_cancel ? 'opacity-75 grayscale bg-slate-50/50 pointer-events-none select-none' : '' }}">
+                        {{-- Cancelled Watermark --}}
+                        @if($report->is_cancel)
+                            <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none overflow-hidden z-0">
+                                <span class="text-[12rem] font-black uppercase tracking-[2rem] -rotate-[35deg] whitespace-nowrap">
+                                    Cancelled
+                                </span>
+                            </div>
+                        @endif
+
                         {{-- Header info --}}
-                        <div class="text-center space-y-2">
+                        <div class="text-center space-y-2 relative z-10">
                             <h1 class="text-lg font-bold text-slate-900">
                                 Monthly Budget Report
                             </h1>
@@ -106,14 +115,14 @@
                                             </span>
                                         </div>
                                     @else
-                                        @include('partials.pr-status-badge', ['pr' => $report])
+                                        @include('partials.workflow-status-badge', ['record' => $report])
                                     @endif
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Table --}}
-                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/[0.02]">
+                    {{-- Table --}}
+                    <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/[0.02] relative z-10">
                             <div class="overflow-x-auto">
                                 <table class="min-w-full text-xs">
                                     <thead class="bg-slate-50/80 border-b border-slate-200">
@@ -181,17 +190,64 @@
                             </div>
                         </div>
 
-                        {{-- Digital Signatures Section --}}
-                        @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+                {{-- Digital Signatures Section --}}
+                @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+            </div>
+
+            {{-- Cancelled Banner (Outside the dimmed area) --}}
+            @if($report->is_cancel)
+                <div class="px-4 pb-6 mt-[-1rem]">
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6 flex items-start gap-4 shadow-xl shadow-rose-900/5 relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-200/40 rounded-full blur-2xl group-hover:bg-rose-200/60 transition-all duration-700"></div>
+                        <div class="absolute -left-4 -bottom-4 w-20 h-20 bg-rose-200/20 rounded-full blur-xl"></div>
+                        
+                        <div class="h-14 w-14 rounded-2xl bg-rose-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-200 animate-pulse-slow">
+                            <i class="bx bx-x-circle text-4xl"></i>
+                        </div>
+                        
+                        <div class="space-y-1 relative flex-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-base font-black text-rose-950 uppercase tracking-widest flex items-center gap-2">
+                                    Report Permanently Cancelled
+                                </h4>
+                                <span class="px-2.5 py-1 rounded-lg bg-rose-600 text-[10px] font-black text-white uppercase tracking-tighter shadow-sm">
+                                    Final State
+                                </span>
+                            </div>
+                            
+                            <div class="bg-white/80 backdrop-blur-md rounded-xl p-4 border border-rose-100 mt-4 shadow-sm group-hover:bg-white transition-colors">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-rose-500"></div>
+                                    <p class="text-[10px] font-black text-rose-500 uppercase tracking-[0.15em]">Cancellation Statement</p>
+                                </div>
+                                <p class="text-sm font-bold text-rose-900 leading-relaxed italic pr-4">
+                                    "{{ $report->cancel_reason ?: 'No formal reason was specified for this cancellation.' }}"
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-4 mt-4">
+                                <p class="text-[10px] font-bold text-rose-400 uppercase tracking-tighter flex items-center gap-1.5">
+                                    <i class="bx bx-shield-x text-xs"></i>
+                                    Workflow Terminated
+                                </p>
+                                <div class="h-1 w-1 rounded-full bg-rose-200"></div>
+                                <p class="text-[10px] font-bold text-rose-400 uppercase tracking-tighter flex items-center gap-1.5">
+                                    <i class="bx bx-lock-alt text-xs"></i>
+                                    Read Only Mode
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </section>
+            @endif
+        </div>
+    </section>
         </div>
 
             {{-- Right Column: Actions & Timeline --}}
             <div class="space-y-6">
                 {{-- Draft Action Card --}}
-                @if ($report->isDraft() && $authUser->id === $report->creator_id)
+                @if ($report->isDraft() && $authUser->id === $report->creator_id && !$report->is_cancel)
                     <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 shadow-xl shadow-amber-900/5 relative overflow-hidden group">
                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all duration-700"></div>
                         
@@ -224,7 +280,7 @@
                 @endif
 
                 {{-- Approval Action Card --}}
-                @if ($canApprove)
+                @if ($canApprove && !$report->is_cancel)
                     <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-emerald-100 p-6 relative overflow-hidden group">
                          <div class="absolute -right-2 -top-2 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
                         

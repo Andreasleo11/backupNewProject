@@ -224,7 +224,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @include('partials.pr-status-badge')
+                                            @include('partials.workflow-status-badge', ['record' => $pr])
                                         </td>
                                         <td>
                                             {{ $pr->description ?? '-' }}

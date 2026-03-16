@@ -378,7 +378,7 @@
                                 {{-- Status (partial masih Bootstrap; bisa di-Tailwind-kan nanti) --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-xs">
                                     {{-- Use unified status badge --}}
-                                    @include('partials.pr-status-badge', ['pr' => $report])
+                                    @include('partials.workflow-status-badge', ['record' => $report])
                                 </td>
 
                                 {{-- Total --}}

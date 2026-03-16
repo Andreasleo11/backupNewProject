@@ -135,7 +135,7 @@
                                             DRAFT
                                         </span>
                                     @else
-                                        @include('partials.pr-status-badge', ['pr' => $report])
+                                        @include('partials.workflow-status-badge', ['record' => $report])
                                     @endif
                                 </div>
                             </td>

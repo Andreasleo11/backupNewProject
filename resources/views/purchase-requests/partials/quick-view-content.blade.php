@@ -8,7 +8,7 @@
         <div class="text-right">
             <h6 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</h6>
             <div>
-                @include('partials.pr-status-badge', ['pr' => $pr])
+                @include('partials.workflow-status-badge', ['record' => $pr])
             </div>
             @if($pr->workflow_status === 'IN_REVIEW')
                 <div class="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">

@@ -77,7 +77,7 @@
 
             <div class="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
                 {{-- Use unified status badge --}}
-                @include('partials.pr-status-badge', ['pr' => $report])
+                @include('partials.workflow-status-badge', ['record' => $report])
 
                 {{-- Upload / Refresh untuk user tertentu --}}
                 @if ($authUser->email === 'nur@daijo.co.id')

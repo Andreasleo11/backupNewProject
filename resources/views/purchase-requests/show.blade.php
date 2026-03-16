@@ -33,7 +33,7 @@
                     </h1>
                     
                     {{-- Status Badge --}}
-                    @include('partials.pr-status-badge', ['pr' => $purchaseRequest])
+                    @include('partials.workflow-status-badge', ['record' => $purchaseRequest])
 
                     <!-- @if($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0)
                          <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
