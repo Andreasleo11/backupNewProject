@@ -1,5 +1,9 @@
 @extends('new.layouts.app')
 
+@section('title', 'Monthly Budget Reports')
+@section('page-title', 'Budget Reports')
+@section('page-subtitle', 'Monitor and manage your department’s monthly budget reports.')
+
 @section('content')
     {{-- GLOBAL VARIABLE --}}
     @php
@@ -13,121 +17,125 @@
     @endphp
     {{-- END GLOBAL VARIABLE --}}
 
-    <div class="max-w-6xl mx-auto px-4 py-4 space-y-4">
-
-        {{-- Breadcrumb --}}
-        <nav aria-label="breadcrumb" class="text-sm">
-            <ol class="flex flex-wrap items-center gap-1 text-slate-500">
-                <li>
-                    <a href="{{ route('monthly-budget-reports.index') }}" class="hover:text-slate-700 hover:underline">
-                        Monthly Budget Reports
-                    </a>
-                </li>
-                <li class="text-slate-400">/</li>
-                <li class="font-medium text-slate-700">
-                    List
-                </li>
-            </ol>
-        </nav>
-
-        {{-- Header --}}
-        <div class="flex flex-wrap items-center gap-3 justify-between">
-            <div>
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Monthly Budget Report
-                </h2>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    Monitor and manage your department’s monthly budget reports.
-                </p>
-            </div>
-
+    <div class="space-y-6">
+        {{-- Header Actions --}}
+        <div class="flex items-center justify-end gap-3">
             @if ($showCreateButton)
                 <a href="{{ route('monthly-budget-reports.create') }}"
-                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
-                    <i class="bx bx-plus mr-1 text-[0.9rem]"></i>
-                    New Report
+                    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
+                    <i class="bx bx-plus text-[1rem]"></i>
+                    Create New Report
                 </a>
             @endif
         </div>
 
         {{-- Table card --}}
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
-            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-slate-800">
+        <div class="bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100/50 flex items-center justify-between bg-white/30">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                    <i class="bx bx-list-ul text-indigo-500"></i>
                     Reports List
                 </h3>
-                <span class="text-[11px] text-slate-500">
-                    Total: <span class="font-semibold">{{ $reports->total() }}</span> reports
-                </span>
+                <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-bold">
+                        TOTAL: {{ $reports->total() }}
+                    </span>
+                </div>
             </div>
 
-            <div class="px-2 py-2 overflow-x-auto">
+            <div class="overflow-x-auto">
                 <table class="min-w-full text-xs text-slate-700">
-                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200">
+                    <thead class="bg-slate-50/50 text-[10px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-100">
                         <tr>
-                            <th class="px-3 py-2 text-left">Doc. Number</th>
-                            <th class="px-3 py-2 text-left">Dept No</th>
-                            <th class="px-3 py-2 text-left">Report Date</th>
-                            <th class="px-3 py-2 text-left">Status</th>
-                            <th class="px-3 py-2 text-right">Action</th>
+                            <th class="px-6 py-4 text-left font-bold">Document Info</th>
+                            <th class="px-6 py-4 text-left font-bold">Department</th>
+                            <th class="px-6 py-4 text-center font-bold">Period</th>
+                            <th class="px-6 py-4 text-center font-bold">Status</th>
+                            <th class="px-6 py-4 text-right font-bold">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-50">
                         @forelse ($reports as $report)
                             @php
                                 $reportDate = Carbon\Carbon::parse($report->report_date);
-                                $formatedDate = $reportDate->format('F Y');
+                                $isDraft = $report->isDraft();
                             @endphp
-                            <tr class="hover:bg-slate-50/70">
-                                <td class="px-3 py-2 align-middle font-medium text-slate-900">
-                                    {{ $report->doc_num }}
+                            <tr class="group hover:bg-indigo-50/30 transition-all duration-300">
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                            {{ $report->doc_num }}
+                                        </span>
+                                        <span class="text-[10px] text-slate-400 font-medium">
+                                            ID: #{{ $report->id }}
+                                        </span>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-2 align-middle text-slate-700">
-                                    {{ $report->dept_no }}
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                            {{ $report->dept_no }}
+                                        </div>
+                                        <span class="font-medium text-slate-700">{{ $report->department?->name }}</span>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-2 align-middle text-slate-700 whitespace-nowrap">
-                                    @formatDate($report->report_date)
+                                <td class="px-6 py-4 text-center">
+                                    <div class="inline-flex flex-col items-center px-3 py-1 rounded-xl bg-slate-50 border border-slate-100">
+                                        <span class="text-[10px] font-bold text-slate-800">{{ $reportDate->format('M Y') }}</span>
+                                        <span class="text-[9px] text-slate-400 font-medium">{{ $reportDate->format('d/m/Y') }}</span>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-2 align-middle">
-                                    @include('partials.monthly-budget-report-status', [
-                                        'status' => $report->status,
-                                        'isCancel' => $report->is_cancel,
-                                    ])
+                                <td class="px-6 py-4 text-center">
+                                    @if($isDraft)
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-100">
+                                            <span class="relative flex h-2 w-2">
+                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                            </span>
+                                            DRAFT
+                                        </span>
+                                    @else
+                                        @include('partials.pr-status-badge', ['pr' => $report])
+                                    @endif
                                 </td>
-                                <td class="px-3 py-2 align-middle text-right">
-                                    <div class="flex flex-wrap justify-end gap-1">
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                                         {{-- Detail --}}
                                         <a href="{{ route('monthly-budget-reports.show', $report->id) }}"
-                                            class="inline-flex items-center rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm hover:bg-slate-50">
-                                            <i class='bx bx-info-circle mr-1 text-[0.9rem]'></i>
-                                            <span class="hidden sm:inline">Detail</span>
+                                            class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95"
+                                            title="View Details">
+                                            <i class='bx bx-show-alt text-lg'></i>
                                         </a>
 
                                         @if (
-                                            ($authUser->id === $report->user->id && !$report->created_autograph) ||
+                                            ($authUser->id === $report->user->id && $isDraft) ||
                                                 ($authUser->is_head && !$report->is_known_autograph))
                                             {{-- Edit --}}
                                             <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
-                                                class="inline-flex items-center rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm hover:bg-indigo-700">
-                                                <i class='bx bx-edit mr-1 text-[0.9rem]'></i>
-                                                <span class="hidden sm:inline">Edit</span>
+                                                class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-all active:scale-95"
+                                                title="Edit Draft">
+                                                <i class='bx bx-edit-alt text-lg'></i>
                                             </a>
 
-                                            {{-- Delete (modal trigger) --}}
+                                            {{-- Delete --}}
                                             @include('partials.delete-confirmation-modal', [
                                                 'id' => $report->id,
                                                 'route' => 'monthly-budget-reports.delete',
                                                 'title' => 'Delete report confirmation',
                                                 'body' => "Are you sure want to delete this report with id <strong>{$report->id}</strong>?",
-                                                'buttonLabel' => 'Delete',
+                                                'buttonLabel' => '',
+                                                'iconOnly' => true,
+                                                'push' => false
                                             ])
-                                        @elseif (!$report->is_cancel && !$report->is_known_autograph)
-                                            {{-- Cancel (modal trigger) --}}
+                                        @elseif (!$report->is_cancel && !$report->is_known_autograph && !$isDraft)
+                                            {{-- Cancel --}}
                                             @include('partials.cancel-confirmation-modal', [
                                                 'id' => $report->id,
                                                 'route' => route('monthly-budget-reports.cancel', $report->id),
                                                 'title' => 'Cancel Confirmation',
-                                                'buttonLabel' => 'Cancel',
+                                                'buttonLabel' => '',
+                                                'iconOnly' => true,
+                                                'push' => false
                                             ])
                                         @endif
                                     </div>
@@ -135,12 +143,14 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-6 text-center text-slate-400 text-sm">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <i class="bx bx-file-blank text-2xl"></i>
-                                        <div class="font-semibold">No data</div>
-                                        <p class="text-xs">
-                                            There are no monthly budget reports yet.
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center">
+                                            <i class="bx bx-file-blank text-3xl opacity-20"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-500 uppercase tracking-widest text-[11px]">No reports found</div>
+                                        <p class="text-xs max-w-xs mx-auto text-slate-400">
+                                            You haven't created any budget reports yet. Start by creating a new one.
                                         </p>
                                     </div>
                                 </td>
@@ -151,11 +161,11 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-end">
-                <div class="text-xs text-slate-500">
+            @if($reports->hasPages())
+                <div class="px-6 py-4 border-t border-slate-50 bg-white/30">
                     {{ $reports->links() }}
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 @endsection

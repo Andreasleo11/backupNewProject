@@ -147,4 +147,56 @@ final class BudgetSummaryService
             'message' => 'Summary refreshed successfully',
         ];
     }
+
+    /**
+     * Clone an existing summary for a new month.
+     */
+    public function cloneSummary(int $id, string $targetMonth): array
+    {
+        try {
+            $source = MonthlyBudgetSummaryReport::with('details')->find($id);
+
+            if (! $source) {
+                return [
+                    'success' => false,
+                    'message' => 'Source summary not found',
+                ];
+            }
+
+            $newSummary = MonthlyBudgetSummaryReport::create([
+                'report_date' => Carbon::parse($targetMonth)->startOfMonth(),
+                'dept_no' => $source->dept_no,
+                'creator_id' => auth()->id(),
+                'status' => 1, // Draft
+                'is_moulding' => $source->is_moulding,
+            ]);
+
+            foreach ($source->details as $detail) {
+                MonthlyBudgetReportSummaryDetail::create([
+                    'header_id' => $newSummary->id,
+                    'dept_no' => $detail->dept_no,
+                    'name' => $detail->name,
+                    'spec' => $detail->spec,
+                    'uom' => $detail->uom,
+                    'last_recorded_stock' => $detail->last_recorded_stock,
+                    'usage_per_month' => $detail->usage_per_month,
+                    'quantity' => $detail->quantity,
+                    'supplier' => $detail->supplier,
+                    'cost_per_unit' => $detail->cost_per_unit,
+                    'remark' => 'Cloned from ' . $source->doc_num,
+                ]);
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Summary cloned successfully',
+                'summary' => $newSummary,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error cloning summary: ' . $e->getMessage(),
+            ];
+        }
+    }
 }

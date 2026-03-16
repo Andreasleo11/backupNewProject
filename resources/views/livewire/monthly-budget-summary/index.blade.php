@@ -46,6 +46,33 @@
 @endpush
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+    {{-- Alerts --}}
+    @if (session()->has('success'))
+        <div class="rounded-md bg-emerald-50 p-3 border border-emerald-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="bx bx-check-circle text-emerald-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-xs font-medium text-emerald-800">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="rounded-md bg-rose-50 p-3 border border-rose-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="bx bx-x-circle text-rose-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-xs font-medium text-rose-800">{{ session('error') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Breadcrumbs --}}
     <nav aria-label="Breadcrumb" class="flex items-center text-xs text-slate-500 gap-1">
         <a href="{{ route('monthly-budget-summary-report.index') }}" class="hover:text-slate-700 hover:underline">
@@ -350,10 +377,8 @@
 
                                 {{-- Status (partial masih Bootstrap; bisa di-Tailwind-kan nanti) --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-xs">
-                                    @include('partials.monthly-budget-summary-report-status', [
-                                        'status' => $report->status,
-                                        'report' => $report,
-                                    ])
+                                    {{-- Use unified status badge --}}
+                                    @include('partials.pr-status-badge', ['pr' => $report])
                                 </td>
 
                                 {{-- Total --}}
@@ -438,6 +463,16 @@
                                                 ])
                                             @endif
                                         @endif
+
+                                        <button wire:click="cloneReport({{ $report->id }})"
+                                            wire:confirm="Are you sure you want to clone this report to the next month? All line items will be copied."
+                                            class="inline-flex items-center rounded-md border border-indigo-200
+                                                   bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700
+                                                   shadow-sm hover:bg-indigo-100 transition-colors"
+                                            title="Clone to Next Month">
+                                            <i class="bx bx-copy mr-1 text-[0.9rem]"></i>
+                                            Clone
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\MonthlyBudget\Services\BudgetApprovalService;
 use App\Domain\MonthlyBudget\Services\BudgetSummaryService;
 use App\Models\MonthlyBudgetSummaryReport;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class MonthlyBudgetSummaryReportController extends Controller
 {
     public function __construct(
         private readonly BudgetSummaryService $summaryService,
-        private readonly BudgetApprovalService $approvalService
+        private readonly \App\Application\Approval\Contracts\Approvals $approvals
     ) {}
 
     public function store(Request $request)
@@ -27,6 +27,10 @@ class MonthlyBudgetSummaryReportController extends Controller
             $validated,
             $request->department_reports
         );
+
+        if ($result['success'] && isset($result['report'])) {
+            $this->approvals->submit($result['report'], (int)$request->creator_id);
+        }
 
         return redirect()->back()->with(
             $result['success'] ? 'success' : 'error',
@@ -45,41 +49,42 @@ class MonthlyBudgetSummaryReportController extends Controller
     {
         $report = MonthlyBudgetSummaryReport::with('details', 'department')->find($id);
 
-        if ($report) {
-            $this->approvalService->updateStatus($report);
+        if (!$report) {
+            abort(404);
         }
 
-        return view('monthly-budget-summary-reports.detail', compact('report'));
+        $approvalRequest = $this->approvals->currentRequest($report);
+        $canApprove = $this->approvals->canAct($report, auth()->id());
+
+        return view('monthly-budget-summary-reports.detail', [
+            'report' => $report,
+            'approvalRequest' => $approvalRequest,
+            'canApprove' => $canApprove,
+        ]);
     }
 
     public function saveAutograph(Request $request, $id)
     {
-        $result = $this->approvalService->approve($id, $request->all());
+        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $this->approvals->approve($report, auth()->id(), $request->remark ?? '');
 
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
+        return redirect()->back()->with('success', 'Report approved successfully');
     }
 
     public function reject(Request $request, $id)
     {
-        $result = $this->approvalService->reject($id, $request->description);
+        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $this->approvals->reject($report, auth()->id(), $request->description ?? '');
 
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
+        return redirect()->back()->with('success', 'Report rejected successfully');
     }
 
     public function cancel(Request $request, $id)
     {
-        $result = $this->approvalService->cancel($id, $request->description);
+        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $report->update(['is_cancel' => true, 'cancel_reason' => $request->description]);
 
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
+        return redirect()->back()->with('success', 'Report cancelled successfully');
     }
 
     public function refresh($id)
@@ -90,5 +95,25 @@ class MonthlyBudgetSummaryReportController extends Controller
             $result['success'] ? 'success' : 'error',
             $result['message']
         );
+    }
+
+    public function exportToPdf($id)
+    {
+        $report = MonthlyBudgetSummaryReport::with('details', 'department', 'user')->findOrFail($id);
+        
+        // Use the same grouping logic as in the show method or view
+        $groupedDetails = collect($report->details)->groupBy('name')->map(function ($items, $name) {
+            return [
+                'name' => $name,
+                'items' => $items->toArray()
+            ];
+        })->values()->toArray();
+
+        $pdf = Pdf::loadView('pdf.monthly-budget-summary', [
+            'report' => $report,
+            'groupedDetails' => $groupedDetails,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('Monthly-Budget-Summary-' . $report->doc_num . '.pdf');
     }
 }

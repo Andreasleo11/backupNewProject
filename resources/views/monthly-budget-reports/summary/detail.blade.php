@@ -1,5 +1,9 @@
 @extends('new.layouts.app')
 
+@section('title', 'Budget Summary Detail')
+@section('page-title', 'Summary Detail')
+@section('page-subtitle', 'Review consolidated figures, momentum analysis, and approval status.')
+
 @push('head')
     <style>
         .autograph-box {
@@ -39,21 +43,12 @@
         };
     @endphp
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+    <div class="space-y-6">
 
-        {{-- Breadcrumbs --}}
-        <nav aria-label="breadcrumb">
-            <ol class="flex items-center gap-2 text-xs text-slate-500">
-                <li>
-                    <a href="{{ route('monthly-budget-summary-report.index') }}"
-                       class="hover:text-slate-700 hover:underline">
-                        Monthly Budget Summary Reports
-                    </a>
-                </li>
-                <li>/</li>
-                <li class="font-medium text-slate-700">Detail</li>
-            </ol>
-        </nav>
+        {{-- Main Layout Grid --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {{-- Left Column: Data --}}
+            <div class="lg:col-span-2 space-y-8">
 
         {{-- Header + Actions --}}
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -81,11 +76,8 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-                {{-- Status badge (Tailwind version, pastikan partial-nya juga sudah Tailwind) --}}
-                @include('partials.monthly-budget-summary-report-status', [
-                    'status' => $statusEnum,
-                    'report' => $report,
-                ])
+                {{-- Use unified status badge --}}
+                @include('partials.pr-status-badge', ['pr' => $report])
 
                 {{-- Upload / Refresh untuk user tertentu --}}
                 @if ($authUser->email === 'nur@daijo.co.id')
@@ -112,15 +104,15 @@
                         </button>
                     </form>
                 @endif
+
+                <a href="{{ route('monthly.budget.summary.report.export-pdf', $report->id) }}"
+                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    <i class="bx bxs-file-pdf text-base mr-1"></i>
+                    Download PDF
+                </a>
             </div>
         </div>
 
-        {{-- Autographs (dibungkus "card" Tailwind) --}}
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-100">
-            <div class="p-4 sm:p-5">
-                @include('partials.monthly-budget-summary-report-autograph')
-            </div>
-        </div>
 
         {{-- Tabel Summary --}}
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-100">
@@ -217,31 +209,24 @@
 
                                         @if ($canEditItems)
                                             <td class="px-2 py-2 text-center whitespace-nowrap">
-                                                @include('partials.edit-monthly-budget-report-summary-detail')
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    @include('partials.edit-monthly-budget-report-summary-detail')
+                                                    
+                                                    <button type="button"
+                                                        class="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95"
+                                                        @click="$dispatch('open-modal', { id: 'edit-monthly-budget-report-summary-detail-{{ $item['id'] }}' })">
+                                                        <i class='bx bx-edit text-sm'></i>
+                                                    </button>
 
-                                                <button type="button"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 mr-1"
-                                                    data-modal-target="edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
-                                                    data-bs-toggle="modal">
-                                                    <i class='bx bx-edit text-sm mr-1'></i>
-                                                    Edit
-                                                </button>
-
-                                                @include('partials.delete-confirmation-modal', [
-                                                    'title' => 'Delete item',
-                                                    'body' => 'Are you sure want to delete this item?',
-                                                    'id' => $item['id'],
-                                                    'route' =>
-                                                        'monthly.budget.report.summary.detail.destroy',
-                                                ])
-
-                                                <button type="button"
-                                                    class="inline-flex items-center rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-1"
-                                                    data-modal-target="delete-confirmation-modal-{{ $item['id'] }}"
-                                                    data-bs-toggle="modal">
-                                                    <i class='bx bx-trash-alt text-sm mr-1'></i>
-                                                    Delete
-                                                </button>
+                                                    @include('partials.delete-confirmation-modal', [
+                                                        'title' => 'Delete item',
+                                                        'body' => 'Are you sure want to delete this item?',
+                                                        'id' => $item['id'],
+                                                        'route' => 'monthly.budget.report.summary.detail.destroy',
+                                                        'iconOnly' => true,
+                                                        'push' => false
+                                                    ])
+                                                </div>
                                             </td>
                                         @endif
                                     </tr>
@@ -272,14 +257,65 @@
                     </table>
                 </div>
             </div>
+
+            {{-- Digital Signatures Section --}}
+            @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
         </div>
 
         {{-- Uploaded files section --}}
-        <div class="mt-2">
+        <div class="glass-card p-6">
+            <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
+                <i class="bx bx-paperclip text-indigo-500 text-lg"></i> Attachments
+            </h3>
             @include('partials.uploaded-section', [
-                'showDeleteButton' => $statusEnum === \App\Enums\MonthlyBudgetSummaryStatus::WAITING_CREATOR,
+                'showDeleteButton' => $report->status === 'DRAFT' || $report->status === 'WAITING_CREATOR',
                 'files' => $report->files,
             ])
         </div>
     </div>
+
+    {{-- Right Column: Sidepanel --}}
+    <div class="space-y-6">
+        {{-- Approval Action Card --}}
+        @if ($canApprove)
+            <div class="glass-card border-l-4 border-l-amber-500 p-6 shadow-lg">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
+                    Action Required
+                </h3>
+                <div class="space-y-3">
+                    <button type="button" @click="$dispatch('open-approve-modal')"
+                            class="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-0.5">
+                        Approve Summary
+                    </button>
+                    
+                    <button type="button" @click="$dispatch('open-reject-modal')"
+                            class="w-full rounded-xl border border-rose-200 bg-white py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 hover:border-rose-300">
+                        Reject Summary
+                    </button>
+
+                    <button type="button" @click="$dispatch('open-return-modal')"
+                            class="w-full rounded-xl border border-orange-200 bg-white py-2.5 text-sm font-bold text-orange-600 transition-all hover:bg-orange-50 hover:border-orange-300">
+                        Return for Revision
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        {{-- Workflow History --}}
+        <div class="glass-card p-6">
+            <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
+                <i class="bx bx-history text-indigo-500 text-lg"></i> Workflow History
+            </h3>
+            @include('partials.pr-approval-timeline', ['pr' => $report])
+        </div>
+    </div>
+</div>
+    </div>
+
+    {{-- Modals --}}
+    @if ($canApprove)
+        @include('partials.pr-approve-modal', ['pr' => $report])
+        @include('partials.pr-reject-modal', ['pr' => $report])
+        @include('partials.pr-return-modal', ['pr' => $report])
+    @endif
 @endsection

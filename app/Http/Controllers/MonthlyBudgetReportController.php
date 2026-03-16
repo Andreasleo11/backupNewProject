@@ -15,7 +15,9 @@ class MonthlyBudgetReportController extends Controller
     public function __construct(
         private readonly BudgetReportService $reportService,
         private readonly BudgetApprovalService $approvalService,
-        private readonly BudgetExportService $exportService
+        private readonly BudgetExportService $exportService,
+        private readonly \App\Application\Approval\Contracts\Approvals $approvals,
+        private readonly \App\Domain\MonthlyBudget\Actions\SubmitBudgetReportAction $submitAction
     ) {}
 
     public function index()
@@ -63,10 +65,15 @@ class MonthlyBudgetReportController extends Controller
             $result = $this->reportService->createReport($validated, $request->items);
         }
 
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
+        if ($result['success']) {
+            $report = $result['report'] ?? null;
+            if ($report && $request->input('action') === 'submit') {
+                $this->submitAction->execute($report, (int)auth()->id());
+            }
+            return redirect()->route('monthly-budget-reports.index')->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message']);
     }
 
     public function edit($id)
@@ -80,10 +87,13 @@ class MonthlyBudgetReportController extends Controller
 
     public function show($id)
     {
-        $report = MonthlyBudgetReport::with('details', 'department')->find($id);
-        $this->approvalService->updateStatus($report);
+        $report = MonthlyBudgetReport::with('details', 'department', 'approvalRequest.steps.actedUser')->findOrFail($id);
+        
+        // Use unified approval service to check if user can act
+        $canApprove = $this->approvals->canAct($report, auth()->id());
+        $currentApproval = $this->approvals->currentRequest($report);
 
-        return view('monthly-budget-reports.detail', compact('report'));
+        return view('monthly-budget-reports.detail', compact('report', 'canApprove', 'currentApproval'));
     }
 
     public function update(UpdateMonthlyBudgetReportRequest $request, $id)
@@ -106,14 +116,12 @@ class MonthlyBudgetReportController extends Controller
         );
     }
 
-    public function saveAutograph(Request $request, $id)
+    public function approve(Request $request, $id)
     {
-        $result = $this->approvalService->approve($id, $request->all());
+        $report = MonthlyBudgetReport::findOrFail($id);
+        $this->approvals->approve($report, auth()->id(), $request->remarks);
 
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
+        return redirect()->back()->with('success', 'Report approved successfully.');
     }
 
     public function downloadExcelTemplate(Request $request)
@@ -123,7 +131,15 @@ class MonthlyBudgetReportController extends Controller
 
     public function reject(Request $request, $id)
     {
-        $result = $this->approvalService->reject($id, $request->description);
+        $report = MonthlyBudgetReport::findOrFail($id);
+        $this->approvals->reject($report, auth()->id(), $request->description);
+
+        return redirect()->back()->with('success', 'Report rejected.');
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $result = $this->approvalService->cancel($id, $request->description);
 
         return redirect()->back()->with(
             $result['success'] ? 'success' : 'error',
@@ -131,9 +147,10 @@ class MonthlyBudgetReportController extends Controller
         );
     }
 
-    public function cancel(Request $request, $id)
+    public function submit($id)
     {
-        $result = $this->approvalService->cancel($id, $request->description);
+        $report = MonthlyBudgetReport::findOrFail($id);
+        $result = $this->submitAction->execute($report, (int)auth()->id());
 
         return redirect()->back()->with(
             $result['success'] ? 'success' : 'error',

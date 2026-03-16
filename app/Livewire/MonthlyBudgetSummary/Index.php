@@ -2,6 +2,7 @@
 
 namespace App\Livewire\MonthlyBudgetSummary;
 
+use App\Domain\MonthlyBudget\Services\BudgetSummaryService;
 use App\Models\MonthlyBudgetSummaryReport as Report;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
@@ -105,6 +106,31 @@ class Index extends Component
         }
 
         return null;
+    }
+
+    public function cloneReport(int $id, BudgetSummaryService $service): void
+    {
+        // For simplicity, we clone to the current month if not specified, 
+        // but typically the service might handle logic or we could prompt.
+        // For now, let's clone to "next month" relative to the source.
+        $source = Report::find($id);
+        if (! $source) {
+            session()->flash('error', 'Report not found.');
+
+            return;
+        }
+
+        $nextMonth = \Carbon\Carbon::parse($source->report_date)->addMonth()->format('m-Y');
+
+        $result = $service->cloneSummary($id, $nextMonth);
+
+        if ($result['success']) {
+            session()->flash('success', $result['message']);
+
+            return;
+        }
+
+        session()->flash('error', $result['message']);
     }
 
     public function render()

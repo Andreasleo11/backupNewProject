@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
+use App\Infrastructure\Approval\Concerns\HasApproval;
 use App\Notifications\MonthlyBudgetSummaryReportCreated;
 use App\Notifications\MonthlyBudgetSummaryReportUpdated;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,10 +12,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class MonthlyBudgetSummaryReport extends Model
+class MonthlyBudgetSummaryReport extends Model implements Approvable
 {
-    use HasFactory, SoftDeletes;
+    use HasApproval, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'report_date',
@@ -28,7 +32,17 @@ class MonthlyBudgetSummaryReport extends Model
         'is_cancel',
         'cancel_reason',
         'status',
+        'workflow_status',
+        'workflow_step',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $appends = ['total_amount', 'mom'];
 
@@ -104,6 +118,91 @@ class MonthlyBudgetSummaryReport extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    /**
+     * Get workflow status from approval request.
+     */
+    public function getWorkflowStatusAttribute(): ?string
+    {
+        if ((int) $this->is_cancel === 1) {
+            return 'CANCELED';
+        }
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+        if (!$approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+        $currentStep = $approval->steps()->where('sequence', $approval->current_step)->first();
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Get all workflow steps for visualization.
+     */
+    public function getWorkflowSignaturesAttribute(): array
+    {
+        $steps = collect();
+
+        // 1. Modern Approval Engine
+        if ($this->approvalRequest) {
+            $approvalSteps = $this->approvalRequest->steps()
+                ->orderBy('sequence')
+                ->with('actedUser')
+                ->get()
+                ->map(function ($step) {
+                    $uiStatus = match ($step->status) {
+                        'APPROVED' => 'signed',
+                        'REJECTED' => 'rejected',
+                        default   => 'pending',
+                    };
+
+                    return [
+                        'step_code'  => $step->approver_label ?? 'Approver',
+                        'user'       => $step->actedUser,
+                        'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
+                        'image'      => $step->signature_url,
+                        'at'         => $step->acted_at,
+                        'status'     => $uiStatus,
+                        'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
+                        'source'     => 'approval_system',
+                    ];
+                });
+
+            if ($approvalSteps->isNotEmpty()) {
+                return $approvalSteps->toArray();
+            }
+        }
+
+        // 2. Legacy Fallback
+        $legacySlots = [
+            ['col' => 'created_autograph', 'label' => 'Dibuat'],
+            ['col' => 'is_known_autograph', 'label' => 'Diketahui'],
+            ['col' => 'approved_autograph', 'label' => 'Disetujui'],
+        ];
+
+        foreach ($legacySlots as $slot) {
+            $val = $this->{$slot['col']};
+            $steps->push([
+                'step_code'  => $slot['label'],
+                'user'       => null,
+                'name'       => $val ? str_replace(['.png', '.jpg', '.jpeg'], '', $val) : 'Waiting...',
+                'image'      => $val ? asset('autographs/' . $val) : null,
+                'at'         => $val ? $this->updated_at : null,
+                'status'     => $val ? 'signed' : 'pending',
+                'is_current' => false,
+                'source'     => 'legacy',
+            ]);
+        }
+
+        return $steps->toArray();
     }
 
     public function files()
