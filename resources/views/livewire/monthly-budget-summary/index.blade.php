@@ -1,3 +1,7 @@
+@section('title', 'Monthly Budget Summary Reports')
+@section('page-title', 'Monthly Budget Summary Reports')
+@section('page-subtitle', 'Consolidated departmental budgets overview and management.')
+
 @push('scripts')
     <script type="module">
         // Month pickers using flatpickr
@@ -37,41 +41,7 @@
     </script>
 @endpush
 
-@push('head')
-    <style>
-        thead tr>* {
-            z-index: 2;
-        }
-    </style>
-@endpush
-
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-    {{-- Alerts --}}
-    @if (session()->has('success'))
-        <div class="rounded-md bg-emerald-50 p-3 border border-emerald-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="bx bx-check-circle text-emerald-400"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-xs font-medium text-emerald-800">{{ session('success') }}</p>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="rounded-md bg-rose-50 p-3 border border-rose-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="bx bx-x-circle text-rose-400"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-xs font-medium text-rose-800">{{ session('error') }}</p>
-                </div>
-            </div>
-        </div>
-    @endif
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6" x-data="{}">
 
     {{-- Breadcrumbs --}}
     <nav aria-label="Breadcrumb" class="flex items-center text-xs text-slate-500 gap-1">
@@ -82,56 +52,94 @@
         <span class="text-slate-700 font-medium">List</span>
     </nav>
 
+    {{-- Spotlight Dashboard (Premium UI) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {{-- Total Reports --}}
+        <div class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-100 group">
+            <div class="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-200 transition-colors">
+                <i class="bx bx-file text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Reports</p>
+                <h4 class="text-xl font-bold text-slate-800">{{ number_format($stats['total']) }}</h4>
+            </div>
+        </div>
+
+        {{-- Approved --}}
+        <div class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-emerald-100 group">
+            <div class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors">
+                <i class="bx bx-check-double text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approved</p>
+                <h4 class="text-xl font-bold text-emerald-600">{{ number_format($stats['approved']) }}</h4>
+            </div>
+        </div>
+
+        {{-- Pending --}}
+        <div class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-amber-100 group">
+            <div class="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
+                <i class="bx bx-time text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">In Review</p>
+                <h4 class="text-xl font-bold text-amber-600">{{ number_format($stats['pending']) }}</h4>
+            </div>
+        </div>
+
+        {{-- Month Total --}}
+        <div class="glass-card premium-shadow p-4 border-l-4 border-indigo-500 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-100 group">
+            <div class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition-colors">
+                <i class="bx bx-stats text-xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Month Total</p>
+                <h4 class="text-xl font-bold text-indigo-600">Rp {{ number_format($stats['this_month_sum'], 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+
     {{-- Header + Controls --}}
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-4">
 
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Monthly Budget Summary Reports
-                </h2>
-                <p class="text-xs text-slate-500 mt-1">
-                    Showing <span class="font-semibold text-slate-700">{{ $reports->count() }}</span>
-                    of
-                    <span class="font-semibold text-slate-700">{{ $reports->total() }}</span>
-                    records
-                </p>
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="bx bx-list-ul text-indigo-500"></i>
+                    Report Overview
+                </h3>
             </div>
-
-            {{-- Generate form (server POST) --}}
+            
+            {{-- Generate form (Livewire) --}}
             @if ($showGenerateButton)
-                <form action="{{ route('monthly.budget.summary.report.store') }}" method="post"
-                    class="flex flex-col sm:flex-row sm:items-center gap-2" x-data
-                    x-on:submit="$el.querySelector('button[type=submit]').disabled = true">
-                    @csrf
-
-                    <input type="hidden" name="created_autograph" value="{{ ucwords(auth()->user()->name) }}">
-
-                    <div class="flex items-center gap-2">
+                <div class="glass-card flex flex-col sm:flex-row sm:items-center gap-2 p-2 ring-1 ring-slate-200/50" x-data>
+                    <div class="flex items-center gap-2 pl-1">
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
                                 <i class="bx bx-calendar text-slate-400 text-sm"></i>
                             </span>
-                            <input type="text" id="monthPicker" name="month"
-                                class="block w-44 rounded-md border border-slate-300 bg-white pl-8 pr-3 py-1.5
-                                       text-xs text-slate-800 shadow-sm
-                                       focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Select Month (mm-yyyy)" aria-label="Select Month" required>
+                            <input wire:model="generationMonth" type="text" id="monthPicker"
+                                class="block w-44 rounded-lg border border-slate-200 bg-white/50 pl-8 pr-3 py-1.5
+                                       text-xs text-slate-800 focus:bg-white
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                                placeholder="Select Month..." aria-label="Select Month" required>
                         </div>
                     </div>
 
-                    <button type="submit"
-                        class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-1.5
-                                   text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
-                        <i class="bx bx-refresh mr-1 text-[0.9rem]"></i>
-                        Generate
+                    <button wire:click="prepareGeneration" wire:loading.attr="disabled"
+                        class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2
+                                   text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 group">
+                        <i class="bx bx-plus-circle mr-2 text-[1rem] group-hover:rotate-90 transition-transform duration-300" wire:loading.remove wire:target="prepareGeneration"></i>
+                        <span class="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full mr-2"
+                               wire:loading wire:target="prepareGeneration"></span>
+                        Generate Summary
                     </button>
-                </form>
+                </div>
             @endif
         </div>
 
         {{-- Filter toolbar --}}
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
+        <div class="glass-card premium-shadow overflow-hidden">
             <div class="p-4">
                 <div class="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-7 gap-3 items-end">
 
@@ -222,7 +230,7 @@
     </div>
 
     {{-- List --}}
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm relative overflow-hidden">
+    <div class="glass-card premium-shadow relative overflow-hidden">
 
         {{-- Loading overlay --}}
         <div wire:loading.flex
@@ -238,19 +246,19 @@
         <div class="p-0">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-xs text-slate-800">
-                    <thead class="bg-slate-50">
+                    <thead class="bg-slate-50/80 backdrop-blur-md sticky top-0 z-10">
                         <tr>
                             <th
-                                class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left text-[11px] font-semibold
-                                       text-slate-500 uppercase whitespace-nowrap">
+                                class="px-3 py-3 text-left text-[11px] font-bold
+                                       text-slate-500 uppercase whitespace-nowrap tracking-wider">
                                 #
                             </th>
 
                             {{-- Doc Number --}}
-                            <th class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left">
+                            <th class="px-3 py-3 text-left">
                                 <button type="button"
-                                    class="inline-flex items-center gap-1 text-[11px] font-semibold
-                                               text-slate-600 uppercase hover:text-slate-900"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold
+                                               text-slate-600 uppercase hover:text-slate-900 tracking-wider"
                                     wire:click="sortBy('doc_num')">
                                     <span>Doc. Number</span>
                                     @include('partials.sort-icon', [
@@ -262,10 +270,10 @@
                             </th>
 
                             {{-- Report Month --}}
-                            <th class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left">
+                            <th class="px-3 py-3 text-left">
                                 <button type="button"
-                                    class="inline-flex items-center gap-1 text-[11px] font-semibold
-                                               text-slate-600 uppercase hover:text-slate-900"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold
+                                               text-slate-600 uppercase hover:text-slate-900 tracking-wider"
                                     wire:click="sortBy('report_date')">
                                     <span>Report Month</span>
                                     @include('partials.sort-icon', [
@@ -277,10 +285,10 @@
                             </th>
 
                             {{-- Created At --}}
-                            <th class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left">
+                            <th class="px-3 py-3 text-left">
                                 <button type="button"
-                                    class="inline-flex items-center gap-1 text-[11px] font-semibold
-                                               text-slate-600 uppercase hover:text-slate-900"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold
+                                               text-slate-600 uppercase hover:text-slate-900 tracking-wider"
                                     wire:click="sortBy('created_at')">
                                     <span>Created At</span>
                                     @include('partials.sort-icon', [
@@ -293,16 +301,16 @@
 
                             {{-- Status --}}
                             <th
-                                class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left text-[11px] font-semibold
-                                       text-slate-500 uppercase">
+                                class="px-3 py-3 text-left text-[11px] font-bold
+                                       text-slate-500 uppercase tracking-wider">
                                 Status
                             </th>
 
                             {{-- Total --}}
-                            <th class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-right">
+                            <th class="px-3 py-3 text-right">
                                 <button type="button"
-                                    class="inline-flex items-center gap-1 text-[11px] font-semibold
-                                               text-slate-600 uppercase hover:text-slate-900"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold
+                                               text-slate-600 uppercase hover:text-slate-900 tracking-wider"
                                     wire:click="sortBy('total')">
                                     <span>Total</span>
                                     @include('partials.sort-icon', [
@@ -315,15 +323,15 @@
 
                             {{-- MoM --}}
                             <th
-                                class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-right text-[11px] font-semibold
-                                       text-slate-500 uppercase whitespace-nowrap">
+                                class="px-3 py-3 text-right text-[11px] font-bold
+                                       text-slate-500 uppercase whitespace-nowrap tracking-wider">
                                 MoM
                             </th>
 
                             {{-- Action --}}
                             <th
-                                class="sticky top-0 z-10 bg-slate-50 px-3 py-2 text-left text-[11px] font-semibold
-                                       text-slate-500 uppercase">
+                                class="px-3 py-3 text-left text-[11px] font-bold
+                                       text-slate-500 uppercase tracking-wider">
                                 Action
                             </th>
                         </tr>
@@ -346,7 +354,7 @@
                                 ];
                             @endphp
 
-                            <tr class="hover:bg-slate-50/60">
+                            <tr class="hover:bg-slate-50/80 transition-all duration-200 group/row cursor-default">
                                 {{-- # --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-[11px] text-slate-500">
                                     {{ $reports->firstItem() + $loop->index }}
@@ -434,17 +442,15 @@
 
                                 {{-- Actions --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-xs">
-                                    <div class="flex flex-wrap gap-1 justify-start">
+                                    <div class="flex flex-wrap gap-2 justify-start items-center">
                                         <a wire:navigate
                                             href="{{ route('monthly.budget.summary.report.show', $report->id) }}"
-                                            class="inline-flex items-center rounded-md border border-slate-300
-                                                   bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700
-                                                   shadow-sm hover:bg-slate-50">
-                                            <i class="bx bx-info-circle mr-1 text-[0.9rem]"></i>
+                                            class="inline-flex items-center rounded-lg border border-slate-200
+                                                   bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700
+                                                   shadow-sm hover:bg-slate-50 hover:border-slate-300 hover:shadow transition-all active:scale-95 group/btn">
+                                            <i class="bx bx-show mr-1.5 text-[1rem] text-slate-400 group-hover/btn:text-indigo-500 transition-colors"></i>
                                             Detail
                                         </a>
-
-
 
                                         @if ($authUser->id == $report->creator_id)
                                             @if ($report->workflow_status === 'DRAFT')
@@ -466,11 +472,11 @@
 
                                         <button wire:click="cloneReport({{ $report->id }})"
                                             wire:confirm="Are you sure you want to clone this report to the next month? All line items will be copied."
-                                            class="inline-flex items-center rounded-md border border-indigo-200
-                                                   bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700
-                                                   shadow-sm hover:bg-indigo-100 transition-colors"
+                                            class="inline-flex items-center rounded-lg border border-indigo-100
+                                                   bg-indigo-50/50 px-3 py-1.5 text-[11px] font-bold text-indigo-700
+                                                   shadow-sm hover:bg-indigo-100/80 transition-all active:scale-95 group/clone"
                                             title="Clone to Next Month">
-                                            <i class="bx bx-copy mr-1 text-[0.9rem]"></i>
+                                            <i class="bx bx-duplicate mr-1.5 text-[1rem] text-indigo-400 group-hover/clone:rotate-12 transition-transform"></i>
                                             Clone
                                         </button>
                                     </div>
@@ -478,19 +484,21 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-8">
-                                    <div class="flex flex-col items-center text-center text-xs text-slate-500">
-                                        <i class="bx bx-file-find text-3xl text-slate-300 mb-2"></i>
-                                        <p class="font-semibold text-slate-700">No reports found</p>
-                                        <p class="mt-1 mb-3 text-[11px] text-slate-500">
-                                            Adjust filters or generate a new summary report.
+                                <td colspan="8" class="px-6 py-12">
+                                    <div class="flex flex-col items-center text-center max-w-sm mx-auto">
+                                        <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 ring-1 ring-slate-100">
+                                            <i class="bx bx-file-find text-4xl text-slate-300"></i>
+                                        </div>
+                                        <h4 class="font-bold text-slate-700 mb-1">No reports found</h4>
+                                        <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">
+                                            We couldn't find any summary reports matching your criteria. Try adjusting your filters or generate a new summary.
                                         </p>
                                         @if ($showGenerateButton)
                                             <a href="#monthPicker"
-                                                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5
-                                                      text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
-                                                <i class="bx bx-refresh mr-1 text-[0.9rem]"></i>
-                                                Generate Monthly Report
+                                                class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2
+                                                      text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                                                <i class="bx bx-plus-circle mr-2 text-[1rem]"></i>
+                                                Generate First Summary
                                             </a>
                                         @endif
                                     </div>
@@ -503,18 +511,146 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="border-t border-slate-100 px-4 py-3">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <p class="text-[11px] text-slate-500">
-                    Page
-                    <span class="font-semibold text-slate-700">{{ $reports->currentPage() }}</span>
-                    of
-                    <span class="font-semibold text-slate-700">{{ $reports->lastPage() }}</span>
-                </p>
+        <div class="border-t border-slate-100 px-4 py-3 bg-slate-50/30">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center gap-3 text-[11px] text-slate-500">
+                    <p>
+                        Showing <span class="font-bold text-slate-700">{{ $reports->firstItem() ?? 0 }}</span>
+                        to <span class="font-bold text-slate-700">{{ $reports->lastItem() ?? 0 }}</span>
+                        of <span class="font-bold text-slate-700">{{ $reports->total() }}</span> reports
+                    </p>
+                    <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                    <p>
+                        Page <span class="font-bold text-slate-700">{{ $reports->currentPage() }}</span>
+                        of <span class="font-bold text-slate-700">{{ $reports->lastPage() }}</span>
+                    </p>
+                </div>
                 <div class="text-xs">
                     {{ $reports->links() }}
                 </div>
             </div>
         </div>
     </div>
+    {{-- Confirmation Modal --}}
+    @if($isConfirmingGeneration)
+        <div x-teleport="body">
+            <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data>
+                <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-slate-500/75 backdrop-blur-sm transition-opacity" aria-hidden="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
+                    <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+                    <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle ring-1 ring-slate-200/50"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                        
+                        <div class="bg-white px-8 pt-8 pb-6">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 sm:mx-0 sm:h-12 sm:w-12">
+                                    <i class="bx bx-file text-2xl text-indigo-600"></i>
+                                </div>
+                                <div class="mt-4 text-center sm:mt-0 sm:ml-5 sm:text-left w-full">
+                                    <h3 class="text-xl font-extrabold leading-tight text-slate-900" id="modal-title">
+                                        Confirm Summary Generation
+                                    </h3>
+                                    <div class="mt-2">
+                                        <p class="text-xs text-slate-500 leading-relaxed">
+                                            Generating summary for <span class="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{{ $generationMonth }}</span>. This will consolidate all currently <span class="text-emerald-600 font-bold uppercase tracking-tight">Approved</span> departmental reports into a single summary.
+                                        </p>
+                                    </div>
+
+                                    {{-- Preview Table --}}
+                                    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 premium-shadow">
+                                        <table class="min-w-full divide-y divide-slate-200">
+                                            <thead class="bg-slate-50/50">
+                                                <tr>
+                                                    <th scope="col" class="px-5 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Department</th>
+                                                    <th scope="col" class="px-5 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest">MBR Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 bg-white">
+                                                @php
+                                                    $allApproved = true;
+                                                @endphp
+                                                @foreach($generationPreview as $item)
+                                                    <tr class="hover:bg-slate-50/50 transition-colors">
+                                                        <td class="whitespace-nowrap px-5 py-3 text-xs text-slate-700 font-bold">
+                                                            {{ $item['name'] }}
+                                                        </td>
+                                                        <td class="whitespace-nowrap px-5 py-3 text-center text-xs">
+                                                            @if($item['status'] === 'APPROVED')
+                                                                <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-100/50">
+                                                                    <i class="bx bxs-check-circle mr-1.5"></i> Approved
+                                                                </span>
+                                                            @elseif($item['status'] === 'MISSING')
+                                                                @php $allApproved = false; @endphp
+                                                                <span class="inline-flex items-center rounded-lg bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-100/50">
+                                                                    <i class="bx bxs-error-circle mr-1.5"></i> Missing
+                                                                </span>
+                                                            @else
+                                                                @php $allApproved = false; @endphp
+                                                                <span class="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-100/50">
+                                                                    <i class="bx bxs-time mr-1.5"></i> {{ $item['status'] }}
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot class="bg-indigo-50/30">
+                                                <tr>
+                                                    <td class="px-5 py-4 text-xs font-extrabold text-slate-800 uppercase tracking-tight">Preliminary Total</td>
+                                                    <td class="px-5 py-4 text-right text-xs font-black text-indigo-700">
+                                                        Rp {{ number_format($preliminaryTotal, 0, ',', '.') }}
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                    @if(!$allApproved)
+                                        <div class="mt-4 rounded-lg bg-amber-50 p-3 border border-amber-200">
+                                            <div class="flex">
+                                                <div class="flex-shrink-0">
+                                                    <i class="bx bxs-info-circle text-amber-400"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-[11px] font-medium text-amber-800 leading-normal">
+                                                        Warning: Some non-office departments have not yet approved their monthly budget reports. 
+                                                        If you proceed, these departments will not be included in the summary totals.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Empty Total Warning --}}
+                                    @if($preliminaryTotal <= 0)
+                                        <div class="mt-3 p-3 rounded-lg bg-rose-50 border border-rose-200">
+                                            <div class="flex gap-2">
+                                                <i class="bx bxs-error text-rose-500 mt-0.5"></i>
+                                                <p class="text-[10px] text-rose-700 font-semibold">
+                                                    Cannot generate summary with Rp 0 total. Please ensure at least one departmental report is fully APPROVED.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+                            <button wire:click="generateConfirmed" type="button" 
+                                    @if($preliminaryTotal <= 0) disabled @endif
+                                    class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Confirm & Generate
+                            </button>
+                            <button wire:click="$set('isConfirmingGeneration', false)" type="button" 
+                                    class="inline-flex w-full justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 sm:w-auto transition-all duration-200">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

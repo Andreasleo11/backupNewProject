@@ -14,30 +14,6 @@ class MonthlyBudgetSummaryReportController extends Controller
         private readonly \App\Application\Approval\Contracts\Approvals $approvals
     ) {}
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'dept_no' => 'required|integer',
-            'creator_id' => 'required|integer',
-            'report_date' => 'required|date',
-            'department_reports' => 'required|array',
-        ]);
-
-        $result = $this->summaryService->createSummary(
-            $validated,
-            $request->department_reports
-        );
-
-        if ($result['success'] && isset($result['report'])) {
-            $this->approvals->submit($result['report'], (int)$request->creator_id);
-        }
-
-        return redirect()->back()->with(
-            $result['success'] ? 'success' : 'error',
-            $result['message']
-        );
-    }
-
     public function destroy($id)
     {
         MonthlyBudgetSummaryReport::find($id)?->delete();

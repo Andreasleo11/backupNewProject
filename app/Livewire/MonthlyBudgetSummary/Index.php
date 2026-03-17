@@ -37,8 +37,12 @@ class Index extends Component
     #[Url(keep: true)]
     public int $perPage = 10;
 
-    // For header CTA
+    // Generation Properties
     public bool $showGenerateButton = false;
+    public ?string $generationMonth = null;
+    public bool $isConfirmingGeneration = false;
+    public array $generationPreview = [];
+    public float $preliminaryTotal = 0;
 
     // Whitelist sort fields -> db columns
     private array $sortable = [
@@ -125,12 +129,127 @@ class Index extends Component
         $result = $service->cloneSummary($id, $nextMonth);
 
         if ($result['success']) {
-            session()->flash('success', $result['message']);
+            $msg = $result['message'];
+            session()->flash('success', $msg);
+            $this->dispatch('flash', type: 'success', message: $msg);
+            $this->dispatch('toast', type: 'success', message: $msg);
 
             return;
         }
 
         session()->flash('error', $result['message']);
+        $this->dispatch('flash', type: 'error', message: $result['message']);
+        $this->dispatch('toast', type: 'error', message: $result['message']);
+    }
+
+    public function prepareGeneration(): void
+    {
+        if (! $this->generationMonth) {
+            $msg = 'Please select a month.';
+            session()->flash('error', $msg);
+            $this->dispatch('flash', type: 'error', message: $msg);
+            $this->dispatch('toast', type: 'error', message: $msg);
+
+            return;
+        }
+
+        $date = $this->normalizeMonth($this->generationMonth);
+        if (! $date) {
+            $msg = 'Invalid month format.';
+            session()->flash('error', $msg);
+            $this->dispatch('flash', type: 'error', message: $msg);
+            $this->dispatch('toast', type: 'error', message: $msg);
+
+            return;
+        }
+
+        $carbonDate = \Carbon\Carbon::parse($date);
+        $month = $carbonDate->month;
+        $year = $carbonDate->year;
+
+        // Fetch non-office departments
+        $departments = \App\Infrastructure\Persistence\Eloquent\Models\Department::where('is_office', false)
+            ->where('is_active', true)
+            ->get();
+
+        $this->generationPreview = [];
+        $this->preliminaryTotal = 0;
+
+        foreach ($departments as $dept) {
+            $report = \App\Models\MonthlyBudgetReport::where('dept_no', $dept->dept_no)
+                ->whereYear('report_date', $year)
+                ->whereMonth('report_date', $month)
+                ->first();
+
+            $status = 'MISSING';
+            if ($report) {
+                $status = $report->workflow_status;
+                if ($status === 'APPROVED') {
+                    $this->preliminaryTotal += $report->details()->sum(\Illuminate\Support\Facades\DB::raw('quantity * total'));
+                }
+            }
+
+            $this->generationPreview[] = [
+                'dept_no' => $dept->dept_no,
+                'name' => $dept->name,
+                'status' => $status,
+                'report_id' => $report?->id,
+            ];
+        }
+
+        $this->isConfirmingGeneration = true;
+    }
+
+    public function generateConfirmed(BudgetSummaryService $service): void
+    {
+        $date = $this->normalizeMonth($this->generationMonth);
+        
+        // Find all approved reports for this month
+        $carbonDate = \Carbon\Carbon::parse($date);
+        $approvedReports = \App\Models\MonthlyBudgetReport::whereYear('report_date', $carbonDate->year)
+            ->whereMonth('report_date', $carbonDate->month)
+            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED'))
+            ->get()
+            ->groupBy('dept_no');
+
+        if ($approvedReports->isEmpty()) {
+            $msg = 'No approved reports found for this month. Cannot generate summary.';
+            session()->flash('error', $msg);
+            $this->dispatch('flash', type: 'error', message: $msg);
+            $this->dispatch('toast', type: 'error', message: $msg);
+            
+            return;
+        }
+
+        $data = [
+            'dept_no' => 0, // Summary doesn't have a specific dept_no usually, or it's 'MANAGEMENT'
+            'creator_id' => auth()->id(),
+            'report_date' => $date,
+        ];
+
+        // Format for service: [deptNo => [reportIds]]
+        $reportsMap = $approvedReports->map(fn($group) => $group->pluck('id')->toArray())->toArray();
+
+        $result = $service->createSummary($data, $reportsMap);
+
+        if ($result['success']) {
+            // Auto-submit for approval as per original controller logic
+            $approvals = app(\App\Application\Approval\Contracts\Approvals::class);
+            $approvals->submit($result['summary'], auth()->id());
+            
+            $msg = $result['message'];
+            session()->flash('success', $msg);
+            $this->dispatch('flash', type: 'success', message: $msg);
+            $this->dispatch('toast', type: 'success', message: $msg);
+
+            $this->isConfirmingGeneration = false;
+            $this->generationMonth = null;
+            return;
+        }
+
+        session()->flash('error', $result['message']);
+        $this->dispatch('flash', type: 'error', message: $result['message']);
+        $this->dispatch('toast', type: 'error', message: $result['message']);
     }
 
     public function render()
@@ -193,10 +312,23 @@ class Index extends Component
 
         $reports = $query->paginate($this->perPage);
 
+        // Calculate Spotlight Stats for Premium UI
+        $stats = [
+            'total' => Report::count(),
+            'approved' => Report::whereHas('approvalRequest', fn ($q) => $q->where('status', 'APPROVED'))->count(),
+            'pending' => Report::whereHas('approvalRequest', fn ($q) => $q->where('status', 'IN_REVIEW'))->count(),
+            'this_month_sum' => (float) Report::whereYear('report_date', now()->year)
+                ->whereMonth('report_date', now()->month)
+                ->withTotals()
+                ->get()
+                ->sum('total_amount'),
+        ];
+
         return view('livewire.monthly-budget-summary.index', [
             'reports' => $reports,
             'authUser' => $user,
             'showGenerateButton' => $this->showGenerateButton,
+            'stats' => $stats,
         ]);
     }
 }
