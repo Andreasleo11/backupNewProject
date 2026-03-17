@@ -65,7 +65,20 @@ class MonthlyBudgetSummaryController extends Controller
 
     public function submit($id)
     {
-        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $report = MonthlyBudgetSummaryReport::with('details')->findOrFail($id);
+
+        // Required field validation for all details
+        $incompleteItems = $report->details->filter(function ($detail) {
+            return empty($detail->supplier) || (float) $detail->cost_per_unit <= 0;
+        });
+
+        if ($incompleteItems->isNotEmpty()) {
+            $itemNames = $incompleteItems->pluck('name')->unique()->implode(', ');
+            return redirect()
+                ->back()
+                ->with('error', "Cannot submit: The following items are incomplete (missing supplier or cost): {$itemNames}. Please update them first.");
+        }
+
         $this->approvals->submit($report, auth()->id());
 
         return redirect()->back()->with('success', 'Report submitted for approval successfully!');

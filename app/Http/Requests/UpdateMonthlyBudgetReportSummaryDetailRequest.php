@@ -26,7 +26,7 @@ class UpdateMonthlyBudgetReportSummaryDetailRequest extends FormRequest
             'quantity' => 'required|integer',
             'uom' => 'required|string|max:255',
             'supplier' => 'required|string|max:255',
-            'cost_per_unit' => 'nullable|string', // Validate as string to allow non-numeric input
+            'cost_per_unit' => 'required|string', // Validated as string to allow non-numeric input (formatted with Rp)
             'remark' => 'nullable|string|max:255',
         ];
     }
