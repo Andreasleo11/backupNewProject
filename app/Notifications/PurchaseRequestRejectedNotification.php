@@ -11,11 +11,6 @@ class PurchaseRequestRejectedNotification extends Notification implements Should
 {
     use Queueable;
 
-    /**
-     * Dispatch after the DB transaction commits to prevent race conditions.
-     */
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly PurchaseRequest $purchaseRequest,
         public readonly ?string $remarks = null,

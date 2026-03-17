@@ -11,8 +11,6 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly Approvable $approvable,
     ) {}

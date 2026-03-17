@@ -11,8 +11,6 @@ class ApprovalActionRequired extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public bool $afterCommit = true;
-
     public function __construct(
         public readonly Approvable $approvable,
         public readonly mixed $step
