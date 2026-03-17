@@ -268,9 +268,10 @@ class NavigationService
                 'children' => [
                     [
                         'label' => 'Approved PRs',
-                        'route' => 'accounting.purchase-request',
+                        'route' => 'purchase-requests.index',
+                        'params' => ['custom_status' => 'APPROVED'],
                         'icon' => 'clipboard-document-check',
-                        'active' => request()->routeIs('accounting.purchase-request'),
+                        'active' => request()->routeIs('purchase-requests.index') && request('custom_status') === 'APPROVED',
                         'roles' => ['admin', 'super-admin', 'finance', 'accounting'],
                     ],
                     [

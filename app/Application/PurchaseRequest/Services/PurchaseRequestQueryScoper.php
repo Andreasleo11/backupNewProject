@@ -26,22 +26,34 @@ final class PurchaseRequestQueryScoper
         // Actually, user said Purchasers have 'view-all' but need filtering.
         // So we must check specific roles/logic first before generic 'view-all'.
 
-        // 3. Purchaser: Filter by Target Department
+        // 3. Finance & Accounting: View All Approved PRs
+        // We check for roles AND strictly for the 'ACCOUNTING' department as requested
+        $isAccounting = $user->department && strtoupper($user->department->name) === 'ACCOUNTING';
+
+        if ($user->hasAnyRole(['finance', 'accounting']) || $isAccounting) {
+            return $query->where(function ($q) {
+                $q->whereHas('approvalRequest', function ($sub) {
+                    $sub->where('status', 'APPROVED');
+                });
+            });
+        }
+
+        // 4. Purchaser: Filter by Target Department
         if ($user->hasRole('pr-purchaser')) {
             return $this->scopeForPurchaser($user, $query);
         }
 
-        // 4. View All (Global access for Director/GM who are NOT purchasers)
+        // 5. View All (Global access for Director/GM who are NOT purchasers)
         if ($user->can('pr.view-all')) {
             return $query;
         }
 
-        // 5. Dept Head: View Department's Requests
+        // 6. Dept Head: View Department's Requests
         if ($user->hasRole('pr-dept-head')) {
             return $this->scopeForHead($user, $query);
         }
 
-        // 6. Regular User: View Own
+        // 7. Regular User: View Own
         return $this->scopeForOwner($user, $query);
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\materialPredictionController;
@@ -71,10 +70,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchaseRequestsDetail/{id}', [DetailPurchaseRequestController::class, 'detailpr'])->name('pr.detail');
     Route::post('pr/markasreceived/', [DetailPurchaseRequestController::class, 'receivedItem'])->name('pr.receive.item');
     Route::post('/pr/markasreceivedall', [DetailPurchaseRequestController::class, 'receivedAll'])->name('pr.receive.all');
-    Route::post('/accounting/pr/approval', [AccountingPurchaseRequestController::class, 'approval'])->name('accounting.pr.approve');
-    Route::post('/accounting/pr/reject', [AccountingPurchaseRequestController::class, 'reject'])->name('accounting.pr.reject');
-    Route::post('/accounting/pr/approval/all', [AccountingPurchaseRequestController::class, 'approvalAll'])->name('accounting.pr.approve.all');
-    Route::get('/accounting/pr/index', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
 
     // Purchase Orders
     Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');

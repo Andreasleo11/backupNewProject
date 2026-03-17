@@ -51,7 +51,7 @@
             }
         @endphp
         @foreach ($flattenedItems as $flatItem)
-            <a href="{{ route($flatItem['route']) }}"
+            <a href="{{ route($flatItem['route'], $flatItem['params'] ?? []) }}"
                x-show="'{{ strtolower($flatItem['label']) }}'.includes(q.toLowerCase()) || '{{ strtolower($flatItem['parent_label'] ?? '') }}'.includes(q.toLowerCase())"
                class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300 group
                       hover:bg-blue-50/50 hover:translate-x-1
@@ -113,7 +113,7 @@
                     @mouseleave="if (!{{ $isMobile ? 'true' : 'false' }}) { clearTimeout(flyoutTimer); hover = false; }"
                     x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); hover = false; }"
                     role="none">
-                    <a href="{{ route($item['route']) }}"
+                    <a href="{{ route($item['route'], $item['params'] ?? []) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
                                hover:bg-blue-50/50 hover:text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500/20 active:scale-[0.98]
                                {{ $isActive
@@ -305,7 +305,7 @@
                                     @endphp
                                     <div role="none" class="relative group/child"
                                         x-data="{ pinned: false, pinLoading: false }">
-                                        <a href="{{ route($child['route']) }}"
+                                        <a href="{{ route($child['route'], $child['params'] ?? []) }}"
                                             class="flex items-center w-full rounded-xl py-2 text-[13px] transition-all duration-300 relative
                                                   hover:bg-blue-50/50 hover:translate-x-1
                                                   {{ $childActive ? 'text-blue-700 font-bold bg-blue-50/30' : 'text-slate-500 font-bold hover:text-slate-900' }}"
@@ -378,7 +378,7 @@
                                         $childActive = $child['active'] ?? false;
                                     @endphp
                                     <li>
-                                        <a href="{{ route($child['route']) }}"
+                                        <a href="{{ route($child['route'], $child['params'] ?? []) }}"
                                             class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300 
                                                    {{ $childActive 
                                                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
