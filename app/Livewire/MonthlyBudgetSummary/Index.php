@@ -315,7 +315,7 @@ class Index extends Component
                 ->sum('total_amount'),
         ];
 
-        return view('livewire.monthly-budget-summary.index', [
+        return view('monthly-budget.summary.index', [
             'reports' => $reports,
             'authUser' => $user,
             'showGenerateButton' => $this->showGenerateButton,

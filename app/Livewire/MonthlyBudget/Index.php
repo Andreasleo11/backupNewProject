@@ -111,7 +111,7 @@ class Index extends Component
         $column = $this->sortable[$this->sortField] ?? 'created_at';
         $query->orderBy($column, $this->sortDirection)->orderBy('id', 'desc');
 
-        return view('livewire.monthly-budget.index', [
+        return view('monthly-budget.reports.index', [
             'reports' => $query->paginate($this->perPage),
             'departments' => Department::where('is_office', false)->where('is_active', true)->get(),
             'authUser' => $user,

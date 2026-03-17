@@ -184,7 +184,7 @@ class Form extends Component
 
     public function render()
     {
-        return view('livewire.monthly-budget.form', [
+        return view('monthly-budget.reports.form', [
             'departments' => Department::where('is_office', false)->where('is_active', true)->get()
         ]);
     }

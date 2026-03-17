@@ -487,7 +487,7 @@
                     </div>
                     
                     {{-- DIGITAL SIGNATURES FOOTER --}}
-                    @include('partials.pr-digital-signatures', ['purchaseRequest' => $purchaseRequest])
+                    @include('partials.workflow-digital-signatures', ['record' => $purchaseRequest])
 
                 </div>
 

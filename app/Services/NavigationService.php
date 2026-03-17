@@ -282,9 +282,9 @@ class NavigationService
                     ],
                     [
                         'label' => 'Budget Summary Reports',
-                        'route' => 'monthly-budget-summary-report.index',
+                        'route' => 'monthly-budget-summary.index',
                         'icon' => 'chart-bar',
-                        'active' => request()->routeIs('monthly-budget-summary-report.*'),
+                        'active' => request()->routeIs('monthly-budget-summary.*'),
                         'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager'],
                     ],
                 ],
@@ -450,6 +450,7 @@ class NavigationService
             return collect($menu)->map(function ($item) {
                 if ($item['type'] === 'single' && isset($item['route'])) {
                     // Item active state is already pre-calculated in getBaseMenuStructure
+                    
                 }
                 if (isset($item['children'])) {
                     $item['children'] = collect($item['children'])->map(function ($child) {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateMonthlyBudgetReportSummaryDetailRequest;
 use App\Models\MonthlyBudgetReportSummaryDetail;
 
-class MonthlyBudgetReportSummaryDetailController extends Controller
+class MonthlyBudgetSummaryDetailController extends Controller
 {
     public function update(UpdateMonthlyBudgetReportSummaryDetailRequest $request, $id)
     {

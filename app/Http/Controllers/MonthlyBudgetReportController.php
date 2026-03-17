@@ -24,7 +24,7 @@ class MonthlyBudgetReportController extends Controller
         $canApprove = $this->approvals->canAct($report, auth()->id());
         $currentApproval = $this->approvals->currentRequest($report);
 
-        return view('monthly-budget-reports.detail', compact('report', 'canApprove', 'currentApproval'));
+        return view('monthly-budget.reports.detail', compact('report', 'canApprove', 'currentApproval'));
     }
 
     public function destroy($id)

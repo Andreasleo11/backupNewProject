@@ -107,15 +107,15 @@
                     <hr class="my-4">
                     <div class="px-6 pb-6">
                         <div class="grid grid-cols-3 gap-4">
-                            <a href="{{ route('monthly-budget-summary-report.index') }}" class="block">
+                            <a href="{{ route('monthly-budget-summary.index') }}" class="block">
                                 <x-card title="Approved" :content="$monthlyBudgetSummaryReportsCounts['approved']" color="green" titleColor="text-green-600"
                                     icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
                             </a>
-                            <a href="{{ route('monthly-budget-summary-report.index') }}" class="block">
+                            <a href="{{ route('monthly-budget-summary.index') }}" class="block">
                                 <x-card title="Waiting" :content="$monthlyBudgetSummaryReportsCounts['waiting']" color="orange" titleColor="text-amber-600"
                                     icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
                             </a>
-                            <a href="{{ route('monthly-budget-summary-report.index') }}" class="block">
+                            <a href="{{ route('monthly-budget-summary.index') }}" class="block">
                                 <x-card title="Rejected" :content="$monthlyBudgetSummaryReportsCounts['rejected']" color="red" titleColor="text-red-600"
                                     contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>

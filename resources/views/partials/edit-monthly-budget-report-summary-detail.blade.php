@@ -42,7 +42,7 @@
     {{-- Modal --}}
     <div x-show="open" x-transition.scale.origin.top class="fixed inset-0 z-[110] flex items-center justify-center px-4" role="dialog" aria-modal="true" x-cloak>
         <div class="w-full max-w-lg rounded-2xl bg-white/90 backdrop-blur-xl shadow-2xl ring-1 ring-white/50 overflow-hidden transform transition-all border border-slate-200/50">
-            <form action="{{ route('monthly.budget.report.summary.detail.update', $id) }}" method="post" @submit="costPerUnit = costPerUnit.toString().replace(/[^0-9.]/g, '')">
+            <form action="{{ route('monthly-budget-summary-detail.update', $id) }}" method="post" @submit="costPerUnit = costPerUnit.toString().replace(/[^0-9.]/g, '')">
                 @csrf
                 @method('PUT')
                 

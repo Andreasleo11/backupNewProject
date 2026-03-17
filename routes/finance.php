@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
-use App\Http\Controllers\MonthlyBudgetSummaryReportController;
+use App\Http\Controllers\MonthlyBudgetSummaryController;
+use App\Http\Controllers\MonthlyBudgetSummaryDetailController;
 use App\Livewire\DepartmentExpenses;
 use App\Livewire\MonthlyBudgetSummary\Index as MonthlyBudgetSummaryIndex;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 |
 | RECOMMENDED ROLES: admin, super-admin, finance, accounting, manager
 |
-*/
+| */
 
 Route::middleware('auth')->group(function () {
     // Monthly Budget Reports
@@ -44,21 +45,21 @@ Route::middleware('auth')->group(function () {
 
     // Monthly Budget Summaries
     Route::prefix('monthly-budget-summaries')->group(function () {
-        Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary-report.index');
-        Route::get('/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
-        Route::post('/', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
-        Route::delete('/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
-        Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
-        Route::put('/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
-        Route::post('/{id}/return', [MonthlyBudgetSummaryReportController::class, 'returnForRevision'])->name('monthly.budget.summary.report.return');
-        Route::post('/{id}/submit', [MonthlyBudgetSummaryReportController::class, 'submit'])->name('monthly.budget.summary.report.submit');
-        Route::put('/{id}/cancel', [MonthlyBudgetSummaryReportController::class, 'cancel'])->name('monthly.budget.summary.report.cancel');
-        Route::post('/{id}/refresh', [MonthlyBudgetSummaryReportController::class, 'refresh'])->name('monthly-budget-summary.refresh');
-        Route::get('/{id}/export-pdf', [MonthlyBudgetSummaryReportController::class, 'exportToPdf'])->name('monthly.budget.summary.report.export-pdf');
+        Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary.index');
+        Route::get('/{id}', [MonthlyBudgetSummaryController::class, 'show'])->name('monthly-budget-summary.show');
+        Route::post('/', [MonthlyBudgetSummaryController::class, 'store'])->name('monthly-budget-summary.store');
+        Route::delete('/{id}', [MonthlyBudgetSummaryController::class, 'destroy'])->name('monthly-budget-summary.delete');
+        Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryController::class, 'saveAutograph'])->name('monthly-budget-summary.save-autograph');
+        Route::put('/{id}/reject', [MonthlyBudgetSummaryController::class, 'reject'])->name('monthly-budget-summary.reject');
+        Route::post('/{id}/return', [MonthlyBudgetSummaryController::class, 'returnForRevision'])->name('monthly-budget-summary.return');
+        Route::post('/{id}/submit', [MonthlyBudgetSummaryController::class, 'submit'])->name('monthly-budget-summary.submit');
+        Route::put('/{id}/cancel', [MonthlyBudgetSummaryController::class, 'cancel'])->name('monthly-budget-summary.cancel');
+        Route::post('/{id}/refresh', [MonthlyBudgetSummaryController::class, 'refresh'])->name('monthly-budget-summary.refresh');
+        Route::get('/{id}/export-pdf', [MonthlyBudgetSummaryController::class, 'exportToPdf'])->name('monthly-budget-summary.export-pdf');
 
         // Details
-        Route::put('/details/{id}', [\App\Http\Controllers\MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
-        Route::delete('/details/{id}', [\App\Http\Controllers\MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
+        Route::put('/details/{id}', [MonthlyBudgetSummaryDetailController::class, 'update'])->name('monthly-budget-summary-detail.update');
+        Route::delete('/details/{id}', [MonthlyBudgetSummaryDetailController::class, 'destroy'])->name('monthly-budget-summary-detail.destroy');
     });
 
     // Department Expenses

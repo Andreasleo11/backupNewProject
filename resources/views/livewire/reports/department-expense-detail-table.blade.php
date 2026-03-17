@@ -149,8 +149,8 @@
                                 ? route('purchase-requests.show', $l->doc_id)
                                 : url('/purchase-requests/' . $l->doc_id);
                         } else {
-                            $url = \Illuminate\Support\Facades\Route::has('monthly.budget.summary.report.show')
-                                ? route('monthly.budget.summary.report.show', $l->doc_id)
+                            $url = \Illuminate\Support\Facades\Route::has('monthly-budget-summary.show')
+                                ? route('monthly-budget-summary.show', $l->doc_id)
                                 : url('monthlyBudgetSummaryReport/' . $l->doc_id);
                         }
                     @endphp

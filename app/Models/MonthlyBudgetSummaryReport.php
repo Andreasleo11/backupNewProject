@@ -266,7 +266,7 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
 
     public function getApprovableShowUrl(): string
     {
-        return route('monthly.budget.summary.report.show', $this->id);
+        return route('monthly-budget-summary.show', $this->id);
     }
 
 }

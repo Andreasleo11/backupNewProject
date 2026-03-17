@@ -33,19 +33,13 @@
             }
         });
 
-        // Tooltips
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el, {
-            container: 'body'
-        }));
-    </script>
 @endpush
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6" x-data="{}">
 
     {{-- Breadcrumbs --}}
     <nav aria-label="Breadcrumb" class="flex items-center text-xs text-slate-500 gap-1">
-        <a href="{{ route('monthly-budget-summary-report.index') }}" class="hover:text-slate-700 hover:underline">
+        <a href="{{ route('monthly-budget-summary.index') }}" class="hover:text-slate-700 hover:underline">
             Monthly Budget Summary Reports
         </a>
         <span>/</span>
@@ -391,8 +385,8 @@
 
                                 {{-- Total --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-right text-xs">
-                                    <span class="font-semibold text-slate-800 cursor-help" data-bs-toggle="tooltip"
-                                        data-bs-title="Total quantity × cost per unit">
+                                    <span class="font-semibold text-slate-800"
+                                        title="Total quantity × cost per unit">
                                         Rp {{ number_format($total, 0, ',', '.') }}
                                     </span>
                                 </td>
@@ -400,16 +394,14 @@
                                 {{-- MoM --}}
                                 <td class="px-3 py-2 whitespace-nowrap text-right text-xs">
                                     @if (!$m['has_prev'])
-                                        <span class="text-slate-400" data-bs-toggle="tooltip"
-                                            data-bs-title="No prior month">
+                                        <span class="text-slate-400" title="No prior month">
                                             —
                                         </span>
                                     @elseif ($m['direction'] === 'up')
                                         <span
                                             class="inline-flex items-center rounded-full border border-emerald-100
                                                    bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
+                                            title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
                                             <i class="bx bx-trending-up mr-1 text-[0.9rem]"></i>
                                             Rp {{ number_format($m['diff'], 0, ',', '.') }}
                                             <span class="ml-1">
@@ -420,8 +412,7 @@
                                         <span
                                             class="inline-flex items-center rounded-full border border-rose-100
                                                    bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
+                                            title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
                                             <i class="bx bx-trending-down mr-1 text-[0.9rem]"></i>
                                             Rp {{ number_format($m['diff'], 0, ',', '.') }}
                                             <span class="ml-1">
@@ -432,8 +423,7 @@
                                         <span
                                             class="inline-flex items-center rounded-full border border-slate-200
                                                    bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
+                                            title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
                                             <i class="bx bx-minus mr-1 text-[0.9rem]"></i>
                                             0 (0%)
                                         </span>
@@ -444,7 +434,7 @@
                                 <td class="px-3 py-2 whitespace-nowrap text-xs">
                                     <div class="flex flex-wrap gap-2 justify-start items-center">
                                         <a wire:navigate
-                                            href="{{ route('monthly.budget.summary.report.show', $report->id) }}"
+                                            href="{{ route('monthly-budget-summary.show', $report->id) }}"
                                             class="inline-flex items-center rounded-lg border border-slate-200
                                                    bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700
                                                    shadow-sm hover:bg-slate-50 hover:border-slate-300 hover:shadow transition-all active:scale-95 group/btn">
@@ -456,14 +446,14 @@
                                             @if ($report->workflow_status === 'DRAFT')
                                                 @include('partials.delete-confirmation-modal', [
                                                     'id' => $report->id,
-                                                    'route' => 'monthly.budget.summary.report.delete',
+                                                    'route' => 'monthly-budget-summary.delete',
                                                     'title' => 'Delete report confirmation',
                                                     'body' => "Are you sure want to delete report <strong>{$report->doc_num}</strong>?",
                                                 ])
                                             @elseif ($report->workflow_status === 'IN_REVIEW' || $report->workflow_status === 'RETURNED')
                                                 @include('partials.cancel-modal', [
                                                     'id' => $report->id,
-                                                    'route' => 'monthly.budget.summary.report.cancel',
+                                                    'route' => 'monthly-budget-summary.cancel',
                                                     'title' => "Cancel Summary: <strong>{$report->doc_num}</strong>",
                                                     'iconOnly' => true
                                                 ])

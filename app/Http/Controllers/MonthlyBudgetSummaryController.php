@@ -7,7 +7,7 @@ use App\Models\MonthlyBudgetSummaryReport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
-class MonthlyBudgetSummaryReportController extends Controller
+class MonthlyBudgetSummaryController extends Controller
 {
     public function __construct(
         private readonly BudgetSummaryService $summaryService,
@@ -32,7 +32,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $approvalRequest = $this->approvals->currentRequest($report);
         $canApprove = $this->approvals->canAct($report, auth()->id());
 
-        return view('monthly-budget-reports.summary.detail', [
+        return view('monthly-budget.summary.detail', [
             'report' => $report,
             'approvalRequest' => $approvalRequest,
             'canApprove' => $canApprove,

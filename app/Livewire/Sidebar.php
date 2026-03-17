@@ -114,7 +114,7 @@ class Sidebar extends Component
 
     public array $monthlyBudgetSubPatterns = [
         'monthly.budget.report.*',
-        'monthly-budget-summary-report.*',
+        'monthly-budget-summary.*',
     ];
 
     public array $fileCompliancePatterns = [

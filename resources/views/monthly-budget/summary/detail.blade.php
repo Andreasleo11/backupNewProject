@@ -84,7 +84,7 @@
                     <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-medium text-slate-400">
                         <li><a href="{{ route('home') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
                         <li><i class="bx bx-chevron-right"></i></li>
-                        <li><a href="{{ route('monthly-budget-summary-report.index') }}" class="hover:text-indigo-600 transition-colors">Budget Summaries</a></li>
+                        <li><a href="{{ route('monthly-budget-summary.index') }}" class="hover:text-indigo-600 transition-colors">Budget Summaries</a></li>
                         <li><i class="bx bx-chevron-right"></i></li>
                         <li class="text-slate-600">Detail</li>
                     </ol>
@@ -132,7 +132,7 @@
                     @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
                 @endif
 
-                <a href="{{ route('monthly.budget.summary.report.export-pdf', $report->id) }}"
+                <a href="{{ route('monthly-budget-summary.export-pdf', $report->id) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
                     <i class="bx bxs-file-pdf text-base"></i>
                     Export PDF
@@ -288,7 +288,7 @@
                                                         'title' => 'Delete item',
                                                         'body' => 'Are you sure want to delete this item?',
                                                         'id' => $item['id'],
-                                                        'route' => 'monthly.budget.report.summary.detail.destroy',
+                                                        'route' => 'monthly-budget-summary-detail.destroy',
                                                         'iconOnly' => true,
                                                         'push' => false
                                                     ])
@@ -326,7 +326,7 @@
 
             {{-- Digital Signatures Section --}}
             <div class="border-t border-slate-100 bg-slate-50/40 p-6">
-                @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+                @include('partials.workflow-digital-signatures', ['record' => $report])
             </div>
         </div>
 
@@ -352,7 +352,7 @@
                 <p class="text-xs text-slate-500 font-medium leading-relaxed mb-6">
                     This summary is currently in <span class="text-indigo-600 font-black">Draft</span> mode. You can edit line items, adjust costs, or delete entries before officially submitting for approval.
                 </p>
-                <form action="{{ route('monthly.budget.summary.report.submit', $report->id) }}" method="POST">
+                <form action="{{ route('monthly-budget-summary.submit', $report->id) }}" method="POST">
                     @csrf
                     <button type="submit"
                             class="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 active:scale-95">
@@ -406,21 +406,21 @@
         @push('modals')
             @include('partials.approval-modal', [
                 'id' => $report->id,
-                'route' => 'monthly.budget.summary.save.autograph',
+                'route' => 'monthly-budget-summary.save-autograph',
                 'title' => 'Approve Budget Summary',
                 'entityName' => 'Budget Summary Report',
                 'buttonLabel' => 'Confirm Approval'
             ])
             @include('partials.rejection-modal', [
                 'id' => $report->id,
-                'route' => 'monthly.budget.summary.report.reject',
+                'route' => 'monthly-budget-summary.reject',
                 'title' => 'Reject Budget Summary',
                 'entityName' => 'Budget Summary Report',
                 'buttonLabel' => 'Confirm Rejection'
             ])
             @include('partials.return-modal', [
                 'id' => $report->id,
-                'route' => 'monthly.budget.summary.report.return',
+                'route' => 'monthly-budget-summary.return',
                 'title' => 'Return for Revision',
                 'entityName' => 'Budget Summary Report',
                 'buttonLabel' => 'Confirm Return'
