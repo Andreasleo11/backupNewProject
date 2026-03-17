@@ -79,7 +79,9 @@ class MonthlyBudgetSummaryController extends Controller
                 ->with('error', "Cannot submit: The following items are incomplete (missing supplier or cost): {$itemNames}. Please update them first.");
         }
 
-        $this->approvals->submit($report, auth()->id());
+        $this->approvals->submit($report, auth()->id(), [
+            'is_moulding' => (bool) $report->is_moulding
+        ]);
 
         return redirect()->back()->with('success', 'Report submitted for approval successfully!');
     }

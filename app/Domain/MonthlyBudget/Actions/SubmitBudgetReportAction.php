@@ -38,6 +38,7 @@ final class SubmitBudgetReportAction
                 // Submit to approval system
                 $this->approvals->submit($report, $userId, [
                     'from_department' => $report->department?->name,
+                    'is_moulding' => $report->dept_no == '363',
                 ]);
 
                 // Log submission

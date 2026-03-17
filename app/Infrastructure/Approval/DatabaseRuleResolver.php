@@ -108,6 +108,15 @@ class DatabaseRuleResolver implements RuleResolver
             }
         }
 
+        // ---------------------------------------------------
+        // 6) is_moulding (true/false)
+        // ---------------------------------------------------
+        if (array_key_exists('is_moulding', $expr) && array_key_exists('is_moulding', $context)) {
+            if ((bool) $context['is_moulding'] !== (bool) $expr['is_moulding']) {
+                return false;
+            }
+        }
+
         // TODO (optional): tambahkan branch_in, etc kalau diperlukan
 
         // Kalau semua check lulus => match

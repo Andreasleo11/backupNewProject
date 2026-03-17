@@ -64,7 +64,7 @@ class BudgetApprovalWorkflowSeeder extends Seeder
                 'priority'   => 2,
                 'active'     => true,
                 'match_expr' => [
-                    'from_department_in' => ['MOULDING']
+                    'is_moulding' => true,
                 ],
             ]);
 
@@ -80,7 +80,9 @@ class BudgetApprovalWorkflowSeeder extends Seeder
                 'name'       => $shortName . ' Approval (Standard)',
                 'priority'   => 10,
                 'active'     => true,
-                'match_expr' => null, // catch-all
+                'match_expr' => [
+                    'is_moulding' => false,
+                ],
             ]);
 
             $this->createSteps($standard, [
@@ -88,19 +90,38 @@ class BudgetApprovalWorkflowSeeder extends Seeder
                 ['sequence' => 2, 'role_id' => 72, 'final' => true], // general-manager
             ]);
         } else {
-            // --- Summary Reports (2 Steps: GM -> Director) ---
-            // Note: Summary reports skip Dept Head as departmental reports are already approved.
+            // --- Summary Reports ---
             
-            $summary = RuleTemplate::create([
+            // A. Moulding Summary (Dept Head -> Director)
+            $mouldingSummary = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-summary-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (GM -> Director)',
+                'code'       => 'budget-summary-moulding-' . strtolower($shortName),
+                'name'       => $shortName . ' Approval (Moulding: DH -> Dir)',
                 'priority'   => 1,
                 'active'     => true,
-                'match_expr' => null, // catch-all for summary
+                'match_expr' => [
+                    'is_moulding' => true,
+                ],
             ]);
 
-            $this->createSteps($summary, [
+            $this->createSteps($mouldingSummary, [
+                ['sequence' => 1, 'role_id' => 70], // department-head (Moulding head)
+                ['sequence' => 3, 'role_id' => 52, 'final' => true], // director
+            ]);
+
+            // B. Standard Summary (GM -> Director)
+            $standardSummary = RuleTemplate::create([
+                'model_type' => $modelType,
+                'code'       => 'budget-summary-standard-' . strtolower($shortName),
+                'name'       => $shortName . ' Approval (Standard: GM -> Dir)',
+                'priority'   => 10,
+                'active'     => true,
+                'match_expr' => [
+                    'is_moulding' => false,
+                ],
+            ]);
+
+            $this->createSteps($standardSummary, [
                 ['sequence' => 1, 'role_id' => 72], // general-manager
                 ['sequence' => 2, 'role_id' => 52, 'final' => true], // director
             ]);
