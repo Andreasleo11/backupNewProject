@@ -104,11 +104,12 @@ class MonthlyBudgetReport extends Model implements Approvable
     }
 
     /**
-     * Check if the report is currently a draft.
+     * Check if the report is currently a draft or returned.
      */
     public function isDraft(): bool
     {
-        return $this->approvalRequest === null;
+        $status = $this->workflow_status;
+        return $status === 'DRAFT' || $status === 'RETURNED';
     }
 
     /**
@@ -163,56 +164,78 @@ class MonthlyBudgetReport extends Model implements Approvable
 
     public function scopeFilteredByUser($query, $user)
     {
+        // 1. Admins & Special Overrides
+        if ($user->hasRole('super-admin') || $user->email === 'nur@daijo.co.id' || $user->hasRole('purchaser')) {
+            return $query;
+        }
+
         $isHead = $user->hasRole('department-head');
         $isGm = $user->hasRole('general-manager');
         $isDirector = $user->hasRole('director');
 
-        if ($user->email == 'nur@daijo.co.id') {
-            return $query;
-        }
+        return $query->where(function ($q) use ($user, $isHead, $isGm, $isDirector) {
+            // A. Creator always sees their own
+            $q->where('creator_id', $user->id);
 
-        if ($isDirector) {
-            return $query->whereNotNull('is_known_autograph')
-                ->whereHas('department', function ($q) {
-                    $q->where('name', 'QA')->orWhere('name', 'QC');
-                });
-        }
-
-        if ($isGm) {
-            return $query->whereNotNull('is_known_autograph')
-                ->whereHas('department', function ($q) {
-                    $q->whereNot(function ($subQ) {
-                        $subQ->where('name', 'QA')
-                            ->orWhere('name', 'QC')
-                            ->orWhere('name', 'MOULDING');
+            // B. Department Head Logic
+            if ($isHead) {
+                $q->orWhere(function ($hq) use ($user) {
+                    // Must be in their department (including special cross-dept roles)
+                    $hq->whereHas('department', function ($dq) use ($user) {
+                        $dq->where('id', $user->department_id);
+                        if ($user->department?->name === 'QA') {
+                            $dq->orWhere('name', 'QC');
+                        }
+                        if ($user->department?->name === 'LOGISTIC') {
+                            $dq->orWhere('name', 'STORE');
+                        }
+                    })->where(function ($sq) {
+                        // AND (In Review & Waiting for them at Step 1) OR (Acted on Step 1) OR (Finished)
+                        $sq->whereHas('approvalRequest', function ($aq) {
+                            $aq->where(function ($sub) {
+                                $sub->where('status', 'IN_REVIEW')->where('current_step', 1);
+                            })->orWhere(function ($sub) {
+                                $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
+                            })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                        })->orWhereDoesntHave('approvalRequest'); // Drafts in their dept
                     });
                 });
-        }
+            }
 
-        // Standard user/Dept head visibility
-        if ($isHead) {
-            // Logic for head if needed
-        }
-
-        // Filter by department
-        if (! ($isDirector || $isGm || $user->email === 'nur@daijo.co.id' || $user->hasRole('super-admin'))) {
-            $query->whereHas('department', function ($q) use ($user) {
-                $q->where(function ($subQ) use ($user) {
-                    $subQ->where('id', $user->department->id);
-                    if ($user->department->name === 'QA') {
-                        $subQ->orWhere('name', 'QC');
-                    }
-                });
-            });
-
-            if ($isHead && $user->department->name === 'LOGISTIC') {
-                $query->orWhere(function ($q) {
-                    $q->whereHas('department', fn ($deptQ) => $deptQ->where('name', 'STORE'));
+            // C. GM Logic
+            if ($isGm) {
+                $q->orWhere(function ($gq) {
+                    $gq->whereHas('approvalRequest', function ($aq) {
+                        $aq->where(function ($sub) {
+                            // Waiting for them at Step 2 (Standard/Moulding)
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                        })->orWhere(function ($sub) {
+                            // Already acted at Step 2
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    })->whereHas('department', function ($dq) {
+                        // Preserve existing exclusions for GM (Director handles QA/QC)
+                        $dq->whereNotIn('name', ['QA', 'QC']);
+                    });
                 });
             }
-        }
 
-        return $query;
+            // D. Director Logic
+            if ($isDirector) {
+                $q->orWhere(function ($dq) {
+                    $dq->whereHas('department', fn($deptQ) => $deptQ->whereIn('name', ['QA', 'QC']))
+                       ->whereHas('approvalRequest', function ($aq) {
+                            $aq->where(function ($sub) {
+                                // Waiting for them (Director is Step 2 for QA/QC)
+                                $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                            })->orWhere(function ($sub) {
+                                // Already acted
+                                $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                            })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                       });
+                });
+            }
+        });
     }
 
     // Other

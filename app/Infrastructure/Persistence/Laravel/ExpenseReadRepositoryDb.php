@@ -177,14 +177,16 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
         // COALESCE(approved_at, date_pr) is the line's date in UnifiedExpenses
         $prMax = $prQ->max(DB::raw('COALESCE(h.approved_at, h.date_pr)'));
 
-        // Latest date among Monthly Budget (approved, not rejected/canceled, has details)
+        // Latest date among Monthly Budget (approved, has details)
         $mbMax = DB::table('monthly_budget_report_summary_details as d')
             ->join('monthly_budget_summary_reports as h', 'h.id', '=', 'd.header_id')
+            ->join('approval_requests as ar', function ($j) {
+                $j->on('ar.approvable_id', '=', 'h.id')
+                    ->where('ar.approvable_type', '=', 'App\Models\MonthlyBudgetSummaryReport');
+            })
             ->whereNull('d.deleted_at')
             ->whereNull('h.deleted_at')
-            ->where('h.is_cancel', 0)
-            ->where('h.status', 5) // approved
-            ->where('h.is_reject', 0)
+            ->where('ar.status', 'APPROVED')
             ->max('h.report_date');
 
         // Decide the later of the two
@@ -218,15 +220,17 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
             $pr->where('h.autograph_5', $prSigner);
         }
 
-        // MONTHLY BUDGET months (approved, not canceled/rejected/deleted)
+        // MONTHLY BUDGET months (approved, not deleted)
         $mb = DB::table('monthly_budget_report_summary_details as d')
             ->join('monthly_budget_summary_reports as h', 'h.id', '=', 'd.header_id')
+            ->join('approval_requests as ar', function ($j) {
+                $j->on('ar.approvable_id', '=', 'h.id')
+                    ->where('ar.approvable_type', '=', 'App\Models\MonthlyBudgetSummaryReport');
+            })
             ->selectRaw("DATE_FORMAT(h.report_date, '%Y-%m') as ym")
             ->whereNull('d.deleted_at')
             ->whereNull('h.deleted_at')
-            ->where('h.is_cancel', 0)
-            ->where('h.status', 5)
-            ->where('h.is_reject', 0);
+            ->where('ar.status', 'APPROVED');
 
         // union -> distinct month strings -> newest first -> limit
         $union = $pr->union($mb);

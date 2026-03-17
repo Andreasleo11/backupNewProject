@@ -180,13 +180,13 @@
                             class="block w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5
                                    text-xs text-slate-800 shadow-sm
                                    focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All</option>
-                            <option value="1">Draft</option>
-                            <option value="2">Submitted</option>
-                            <option value="3">Design Head Approved</option>
-                            <option value="4">GM Approved</option>
-                            <option value="5">Director Review</option>
-                            <option value="6">Director Approved</option>
+                            <option value="">All Status</option>
+                            <option value="DRAFT">Draft</option>
+                            <option value="IN_REVIEW">In Review</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
+                            <option value="RETURNED">Returned</option>
+                            <option value="CANCELED">Canceled</option>
                         </select>
                     </div>
 
@@ -447,19 +447,19 @@
 
 
                                         @if ($authUser->id == $report->creator_id)
-                                            @if (!$report->status === 1)
+                                            @if ($report->workflow_status === 'DRAFT')
                                                 @include('partials.delete-confirmation-modal', [
                                                     'id' => $report->id,
                                                     'route' => 'monthly.budget.summary.report.delete',
                                                     'title' => 'Delete report confirmation',
-                                                    'body' => "Are you sure want to delete report <strong>$report->doc_num</strong>?",
+                                                    'body' => "Are you sure want to delete report <strong>{$report->doc_num}</strong>?",
                                                 ])
-                                            @elseif (!in_array($report->status, [2, 3, 4], true))
-                                                @include('partials.cancel-confirmation-modal', [
+                                            @elseif ($report->workflow_status === 'IN_REVIEW' || $report->workflow_status === 'RETURNED')
+                                                @include('partials.cancel-modal', [
                                                     'id' => $report->id,
-                                                    'route' => route(
-                                                        'monthly.budget.summary.report.cancel',
-                                                        $report->id),
+                                                    'route' => 'monthly.budget.summary.report.cancel',
+                                                    'title' => "Cancel Summary: <strong>{$report->doc_num}</strong>",
+                                                    'iconOnly' => true
                                                 ])
                                             @endif
                                         @endif

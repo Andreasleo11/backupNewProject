@@ -22,9 +22,6 @@ final class BudgetSummaryService
                 'dept_no' => $data['dept_no'],
                 'creator_id' => $data['creator_id'],
                 'report_date' => $data['report_date'],
-                'created_autograph' => $data['created_autograph'] ?? null,
-                'is_known_autograph' => $data['is_known_autograph'] ?? null,
-                'approved_autograph' => $data['approved_autograph'] ?? null,
             ]);
 
             // Process each department's budget data
@@ -120,7 +117,7 @@ final class BudgetSummaryService
         $reports = MonthlyBudgetReport::with('details')
             ->whereYear('report_date', $year)
             ->whereMonth('report_date', $month)
-            ->where('status', 6) // Only approved reports
+            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED')) // Only approved reports
             ->get()
             ->groupBy('dept_no');
 
@@ -167,7 +164,6 @@ final class BudgetSummaryService
                 'report_date' => Carbon::parse($targetMonth)->startOfMonth(),
                 'dept_no' => $source->dept_no,
                 'creator_id' => auth()->id(),
-                'status' => 1, // Draft
                 'is_moulding' => $source->is_moulding,
             ]);
 

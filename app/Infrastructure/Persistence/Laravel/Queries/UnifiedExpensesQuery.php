@@ -49,15 +49,17 @@ class UnifiedExpensesQuery
         // date   = report_date
         $mbLines = DB::table('monthly_budget_report_summary_details as d')
             ->join('monthly_budget_summary_reports as h', 'h.id', '=', 'd.header_id')
+            ->join('approval_requests as ar', function ($j) {
+                $j->on('ar.approvable_id', '=', 'h.id')
+                    ->where('ar.approvable_type', '=', 'App\Models\MonthlyBudgetSummaryReport');
+            })
             // departments.dept_no is VARCHAR, details.dept_no is INT → CAST on join
             ->leftJoin('departments as dep', function ($j) {
                 $j->on('dep.dept_no', '=', DB::raw('CAST(d.dept_no AS CHAR)'));
             })
             ->whereNull('d.deleted_at')
             ->whereNull('h.deleted_at')
-            ->where('h.is_cancel', 0)
-            ->where('h.status', 5) // approved
-            ->where('h.is_reject', 0)->selectRaw("
+            ->where('ar.status', 'APPROVED')->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, CONCAT('Dept ', d.dept_no))              as dept_name,
                 COALESCE(dep.dept_no, CAST(d.dept_no AS CHAR))              as dept_no,

@@ -184,6 +184,56 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
 
     // Queries
 
+    public function scopeFilteredByUser($query, $user)
+    {
+        if ($user->hasRole('super-admin') || $user->email === 'nur@daijo.co.id' || $user->hasRole('purchaser')) {
+            return $query;
+        }
+
+        $isGm = $user->hasRole('general-manager');
+        $isDirector = $user->hasRole('director');
+
+        return $query->where(function ($q) use ($user, $isGm, $isDirector) {
+            // A. Creator always sees their own
+            $q->where('creator_id', $user->id);
+
+            // B. GM Logic (Step 1 for Summary)
+            if ($isGm) {
+                $q->orWhere(function ($gq) {
+                    $gq->whereHas('approvalRequest', function ($aq) {
+                        $aq->where(function ($sub) {
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 1);
+                        })->orWhere(function ($sub) {
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    });
+                });
+            }
+
+            // C. Director Logic (Step 2 for Summary)
+            if ($isDirector) {
+                $q->orWhere(function ($dq) {
+                    $dq->whereHas('approvalRequest', function ($aq) {
+                         $aq->where(function ($sub) {
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                        })->orWhere(function ($sub) {
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    });
+                });
+            }
+        });
+    }
+
+    /**
+     * Check if the report is currently a draft or returned.
+     */
+    public function isDraft(): bool
+    {
+        $status = $this->workflow_status;
+        return $status === 'DRAFT' || $status === 'RETURNED';
+    }
+
     // Other
     protected static function boot()
     {

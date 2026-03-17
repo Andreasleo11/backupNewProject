@@ -149,16 +149,14 @@
                                         <i class='bx bx-show-alt text-lg'></i>
                                     </a>
 
-                                    @if (
-                                        ($authUser->id === $report->user->id && $isDraft) ||
-                                            ($authUser->is_head && !$report->is_known_autograph))
+                                    @if ($authUser->id === $report->creator_id && $isDraft)
                                         {{-- Edit --}}
                                         <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
                                             class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-all active:scale-95"
                                             title="Edit Draft">
                                             <i class='bx bx-edit-alt text-lg'></i>
                                         </a>
-
+                                        
                                         {{-- Delete --}}
                                         @include('partials.delete-confirmation-modal', [
                                             'id' => $report->id,
@@ -168,7 +166,7 @@
                                             'iconOnly' => true,
                                             'push' => false
                                         ])
-                                    @elseif ($authUser->id === $report->user->id && !$report->is_cancel && !$isDraft)
+                                    @elseif ($authUser->id === $report->creator_id && $report->workflow_status !== 'CANCELED' && !$isDraft)
                                         {{-- Cancel --}}
                                         @include('partials.cancel-modal', [
                                             'id' => $report->id,

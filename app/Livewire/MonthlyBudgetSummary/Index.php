@@ -144,11 +144,11 @@ class Index extends Component
 
         // Role based visibility
         if ($user->hasRole('DIRECTOR')) {
-            $query->whereIn('status', [4, 5, 6]);
+            $query->whereHas('approvalRequest', fn($q) => $q->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']));
         } elseif ($user->is_head && $user->hasRole('DESIGN')) {
-            $query->where('status', 3);
+            $query->whereHas('approvalRequest', fn($q) => $q->where('status', 'IN_REVIEW'));
         } elseif ($user->is_gm) {
-            $query->where('status', 2);
+            $query->whereHas('approvalRequest', fn($q) => $q->where('status', 'IN_REVIEW'));
         }
 
         // Keyword
@@ -164,7 +164,11 @@ class Index extends Component
 
         // Status filter
         if ($this->status !== null && $this->status !== '') {
-            $query->where('status', (int) $this->status);
+            if ($this->status === 'DRAFT') {
+                $query->whereDoesntHave('approvalRequest');
+            } else {
+                $query->whereHas('approvalRequest', fn($q) => $q->where('status', $this->status));
+            }
         }
 
         // Month range (report_date stores the first day of month)
