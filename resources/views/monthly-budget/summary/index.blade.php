@@ -2,38 +2,7 @@
 @section('page-title', 'Monthly Budget Summary Reports')
 @section('page-subtitle', 'Consolidated departmental budgets overview and management.')
 
-@push('scripts')
-    <script type="module">
-        // Month pickers using flatpickr
-        const monthOpts = {
-            plugins: [
-                new monthSelectPlugin({
-                    shorthand: true,
-                    dateFormat: "m-Y",
-                    altFormat: "F Y",
-                    theme: "light"
-                })
-            ],
-            allowInput: true
-        };
 
-        flatpickr('#monthPicker', monthOpts);
-        
-        flatpickr('#from', {
-            ...monthOpts,
-            onChange: (selectedDates, dateStr) => {
-                @this.set('monthFrom', dateStr);
-            }
-        });
-
-        flatpickr('#to', {
-            ...monthOpts,
-            onChange: (selectedDates, dateStr) => {
-                @this.set('monthTo', dateStr);
-            }
-        });
-
-@endpush
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6" x-data="{}">
 
@@ -108,11 +77,26 @@
             @if ($showGenerateButton)
                 <div class="glass-card flex flex-col sm:flex-row sm:items-center gap-2 p-2 ring-1 ring-slate-200/50" x-data>
                     <div class="flex items-center gap-2 pl-1">
-                        <div class="relative">
+                        <div class="relative" x-data x-init="
+                            if (window.flatpickr) {
+                                window.flatpickr($refs.picker, {
+                                    plugins: [new window.monthSelectPlugin({
+                                        shorthand: true,
+                                        dateFormat: 'm-Y',
+                                        altFormat: 'F Y',
+                                        theme: 'light'
+                                    })],
+                                    allowInput: true,
+                                    onChange: (selectedDates, dateStr) => {
+                                        $wire.set('generationMonth', dateStr);
+                                    }
+                                });
+                            }
+                        ">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
                                 <i class="bx bx-calendar text-slate-400 text-sm"></i>
                             </span>
-                            <input wire:model="generationMonth" type="text" id="monthPicker"
+                            <input x-ref="picker" type="text" 
                                 class="block w-44 rounded-lg border border-slate-200 bg-white/50 pl-8 pr-3 py-1.5
                                        text-xs text-slate-800 focus:bg-white
                                        focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
@@ -150,11 +134,26 @@
                     </div>
 
                     {{-- Month from --}}
-                    <div class="col-span-1 md:col-span-1">
+                    <div class="col-span-1 md:col-span-1" x-data x-init="
+                        if (window.flatpickr) {
+                            window.flatpickr($refs.picker, {
+                                plugins: [new window.monthSelectPlugin({
+                                    shorthand: true,
+                                    dateFormat: 'm-Y',
+                                    altFormat: 'F Y',
+                                    theme: 'light'
+                                })],
+                                allowInput: true,
+                                onChange: (selectedDates, dateStr) => {
+                                    $wire.set('monthFrom', dateStr);
+                                }
+                            });
+                        }
+                    " @clear-filters.window="if(window.flatpickr) $refs.picker._flatpickr.clear()">
                         <label for="from" class="block text-[11px] font-medium text-slate-600 mb-1">
                             Month from
                         </label>
-                        <input wire:model.live="monthFrom" type="text" id="from"
+                        <input x-ref="picker" type="text" id="from"
                             class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5
                                    text-xs text-slate-800 shadow-sm
                                    focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -162,11 +161,26 @@
                     </div>
 
                     {{-- Month to --}}
-                    <div class="col-span-1 md:col-span-1">
+                    <div class="col-span-1 md:col-span-1" x-data x-init="
+                        if (window.flatpickr) {
+                            window.flatpickr($refs.picker, {
+                                plugins: [new window.monthSelectPlugin({
+                                    shorthand: true,
+                                    dateFormat: 'm-Y',
+                                    altFormat: 'F Y',
+                                    theme: 'light'
+                                })],
+                                allowInput: true,
+                                onChange: (selectedDates, dateStr) => {
+                                    $wire.set('monthTo', dateStr);
+                                }
+                            });
+                        }
+                    " @clear-filters.window="if(window.flatpickr) $refs.picker._flatpickr.clear()">
                         <label for="to" class="block text-[11px] font-medium text-slate-600 mb-1">
                             Month to
                         </label>
-                        <input wire:model.live="monthTo" type="text" id="to"
+                        <input x-ref="picker" type="text" id="to"
                             class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5
                                    text-xs text-slate-800 shadow-sm
                                    focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"

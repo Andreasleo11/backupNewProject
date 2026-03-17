@@ -87,6 +87,7 @@ class Index extends Component
         $this->status = null;
         $this->monthFrom = null;
         $this->monthTo = null;
+        $this->dispatch('clear-filters');
         $this->resetPage();
     }
 
