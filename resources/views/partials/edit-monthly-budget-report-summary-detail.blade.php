@@ -40,6 +40,7 @@
             }
         }
     }" 
+    x-effect="document.body.style.overflow = open ? 'hidden' : ''"
     x-on:open-modal.window="if ($event.detail.id === 'edit-monthly-budget-report-summary-detail-{{ $id }}') open = true"
     class="inline-block">
 
@@ -66,12 +67,12 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
              x-transition:leave-end="opacity-0 translate-y-8 sm:scale-95"
-             class="fixed inset-0 z-[110] flex items-center justify-center p-4" 
+             class="fixed inset-0 z-[110] flex items-start justify-center p-4 overflow-y-auto" 
              role="dialog" 
              aria-modal="true" 
              style="display: none;">
             
-            <div class="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden transform transition-all border border-slate-200 flex flex-col max-h-[90vh]">
+            <div class="w-full max-w-xl rounded-2xl bg-white shadow-2xl transform transition-all border border-slate-200 flex flex-col my-auto">
                 <form action="{{ route('monthly-budget-summary-detail.update', $id) }}" 
                       method="post" 
                       @submit="costPerUnit = costPerUnit.toString().replace(/[^0-9.]/g, '')"
