@@ -90,7 +90,7 @@ class MonthlyBudgetSummaryReportController extends Controller
     public function cancel(Request $request, $id)
     {
         $report = MonthlyBudgetSummaryReport::findOrFail($id);
-        $report->update(['is_cancel' => true, 'cancel_reason' => $request->description]);
+        $this->approvals->cancel($report, auth()->id(), $request->description);
 
         return redirect()->back()->with('success', 'Report cancelled successfully');
     }

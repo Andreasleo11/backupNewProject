@@ -22,15 +22,7 @@ class MonthlyBudgetReport extends Model implements Approvable
         'dept_no',
         'creator_id',
         'report_date',
-        'created_autograph',
-        'is_known_autograph',
-        'approved_autograph',
-        'reject_reason',
-        'is_reject',
         'doc_num',
-        'status',
-        'is_cancel',
-        'cancel_reason',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -97,10 +89,18 @@ class MonthlyBudgetReport extends Model implements Approvable
      */
     public function getWorkflowStatusAttribute(): ?string
     {
-        if ((int) $this->is_cancel === 1) {
-            return 'CANCELED';
-        }
         return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get cancellation reason from approval action.
+     */
+    public function getCancellationReasonAttribute(): ?string
+    {
+        return $this->approvalRequest?->actions()
+            ->where('to_status', 'CANCELED')
+            ->latest()
+            ->first()?->remarks;
     }
 
     /**
@@ -129,82 +129,37 @@ class MonthlyBudgetReport extends Model implements Approvable
      */
     public function getWorkflowSignaturesAttribute(): array
     {
-        $steps = collect();
-
-        // 1. Modern Approval Engine
-        if ($this->approvalRequest) {
-            $approvalSteps = $this->approvalRequest->steps()
-                ->orderBy('sequence')
-                ->with('actedUser')
-                ->get()
-                ->map(function ($step) {
-                    $uiStatus = match ($step->status) {
-                        'APPROVED' => 'signed',
-                        'REJECTED' => 'rejected',
-                        'CANCELED' => 'canceled',
-                        default   => 'pending',
-                    };
-
-                    return [
-                        'step_code'  => $step->approver_label ?? 'Approver',
-                        'user'       => $step->actedUser,
-                        'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
-                        'image'      => $step->signature_url,
-                        'at'         => $step->acted_at,
-                        'status'     => $uiStatus,
-                        'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
-                        'source'     => 'approval_system',
-                    ];
-                });
-
-            if ($approvalSteps->isNotEmpty()) {
-                return $approvalSteps->toArray();
-            }
+        if (!$this->approvalRequest) {
+            return [];
         }
 
-        // 2. Legacy Fallback
-        $legacySlots = [
-            ['col' => 'created_autograph', 'label' => 'Dibuat'],
-            ['col' => 'is_known_autograph', 'label' => 'Diketahui'],
-            ['col' => 'approved_autograph', 'label' => 'Disetujui'],
-        ];
+        return $this->approvalRequest->steps()
+            ->orderBy('sequence')
+            ->with('actedUser')
+            ->get()
+            ->map(function ($step) {
+                $uiStatus = match ($step->status) {
+                    'APPROVED' => 'signed',
+                    'REJECTED' => 'rejected',
+                    'CANCELED' => 'canceled',
+                    default   => 'pending',
+                };
 
-        foreach ($legacySlots as $slot) {
-            $val = $this->{$slot['col']};
-            $steps->push([
-                'step_code'  => $slot['label'],
-                'user'       => null,
-                'name'       => $val ? str_replace(['.png', '.jpg', '.jpeg'], '', $val) : 'Waiting...',
-                'image'      => $val ? asset('autographs/' . $val) : null,
-                'at'         => $val ? $this->updated_at : null,
-                'status'     => $val ? 'signed' : 'pending',
-                'is_current' => false,
-                'source'     => 'legacy',
-            ]);
-        }
-
-        return $steps->toArray();
+                return [
+                    'step_code'  => $step->approver_label ?? 'Approver',
+                    'user'       => $step->actedUser,
+                    'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
+                    'image'      => $step->signature_url,
+                    'at'         => $step->acted_at,
+                    'status'     => $uiStatus,
+                    'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
+                    'source'     => 'approval_system',
+                ];
+            })
+            ->toArray();
     }
 
     // Queries
-    public function scopeApprovedByDirector($query)
-    {
-        return $query
-            ->whereHas('department', function ($query) {
-                $query->where('name', 'QA')->orWhere('name', 'QC');
-            })
-            ->where('status', 6);
-    }
-
-    public function scopeWaiting($query)
-    {
-        return $query->where('status', 5);
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 7);
-    }
 
     public function scopeFilteredByUser($query, $user)
     {

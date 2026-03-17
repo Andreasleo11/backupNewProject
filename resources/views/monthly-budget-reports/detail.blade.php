@@ -9,7 +9,8 @@
         /** @var \App\Models\User $authUser */
         $authUser = auth()->user();
         
-        $canUpload = ($authUser->id === $report->creator_id || $authUser->hasRole('super-admin')) && (int)$report->is_cancel === 0;
+        $canUpload = ($authUser->id === $report->creator_id || $authUser->hasRole('super-admin')) && $report->workflow_status !== 'CANCELED';
+        $isCancelled = $report->workflow_status === 'CANCELED';
     @endphp
 
     <div class="space-y-6">
@@ -35,7 +36,7 @@
 
                         {{-- Actions --}}
                         <div class="flex items-center gap-2">
-                            @if ($authUser->id === $report->creator_id && (int)$report->is_cancel === 0)
+                            @if ($authUser->id === $report->creator_id && !$isCancelled)
                                 @if ($report->isDraft())
                                     <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
                                        class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2
@@ -76,9 +77,9 @@
                         </div>
                     </div>
 
-                    <div class="px-4 py-5 space-y-5 relative {{ $report->is_cancel ? 'opacity-75 grayscale bg-slate-50/50 pointer-events-none select-none' : '' }}">
+                    <div class="px-4 py-5 space-y-5 relative {{ $isCancelled ? 'opacity-75 grayscale bg-slate-50/50 pointer-events-none select-none' : '' }}">
                         {{-- Cancelled Watermark --}}
-                        @if($report->is_cancel)
+                        @if($isCancelled)
                             <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none overflow-hidden z-0">
                                 <span class="text-[12rem] font-black uppercase tracking-[2rem] -rotate-[35deg] whitespace-nowrap">
                                     Cancelled
@@ -207,7 +208,7 @@
             </div>
 
             {{-- Cancelled Banner (Outside the dimmed area) --}}
-            @if($report->is_cancel)
+            @if($isCancelled)
                 <div class="px-4 pb-6 mt-[-1rem]">
                     <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6 flex items-start gap-4 shadow-xl shadow-rose-900/5 relative overflow-hidden group">
                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-200/40 rounded-full blur-2xl group-hover:bg-rose-200/60 transition-all duration-700"></div>
@@ -233,7 +234,7 @@
                                     <p class="text-[10px] font-black text-rose-500 uppercase tracking-[0.15em]">Cancellation Statement</p>
                                 </div>
                                 <p class="text-sm font-bold text-rose-900 leading-relaxed italic pr-4">
-                                    "{{ $report->cancel_reason ?: 'No formal reason was specified for this cancellation.' }}"
+                                    "{{ $report->cancellation_reason ?: 'No formal reason was specified for this cancellation.' }}"
                                 </p>
                             </div>
 
@@ -268,7 +269,7 @@
             {{-- Right Column: Actions & Timeline --}}
             <div class="space-y-6">
                 {{-- Draft Action Card --}}
-                @if ($report->isDraft() && $authUser->id === $report->creator_id && !$report->is_cancel)
+                @if ($report->isDraft() && $authUser->id === $report->creator_id && !$isCancelled)
                     <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 shadow-xl shadow-amber-900/5 relative overflow-hidden group">
                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-400/10 rounded-full blur-2xl group-hover:bg-amber-400/20 transition-all duration-700"></div>
                         
@@ -301,7 +302,7 @@
                 @endif
 
                 {{-- Approval Action Card --}}
-                @if ($canApprove && !$report->is_cancel)
+                @if ($canApprove && !$isCancelled)
                     <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-emerald-100 p-6 relative overflow-hidden group">
                          <div class="absolute -right-2 -top-2 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
                         

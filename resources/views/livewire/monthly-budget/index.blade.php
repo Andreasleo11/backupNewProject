@@ -29,6 +29,7 @@
                 <option value="IN_REVIEW">In Review</option>
                 <option value="APPROVED">Approved</option>
                 <option value="REJECTED">Rejected</option>
+                <option value="CANCELED">Cancelled</option>
             </select>
 
             {{-- Reset Filters --}}

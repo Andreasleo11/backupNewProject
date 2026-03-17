@@ -168,14 +168,8 @@ final class BudgetReportService
             ];
         }
 
-        // Use Approval Engine to cancel if it has started
+        // Use Approval Engine to cancel
         $this->approvals->cancel($report, auth()->id(), $reason);
-
-        $report->update([
-            'is_cancel' => true,
-            'cancel_reason' => $reason,
-            'status' => 5, // Canceled state in legacy
-        ]);
 
         return [
             'success' => true,

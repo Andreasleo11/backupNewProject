@@ -102,9 +102,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    @include('partials.monthly-budget-summary-report-status', [
-                                        'status' => $report->status,
-                                    ])
+                                    @include('partials.workflow-status-badge', ['record' => $report])
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-center gap-2">
@@ -124,13 +122,12 @@
                                                     'iconOnly' => true,
                                                     'push' => false
                                                 ])
-                                            @elseif($report->status === 2 || $report->status === 3 || $report->status === 4)
-                                                @include('partials.cancel-confirmation-modal', [
+                                            @elseif($report->workflow_status === 'IN_REVIEW' || $report->workflow_status === 'RETURNED')
+                                                @include('partials.cancel-modal', [
                                                     'id' => $report->id,
-                                                    'route' => route('monthly.budget.summary.report.cancel', $report->id),
-                                                    'title' => 'Cancel Summary Confirmation',
-                                                    'iconOnly' => true,
-                                                    'push' => false
+                                                    'route' => 'monthly.budget.summary.report.cancel',
+                                                    'title' => "Cancel Summary: <strong>{$report->doc_num}</strong>",
+                                                    'iconOnly' => true
                                                 ])
                                             @endif
                                         @endif

@@ -94,10 +94,18 @@ class Index extends Component
         // Status filter (Custom handling for Draft vs Approval System)
         if ($this->status !== null && $this->status !== '') {
             if ($this->status === 'DRAFT') {
-                $query->whereDoesntHave('approvalRequest');
+                $query->whereDoesntHave('approvalRequest')->where('is_cancel', 0);
+            } elseif ($this->status === 'CANCELED') {
+                $query->where('is_cancel', 1);
             } else {
-                $query->whereHas('approvalRequest', fn ($q) => $q->where('status', $this->status));
+                $query->whereHas('approvalRequest', fn ($q) => $q->where('status', $this->status))
+                      ->where('is_cancel', 0);
             }
+        } else {
+            // No status selected: still exclude canceled unless specifically asked? 
+            // Actually, keep it showing both unless filtered? 
+            // Usually users want to see "Active" items by default, 
+            // but "All Statuses" should mean "All".
         }
 
         // Department filter
