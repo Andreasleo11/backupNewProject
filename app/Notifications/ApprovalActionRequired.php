@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ReportApprovedNotification extends Notification implements ShouldQueue
+class ApprovalActionRequired extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -15,6 +15,7 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public readonly Approvable $approvable,
+        public readonly mixed $step
     ) {}
 
     public function via(object $notifiable): array
@@ -28,12 +29,13 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
         $id = $this->approvable->getApprovableIdentifier();
 
         return [
-            'title' => "{$type} Approved",
-            'message' => "{$type} #{$id} has been fully approved.",
+            'title' => "{$type} — Action Required",
+            'message' => "{$type} #{$id} is awaiting your approval (Step {$this->step->sequence}).",
             'action_url' => $this->approvable->getApprovableShowUrl(),
-            'icon' => 'bx bx-check-circle',
-            'category' => 'success',
+            'icon' => 'bx bx-bell-ring',
+            'category' => 'info',
             'approvable_id' => $this->approvable->getKey(),
+            'step_sequence' => $this->step->sequence,
         ];
     }
 }

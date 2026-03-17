@@ -399,4 +399,21 @@ class PurchaseRequest extends Model implements Approvable
     {
         return $query->where('is_cancel', 1);
     }
+
+    // --- Approvable Interface ---
+
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Purchase Request';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return $this->pr_no ?? (string)$this->doc_num;
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('purchase-requests.show', $this->id);
+    }
 }

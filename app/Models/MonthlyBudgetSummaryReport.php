@@ -248,7 +248,25 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
             $date = $report->created_at->format('dmY');
             $docNum = "$prefix/$id/$date";
 
+            $report->update(['doc_num' => $docNum]);
         });
+    }
+
+    // --- Approvable Interface ---
+
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Monthly Budget Summary Report';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return $this->doc_num;
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('monthly.budget.summary.report.show', $this->id);
     }
 
 }

@@ -252,4 +252,21 @@ class MonthlyBudgetReport extends Model implements Approvable
             $report->update(['doc_num' => $docNum]);
         });
     }
+
+    // --- Approvable Interface ---
+
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Monthly Budget Report';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return $this->doc_num;
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('monthly-budget-reports.show', $this->id);
+    }
 }

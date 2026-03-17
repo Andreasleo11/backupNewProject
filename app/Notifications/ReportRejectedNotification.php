@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class ReportApprovedNotification extends Notification implements ShouldQueue
+class ReportRejectedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -15,6 +15,7 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public readonly Approvable $approvable,
+        public readonly ?string $remarks = null
     ) {}
 
     public function via(object $notifiable): array
@@ -26,13 +27,14 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
     {
         $type = $this->approvable->getApprovableTypeLabel();
         $id = $this->approvable->getApprovableIdentifier();
+        $reason = $this->remarks ? " Reason: {$this->remarks}" : "";
 
         return [
-            'title' => "{$type} Approved",
-            'message' => "{$type} #{$id} has been fully approved.",
+            'title' => "{$type} Rejected",
+            'message' => "{$type} #{$id} has been rejected.{$reason}",
             'action_url' => $this->approvable->getApprovableShowUrl(),
-            'icon' => 'bx bx-check-circle',
-            'category' => 'success',
+            'icon' => 'bx bx-x-circle',
+            'category' => 'danger',
             'approvable_id' => $this->approvable->getKey(),
         ];
     }

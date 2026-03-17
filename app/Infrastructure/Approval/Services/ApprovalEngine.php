@@ -10,8 +10,9 @@ use App\Domain\Approval\Contracts\RuleResolver;
 use App\Domain\Signature\Repositories\UserSignatureRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use App\Notifications\PurchaseRequestApprovedNotification;
-use App\Notifications\PurchaseRequestRejectedNotification;
+use App\Notifications\ApprovalActionRequired;
+use App\Notifications\ReportApprovedNotification;
+use App\Notifications\ReportRejectedNotification;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
@@ -320,7 +321,7 @@ final class ApprovalEngine implements Approvals
             if ($usersToNotify->isNotEmpty()) {
                 \Illuminate\Support\Facades\Notification::send(
                     $usersToNotify,
-                    new \App\Notifications\PurchaseRequestApprovalNotification($pr, $step)
+                    new ApprovalActionRequired($pr, $step)
                 );
             }
         }
@@ -328,20 +329,20 @@ final class ApprovalEngine implements Approvals
 
     private function notifyFinalApproval(ApprovalRequest $req): void
     {
-        $pr = $req->approvable;
+        $approvable = $req->approvable;
 
-        if (! $pr || ! ($creator = $pr->createdBy)) {
+        if (! $approvable || ! ($creator = $approvable->user ?? $approvable->createdBy ?? null)) {
             return;
         }
 
-        $creator->notify(new PurchaseRequestApprovedNotification($pr));
+        $creator->notify(new ReportApprovedNotification($approvable));
     }
 
     private function notifyRejection(ApprovalRequest $req): void
     {
-        $pr = $req->approvable;
+        $approvable = $req->approvable;
 
-        if (! $pr || ! ($creator = $pr->createdBy)) {
+        if (! $approvable || ! ($creator = $approvable->user ?? $approvable->createdBy ?? null)) {
             return;
         }
 
@@ -351,7 +352,7 @@ final class ApprovalEngine implements Approvals
             ->orderByDesc('acted_at')
             ->value('remarks');
 
-        $creator->notify(new PurchaseRequestRejectedNotification($pr, $remarks));
+        $creator->notify(new ReportRejectedNotification($approvable, $remarks));
     }
 
     private function attachSignatureSnapshotToStep(ApprovalStep $step, int $by, ?string $remarks): void
