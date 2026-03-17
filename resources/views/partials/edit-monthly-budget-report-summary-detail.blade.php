@@ -125,14 +125,14 @@
                 </div>
 
                 {{-- Footer --}}
-                <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50/30">
+                <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-6 bg-slate-50/50">
                     <button type="button" @click="open = false" 
-                            class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all hover:border-slate-400 active:scale-95">
+                            class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all hover:border-slate-300 active:scale-95 leading-none">
                         Discard
                     </button>
                     <button type="submit" 
-                            class="inline-flex items-center rounded-xl bg-slate-900 px-6 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
-                        <i class="bx bx-save mr-1.5 text-[0.9rem]"></i>
+                            class="inline-flex items-center rounded-xl bg-slate-900 px-8 py-3 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-slate-900/20 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95 leading-none">
+                        <i class="bx bx-check-double mr-2 text-base"></i>
                         Save Changes
                     </button>
                 </div>

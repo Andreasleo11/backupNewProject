@@ -6,17 +6,30 @@
 
 @push('head')
     <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.25rem;
+        }
+
+        .premium-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
+        }
+
         .autograph-box {
             width: 200px;
             height: 100px;
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #e5e7eb; /* Tailwind slate-200-ish */
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 0.75rem;
+            background-color: rgba(248, 250, 252, 0.5);
         }
 
-        .merged-row {
-            font-style: italic;
-            color: #9ca3af; /* slate-400 */
+        .status-pill {
+            @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider;
         }
     </style>
 @endpush
@@ -65,27 +78,35 @@
             <div class="lg:col-span-2 space-y-8">
 
         {{-- Header + Actions --}}
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-2">
             <div>
-                <h2 class="text-lg sm:text-xl font-semibold text-slate-900 flex items-center gap-2">
-                    Monthly Budget Summary Report
-                    @if ($report->is_moulding)
-                        <span
-                            class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-medium text-indigo-700 ring-1 ring-indigo-100">
-                            Moulding
-                        </span>
-                    @endif
-                </h2>
+                <nav class="flex mb-4" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-medium text-slate-400">
+                        <li><a href="{{ route('home') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
+                        <li><i class="bx bx-chevron-right"></i></li>
+                        <li><a href="{{ route('monthly-budget-summary-report.index') }}" class="hover:text-indigo-600 transition-colors">Budget Summaries</a></li>
+                        <li><i class="bx bx-chevron-right"></i></li>
+                        <li class="text-slate-600">Detail</li>
+                    </ol>
+                </nav>
 
-                <div class="mt-1 text-xs sm:text-sm text-slate-500 space-x-1">
-                    <span>Doc:</span>
-                    <span class="font-semibold text-slate-700">{{ $report->doc_num }}</span>
-                    <span>•</span>
-                    <span>Month:</span>
-                    <span class="font-semibold text-slate-700">{{ $monthYear }}</span>
-                    <span>•</span>
-                    <span>Created:</span>
-                    <span class="font-semibold text-slate-700">{{ $formattedCreatedAt }}</span>
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <i class="bx bx-file-blank text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                            Budget Summary Analysis
+                            @if ($report->is_moulding)
+                                <span class="bg-indigo-100 text-indigo-700 text-[10px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest ring-1 ring-indigo-200">
+                                    Moulding
+                                </span>
+                            @endif
+                        </h2>
+                        <p class="text-sm text-slate-500 font-medium mt-0.5">
+                            Consolidated report for <span class="text-indigo-600 font-bold">{{ $monthYear }}</span> • Doc: <span class="text-slate-800 font-bold">{{ $report->doc_num }}</span>
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -93,64 +114,91 @@
                 {{-- Use unified status badge --}}
                 @include('partials.workflow-status-badge', ['record' => $report])
 
-                {{-- Upload / Refresh untuk user tertentu --}}
-                @if ($authUser->email === 'nur@daijo.co.id')
-                    <button type="button"
-                            class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                            x-data
-                            @click="$dispatch('open-modal', { id: 'upload-files-modal' })"
-                            data-modal-target="upload-files-modal">
-                        <i class="bx bx-upload text-base mr-1"></i>
-                        Upload
-                    </button>
-
-                    {{-- Modal upload (silakan pastikan partial ini juga sudah Tailwind/Alpine) --}}
-                    @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
-
-                    <form action="{{ route('monthly-budget-summary.refresh', $report->id) }}"
-                          method="POST" class="inline-flex">
-                        @csrf
-                        <button type="submit"
-                                class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                                title="Refresh Newly Approved Departments">
-                            <i class="bx bx-refresh text-base mr-1"></i>
-                            Refresh
+                {{-- Upload / Refresh untuk user tertentu --}}                @if ($authUser->email === 'nur@daijo.co.id')
+                    <div class="flex items-center bg-white/50 backdrop-blur-md rounded-xl p-1 shadow-sm border border-slate-200/60 transition-all hover:shadow-md">
+                        <button type="button"
+                                class="inline-flex items-center px-4 py-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                                x-data @click="$dispatch('open-modal', { id: 'upload-files-modal' })">
+                            <i class="bx bx-upload text-lg mr-2"></i> Upload
                         </button>
-                    </form>
+                        <div class="w-px h-4 bg-slate-200"></div>
+                        <form action="{{ route('monthly-budget-summary.refresh', $report->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-4 py-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors">
+                                <i class="bx bx-refresh text-lg mr-2"></i> Refresh
+                            </button>
+                        </form>
+                    </div>
+                    @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
                 @endif
 
                 <a href="{{ route('monthly.budget.summary.report.export-pdf', $report->id) }}"
-                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                    <i class="bx bxs-file-pdf text-base mr-1"></i>
-                    Download PDF
+                   class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
+                    <i class="bx bxs-file-pdf text-base"></i>
+                    Export PDF
                 </a>
             </div>
         </div>
 
+        {{-- Spotlight Stats --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
+            <div class="glass-card p-6 premium-shadow relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-indigo-500/5 transition-transform group-hover:scale-150"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-1">Consolidated Total</p>
+                <h4 class="text-2xl font-black text-slate-800">@currency($report->total_amount)</h4>
+                <div class="mt-4 flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-600 ring-1 ring-emerald-100">
+                        <i class="bx bx-trending-up"></i> +{{ number_format($report->mom['pct'] ?? 0, 1) }}%
+                    </span>
+                    <span class="text-[10px] font-bold text-slate-400">vs last month</span>
+                </div>
+            </div>
 
-        {{-- Tabel Summary --}}
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-100">
-            <div class="p-3 sm:p-4">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-xs sm:text-sm text-slate-700">
-                        <thead class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                            <tr>
-                                <th class="px-2 py-2 text-center">#</th>
-                                <th class="px-2 py-2 text-left">Name</th>
-                                <th class="px-2 py-2 text-center">Dept</th>
-                                <th class="px-2 py-2 text-center">Quantity</th>
-                                <th class="px-2 py-2 text-center">UoM</th>
+            <div class="glass-card p-6 premium-shadow relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-purple-500/5 transition-transform group-hover:scale-150"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-purple-500 mb-1">Departments</p>
+                <h4 class="text-2xl font-black text-slate-800">{{ collect($report->details)->pluck('dept_no')->unique()->count() }} <span class="text-sm text-slate-400 font-bold uppercase tracking-widest">Active</span></h4>
+                <div class="mt-4 flex items-center gap-2 text-slate-400">
+                    <i class="bx bx-buildings text-sm"></i>
+                    <span class="text-[10px] font-bold">Consolidated from approved reports</span>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 premium-shadow relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-amber-500/5 transition-transform group-hover:scale-150"></div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 mb-1">Total Items</p>
+                <h4 class="text-2xl font-black text-slate-800">{{ count($report->details) }} <span class="text-sm text-slate-400 font-bold uppercase tracking-widest">Entries</span></h4>
+                <div class="mt-4 flex items-center gap-2 text-slate-400">
+                    <i class="bx bx-list-check text-sm"></i>
+                    <span class="text-[10px] font-bold">Line items identified across depts</span>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- Table Container --}}
+        <div class="glass-card premium-shadow overflow-hidden">
+            <div class="p-6">
+                <div class="overflow-x-auto rounded-xl">
+                    <table class="min-w-full text-xs text-slate-600 border-separate border-spacing-0">
+                        <thead>
+                            <tr class="bg-slate-900">
+                                <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 rounded-tl-xl">#</th>
+                                <th class="sticky top-0 px-4 py-4 text-left font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Item Name</th>
+                                <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Dept</th>
+                                <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Qty</th>
+                                <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">UoM</th>
                                 @if ($report->is_moulding)
-                                    <th class="px-2 py-2 text-left">Spec</th>
-                                    <th class="px-2 py-2 text-center">Last Recorded Stock</th>
-                                    <th class="px-2 py-2 text-center">Usage Per Month</th>
+                                    <th class="sticky top-0 px-4 py-4 text-left font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Spec</th>
+                                    <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Stock</th>
+                                    <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Usage</th>
                                 @endif
-                                <th class="px-2 py-2 text-left">Supplier</th>
-                                <th class="px-2 py-2 text-right">Cost Per Unit</th>
-                                <th class="px-2 py-2 text-right">Total Cost</th>
-                                <th class="px-2 py-2 text-left">Remark</th>
+                                <th class="sticky top-0 px-4 py-4 text-left font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Supplier</th>
+                                <th class="sticky top-0 px-4 py-4 text-right font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 whitespace-nowrap">Unit Cost</th>
+                                <th class="sticky top-0 px-4 py-4 text-right font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 whitespace-nowrap">Total</th>
+                                <th class="sticky top-0 px-4 py-4 text-left font-black uppercase tracking-widest text-slate-400 border-b border-slate-800">Remark</th>
                                 @if ($canEditItems)
-                                    <th class="px-2 py-2 text-center">Action</th>
+                                    <th class="sticky top-0 px-4 py-4 text-center font-black uppercase tracking-widest text-slate-400 border-b border-slate-800 rounded-tr-xl">Actions</th>
                                 @endif
                             </tr>
                         </thead>
@@ -169,69 +217,73 @@
                                     @php
                                         $totalCost = $item['quantity'] * $item['cost_per_unit'];
                                         $grandTotal += $totalCost;
-                                    @endphp
-                                    <tr class="hover:bg-slate-50/60">
+                                    @endphp                                    <tr class="group hover:bg-indigo-50/40 transition-colors border-b border-slate-100">
                                         {{-- # + Name (rowspan untuk group) --}}
                                         @if ($itemIndex === 0)
                                             <td rowspan="{{ $rowspanCount }}"
-                                                class="px-2 py-2 text-center align-top text-slate-500">
-                                                {{ ++$rowIndex }}
+                                                class="px-4 py-4 text-center align-top font-black text-slate-400 border-r border-slate-50">
+                                                {{ str_pad(++$rowIndex, 2, '0', STR_PAD_LEFT) }}
                                             </td>
                                             <td rowspan="{{ $rowspanCount }}"
-                                                class="px-2 py-2 text-left align-top font-medium text-slate-800">
-                                                {{ $group['name'] }}
+                                                class="px-4 py-4 text-left align-top font-black text-slate-800 border-r border-slate-50 group-hover:text-indigo-600 transition-colors">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="bx bx-package text-indigo-400 text-sm"></i>
+                                                    {{ $group['name'] }}
+                                                </div>
                                             </td>
                                         @endif
 
-                                        <td class="px-2 py-2 text-center whitespace-nowrap">
-                                            {{ $item['dept_no'] }}
+                                        <td class="px-4 py-4 text-center">
+                                            <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600 ring-1 ring-slate-200">
+                                                {{ $item['dept_no'] }}
+                                            </span>
                                         </td>
-                                        <td class="px-2 py-2 text-center whitespace-nowrap">
-                                            {{ $item['quantity'] }}
+                                        <td class="px-4 py-4 text-center font-bold text-slate-700">
+                                            {{ number_format($item['quantity']) }}
                                         </td>
-                                        <td class="px-2 py-2 text-center whitespace-nowrap">
+                                        <td class="px-4 py-4 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">
                                             {{ $item['uom'] }}
                                         </td>
 
                                         @if ($report->is_moulding)
-                                            <td class="px-2 py-2 text-left">
+                                            <td class="px-4 py-4 text-left italic text-slate-500 font-medium">
                                                 {{ $item['spec'] ?? '-' }}
                                             </td>
-                                            <td class="px-2 py-2 text-center whitespace-nowrap">
+                                            <td class="px-4 py-4 text-center font-mono text-slate-500">
                                                 {{ $item['last_recorded_stock'] ?? '-' }}
                                             </td>
-                                            <td class="px-2 py-2 text-center whitespace-nowrap">
+                                            <td class="px-4 py-4 text-center font-mono text-slate-500">
                                                 {{ $item['usage_per_month'] ?? '-' }}
                                             </td>
                                         @endif
 
-                                        <td class="px-2 py-2 text-left whitespace-nowrap">
+                                        <td class="px-4 py-4 text-left text-slate-500 font-bold italic">
                                             {{ $item['supplier'] ?? '-' }}
                                         </td>
-                                        <td class="px-2 py-2 text-right whitespace-nowrap">
+                                        <td class="px-4 py-4 text-right font-mono font-bold text-slate-500 group-hover:text-slate-800 transition-colors">
                                             @currency($item['cost_per_unit'])
                                         </td>
-                                        <td class="px-2 py-2 text-right whitespace-nowrap font-medium">
+                                        <td class="px-4 py-4 text-right font-mono font-black text-indigo-600 whitespace-nowrap bg-indigo-50/20">
                                             @currency($totalCost)
                                         </td>
 
-                                        <td class="px-2 py-2 text-left align-top max-w-xs">
-                                            <div class="text-xs sm:text-sm text-slate-700 break-words">
+                                        <td class="px-4 py-4 text-left align-top max-w-xs leading-relaxed">
+                                            <div class="text-slate-500 font-medium break-words">
                                                 {{ $item['remark'] }}
                                             </div>
                                         </td>
 
                                         @if ($canEditItems)
-                                            <td class="px-2 py-2 text-center whitespace-nowrap">
-                                                <div class="flex items-center justify-center gap-1.5">
+                                            <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                <div class="flex items-center justify-center gap-2">
                                                     @include('partials.edit-monthly-budget-report-summary-detail')
                                                     
                                                     <button type="button"
-                                                        class="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95"
+                                                        class="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 hover:-translate-y-0.5 shadow-sm transition-all active:scale-95 flex items-center justify-center"
                                                         @click="$dispatch('open-modal', { id: 'edit-monthly-budget-report-summary-detail-{{ $item['id'] }}' })">
-                                                        <i class='bx bx-edit text-sm'></i>
+                                                        <i class='bx bx-edit'></i>
                                                     </button>
-
+ 
                                                     @include('partials.delete-confirmation-modal', [
                                                         'title' => 'Delete item',
                                                         'body' => 'Are you sure want to delete this item?',
@@ -257,15 +309,15 @@
                             @endif
 
                             {{-- Grand total --}}
-                            <tr class="border-t border-slate-200 bg-slate-50/70">
+                            <tr class="bg-slate-900 shadow-2xl">
                                 <td colspan="{{ $report->is_moulding ? 10 : 7 }}"
-                                    class="px-2 py-2 text-right text-xs sm:text-sm font-semibold text-slate-700">
-                                    Total
+                                    class="px-6 py-6 text-right text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                                    Grand Total
                                 </td>
-                                <td class="px-2 py-2 text-right font-bold text-slate-900 whitespace-nowrap">
+                                <td class="px-6 py-6 text-right text-base font-black text-indigo-400 whitespace-nowrap">
                                     @currency($grandTotal)
                                 </td>
-                                <td colspan="{{ $canEditItems ? 2 : 1 }}"></td>
+                                <td colspan="{{ $canEditItems ? 1 : 1 }}" class="rounded-br-xl"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -273,7 +325,9 @@
             </div>
 
             {{-- Digital Signatures Section --}}
-            @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+            <div class="border-t border-slate-100 bg-slate-50/40 p-6">
+                @include('partials.pr-digital-signatures', ['purchaseRequest' => $report])
+            </div>
         </div>
 
         {{-- Related Documents Section --}}
@@ -290,53 +344,58 @@
     <div class="space-y-6">
         {{-- Approval Action Card --}}
         @if ($report->isDraft() && $isCreator)
-            <div class="glass-card border-l-4 border-l-indigo-500 p-6 shadow-lg mb-6">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
-                    Draft Summary
+            <div class="glass-card border-t-4 border-indigo-500 p-8 premium-shadow relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-500/5 transition-transform group-hover:scale-110"></div>
+                <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="bx bx-pen text-indigo-500"></i> Local Draft
                 </h3>
-                <p class="text-xs text-slate-500 mb-4">
-                    The summary is generated. Please review and fill in any missing details before starting the approval process.
+                <p class="text-xs text-slate-500 font-medium leading-relaxed mb-6">
+                    This summary is currently in <span class="text-indigo-600 font-black">Draft</span> mode. You can edit line items, adjust costs, or delete entries before officially submitting for approval.
                 </p>
                 <form action="{{ route('monthly.budget.summary.report.submit', $report->id) }}" method="POST">
                     @csrf
                     <button type="submit"
-                            class="w-full rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5">
-                        <i class="bx bx-pen mr-1"></i> Sign & Start Approval
+                            class="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 active:scale-95">
+                        <i class="bx bx-paper-plane text-base"></i> Sign & Start Approval
                     </button>
                 </form>
             </div>
         @endif
 
         @if ($canApprove)
-            <div class="glass-card border-l-4 border-l-amber-500 p-6 shadow-lg">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
-                    Action Required
+            <div class="glass-card border-l-4 border-amber-500 p-8 premium-shadow relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500/5 transition-transform group-hover:scale-110"></div>
+                <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="bx bx-bolt-circle text-amber-500"></i> Review Portal
                 </h3>
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <button type="button" @click="$dispatch('open-approve-modal')"
-                            class="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-0.5">
-                        Approve Summary
+                            class="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-1 active:scale-95">
+                        <i class="bx bx-check-double text-base"></i> Approve Report
                     </button>
                     
-                    <button type="button" @click="$dispatch('open-reject-modal')"
-                            class="w-full rounded-xl border border-rose-200 bg-white py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 hover:border-rose-300">
-                        Reject Summary
-                    </button>
-
-                    <button type="button" @click="$dispatch('open-return-modal')"
-                            class="w-full rounded-xl border border-orange-200 bg-white py-2.5 text-sm font-bold text-orange-600 transition-all hover:bg-orange-50 hover:border-orange-300">
-                        Return for Revision
-                    </button>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button type="button" @click="$dispatch('open-reject-modal')"
+                                class="flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50/30 py-3 text-[10px] font-black uppercase tracking-widest text-rose-600 transition-all hover:bg-rose-50 hover:border-rose-300">
+                            Reject
+                        </button>
+                        <button type="button" @click="$dispatch('open-return-modal')"
+                                class="flex items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50/30 py-3 text-[10px] font-black uppercase tracking-widest text-orange-600 transition-all hover:bg-orange-50 hover:border-orange-300">
+                            Return
+                        </button>
+                    </div>
                 </div>
             </div>
         @endif
 
         {{-- Workflow History --}}
-        <div class="glass-card p-6">
-            <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800 mb-6">
-                <i class="bx bx-history text-indigo-500 text-lg"></i> Workflow History
+        <div class="glass-card p-8 premium-shadow">
+            <h3 class="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-8">
+                <i class="bx bx-history text-indigo-500 text-xl"></i> Approval Trail
             </h3>
-            @include('partials.workflow-timeline', ['record' => $report])
+            <div class="relative px-2">
+                @include('partials.workflow-timeline', ['record' => $report])
+            </div>
         </div>
     </div>
 </div>
