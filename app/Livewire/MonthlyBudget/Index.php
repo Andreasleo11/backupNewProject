@@ -113,7 +113,7 @@ class Index extends Component
 
         return view('livewire.monthly-budget.index', [
             'reports' => $query->paginate($this->perPage),
-            'departments' => Department::all(),
+            'departments' => Department::where('is_office', false)->where('is_active', true)->get(),
             'authUser' => $user,
         ]);
     }

@@ -586,14 +586,6 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-indigo-50/30">
-                                <tr>
-                                    <td class="px-5 py-4 text-xs font-extrabold text-slate-800 uppercase tracking-tight">Preliminary Total</td>
-                                    <td class="px-5 py-4 text-right text-xs font-black text-indigo-700">
-                                        Rp {{ number_format($preliminaryTotal, 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
 
@@ -613,23 +605,11 @@
                         </div>
                     @endif
 
-                    {{-- Empty Total Warning --}}
-                    @if($preliminaryTotal <= 0)
-                        <div class="mt-3 p-3 rounded-lg bg-rose-50 border border-rose-200">
-                            <div class="flex gap-2">
-                                <i class="bx bxs-error text-rose-500 mt-0.5"></i>
-                                <p class="text-[10px] text-rose-700 font-semibold">
-                                    Cannot generate summary with Rp 0 total. Please ensure at least one departmental report is fully APPROVED.
-                                </p>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
         <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
             <button wire:click="generateConfirmed" type="button" 
-                    @if($preliminaryTotal <= 0) disabled @endif
                     class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 Confirm & Generate
             </button>

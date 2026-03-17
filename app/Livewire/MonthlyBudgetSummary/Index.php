@@ -42,7 +42,6 @@ class Index extends Component
     public ?string $generationMonth = null;
     public bool $isConfirmingGeneration = false;
     public array $generationPreview = [];
-    public float $preliminaryTotal = 0;
 
     // Whitelist sort fields -> db columns
     private array $sortable = [
@@ -173,7 +172,6 @@ class Index extends Component
             ->get();
 
         $this->generationPreview = [];
-        $this->preliminaryTotal = 0;
 
         foreach ($departments as $dept) {
             $report = \App\Models\MonthlyBudgetReport::where('dept_no', $dept->dept_no)
@@ -184,9 +182,6 @@ class Index extends Component
             $status = 'MISSING';
             if ($report) {
                 $status = $report->workflow_status;
-                if ($status === 'APPROVED') {
-                    $this->preliminaryTotal += $report->details()->sum(\Illuminate\Support\Facades\DB::raw('quantity * total'));
-                }
             }
 
             $this->generationPreview[] = [

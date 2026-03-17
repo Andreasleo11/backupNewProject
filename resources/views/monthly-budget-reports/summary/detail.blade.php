@@ -33,6 +33,20 @@
 
         $isCreator = optional($report->user)->id === $authUser->id;
 
+        // Date formatting
+        $reportDate = \Carbon\Carbon::parse($report->report_date);
+        $monthYear = $reportDate->format('F Y');
+        $createdAt = \Carbon\Carbon::parse($report->created_at);
+        $formattedCreatedAt = $createdAt->format('d/m/Y (H:i:s)');
+
+        // Grouping logic for summary view
+        $groupedDetailsForView = collect($report->details)->groupBy('name')->map(function ($items, $name) {
+            return [
+                'name' => $name,
+                'items' => $items->toArray()
+            ];
+        })->values()->toArray();
+
         // Gate edit/hapus item
         $canEditItems = match ($statusEnum) {
             SummaryStatus::WAITING_CREATOR   => $isCreator,

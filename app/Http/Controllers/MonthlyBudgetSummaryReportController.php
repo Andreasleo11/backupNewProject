@@ -23,7 +23,7 @@ class MonthlyBudgetSummaryReportController extends Controller
 
     public function show($id)
     {
-        $report = MonthlyBudgetSummaryReport::with('details', 'department')->find($id);
+        $report = MonthlyBudgetSummaryReport::with('details')->find($id);
 
         if (!$report) {
             abort(404);
@@ -32,7 +32,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $approvalRequest = $this->approvals->currentRequest($report);
         $canApprove = $this->approvals->canAct($report, auth()->id());
 
-        return view('monthly-budget-summary-reports.detail', [
+        return view('monthly-budget-reports.summary.detail', [
             'report' => $report,
             'approvalRequest' => $approvalRequest,
             'canApprove' => $canApprove,
