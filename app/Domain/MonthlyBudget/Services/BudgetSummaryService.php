@@ -22,6 +22,7 @@ final class BudgetSummaryService
                 'dept_no' => $data['dept_no'],
                 'creator_id' => $data['creator_id'],
                 'report_date' => $data['report_date'],
+                'is_moulding' => $data['is_moulding'] ?? false,
             ]);
 
             // Process each department's budget data
@@ -118,6 +119,12 @@ final class BudgetSummaryService
             ->whereYear('report_date', $year)
             ->whereMonth('report_date', $month)
             ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED')) // Only approved reports
+            ->when($summary->is_moulding, function($q) {
+                return $q->where('dept_no', '363');
+            })
+            ->when(!$summary->is_moulding, function($q) {
+                return $q->where('dept_no', '!=', '363');
+            })
             ->get()
             ->groupBy('dept_no');
 

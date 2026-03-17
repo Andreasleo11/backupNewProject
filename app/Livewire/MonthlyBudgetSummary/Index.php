@@ -205,8 +205,7 @@ class Index extends Component
         $approvedReports = \App\Models\MonthlyBudgetReport::whereYear('report_date', $carbonDate->year)
             ->whereMonth('report_date', $carbonDate->month)
             ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED'))
-            ->get()
-            ->groupBy('dept_no');
+            ->get();
 
         if ($approvedReports->isEmpty()) {
             $msg = 'No approved reports found for this month. Cannot generate summary.';
@@ -217,19 +216,44 @@ class Index extends Component
             return;
         }
 
-        $data = [
-            'dept_no' => 0, // Summary doesn't have a specific dept_no usually, or it's 'MANAGEMENT'
-            'creator_id' => auth()->id(),
-            'report_date' => $date,
-        ];
+        // Separate reports: Moulding (363) vs Others
+        $mouldingReports = $approvedReports->filter(fn($r) => $r->dept_no == '363');
+        $generalReports = $approvedReports->filter(fn($r) => $r->dept_no != '363');
 
-        // Format for service: [deptNo => [reportIds]]
-        $reportsMap = $approvedReports->map(fn($group) => $group->pluck('id')->toArray())->toArray();
+        $reportsToGenerate = [];
+        
+        if ($mouldingReports->isNotEmpty()) {
+            $reportsToGenerate[] = [
+                'is_moulding' => true,
+                'reports' => $mouldingReports->groupBy('dept_no')
+            ];
+        }
 
-        $result = $service->createSummary($data, $reportsMap);
+        if ($generalReports->isNotEmpty()) {
+            $reportsToGenerate[] = [
+                'is_moulding' => false,
+                'reports' => $generalReports->groupBy('dept_no')
+            ];
+        }
 
-        if ($result['success']) {
-            $msg = $result['message'];
+        $successCount = 0;
+        foreach ($reportsToGenerate as $group) {
+            $data = [
+                'dept_no' => $group['is_moulding'] ? '363' : '0',
+                'creator_id' => auth()->id(),
+                'report_date' => $date,
+                'is_moulding' => $group['is_moulding'],
+            ];
+
+            $reportsMap = $group['reports']->map(fn($g) => $g->pluck('id')->toArray())->toArray();
+            $result = $service->createSummary($data, $reportsMap);
+            if ($result['success']) {
+                $successCount++;
+            }
+        }
+
+        if ($successCount > 0) {
+            $msg = "$successCount summary report(s) generated successfully.";
             session()->flash('success', $msg);
             $this->dispatch('flash', type: 'success', message: $msg);
             $this->dispatch('toast', type: 'success', message: $msg);
@@ -239,9 +263,10 @@ class Index extends Component
             return;
         }
 
-        session()->flash('error', $result['message']);
-        $this->dispatch('flash', type: 'error', message: $result['message']);
-        $this->dispatch('toast', type: 'error', message: $result['message']);
+        $msg = 'Failed to generate any summary reports.';
+        session()->flash('error', $msg);
+        $this->dispatch('flash', type: 'error', message: $msg);
+        $this->dispatch('toast', type: 'error', message: $msg);
     }
 
     public function render()
