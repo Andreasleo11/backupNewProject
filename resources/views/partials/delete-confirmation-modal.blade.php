@@ -5,7 +5,9 @@
     $push = $push ?? false;
 @endphp
 
-<div x-data="{ open: false }" class="inline-block">
+<div x-data="{ open: false }" 
+     x-effect="document.body.style.overflow = open ? 'hidden' : ''"
+     class="inline-block">
     {{-- Trigger button --}}
     @if(isset($iconOnly) && $iconOnly)
         <button type="button" @click="open = true"

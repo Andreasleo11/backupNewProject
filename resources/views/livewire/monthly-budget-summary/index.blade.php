@@ -532,125 +532,111 @@
         </div>
     </div>
     {{-- Confirmation Modal --}}
-    @if($isConfirmingGeneration)
-        <div x-teleport="body">
-            <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data>
-                <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                    <div class="fixed inset-0 bg-slate-500/75 backdrop-blur-sm transition-opacity" aria-hidden="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+    <x-modal wire:model="isConfirmingGeneration" maxWidth="2xl">
+        <div class="bg-white px-8 pt-8 pb-6">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 sm:mx-0 sm:h-12 sm:w-12">
+                    <i class="bx bx-file text-2xl text-indigo-600"></i>
+                </div>
+                <div class="mt-4 text-center sm:mt-0 sm:ml-5 sm:text-left w-full">
+                    <h3 class="text-xl font-extrabold leading-tight text-slate-900" id="modal-title">
+                        Confirm Summary Generation
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Generating summary for <span class="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{{ $generationMonth }}</span>. This will consolidate all currently <span class="text-emerald-600 font-bold uppercase tracking-tight">Approved</span> departmental reports into a single summary.
+                        </p>
+                    </div>
 
-                    <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                    {{-- Preview Table --}}
+                    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 premium-shadow">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50/50">
+                                <tr>
+                                    <th scope="col" class="px-5 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Department</th>
+                                    <th scope="col" class="px-5 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest">MBR Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+                                @php
+                                    $allApproved = true;
+                                @endphp
+                                @foreach($generationPreview as $item)
+                                    <tr class="hover:bg-slate-50/50 transition-colors">
+                                        <td class="whitespace-nowrap px-5 py-3 text-xs text-slate-700 font-bold">
+                                            {{ $item['name'] }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-5 py-3 text-center text-xs">
+                                            @if($item['status'] === 'APPROVED')
+                                                <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-100/50">
+                                                    <i class="bx bxs-check-circle mr-1.5"></i> Approved
+                                                </span>
+                                            @elseif($item['status'] === 'MISSING')
+                                                @php $allApproved = false; @endphp
+                                                <span class="inline-flex items-center rounded-lg bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-100/50">
+                                                    <i class="bx bxs-error-circle mr-1.5"></i> Missing
+                                                </span>
+                                            @else
+                                                @php $allApproved = false; @endphp
+                                                <span class="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-100/50">
+                                                    <i class="bx bxs-time mr-1.5"></i> {{ $item['status'] }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-indigo-50/30">
+                                <tr>
+                                    <td class="px-5 py-4 text-xs font-extrabold text-slate-800 uppercase tracking-tight">Preliminary Total</td>
+                                    <td class="px-5 py-4 text-right text-xs font-black text-indigo-700">
+                                        Rp {{ number_format($preliminaryTotal, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
-                    <div class="inline-block transform overflow-hidden rounded-3xl bg-white text-left align-bottom shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle ring-1 ring-slate-200/50"
-                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                        
-                        <div class="bg-white px-8 pt-8 pb-6">
-                            <div class="sm:flex sm:items-start">
-                                <div class="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 sm:mx-0 sm:h-12 sm:w-12">
-                                    <i class="bx bx-file text-2xl text-indigo-600"></i>
+                    @if(!$allApproved)
+                        <div class="mt-4 rounded-lg bg-amber-50 p-3 border border-amber-200">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bx bxs-info-circle text-amber-400"></i>
                                 </div>
-                                <div class="mt-4 text-center sm:mt-0 sm:ml-5 sm:text-left w-full">
-                                    <h3 class="text-xl font-extrabold leading-tight text-slate-900" id="modal-title">
-                                        Confirm Summary Generation
-                                    </h3>
-                                    <div class="mt-2">
-                                        <p class="text-xs text-slate-500 leading-relaxed">
-                                            Generating summary for <span class="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{{ $generationMonth }}</span>. This will consolidate all currently <span class="text-emerald-600 font-bold uppercase tracking-tight">Approved</span> departmental reports into a single summary.
-                                        </p>
-                                    </div>
-
-                                    {{-- Preview Table --}}
-                                    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 premium-shadow">
-                                        <table class="min-w-full divide-y divide-slate-200">
-                                            <thead class="bg-slate-50/50">
-                                                <tr>
-                                                    <th scope="col" class="px-5 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Department</th>
-                                                    <th scope="col" class="px-5 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest">MBR Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-slate-100 bg-white">
-                                                @php
-                                                    $allApproved = true;
-                                                @endphp
-                                                @foreach($generationPreview as $item)
-                                                    <tr class="hover:bg-slate-50/50 transition-colors">
-                                                        <td class="whitespace-nowrap px-5 py-3 text-xs text-slate-700 font-bold">
-                                                            {{ $item['name'] }}
-                                                        </td>
-                                                        <td class="whitespace-nowrap px-5 py-3 text-center text-xs">
-                                                            @if($item['status'] === 'APPROVED')
-                                                                <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-100/50">
-                                                                    <i class="bx bxs-check-circle mr-1.5"></i> Approved
-                                                                </span>
-                                                            @elseif($item['status'] === 'MISSING')
-                                                                @php $allApproved = false; @endphp
-                                                                <span class="inline-flex items-center rounded-lg bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-100/50">
-                                                                    <i class="bx bxs-error-circle mr-1.5"></i> Missing
-                                                                </span>
-                                                            @else
-                                                                @php $allApproved = false; @endphp
-                                                                <span class="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-100/50">
-                                                                    <i class="bx bxs-time mr-1.5"></i> {{ $item['status'] }}
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                            <tfoot class="bg-indigo-50/30">
-                                                <tr>
-                                                    <td class="px-5 py-4 text-xs font-extrabold text-slate-800 uppercase tracking-tight">Preliminary Total</td>
-                                                    <td class="px-5 py-4 text-right text-xs font-black text-indigo-700">
-                                                        Rp {{ number_format($preliminaryTotal, 0, ',', '.') }}
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-
-                                    @if(!$allApproved)
-                                        <div class="mt-4 rounded-lg bg-amber-50 p-3 border border-amber-200">
-                                            <div class="flex">
-                                                <div class="flex-shrink-0">
-                                                    <i class="bx bxs-info-circle text-amber-400"></i>
-                                                </div>
-                                                <div class="ml-3">
-                                                    <p class="text-[11px] font-medium text-amber-800 leading-normal">
-                                                        Warning: Some non-office departments have not yet approved their monthly budget reports. 
-                                                        If you proceed, these departments will not be included in the summary totals.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    {{-- Empty Total Warning --}}
-                                    @if($preliminaryTotal <= 0)
-                                        <div class="mt-3 p-3 rounded-lg bg-rose-50 border border-rose-200">
-                                            <div class="flex gap-2">
-                                                <i class="bx bxs-error text-rose-500 mt-0.5"></i>
-                                                <p class="text-[10px] text-rose-700 font-semibold">
-                                                    Cannot generate summary with Rp 0 total. Please ensure at least one departmental report is fully APPROVED.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    @endif
+                                <div class="ml-3">
+                                    <p class="text-[11px] font-medium text-amber-800 leading-normal">
+                                        Warning: Some non-office departments have not yet approved their monthly budget reports. 
+                                        If you proceed, these departments will not be included in the summary totals.
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
-                            <button wire:click="generateConfirmed" type="button" 
-                                    @if($preliminaryTotal <= 0) disabled @endif
-                                    class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                                Confirm & Generate
-                            </button>
-                            <button wire:click="$set('isConfirmingGeneration', false)" type="button" 
-                                    class="inline-flex w-full justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 sm:w-auto transition-all duration-200">
-                                Cancel
-                            </button>
+                    @endif
+
+                    {{-- Empty Total Warning --}}
+                    @if($preliminaryTotal <= 0)
+                        <div class="mt-3 p-3 rounded-lg bg-rose-50 border border-rose-200">
+                            <div class="flex gap-2">
+                                <i class="bx bxs-error text-rose-500 mt-0.5"></i>
+                                <p class="text-[10px] text-rose-700 font-semibold">
+                                    Cannot generate summary with Rp 0 total. Please ensure at least one departmental report is fully APPROVED.
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
-    @endif
+        <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-3">
+            <button wire:click="generateConfirmed" type="button" 
+                    @if($preliminaryTotal <= 0) disabled @endif
+                    class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirm & Generate
+            </button>
+            <button wire:click="$set('isConfirmingGeneration', false)" type="button" 
+                    class="inline-flex w-full justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 sm:w-auto transition-all duration-200">
+                Cancel
+            </button>
+        </div>
+    </x-modal>
 </div>

@@ -8,6 +8,7 @@
 
 <div x-data="{ open: false, description: '' }" 
      @open-cancel-modal.window="if($event.detail.id == {{ $id }}) open = true"
+     x-effect="document.body.style.overflow = open ? 'hidden' : ''"
      class="inline-block">
     {{-- Trigger button --}}
     @if(isset($iconOnly) && $iconOnly)

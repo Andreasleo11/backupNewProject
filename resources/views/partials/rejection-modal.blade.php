@@ -7,13 +7,7 @@
 
 <div x-data="{ open: false }" 
      {{ '@' . $openEvent }}.window="open = true"
-     x-init="$watch('open', value => {
-        if (value) {
-            document.body.classList.add('overflow-hidden');
-        } else {
-            document.body.classList.remove('overflow-hidden');
-        }
-     })"
+     x-effect="document.body.style.overflow = open ? 'hidden' : ''"
 >
     <template x-teleport="body">
         <div x-show="open" x-cloak

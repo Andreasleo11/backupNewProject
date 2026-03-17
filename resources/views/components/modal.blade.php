@@ -15,6 +15,7 @@ $maxWidth = [
 
 <div
     x-data="{ show: @entangle($attributes->wire('model')) }"
+    x-effect="document.body.style.overflow = show ? 'hidden' : ''"
     x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false"
     x-show="show"
