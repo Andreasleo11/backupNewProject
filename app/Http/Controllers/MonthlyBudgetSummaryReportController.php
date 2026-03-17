@@ -63,6 +63,14 @@ class MonthlyBudgetSummaryReportController extends Controller
         return redirect()->back()->with('success', 'Report returned for revision');
     }
 
+    public function submit($id)
+    {
+        $report = MonthlyBudgetSummaryReport::findOrFail($id);
+        $this->approvals->submit($report, auth()->id());
+
+        return redirect()->back()->with('success', 'Report submitted for approval successfully!');
+    }
+
     public function cancel(Request $request, $id)
     {
         $report = MonthlyBudgetSummaryReport::findOrFail($id);

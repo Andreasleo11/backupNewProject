@@ -228,10 +228,6 @@ class Index extends Component
         $result = $service->createSummary($data, $reportsMap);
 
         if ($result['success']) {
-            // Auto-submit for approval as per original controller logic
-            $approvals = app(\App\Application\Approval\Contracts\Approvals::class);
-            $approvals->submit($result['summary'], auth()->id());
-            
             $msg = $result['message'];
             session()->flash('success', $msg);
             $this->dispatch('flash', type: 'success', message: $msg);

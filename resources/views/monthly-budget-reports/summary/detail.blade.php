@@ -48,7 +48,7 @@
         })->values()->toArray();
 
         // Gate edit/hapus item
-        $canEditItems = match ($statusEnum) {
+        $canEditItems = ($report->isDraft() && $isCreator) || match ($statusEnum) {
             SummaryStatus::WAITING_CREATOR   => $isCreator,
             SummaryStatus::WAITING_GM        => (int) $authUser->is_gm === 1,
             SummaryStatus::WAITING_DEPT_HEAD => (int) $authUser->is_head === 1
@@ -289,6 +289,24 @@
     {{-- Right Column: Sidepanel --}}
     <div class="space-y-6">
         {{-- Approval Action Card --}}
+        @if ($report->isDraft() && $isCreator)
+            <div class="glass-card border-l-4 border-l-indigo-500 p-6 shadow-lg mb-6">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
+                    Draft Summary
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">
+                    The summary is generated. Please review and fill in any missing details before starting the approval process.
+                </p>
+                <form action="{{ route('monthly.budget.summary.report.submit', $report->id) }}" method="POST">
+                    @csrf
+                    <button type="submit"
+                            class="w-full rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5">
+                        <i class="bx bx-pen mr-1"></i> Sign & Start Approval
+                    </button>
+                </form>
+            </div>
+        @endif
+
         @if ($canApprove)
             <div class="glass-card border-l-4 border-l-amber-500 p-6 shadow-lg">
                 <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
