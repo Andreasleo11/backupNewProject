@@ -30,11 +30,11 @@ final class CancelPurchaseRequest
             }
 
             // Validate that PR can be cancelled (Cannot cancel if already approved or rejected)
-            if ($pr->status === 4) {
+            if ($pr->workflow_status === 'APPROVED') {
                 throw new \DomainException('Cannot cancel an approved Purchase Request');
             }
 
-            if ($pr->status === 5) {
+            if ($pr->workflow_status === 'REJECTED') {
                 throw new \DomainException('Cannot cancel a rejected Purchase Request');
             }
 
@@ -45,11 +45,14 @@ final class CancelPurchaseRequest
             // Update PR to cancelled state
             $pr->update([
                 'is_cancel' => true,
-                'status' => 8, // CANCELED
-                'workflow_status' => 'CANCELED',
                 'description' => $dto->reason,
                 'updated_at' => now(),
             ]);
+
+            // Cancel the approval workflow if present
+            if ($pr->approvalRequest) {
+                $pr->approvalRequest->update(['status' => 'CANCELED']);
+            }
 
             // Dispatch event
             PurchaseRequestCancelled::dispatch($pr);

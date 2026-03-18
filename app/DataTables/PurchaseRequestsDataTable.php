@@ -100,31 +100,16 @@ class PurchaseRequestsDataTable extends DataTable
 
             $query->where(function ($q) use ($statusString) {
                 if ($statusString === 'DRAFT') {
-                    // Modern DRAFT or no ApprovalRequest but legacy status is 8
                     $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'DRAFT'))
-                        ->orWhere(function ($subq) {
-                            $subq->whereDoesntHave('approvalRequest')->where('purchase_requests.status', 8);
-                        });
+                      ->orWhereDoesntHave('approvalRequest');
                 } elseif ($statusString === 'CANCELED') {
                     $q->where('purchase_requests.is_cancel', 1);
                 } elseif ($statusString === 'IN_REVIEW') {
-                    // Modern IN_REVIEW or legacy waiting statuses (1, 2, 3, 6, 7)
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'IN_REVIEW'))
-                        ->orWhere(function ($subq) {
-                            $subq->whereDoesntHave('approvalRequest')->whereIn('purchase_requests.status', [1, 2, 3, 6, 7]);
-                        });
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'IN_REVIEW'));
                 } elseif ($statusString === 'APPROVED') {
-                    // Modern APPROVED or legacy approved status 4
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'APPROVED'))
-                        ->orWhere(function ($subq) {
-                            $subq->whereDoesntHave('approvalRequest')->where('purchase_requests.status', 4);
-                        });
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'APPROVED'));
                 } elseif ($statusString === 'REJECTED') {
-                    // Modern REJECTED or legacy rejected status 5
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'REJECTED'))
-                        ->orWhere(function ($subq) {
-                            $subq->whereDoesntHave('approvalRequest')->where('purchase_requests.status', 5);
-                        });
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'REJECTED'));
                 }
             });
 

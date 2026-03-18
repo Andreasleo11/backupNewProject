@@ -79,7 +79,7 @@
                                 <i class='bx bxs-file-pdf text-lg'></i> Export to PDF
                             </a>
                         </li>
-                        @if ($pr->status === 4 && auth()->user()->hasRole('PURCHASER') || auth()->user()->hasRole('super-admin'))
+                        @if ($pr->workflow_status === 'APPROVED' && auth()->user()->hasRole('PURCHASER') || auth()->user()->hasRole('super-admin'))
                             <li class="my-1 border-t border-slate-100"></li>
                             <li>
                                 <button type="button" 

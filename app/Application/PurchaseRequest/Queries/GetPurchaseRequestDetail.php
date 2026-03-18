@@ -46,8 +46,8 @@ final class GetPurchaseRequestDetail
         // filter itemDetail based on roles/status
         $filtered = $this->calc->filteredItemDetail($actor, $pr);
 
-        // optional: legacy master item update when status==4 (same as old show)
-        if ($pr->status === 4) {
+        // optional: legacy master item update when APPROVED (same as old show)
+        if ($pr->workflow_status === 'APPROVED') {
             // (You can move this later into a Domain service; keep for now)
             foreach ($filtered as $d) {
                 $existing = MasterDataPr::where('name', $d->item_name)->first();

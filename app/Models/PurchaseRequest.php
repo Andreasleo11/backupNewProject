@@ -84,8 +84,6 @@ class PurchaseRequest extends Model implements Approvable
         'po_number',
         'doc_num',
         'branch',
-        'workflow_status',
-        'workflow_step',
     ];
 
     protected $casts = [
@@ -118,18 +116,17 @@ class PurchaseRequest extends Model implements Approvable
     {
         $signatures = collect();
 
-        // 1. Primary Source: Approval Steps (Modern Approval Engine)
         if ($this->approvalRequest) {
             $approvalSignatures = $this->approvalRequest->steps()
                 ->whereNotNull('acted_at')
                 ->whereNotNull('signature_image_path')
-                ->with('actedUser') // Ensure relationship exists in ApprovalStep model or use acted_by
+                ->with('actedUser')
                 ->get()
                 ->map(function ($step) {
                     return [
-                        'step_code' => $step->approver_label ?? 'Approver', // Use accessor with fallback
+                        'step_code' => $step->approver_label ?? 'Approver',
                         'user' => $step->actedUser,
-                        'name' => $step->approver_name ?? 'Unknown', // Use accessor with fallback
+                        'name' => $step->approver_name ?? 'Unknown',
                         'image' => $step->signature_image_path,
                         'at' => $step->acted_at,
                         'source' => 'approval_system',
@@ -138,40 +135,6 @@ class PurchaseRequest extends Model implements Approvable
             $signatures = $signatures->merge($approvalSignatures);
         }
 
-        // 2. Secondary Source: PurchaseRequestSignature model (Manual/Backfill)
-        $modern = $this->signatures->load('user')->map(fn ($s) => [
-            'step_code' => $s->step_code,
-            'user' => $s->user,
-            'name' => $s->user?->name ?? 'Unknown User',
-            'image' => $s->image_path,
-            'at' => $s->signed_at,
-            'source' => 'modern',
-        ]);
-        $signatures = $signatures->merge($modern);
-
-        // 3. Fallback: Legacy Signatures
-        $legacy = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $col = "autograph_{$i}";
-            $userCol = "autograph_user_{$i}";
-
-            if (! empty($this->$col)) {
-                $userData = $this->$userCol;
-                $userName = is_string($userData) ? $userData : 'Unknown';
-
-                $legacy[] = [
-                    'step_code' => "SLOT_{$i}",
-                    'user' => null,
-                    'name' => $userName,
-                    'image' => $this->$col,
-                    'at' => $this->updated_at,
-                    'source' => 'legacy',
-                ];
-            }
-        }
-        $signatures = $signatures->merge($legacy);
-
-        // Unique by step_code/name to avoid duplicates if systems overlap
         return $signatures->unique(function ($item) {
             return $item['step_code'] . $item['name'];
         })->values()->toArray();
@@ -182,9 +145,6 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function getWorkflowSignaturesAttribute(): array
     {
-        $steps = collect();
-
-        // 1. Primary Source: Approval Steps (Modern Approval Engine)
         if ($this->approvalRequest) {
             $approvalSteps = $this->approvalRequest->steps()
                 ->orderBy('sequence')
@@ -193,7 +153,6 @@ class PurchaseRequest extends Model implements Approvable
                 ->map(function ($step) {
                     $status = strtoupper($step->status);
 
-                    // Determine status for UI
                     $uiStatus = match ($status) {
                         'APPROVED' => 'signed',
                         'REJECTED' => 'rejected',
@@ -222,48 +181,7 @@ class PurchaseRequest extends Model implements Approvable
             }
         }
 
-        // 2. Fallback: Legacy Signatures (Simulate 7 slots)
-        for ($i = 1; $i <= 7; $i++) {
-            $col = "autograph_{$i}";
-            $userCol = "autograph_user_{$i}";
-
-            $labels = [
-                1 => 'Created By', 2 => 'Checked By', 3 => 'Known By', 4 => 'Approved By',
-                5 => 'Approved By', 6 => 'Approved By', 7 => 'Approved By',
-            ];
-
-            if (! empty($this->$col)) {
-                $userData = $this->$userCol;
-                $userName = is_string($userData) ? $userData : 'Unknown';
-
-                $steps->push([
-                    'step_code' => $labels[$i] ?? "Approver {$i}",
-                    'user' => null,
-                    'name' => $userName,
-                    'image' => $this->$col,
-                    'at' => $this->updated_at,
-                    'status' => 'signed',
-                    'is_current' => false,
-                    'source' => 'legacy',
-                ]);
-            } else {
-                // Only show empty slots if we don't have a modern workflow
-                // AND it's likely a legacy request (or we just show empty slots for strict legacy compat)
-                // meaningful labels for legacy slots
-                $steps->push([
-                    'step_code' => $labels[$i] ?? "Approver {$i}",
-                    'user' => null,
-                    'name' => 'Waiting...',
-                    'image' => null,
-                    'at' => null,
-                    'status' => 'pending', // or empty
-                    'is_current' => false,
-                    'source' => 'legacy',
-                ]);
-            }
-        }
-
-        return $steps->toArray();
+        return [];
     }
 
     public function itemDetail()
@@ -287,21 +205,6 @@ class PurchaseRequest extends Model implements Approvable
     public function files()
     {
         return $this->hasMany(File::class, 'doc_id', 'doc_num');
-    }
-
-    public function scopeApproved($query)
-    {
-        return $query->where('status', 4);
-    }
-
-    public function scopeWaiting($query)
-    {
-        return $query->where('status', 3);
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 5);
     }
 
     /**

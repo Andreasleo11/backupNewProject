@@ -246,7 +246,7 @@
                                     {{-- APPROVAL COLUMN (Always Visible) --}}
                                     <th class="px-4 py-3 text-center w-48">Approvals</th>
 
-                                    @if ($purchaseRequest->status === 4 && auth()->user()->id === $purchaseRequest->createdBy->id)
+                                    @if ($purchaseRequest->workflow_status === 'APPROVED' && auth()->user()->id === $purchaseRequest->createdBy->id)
                                          <th class="px-4 py-3 text-center">Received</th>
                                          <th class="px-4 py-3 text-center">Action</th>
                                     @endif
@@ -442,7 +442,7 @@
                                         </td>
 
                                         {{-- Received Column --}}
-                                        @if ($purchaseRequest->status === 4 && auth()->user()->id === $purchaseRequest->createdBy->id)
+                                        @if ($purchaseRequest->workflow_status === 'APPROVED' && auth()->user()->id === $purchaseRequest->createdBy->id)
                                              <td class="px-4 py-4 text-center">
                                                 {{ $detail->received_quantity }} / {{ $detail->quantity }}
                                              </td>

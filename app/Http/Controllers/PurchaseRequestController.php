@@ -133,15 +133,12 @@ class PurchaseRequestController extends Controller
             abort(403, 'You are not authorized to edit this request.');
         }
 
-        // Determine editable states using workflow_status (modern) with legacy fallback
+        // Determine editable states using workflow_status (modern)
         $workflowStatus = $purchaseRequest->workflow_status; // computed attribute
-        $legacyStatus = $purchaseRequest->status;
 
         $editableWorkflowStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-        $editableLegacyStatuses = [0, 'draft', 8]; // 0 = draft, 8 = draft (legacy)
 
-        $isEditable = in_array($workflowStatus, $editableWorkflowStatuses)
-            || in_array($legacyStatus, $editableLegacyStatuses);
+        $isEditable = in_array($workflowStatus, $editableWorkflowStatuses);
 
         if (! $isEditable) {
             abort(403, 'This request cannot be edited in its current state (' . $workflowStatus . ').');

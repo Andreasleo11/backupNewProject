@@ -28,11 +28,8 @@ final class DeletePurchaseRequest
             }
 
             // Validation: Only Draft can be deleted
-            if ($pr->status !== 8 || $pr->workflow_status !== 'DRAFT') {
-                if ($pr->status === 4) {
-                    throw new \DomainException('Cannot delete an approved Purchase Request');
-                }
-                throw new \DomainException('Only draft purchase requests can be deleted');
+            if ($pr->workflow_status !== 'DRAFT' && $pr->workflow_status !== 'CANCELED') {
+                throw new \DomainException('Only draft or canceled purchase requests can be deleted');
             }
 
             // Soft delete items first (cascade)

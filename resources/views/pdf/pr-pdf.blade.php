@@ -148,12 +148,12 @@
             @php
                 $statusClass = 'status-draft';
                 $statusText = 'Draft';
-                switch($purchaseRequest->status) {
-                    case 1: $statusClass = 'status-review'; $statusText = 'In Review (Head/GM)'; break;
-                    case 2: $statusClass = 'status-review'; $statusText = 'In Review (Verificator)'; break;
-                    case 3: $statusClass = 'status-review'; $statusText = 'In Review (Director)'; break;
-                    case 4: $statusClass = 'status-approved'; $statusText = 'Approved'; break;
-                    case 5: $statusClass = 'status-rejected'; $statusText = 'Rejected'; break;
+                switch($purchaseRequest->workflow_status) {
+                    case 'IN_REVIEW': $statusClass = 'status-review'; $statusText = 'In Review'; break;
+                    case 'APPROVED': $statusClass = 'status-approved'; $statusText = 'Approved'; break;
+                    case 'REJECTED': $statusClass = 'status-rejected'; $statusText = 'Rejected'; break;
+                    case 'RETURNED': $statusClass = 'status-review'; $statusText = 'Returned'; break;
+                    case 'CANCELED': $statusClass = 'status-rejected'; $statusText = 'Canceled'; break;
                 }
             @endphp
             <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
@@ -217,7 +217,7 @@
                         ($detail->is_approve === 0);
                         
                     $isApproved = 
-                        ($purchaseRequest->status == 4) && 
+                        ($purchaseRequest->workflow_status === 'APPROVED') && 
                         ($detail->is_approve === 1);
                         
                     $rowClass = $isRejected ? 'rejected' : '';
