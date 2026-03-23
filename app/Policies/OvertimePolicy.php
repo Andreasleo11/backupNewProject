@@ -6,7 +6,7 @@ namespace App\Policies;
 
 use App\Models\ApprovalFlowStep;
 use App\Models\HeaderFormOvertime;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 /**
  * RBAC policy for the Overtime Form feature.
@@ -40,6 +40,18 @@ class OvertimePolicy
     public function delete(User $user, HeaderFormOvertime $form): bool
     {
         return $user->id === $form->user_id || $user->hasRole('super-admin');
+    }
+
+    /**
+     * A form can be edited by its creator (or super-admin) while it is
+     * still in a waiting-creator or waiting-dept-head status.
+     */
+    public function update(User $user, HeaderFormOvertime $form): bool
+    {
+        $editableStatuses = ['waiting-creator', 'waiting-dept-head'];
+
+        return in_array($form->status, $editableStatuses, true)
+            && ($user->id === $form->user_id || $user->hasRole('super-admin'));
     }
 
     /**

@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class HeaderFormOvertime extends Model
+class HeaderFormOvertime extends Model implements Approvable
 {
     use SoftDeletes;
 
@@ -31,7 +32,7 @@ class HeaderFormOvertime extends Model
 
     public function department()
     {
-        return $this->hasone(\App\Infrastructure\Persistence\Eloquent\Models\Department::class, 'id', 'dept_id');
+        return $this->hasOne(\App\Infrastructure\Persistence\Eloquent\Models\Department::class, 'id', 'dept_id');
     }
 
     public function details()
@@ -71,18 +72,16 @@ class HeaderFormOvertime extends Model
     public function nextStep(): ?ApprovalFlowStep
     {
         if (! $this->flow) {
-            return null; // no template attached
+            return null;
         }
 
-        // Which step order number is the last that got approved?
         $lastApprovedOrder = $this->approvals()
             ->where('status', 'approved')
-            ->with('step') // eager load so we can read step_order
+            ->with('step')
             ->get()
             ->pluck('step.step_order')
-            ->max(); // null if nothing approved yet
+            ->max();
 
-        // Return the first step with a higher order number
         return $this->flow
             ->steps()
             ->when(
@@ -90,7 +89,36 @@ class HeaderFormOvertime extends Model
                 fn ($q) => $q->where('step_order', '>', $lastApprovedOrder),
             )
             ->orderBy('step_order')
-            ->first(); // null means we’re at the end
+            ->first();
     }
 
+    // -------------------------------------------------------------------------
+    // Approvable contract — makes Overtime polymorphically compatible with the
+    // unified approval UI used by PurchaseRequest and IT Ticket.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Overtime uses OvertimeFormApproval pivot, not the PR-style ApprovalRequest morphOne.
+     * Returns null so generic approval UI falls back gracefully; all overtime approval
+     * logic flows through currentStep() / approvals().
+     */
+    public function approvalRequest()
+    {
+        return null;
+    }
+
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Form Overtime';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return 'OT-' . $this->id;
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('overtime.detail', $this->id);
+    }
 }

@@ -4,7 +4,9 @@ use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\FormOvertimeController;
-use App\Livewire\Overtime\Create as FormOvertimeCreate;
+use App\Http\Controllers\hrd\ImportantDocController;
+use App\Livewire\Overtime\Detail as FormOvertimeDetail;
+use App\Livewire\Overtime\Form as FormOvertime;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use Illuminate\Support\Facades\Route;
 
@@ -30,12 +32,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     // === Form Overtime (Livewire - primary interface) ===
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
-    Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
+    Route::get('/overtime-forms/create', FormOvertime::class)->name('overtime.create');
+    Route::get('/overtime-forms/{id}', FormOvertimeDetail::class)->name('overtime.detail');
+    Route::get('/overtime-forms/{id}/edit', FormOvertime::class)->name('overtime.edit');
 
-    // === Form Overtime Detail & Actions (controller-backed) ===
-    Route::get('/formovertime/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
-    Route::post('/formovertime/{id}/sign', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
-    Route::post('/formovertime/{id}/reject', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    // === Form Overtime Actions (used by Detail Livewire via direct method calls) ===
     Route::get('/formovertime/{id}/export', [FormOvertimeController::class, 'exportOvertime'])->name('overtime.export');
 
     // === Form Overtime Reports & Import ===
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
 
     // === JPayroll Integration ===
     Route::get('/overtime-forms/{id}/reapprove', [FormOvertimeController::class, 'reapprove'])->name('overtime-forms.reapprove');
+    Route::get('/overtime-forms/{headerId}/push-all', [FormOvertimeController::class, 'pushAllDetailsToJPayroll'])->name('overtime.jpayroll.push-all');
+    Route::get('/overtime-forms/detail/{detailId}/push', [FormOvertimeController::class, 'pushSingleDetailToJPayroll'])->name('overtime.jpayroll.push-detail');
 
     // === Server-side detail rejection (admin action) ===
     Route::delete('/formovertime/detail/{id}/reject', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime.detail.reject');
@@ -70,5 +73,26 @@ Route::middleware('auth')->group(function () {
     Route::resource('employee_trainings', EmployeeTrainingController::class);
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 
-    // (Legacy monthlyEvaluationReport routes removed)
+    // Important Doc
+    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])
+        ->name('hrd.importantDocs.index')
+        ->middleware('permission:get-important-docs');
+    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])
+        ->name('hrd.importantDocs.create')
+        ->middleware('permission:create-important-doc');
+    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])
+        ->name('hrd.importantDocs.store')
+        ->middleware('permission:store-important-doc');
+    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])
+        ->name('hrd.importantDocs.detail')
+        ->middleware('permission:detail-important-doc');
+    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])
+        ->name('hrd.importantDocs.edit')
+        ->middleware('permission:edit-important-doc');
+    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])
+        ->name('hrd.importantDocs.update')
+        ->middleware('permission:update-important-doc');
+    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])
+        ->name('hrd.importantDocs.delete')
+        ->middleware('permission:delete-important-doc'); 
 });
