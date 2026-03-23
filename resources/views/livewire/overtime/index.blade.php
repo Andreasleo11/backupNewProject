@@ -14,7 +14,7 @@
             </p>
         </div>
 
-        @if (Auth::user()->department->name !== 'MANAGEMENT')
+        @if (Auth::user()->department?->name !== 'MANAGEMENT')
             <a href="{{ route('overtime.create') }}"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -282,7 +282,7 @@
                     </select>
                 </div>
 
-                @if ($user->specification->name === 'VERIFICATOR')
+                @if ($user->hasRole('VERIFICATOR'))
                     <div>
                         <label for="info_status" class="block text-[11px] font-medium text-slate-600">Info</label>
                         <select id="info_status"
@@ -450,7 +450,7 @@
                 </select>
             </div>
 
-            @if ($user->specification->name === 'VERIFICATOR')
+            @if ($user->hasRole('VERIFICATOR'))
                 <div>
                     <label class="block text-[11px] font-medium text-slate-600">Info</label>
                     <select

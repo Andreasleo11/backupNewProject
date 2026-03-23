@@ -28,27 +28,27 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function () {
-    // Form Overtime (Livewire)
-    Route::get('/form-overtime', FormOvertimeIndex::class)->name('overtime.index'); // Renamed from formovertime.index
-    Route::get('/formovertime/create', FormOvertimeCreate::class)->name('formovertime.create');
-    Route::get('/formovertime/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
+    // === Form Overtime (Livewire - primary interface) ===
+    Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
+    Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
 
-    // Form Overtime (Report & Import)
+    // === Form Overtime Detail & Actions (controller-backed) ===
+    Route::get('/formovertime/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
+    Route::post('/formovertime/{id}/sign', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
+    Route::post('/formovertime/{id}/reject', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::get('/formovertime/{id}/export', [FormOvertimeController::class, 'exportOvertime'])->name('overtime.export');
+
+    // === Form Overtime Reports & Import ===
     Route::get('/overtime-summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
     Route::get('/overtime-summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
     Route::get('/overtime-import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
     Route::post('/overtime-import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
-    // Form Overtime (Controller)
-    Route::get('formovertime/{id}/detail-old', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
-    Route::post('add-new-data/{employee}', [FormOvertimeController::class, 'addnewdataovertime'])->name('add.employee.overtime');
-    Route::post('formovertime/save-autograph', [FormOvertimeController::class, 'saveAutograph'])->name('formovertime.autograph');
-    Route::post('formovertime/reject', [FormOvertimeController::class, 'rejectovertime'])->name('formovertime.reject');
-    Route::get('formovertime/index/edit/{id}', [FormOvertimeController::class, 'editIndex'])->name('formovertime.editIndex');
-    Route::post('formovertime/update/editindex/{id}', [FormOvertimeController::class, 'updateIndex'])->name('formovertime.updateIndex');
-    Route::delete('formovertime/delete/{id}', [FormOvertimeController::class, 'deleteheader'])->name('formovertime.delete');
-    Route::put('formovertime/cancel/{id}', [FormOvertimeController::class, 'cancel'])->name('formovertime.cancel');
-    Route::get('overtime-forms/{id}/reapprove', [FormOvertimeController::class, 'reapprove'])->name('overtime-forms.reapprove');
+    // === JPayroll Integration ===
+    Route::get('/overtime-forms/{id}/reapprove', [FormOvertimeController::class, 'reapprove'])->name('overtime-forms.reapprove');
+
+    // === Server-side detail rejection (admin action) ===
+    Route::delete('/formovertime/detail/{id}/reject', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime.detail.reject');
 
     // FormCuti
     Route::get('/formcuti/index', [FormCutiController::class, 'index'])->name('formcuti');

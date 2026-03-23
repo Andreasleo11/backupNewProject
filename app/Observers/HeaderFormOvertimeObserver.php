@@ -2,15 +2,17 @@
 
 namespace App\Observers;
 
+use App\Events\OvertimeStatusChanged;
 use App\Models\HeaderFormOvertime;
 use Illuminate\Support\Facades\Cache;
 
 class HeaderFormOvertimeObserver
 {
-    public function updating(HeaderFormOvertime $model)
+    public function updating(HeaderFormOvertime $model): void
     {
         if ($model->isDirty('status')) {
-            $model->sendNotification($model);
+            // Dispatch event asynchronously — listener handles email queuing.
+            OvertimeStatusChanged::dispatch($model);
         }
     }
 

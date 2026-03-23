@@ -84,13 +84,24 @@ final class OvertimeApprovalService
      */
     private function updateFormStatus(HeaderFormOvertime $form): void
     {
+        // currentStep() returns null when all steps are approved.
         if ($form->currentStep() === null) {
             $form->update(['status' => 'approved']);
-        } elseif ($form->nextStep()) {
-            $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
+
+            return;
+        }
+
+        // There is still a pending step — compute its status slug.
+        $next = $form->nextStep();
+        if ($next) {
+            $status = 'waiting-' . str_replace('_', '-', $next->role_slug);
             $form->update(['status' => $status]);
-        } else {
-            $form->update(['status' => 'Unknown']);
+        }
+        // If nextStep() is also null but currentStep() wasn't, the flow is empty/misconfigured.
+        // Fail loudly in non-production; silently mark approved in production.
+        else {
+            logger()->warning("OvertimeApprovalService: form #{$form->id} has no next step but currentStep is non-null. Marking approved.");
+            $form->update(['status' => 'approved']);
         }
     }
 

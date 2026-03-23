@@ -20,6 +20,7 @@ class AuthServiceProvider extends ServiceProvider
         DomainUserSignature::class => UserSignaturePolicy::class,
         \App\Models\DetailPurchaseRequest::class => \App\Policies\PurchaseRequestItemPolicy::class,
         \App\Models\PurchaseRequest::class => \App\Policies\PurchaseRequestPolicy::class,
+        \App\Models\HeaderFormOvertime::class => \App\Policies\OvertimePolicy::class,
     ];
 
     /**

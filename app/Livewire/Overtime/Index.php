@@ -402,30 +402,8 @@ class Index extends Component
 
         $query->where(function ($query) use ($user) {
             if ($user->hasRole('super-admin')) {
+                // Super-admin sees everything; no filtering needed.
                 $query->whereNotNull('status');
-
-                $overtimeforms = HeaderFormOvertime::whereHas(
-                    'user',
-                    fn ($q) => $q->where('name', 'ani'),
-                )
-                    ->whereHas('department', fn ($q) => $q->where('name', 'BUSINESS'))
-                    ->where('status', '!=', 'waiting-creator')
-                    ->get();
-
-                $andriani = \App\Models\User::where('name', 'andriani')->first();
-
-                foreach ($overtimeforms as $form) {
-                    foreach ($form->approvals as $approval) {
-                        if ($approval->step->role_slug === 'creator') {
-                            $approval->approver_id = $andriani->id;
-                            $approval->signature_path = 'andriani.png';
-                            $approval->save();
-                        }
-                    }
-
-                    $form->user_id = $andriani->id;
-                    $form->saveQuietly();
-                }
             } elseif ($user->hasRole('VERIFICATOR')) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('status', 'approved')->orWhere(function ($q) {
@@ -437,47 +415,58 @@ class Index extends Component
                 });
             } elseif ($user->hasRole('DIRECTOR')) {
                 $query->where('status', 'waiting-director');
-            } elseif ($user->is_gm) {
+            } elseif ($user->hasRole('GM')) {
+                // GM sees forms that await their approval, scoped to their branch.
                 $query
                     ->where('status', 'waiting-gm')
-                    ->where('branch', $user->name === 'pawarid' ? 'Karawang' : 'Jakarta');
-            } elseif ($user->is_head) {
+                    ->where('branch', $user->branch ?? 'Jakarta');
+            } elseif ($user->hasRole('dept-head')) {
+                $deptName = $user->department?->name;
                 $query
-                    ->whereHas('department', function ($q) use ($user) {
-                        $q->where('dept_id', $user->department->id);
-                        if ($user->department->name === 'LOGISTIC') {
+                    ->whereHas('department', function ($q) use ($deptName) {
+                        $q->where('name', $deptName);
+                        // LOGISTIC head also covers STORE; QC head also covers QA.
+                        if ($deptName === 'LOGISTIC') {
                             $q->orWhere('name', 'STORE');
-                        }elseif($user->department->name === 'QC') {
+                        } elseif ($deptName === 'QC') {
                             $q->orWhere('name', 'QA');
                         }
                     })
                     ->where('status', 'waiting-dept-head');
             } else {
-                if ($user->name === 'Umi') {
-                    $query->whereHas('department', fn ($q) => $q->whereIn('name', ['QA', 'QC']));
-                } elseif ($user->name === 'nurul') {
+                // Regular staff: see forms for their own department.
+                $deptName = $user->department?->name;
+                if ($deptName) {
                     $query->whereHas(
                         'department',
-                        fn ($q) => $q->whereIn('name', ['PLASTIC INJECTION', 'MAINTENANCE MACHINE']),
-                    );
-                } else {
-                    $query->whereHas(
-                        'department',
-                        fn ($q) => $q->where('name', $user->department->name),
+                        fn ($q) => $q->where('name', $deptName),
                     );
                 }
             }
 
-            // Always include creator's own entries (kept inside the role group)
+            // Always include the creator's own submissions.
             $query->orWhere('user_id', $user->id);
         });
 
         return $query;
     }
 
+    public function clearFilter(string $key): void
+    {
+        match ($key) {
+            'range'      => [$this->range = null, $this->startDate = null, $this->endDate = null],
+            'dates'      => [$this->startDate = null, $this->endDate = null, $this->range = null],
+            'dept'       => $this->dept = null,
+            'infoStatus' => $this->infoStatus = null,
+            'isPush'     => $this->isPush = null,
+            'search'     => $this->search = '',
+            default      => null,
+        };
+        $this->resetPage();
+    }
+
     private function scopeFilters($query)
     {
-        $query->whereYear('created_at', 2026);
         if ($this->startDate && $this->endDate) {
             $start = $this->startDate;
             $end = $this->endDate;
