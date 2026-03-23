@@ -44,6 +44,7 @@ class Form extends Component
 
     // Auxiliary data
     public Collection $employees;
+    public array $recentJobs = [];
     public array $validationErrors = [];
 
     public function mount(?int $id = null): void
@@ -90,6 +91,26 @@ class Form extends Component
         }
 
         $this->employees = $this->fetchEmployees();
+        $this->recentJobs = DetailFormOvertime::select('job_desc')
+            ->whereNotNull('job_desc')
+            ->distinct()
+            ->limit(15)
+            ->pluck('job_desc')
+            ->toArray();
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new class implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+            public function array(): array {
+                return [
+                    ['12345', 'John Doe', '2026-10-01', 'Monthly Stock Opname', '2026-10-01', '17:00', '2026-10-01', '20:00', '30', 'Urgent target output'],
+                ];
+            }
+            public function headings(): array {
+                return ['NIK', 'Nama', 'Tanggal Lembur', 'Pekerjaan', 'Mulai Tanggal', 'Mulai Jam', 'Selesai Tanggal', 'Selesai Jam', 'Istirahat (Menit)', 'Keterangan'];
+            }
+        }, 'Overtime_Template.xlsx');
     }
 
     // ── Validation ────────────────────────────────────────────────────────────

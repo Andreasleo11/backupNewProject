@@ -204,12 +204,20 @@
                                 Formats accepted: .xlsx, .xls — Maximum size: 5 MB
                             </p>
                             
-                            <div class="relative group">
-                                <label for="excel_upload" class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-slate-800 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-700 transition-all focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
-                                    <i class='bx bx-file shadow-sm'></i>
-                                    Browse File
-                                </label>
-                                <input wire:model.defer="excel_file" type="file" accept=".xlsx,.xls" id="excel_upload" class="sr-only" @change="excel_file_loaded = $event.target.files.length > 0">
+                            <div class="flex items-center justify-center gap-4">
+                                <div class="relative group">
+                                    <label for="excel_upload" class="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-slate-800 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-700 transition-all focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
+                                        <i class='bx bx-file shadow-sm'></i>
+                                        Browse File
+                                    </label>
+                                    <input wire:model.defer="excel_file" type="file" accept=".xlsx,.xls" id="excel_upload" class="sr-only" @change="excel_file_loaded = $event.target.files.length > 0">
+                                </div>
+                                <div class="h-8 w-px bg-slate-300"></div>
+                                <button type="button" wire:click="downloadTemplate"
+                                    class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                    <i class='bx bx-download text-lg'></i>
+                                    Download Template
+                                </button>
                             </div>
 
                             @error('excel_file') <p class="mt-4 text-xs font-bold text-rose-500 bg-rose-50 py-2 rounded-lg">{{ $message }}</p> @enderror
@@ -326,7 +334,7 @@
                                     {{-- Job Desc --}}
                                     <div class="col-span-2 xl:col-span-2">
                                         <label class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">Job Description <span class="text-rose-500">*</span></label>
-                                        <input type="text" x-model="row.job_desc" placeholder="Details of work to be performed..."
+                                        <input type="text" x-model="row.job_desc" list="job-suggestions" placeholder="Details of work to be performed..."
                                             class="block w-full rounded-xl border text-sm px-3 py-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                             :class="hasError(index,'job_desc') ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500'">
                                         <p x-show="hasError(index,'job_desc')" x-text="getError(index,'job_desc')" class="mt-1 text-[10px] font-bold text-rose-500"></p>
@@ -377,6 +385,10 @@
                                                 class="block w-full rounded-xl border text-sm pl-3 pr-10 py-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                                 :class="hasError(index,'break') ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500'">
                                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[10px] font-bold text-slate-400">MINS</div>
+                                        </div>
+                                        <div class="mt-1.5 flex items-center justify-between text-[10px] font-bold">
+                                            <span class="text-slate-500 tracking-wider">NET OT:</span>
+                                            <span class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded shadow-sm border border-indigo-100" x-text="calculateNet(row)"></span>
                                         </div>
                                         <p x-show="hasError(index,'break')" x-text="getError(index,'break')" class="mt-1 text-[10px] font-bold text-rose-500"></p>
                                     </div>
@@ -442,6 +454,12 @@
             </div>
         </div>
     </form>
+    
+    <datalist id="job-suggestions">
+        @foreach($recentJobs as $job)
+            <option value="{{ $job }}"></option>
+        @endforeach
+    </datalist>
 </div>
 
 @push('scripts')
@@ -488,6 +506,21 @@ document.addEventListener('alpine:init', () => {
             this.items[index].nik  = emp.nik;
             this.items[index].name = emp.name;
             $wire.set('items', this.items);
+        },
+        calculateNet(row) {
+            if (!row.start_date || !row.start_time || !row.end_date || !row.end_time) return '—';
+            const start = new Date(`${row.start_date}T${row.start_time}`);
+            const end = new Date(`${row.end_date}T${row.end_time}`);
+            if (isNaN(start) || isNaN(end) || end <= start) return '—';
+            
+            let diffMins = Math.floor((end - start) / 60000);
+            let breakMins = parseInt(row.break) || 0;
+            let netMins = diffMins - breakMins;
+            
+            if (netMins <= 0) return '0h';
+            let hrs = Math.floor(netMins / 60);
+            let mins = netMins % 60;
+            return `${hrs}h ${mins > 0 ? mins + 'm' : ''}`;
         }
     }));
 });
