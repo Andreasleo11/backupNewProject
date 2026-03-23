@@ -342,6 +342,79 @@ class NavigationService
                 ],
             ],
 
+            // Section: Human Resources
+            ['type' => 'divider', 'label' => 'Human Resources'],
+            [
+                'type' => 'group',
+                'label' => 'Overtime',
+                'icon' => 'clock',
+                'roles' => ['admin', 'super-admin', 'hrd', 'hr', 'manager'],
+                'priority' => 65,
+                'children' => [
+                    [
+                        'label' => 'Overtime Forms',
+                        'route' => 'overtime.index',
+                        'icon' => 'clipboard-document-list',
+                        'active' => request()->routeIs('overtime.index') || request()->routeIs('overtime.detail'),
+                    ],
+                    [
+                        'label' => 'Overtime Summary',
+                        'route' => 'overtime.summary',
+                        'icon' => 'chart-bar',
+                        'active' => request()->routeIs('overtime.summary'),
+                    ],
+                    [
+                        'label' => 'Import Actual',
+                        'route' => 'actual.import.form',
+                        'icon' => 'arrow-up-tray',
+                        'active' => request()->routeIs('actual.import.form'),
+                        'roles' => ['super-admin', 'admin'],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'group',
+                'label' => 'Personnel Forms',
+                'icon' => 'clipboard-document',
+                'roles' => ['all'],
+                'priority' => 64,
+                'children' => [
+                    [
+                        'label' => 'Leave Forms',
+                        'route' => 'formcuti',
+                        'icon' => 'calendar-days',
+                        'active' => request()->routeIs('formcuti*'),
+                    ],
+                    [
+                        'label' => 'Exit Forms',
+                        'route' => 'formkeluar',
+                        'icon' => 'arrow-left-on-rectangle',
+                        'active' => request()->routeIs('formkeluar*'),
+                    ],
+                ],
+            ],
+            [
+                'type' => 'group',
+                'label' => 'Personnel Management',
+                'icon' => 'user-group',
+                'roles' => ['admin', 'super-admin', 'hrd', 'hr', 'manager'],
+                'priority' => 63,
+                'children' => [
+                    [
+                        'label' => 'Employee Trainings',
+                        'route' => 'employee_trainings.index',
+                        'icon' => 'academic-cap',
+                        'active' => request()->routeIs('employee_trainings.*'),
+                    ],
+                    [
+                        'label' => 'Important Documents',
+                        'route' => 'importantdoc.index',
+                        'icon' => 'folder-open',
+                        'active' => request()->routeIs('importantdoc.index'),
+                    ],
+                ],
+            ],
+
             // Section: Oversight & Compliance
             ['type' => 'divider', 'label' => 'Oversight'],
             [

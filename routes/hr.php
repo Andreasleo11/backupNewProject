@@ -29,9 +29,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     // Form Overtime (Livewire)
-    Route::get('/form-overtime', FormOvertimeIndex::class)->name('formovertime.index');
+    Route::get('/form-overtime', FormOvertimeIndex::class)->name('overtime.index'); // Renamed from formovertime.index
     Route::get('/formovertime/create', FormOvertimeCreate::class)->name('formovertime.create');
     Route::get('/formovertime/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
+
+    // Form Overtime (Report & Import)
+    Route::get('/overtime-summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime-summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+    Route::get('/overtime-import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/overtime-import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     // Form Overtime (Controller)
     Route::get('formovertime/{id}/detail-old', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
