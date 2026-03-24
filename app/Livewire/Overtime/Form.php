@@ -43,7 +43,7 @@ class Form extends Component
     public array $removedDetailIds = [];
 
     // Auxiliary data
-    public Collection $employees;
+    public array $employees = [];
     public array $recentJobs = [];
     public array $validationErrors = [];
 
@@ -318,14 +318,16 @@ class Form extends Component
 
     // ── Data helpers ──────────────────────────────────────────────────────────
 
-    protected function fetchEmployees(): Collection
+    protected function fetchEmployees(): array
     {
         return $this->dept_id
             ? Employee::whereHas('department', fn ($q) => $q->where('id', $this->dept_id))
                 ->orderBy('name')
-                ->get(['NIK', 'name'])
-                ->map(fn ($e) => ['nik' => $e->NIK, 'name' => $e->name])
-            : collect();
+                ->get(['nik', 'name'])
+                ->map(fn ($e) => ['nik' => $e->nik, 'name' => $e->name])
+                ->values()
+                ->toArray()
+            : [];
     }
 
     public function isMouldingDept(): bool

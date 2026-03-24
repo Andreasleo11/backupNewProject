@@ -440,7 +440,7 @@
                 
                 <button type="submit" wire:loading.attr="disabled"
                     class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-xs font-black text-white shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-70"
-                    :class="excel_fileLoaded && excel ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30 focus:ring-emerald-500' : 'bg-gradient-to-r {{ $formId ? 'from-amber-500 to-amber-600 shadow-amber-500/30 focus:ring-amber-500' : 'from-blue-600 to-indigo-600 shadow-blue-500/30 focus:ring-blue-500' }}'">
+                    :class="excel_file_loaded && excel ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30 focus:ring-emerald-500' : 'bg-gradient-to-r {{ $formId ? 'from-amber-500 to-amber-600 shadow-amber-500/30 focus:ring-amber-500' : 'from-blue-600 to-indigo-600 shadow-blue-500/30 focus:ring-blue-500' }}'">
                     
                     <span wire:loading.remove class="flex items-center gap-2">
                         <i class='bx bx-check-circle text-lg'></i>
