@@ -430,7 +430,9 @@
         <div class="sticky bottom-0 z-40 mt-8 -mx-6 md:-mx-10 px-6 md:px-10 py-5 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 premium-shadow flex items-center justify-between">
             <div class="flex flex-col">
                 <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-tight">Status</span>
-                <span class="text-sm font-bold text-slate-700" x-text="excel ? 'Awaiting Upload' : 'Ready to Submit'"></span>
+                <span class="text-sm font-bold transition-colors duration-300" 
+                      :class="['Ready to Submit', 'File Ready'].includes(formStatus) ? 'text-emerald-600' : 'text-slate-500'" 
+                      x-text="formStatus"></span>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ $formId ? route('overtime.detail', $formId) : route('overtime.index') }}"
@@ -478,6 +480,24 @@ document.addEventListener('alpine:init', () => {
         getError(index, field) {
             const e = this.errors[`items.${index}.${field}`];
             return Array.isArray(e) ? e[0] : (e || '');
+        },
+
+        get formStatus() {
+            if (this.excel) {
+                return this.excel_file_loaded ? 'File Ready' : 'Awaiting Upload';
+            }
+
+            let valid = 0;
+            let total = this.items.length;
+            this.items.forEach(i => {
+                if (i.nik && i.start_date && i.start_time && i.end_date && i.end_time && i.job_desc && i.break !== '') {
+                    valid++;
+                }
+            });
+
+            if (valid === 0) return 'Incomplete Fields';
+            if (valid < total) return `${valid} Ready, ${total - valid} Incomplete`;
+            return 'Ready to Submit';
         },
 
         addRow() {

@@ -136,7 +136,7 @@ class Form extends Component
             // Manual entries (both Create and Edit)
             $rules['items'] = 'required|array|min:1';
             foreach ($this->items as $i => $item) {
-                $rules["items.$i.nik"]           = ['required', 'string', Rule::exists('employees', 'NIK')];
+                $rules["items.$i.nik"]           = ['required', 'string', Rule::exists('employees', 'nik')];
                 $rules["items.$i.name"]          = 'required|string';
                 $rules["items.$i.overtime_date"] = 'required|date';
                 $rules["items.$i.job_desc"]      = 'required|string|max:500';
@@ -250,7 +250,18 @@ class Form extends Component
 
     public function submit(): mixed
     {
-        $validated = $this->validate();
+        try {
+            $validated = $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            foreach ($e->errors() as $key => $messages) {
+                foreach ($messages as $msg) {
+                    $this->addError($key, $msg);
+                }
+            }
+            $this->validationErrors = $this->getErrorBag()->toArray();
+            $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted errors before submitting.');
+            return null;
+        }
 
         try {
             if ($this->formId) {
@@ -297,20 +308,38 @@ class Form extends Component
                     }
                 });
 
-                session()->flash('toast_success', 'Overtime form updated successfully.');
+                session()->flash('success', 'Overtime form updated successfully.');
                 return redirect()->route('overtime.detail', $this->formId);
 
             } else {
                 // -- Create Mode --
                 $header = OvertimeFormService::create(collect($validated));
 
-                session()->flash('toast_success', 'Overtime form created successfully.');
+                session()->flash('success', 'Overtime form created successfully.');
                 return redirect()->route('overtime.detail', $header->id);
             }
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            foreach ($e->errors() as $key => $messages) {
+                foreach ($messages as $msg) {
+                    $this->addError($key, $msg);
+                }
+            }
+            $this->validationErrors = $this->getErrorBag()->toArray();
+            
+            $firstError = collect($e->errors())->flatten()->first() ?? 'Form validation failed.';
+            $this->dispatch('flash', type: 'error', message: $firstError);
+            
+            return null;
         } catch (Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Overtime Form Submission Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id'   => auth()->id(),
+                'form_id'   => $this->formId,
+                'trace'     => $e->getTraceAsString(),
+            ]);
             report($e);
-            $this->dispatch('toast', message: 'Failed to save overtime form! Please try again.', type: 'error');
+            $this->dispatch('flash', type: 'error', message: 'Failed to save overtime form! Please try again.');
 
             return null;
         }

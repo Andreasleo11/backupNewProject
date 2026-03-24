@@ -27,7 +27,14 @@ class OvertimeFormService
 
             // Resolve the approval flow
             $flowSlug = ApprovalFlowResolver::for($headerData);
-            $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
+            $flow = ApprovalFlow::where('slug', $flowSlug)->first();
+
+            if (! $flow) {
+                throw ValidationException::withMessages([
+                    'items' => ["Sistem tidak dapat menemukan alur persetujuan (slug: $flowSlug). Silakan hubungi admin untuk setup Approval Flow."],
+                ]);
+            }
+
             $headerData['approval_flow_id'] = $flow->id;
 
             // Create header first to obtain ID, but DO NOT seed approvals yet
