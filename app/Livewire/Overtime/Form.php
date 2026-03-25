@@ -103,6 +103,7 @@ class Form extends Component
 
     public function downloadTemplate()
     {
+        $this->authorize('create', OvertimeForm::class);
         return \Maatwebsite\Excel\Facades\Excel::download(new class implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
             public function array(): array {
                 return [
@@ -268,6 +269,8 @@ class Form extends Component
         try {
             if ($this->formId) {
                 // -- Edit Mode Update --
+                $this->authorize('update', $this->form);
+                
                 DB::transaction(function () {
                     // Update header
                     $this->form->update([

@@ -363,40 +363,48 @@
 
                                 {{-- Inline Approval Stepper --}}
                                 <td class="{{ $rowPadding }} whitespace-nowrap">
-                                    @if ($steps->isEmpty())
-                                        <span class="text-[10px] text-slate-400 italic">Not submitted</span>
-                                    @else
-                                        <div class="flex items-center gap-1">
-                                            @foreach ($steps as $step)
-                                                @php
-                                                    // Engine stores UPPERCASE: APPROVED / REJECTED / PENDING
-                                                    $dotStatus = match(strtolower($step->status ?? '')) {
-                                                        'approved'            => 'approved',
-                                                        'rejected', 'canceled'=> 'rejected',
-                                                        default               => 'pending',
-                                                    };
-                                                @endphp
-                                                {{-- Connector line (not before first dot) --}}
-                                                @if (!$loop->first)
-                                                    <div class="h-px w-3 {{ $dotStatus === 'approved' ? 'bg-emerald-400' : 'bg-slate-200' }}"></div>
-                                                @endif
-
-                                                {{-- Dot with tooltip --}}
-                                                <div title="{{ $step->approver_snapshot_label ?? 'Step '.$step->sequence }}"
-                                                    class="relative h-4 w-4 rounded-full border-2 flex items-center justify-center cursor-default transition-all
-                                                        {{ $stepDot[$dotStatus] }}">
-                                                    @if ($dotStatus === 'approved')
-                                                        <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M1 4l2 2 4-4"/></svg>
-                                                    @elseif($dotStatus === 'rejected')
-                                                        <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M2 2l4 4M6 2L2 6"/></svg>
+                                    @can('viewTimeline', $fot)
+                                        @if ($steps->isEmpty())
+                                            <span class="text-[10px] text-slate-400 italic">Not submitted</span>
+                                        @else
+                                            <div class="flex items-center gap-1">
+                                                @foreach ($steps as $step)
+                                                    @php
+                                                        // Engine stores UPPERCASE: APPROVED / REJECTED / PENDING
+                                                        $dotStatus = match(strtolower($step->status ?? '')) {
+                                                            'approved'            => 'approved',
+                                                            'rejected', 'canceled'=> 'rejected',
+                                                            default               => 'pending',
+                                                        };
+                                                    @endphp
+                                                    {{-- Connector line (not before first dot) --}}
+                                                    @if (!$loop->first)
+                                                        <div class="h-px w-3 {{ $dotStatus === 'approved' ? 'bg-emerald-400' : 'bg-slate-200' }}"></div>
                                                     @endif
-                                                </div>
-                                            @endforeach
+
+                                                    {{-- Dot with tooltip --}}
+                                                    <div title="{{ $step->approver_snapshot_label ?? 'Step '.$step->sequence }}"
+                                                        class="relative h-4 w-4 rounded-full border-2 flex items-center justify-center cursor-default transition-all
+                                                            {{ $stepDot[$dotStatus] }}">
+                                                        @if ($dotStatus === 'approved')
+                                                            <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M1 4l2 2 4-4"/></svg>
+                                                        @elseif($dotStatus === 'rejected')
+                                                            <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M2 2l4 4M6 2L2 6"/></svg>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <div class="mt-1 text-[9px] text-slate-400 tabular-nums">
+                                                {{ $steps->filter(fn($s) => strtolower($s->status ?? '') === 'approved')->count() }}/{{ $steps->count() }} signed
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="flex items-center gap-1 opacity-20 filter grayscale">
+                                            @for($i=0; $i<3; $i++)
+                                                <div class="h-3 w-3 rounded-full bg-slate-200"></div>
+                                            @endfor
                                         </div>
-                                        <div class="mt-1 text-[9px] text-slate-400 tabular-nums">
-                                            {{ $steps->filter(fn($s) => strtolower($s->status ?? '') === 'approved')->count() }}/{{ $steps->count() }} signed
-                                        </div>
-                                    @endif
+                                    @endcan
                                 </td>
 
                                 {{-- Action: only the Detail link on the list. Delete lives in the detail page. --}}

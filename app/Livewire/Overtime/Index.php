@@ -8,11 +8,13 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('new.layouts.app')]
 class Index extends Component
 {
     use WithPagination;
@@ -81,8 +83,8 @@ class Index extends Component
 
         $fot = OvertimeForm::with('details')->findOrFail($id);
 
-        // (Optional) Gate/Policy check
-        // Gate::authorize('delete', $fot);
+        // Gate/Policy check
+        $this->authorize('delete', $fot);
 
         // If FK doesn't cascade, do it here:
         $fot->details()->delete();
@@ -200,6 +202,7 @@ class Index extends Component
 
     public function mount(): void
     {
+        $this->authorize('viewAny', OvertimeForm::class);
         // ⚠️ Move heavy cleanup out of request cycle:
         // OvertimeForm::doesntHave('details')->delete();
         // Put it in a nightly job/queue instead.
@@ -302,6 +305,8 @@ class Index extends Component
 
     public function exportCsv()
     {
+        $this->authorize('export', OvertimeForm::class);
+
         // Stream the current filtered result set.
         return response()->streamDownload(
             function () {
@@ -606,7 +611,7 @@ class Index extends Component
             'stats'            => $stats,
             'isPrivileged'     => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
-        ])->layout('new.layouts.app');
+        ]);
     }
 }
 

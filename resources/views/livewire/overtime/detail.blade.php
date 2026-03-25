@@ -229,10 +229,12 @@
                             <th class="px-4 py-3 whitespace-nowrap text-center">End</th>
                             <th class="px-4 py-3 whitespace-nowrap text-center" title="Break Duration">BRK</th>
                             <th class="px-4 py-3 max-w-[200px]">Job Desc</th>
-                            <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60" colspan="3">Actual Logs (In / Out / Net)</th>
-                            <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60">Status</th>
+                            @if ($canReview)
+                                <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60" colspan="3">Actual Logs (In / Out / Net)</th>
+                                <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60">Status</th>
+                            @endif
                             @if ($form->status === 'approved' && $canPush)
-                            <th class="px-4 py-3 whitespace-nowrap text-center">Payroll Push</th>
+                                <th class="px-4 py-3 whitespace-nowrap text-center text-indigo-600">Payroll Push</th>
                             @endif
                         </tr>
                     </thead>
@@ -270,6 +272,7 @@
                             </td>
 
                             {{-- Actual attendance --}}
+                            @if ($canReview)
                             <td class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-100/60">
                                 <span class="font-mono text-[11px] font-bold {{ $actual ? 'text-indigo-600' : 'text-slate-300' }}">
                                     {{ $actual?->in_time ? substr($actual->in_time, 0, 5) : '--:--' }}
@@ -296,6 +299,7 @@
                                     <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm" title="Pending"><i class='bx bx-time-five'></i></span>
                                 @endif
                             </td>
+                            @endif
 
                             {{-- JPayroll actions --}}
                             @if ($form->status === 'approved' && $canPush)

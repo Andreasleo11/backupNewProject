@@ -90,6 +90,26 @@ class OvertimePolicy
     }
 
     /**
+     * Determine whether the user can approve (sign) the current step.
+     */
+    public function approve(User $user, OvertimeForm $form): bool
+    {
+        if (! $user->can('overtime.approve')) {
+            return false;
+        }
+
+        return $this->sign($user, $form);
+    }
+
+    /**
+     * Determine whether the user can see the approval signature timeline/stepper.
+     */
+    public function viewTimeline(User $user, OvertimeForm $form): bool
+    {
+        return $this->view($user, $form);
+    }
+
+    /**
      * A user can sign (approve) a step if they hold the role_slug
      * defined on that step, or they are super-admin.
      */
@@ -115,7 +135,7 @@ class OvertimePolicy
      */
     public function reject(User $user, OvertimeForm $form): bool
     {
-        return $this->sign($user, $form);
+        return $this->approve($user, $form);
     }
 
     /**
@@ -124,6 +144,14 @@ class OvertimePolicy
     public function export(User $user): bool
     {
         return $user->can('overtime.export');
+    }
+
+    /**
+     * Determine whether the user can review/manage individual overtime details.
+     */
+    public function reviewDetail(User $user, OvertimeForm $form): bool
+    {
+        return $user->can('overtime.review');
     }
 
     /**

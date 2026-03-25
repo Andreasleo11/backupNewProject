@@ -7,8 +7,10 @@ use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Models\OvertimeForm;
 
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('new.layouts.app')]
 class Detail extends Component
 {
     public OvertimeForm $form;
@@ -45,12 +47,16 @@ class Detail extends Component
             'details.actualOvertimeDetail',
             'details.employee',
         ])->findOrFail($this->formId);
+
+        $this->authorize('view', $this->form);
     }
 
     // ── Approval actions ─────────────────────────────────────────────────────
 
     public function sign(int $stepId): void
     {
+        $this->authorize('approve', $this->form);
+
         $result = $this->approvalService->sign($this->formId, $stepId);
 
         if ($result['success']) {
@@ -70,6 +76,7 @@ class Detail extends Component
 
     public function submitReject(): void
     {
+        $this->authorize('reject', $this->form);
         $this->validate(['rejectReason' => 'required|string|min:5']);
 
         $result = $this->approvalService->reject(
@@ -93,7 +100,7 @@ class Detail extends Component
 
     public function pushDetail(int $detailId, string $action): void
     {
-        $this->authorize('pushToPayroll', OvertimeForm::class);
+        $this->authorize('pushToPayroll', $this->form);
 
         $detail = OvertimeFormDetail::with('employee', 'header')->findOrFail($detailId);
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
@@ -106,7 +113,7 @@ class Detail extends Component
 
     public function pushAll(): void
     {
-        $this->authorize('pushToPayroll', OvertimeForm::class);
+        $this->authorize('pushToPayroll', $this->form);
 
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
         $result = $service->pushAllDetails($this->formId);
@@ -166,7 +173,7 @@ class Detail extends Component
                 'signature_path' => $step->signature_url,
                 'approval_id'    => $step->id,
                 'step_id'        => $step->id,
-                'can_sign'       => $isCurrent && Auth::user()->hasRole($roleSlug),
+                'can_sign'       => $isCurrent && Auth::user()->can('approve', $this->form),
             ];
         })->values()->toArray();
     }
@@ -174,10 +181,11 @@ class Detail extends Component
     public function render()
     {
         return view('livewire.overtime.detail', [
-            'timeline' => $this->timeline,
-            'user'     => Auth::user(),
-            'canPush'  => Auth::user()->can('pushToPayroll', OvertimeForm::class),
-        ])->layout('new.layouts.app');
+            'timeline'  => $this->timeline,
+            'user'      => Auth::user(),
+            'canPush'   => Auth::user()->can('pushToPayroll', $this->form),
+            'canReview' => Auth::user()->can('reviewDetail', $this->form),
+        ]);
     }
 }
 
