@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        @if (Auth::user()->department?->name !== 'MANAGEMENT')
+        @if (!$user->hasRole('MANAGEMENT'))
             <a href="{{ route('overtime.create') }}"
                 class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500">
                 <i class='bx bx-plus-circle text-lg'></i>
@@ -65,18 +65,10 @@
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Detail Review Status</span>
                     <p class="text-[10px] text-slate-400 mt-0.5">Per-employee rows across all visible forms</p>
                 </div>
-                <div class="inline-flex items-center rounded-full border border-slate-200/60 bg-white/60 p-0.5 shadow-sm text-[10px] font-bold">
-                    <label class="inline-flex cursor-pointer items-center rounded-full px-3 py-1 transition {{ $statsScope === 'all' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700' }}">
-                        <input type="radio" value="all" class="sr-only" wire:model.live="statsScope">Global
-                    </label>
-                    <label class="inline-flex cursor-pointer items-center rounded-full px-3 py-1 transition {{ $statsScope === 'page' ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:text-slate-700' }}">
-                        <input type="radio" value="page" class="sr-only" wire:model.live="statsScope">This page
-                    </label>
-                </div>
             </div>
 
             {{-- Skeleton --}}
-            <div class="grid grid-cols-3 gap-4" wire:loading wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage,statsScope">
+            <div class="grid grid-cols-3 gap-4" wire:loading wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage">
                 @for($i = 0; $i < 3; $i++)
                 <div class="glass-card rounded-2xl border border-slate-100/60 p-5 animate-pulse">
                     <div class="flex items-center gap-4"><div class="h-12 w-12 rounded-xl bg-slate-100"></div><div class="flex-1 space-y-2"><div class="h-2 w-1/3 rounded bg-slate-100"></div><div class="h-5 w-1/4 rounded bg-slate-100"></div><div class="h-1.5 w-full rounded-full bg-slate-100"></div></div></div>
@@ -85,7 +77,7 @@
             </div>
 
             {{-- Metric Cards --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3" wire:loading.remove wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage,statsScope">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3" wire:loading.remove wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage">
                 @foreach ([
                     ['key' => 'approved', 'label' => 'Approved',  'icon' => 'bx-check-circle',   'color' => 'emerald', 'base' => 'bg-emerald-100 text-emerald-600', 'hover' => 'group-hover:bg-emerald-500', 'bar' => 'bg-emerald-500', 'ring' => 'border-emerald-400 bg-emerald-50/40'],
                     ['key' => 'rejected', 'label' => 'Rejected',  'icon' => 'bx-x-circle',       'color' => 'rose',    'base' => 'bg-rose-100 text-rose-600',       'hover' => 'group-hover:bg-rose-500',    'bar' => 'bg-rose-500',    'ring' => 'border-rose-400 bg-rose-50/40'],
@@ -161,6 +153,21 @@
 
                 {{-- Right controls --}}
                 <div class="ml-auto flex items-center gap-2">
+                    
+                    {{-- View Toggle: Compact / Comfortable --}}
+                    <div class="hidden lg:flex items-center gap-0.5 rounded-xl bg-slate-100 p-1 text-[10px] font-black uppercase tracking-tighter">
+                        <button type="button" wire:click="toggleDense" 
+                            class="rounded-lg px-2.5 py-1.5 transition-all {{ !$dense ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}"
+                            title="Comfortable View">
+                            <i class='bx bx-list-ul text-sm'></i>
+                        </button>
+                        <button type="button" wire:click="toggleDense"
+                            class="rounded-lg px-2.5 py-1.5 transition-all {{ $dense ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}"
+                            title="Compact View">
+                            <i class='bx bx-list-check text-sm'></i>
+                        </button>
+                    </div>
+
                     <select class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-7 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500" wire:model.live="perPage">
                         <option value="10">10</option>
                         <option value="25">25</option>
@@ -170,10 +177,12 @@
                     {{-- Toggle advanced filters --}}
                     <button @click="filtersOpen = !filtersOpen"
                         class="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all
-                            {{ ($startDate || $endDate || $dept || $infoStatus) ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                            {{ ($startDate || $endDate || $dept || $infoStatus || ($isPush !== null && $isPush !== '')) ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                         <i class='bx bx-slider-alt'></i>
                         <span class="hidden sm:inline">Filters</span>
-                        @php $activeCount = (int)!!$startDate + (int)!!$endDate + (int)!!$dept + (int)!!$infoStatus + (int)(($isPush ?? '') !== ''); @endphp
+                        @php 
+                            $activeCount = (int)!!$startDate + (int)!!$endDate + (int)!!$dept + (int)!!$infoStatus + (int)($isPush !== null && $isPush !== ''); 
+                        @endphp
                         @if ($activeCount > 0)
                             <span class="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/30 text-[9px] font-black">{{ $activeCount }}</span>
                         @endif
@@ -181,10 +190,10 @@
 
                     {{-- Export: only for privileged --}}
                     @if ($isPrivileged)
-                    <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
-                        class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all">
-                        <i class='bx bx-export'></i> Export
-                    </button>
+                        <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
+                            class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all">
+                            <i class='bx bx-export'></i> Export
+                        </button>
                     @endif
                 </div>
             </div>
@@ -214,7 +223,7 @@
                     </div>
                     @endif
 
-                    @if ($user->hasRole('VERIFICATOR'))
+                    @if ($isDetailReviewer)
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</label>
                         <select wire:model.live="infoStatus" class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-8 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500">
@@ -398,14 +407,14 @@
                                             title="View Details">
                                             <i class='bx bx-right-arrow-alt text-lg'></i>
                                         </a>
-                                        {{-- Delete: only shown to admin/owner so it doesn't clutter the list for approvers --}}
-                                        @if ($isPrivileged || $fot->user_id === Auth::id())
+                                        {{-- Delete: only shown to authorized users --}}
+                                        @can('delete', $fot)
                                         <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
                                             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-600 hover:text-white transition-colors shadow-sm"
                                             title="Delete">
                                             <i class='bx bx-trash'></i>
                                         </button>
-                                        @endif
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

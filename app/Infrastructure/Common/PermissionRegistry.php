@@ -61,6 +61,18 @@ class PermissionRegistry
                     'general-manager' => ['evaluation.view-any', 'evaluation.approve-final', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang'],
                 ],
             ],
+            'Overtime' => [
+                'permissions' => [
+                    'overtime.view', 'overtime.view-all', 'overtime.create', 'overtime.delete', 'overtime.export', 'overtime.review', 'overtime.push-to-payroll',
+                ],
+                'roles' => [
+                    'VERIFICATOR' => ['overtime.view-all', 'overtime.review', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
+                    'DIRECTOR'    => ['overtime.view-all', 'overtime.export'],
+                    'GM'          => ['overtime.view-all', 'overtime.export'],
+                    'dept-head'   => ['overtime.view-all'],
+                    'staff'       => ['overtime.view', 'overtime.create'],
+                ],
+            ],
         ];
     }
 

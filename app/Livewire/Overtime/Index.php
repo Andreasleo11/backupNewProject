@@ -56,7 +56,10 @@ class Index extends Component
 
     public array $departments = [];
 
-    public string $statsScope = 'all'; // 'all' or 'page'
+    public function toggleDense(): void
+    {
+        $this->dense = ! $this->dense;
+    }
 
     public ?int $pendingDeleteId = null; // fired from the Delete button
 
@@ -108,50 +111,39 @@ class Index extends Component
      * - When scope = 'page', compute from the current page collection (fast and simple).
      * - When scope = 'all', do one aggregate query across all filtered results (efficient).
      */
-    public function buildStats(LengthAwarePaginator $page)
+    public function buildStats()
     {
-        if ($this->statsScope === 'page') {
-            $approved = (int) $page->sum('approved_count');
-            $rejected = (int) $page->sum('rejected_count');
-            $pending = (int) $page->sum('pending_count');
-        } else {
-            // Aggregate across ALL filtered results using a single SQL
-            // 1) Rebuild the filtered header query (no order/pagination)
-            $h = OvertimeForm::query();
-            $this->scopeByRole($h);
-            $this->scopeFilters($h);
+        // Global scope - re-run query for totals only across all filtered results
+        $h = OvertimeForm::query();
+        $this->scopeByRole($h);
+        $this->scopeFilters($h, true);
 
-            // 2) Use a subquery for header ids
-            $idsSub = $h->select('id');
+        // Use a subquery for header ids to get correct matches
+        $idsSub = $h->select('id');
 
-            // 3) Aggregate on details + join headers for 'urgent'
-            $row = DB::table('detail_form_overtime as d')
-                ->join('header_form_overtime as h', 'h.id', '=', 'd.header_id')
-                ->whereIn('d.header_id', $idsSub)
-                ->selectRaw(
-                    "
+        // Aggregate on details
+        $row = DB::table('detail_form_overtime as d')
+            ->whereIn('d.header_id', $idsSub)
+            ->selectRaw("
                 SUM(CASE WHEN d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
                 SUM(CASE WHEN d.status IS NULL THEN 1 ELSE 0 END) as pending
-            ",
-                )
-                ->first();
+            ")
+            ->first();
 
-            $approved = (int) ($row->approved ?? 0);
-            $rejected = (int) ($row->rejected ?? 0);
-            $pending = (int) ($row->pending ?? 0);
-        }
-
-        $total = max(1, $approved + $rejected + $pending); // avoid /0
+        $approved = (int) ($row->approved ?? 0);
+        $rejected = (int) ($row->rejected ?? 0);
+        $pending = (int) ($row->pending ?? 0);
+        $total = max(1, $approved + $rejected + $pending);
 
         return [
-            'approved' => $approved,
-            'rejected' => $rejected,
-            'pending' => $pending,
-            'total' => $total,
+            'approved'     => $approved,
+            'rejected'     => $rejected,
+            'pending'      => $pending,
+            'total'        => $total,
             'pct_approved' => round(($approved * 100) / $total),
             'pct_rejected' => round(($rejected * 100) / $total),
-            'pct_pending' => round(($pending * 100) / $total),
+            'pct_pending'  => round(($pending * 100) / $total),
         ];
     }
 
@@ -224,7 +216,6 @@ class Index extends Component
         $this->isPush = null;
         $this->search = '';
         $this->range = null;
-        $this->infoStatus = null;
         $this->resetPage();
     }
 
@@ -277,13 +268,11 @@ class Index extends Component
     public function updatedStartDate(): void
     {
         $this->syncRangeWithDates();
-        $this->resetPage();
     }
 
     public function updatedEndDate(): void
     {
         $this->syncRangeWithDates();
-        $this->resetPage();
     }
 
     private function syncRangeWithDates(): void
@@ -409,9 +398,7 @@ class Index extends Component
      */
     public function isPrivilegedUser(): bool
     {
-        return Auth::user()->hasAnyRole([
-            'super-admin', 'VERIFICATOR', 'DIRECTOR', 'GM', 'dept-head',
-        ]);
+        return Auth::user()->can('overtime.view-all');
     }
 
     /**
@@ -425,7 +412,7 @@ class Index extends Component
      */
     public function isDetailReviewer(): bool
     {
-        return Auth::user()->hasAnyRole(['super-admin', 'VERIFICATOR']);
+        return Auth::user()->can('overtime.review');
     }
 
     /**
@@ -457,7 +444,7 @@ class Index extends Component
             if ($user->hasRole('super-admin')) {
                 // Super-admin sees everything; no filtering needed.
                 $query->whereNotNull('status');
-            } elseif ($user->hasRole('VERIFICATOR')) {
+            } elseif ($user->can('overtime.review')) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('status', 'approved')->orWhere(function ($q) {
                         $q->where('status', 'waiting-dept-head')->whereHas(
@@ -466,8 +453,11 @@ class Index extends Component
                         );
                     });
                 });
-            } elseif ($user->hasRole('DIRECTOR')) {
-                $query->where('status', 'waiting-director');
+            } elseif ($user->hasRole('DIRECTOR') || $user->hasPermissionTo('overtime.view-all')) { // Fallback to permission if needed
+                // Director/Global view
+                if ($user->hasRole('DIRECTOR')) {
+                     $query->where('status', 'waiting-director');
+                }
             } elseif ($user->hasRole('GM')) {
                 // GM sees forms that await their approval, scoped to their branch.
                 $query
@@ -518,7 +508,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    private function scopeFilters($query)
+    private function scopeFilters($query, bool $excludeInfoStatus = false)
     {
         if ($this->startDate && $this->endDate) {
             $start = $this->startDate;
@@ -542,7 +532,7 @@ class Index extends Component
             $query->where('is_push', (int) $this->isPush);
         }
 
-        if ($this->infoStatus) {
+        if (! $excludeInfoStatus && $this->infoStatus) {
             $status = $this->infoStatus;
             $query->whereHas('details', function ($q) use ($status) {
                 $status === 'pending'
@@ -590,10 +580,10 @@ class Index extends Component
         return $query;
     }
 
-    private function buildQuery($q)
+    private function buildQuery($q, bool $excludeInfoStatus = false)
     {
         $this->scopeByRole($q);
-        $this->scopeFilters($q);
+        $this->scopeFilters($q, $excludeInfoStatus);
         $this->applySorting($q);
 
         return $q;
@@ -607,7 +597,7 @@ class Index extends Component
         $dataheader = $q->paginate($this->perPage);
 
         // Build stats for cards
-        $stats = $this->buildStats($dataheader);
+        $stats = $this->buildStats();
 
         return view('livewire.overtime.index', [
             'dataheader'       => $dataheader,

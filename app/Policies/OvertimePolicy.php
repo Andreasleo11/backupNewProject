@@ -22,7 +22,7 @@ class OvertimePolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->can('overtime.view') || $user->can('overtime.view-all');
     }
 
     /**
@@ -31,7 +31,7 @@ class OvertimePolicy
      */
     public function create(User $user): bool
     {
-        return $user->department?->name !== 'MANAGEMENT';
+        return $user->can('overtime.create') && $user->department?->name !== 'MANAGEMENT';
     }
 
     /**
@@ -39,7 +39,7 @@ class OvertimePolicy
      */
     public function delete(User $user, OvertimeForm $form): bool
     {
-        return $user->id === $form->user_id || $user->hasRole('super-admin');
+        return $user->id === $form->user_id || $user->can('overtime.delete');
     }
 
     /**
@@ -51,7 +51,7 @@ class OvertimePolicy
         $editableStatuses = ['waiting-creator', 'waiting-dept-head'];
 
         return in_array($form->status, $editableStatuses, true)
-            && ($user->id === $form->user_id || $user->hasRole('super-admin'));
+            && ($user->id === $form->user_id || $user->can('overtime.delete'));
     }
 
     /**
@@ -88,7 +88,7 @@ class OvertimePolicy
      */
     public function export(User $user): bool
     {
-        return $user->hasAnyRole(['VERIFICATOR', 'DIRECTOR', 'GM', 'super-admin']);
+        return $user->can('overtime.export');
     }
 
     /**
@@ -96,7 +96,7 @@ class OvertimePolicy
      */
     public function pushToPayroll(User $user): bool
     {
-        return $user->hasAnyRole(['VERIFICATOR', 'super-admin']);
+        return $user->can('overtime.push-to-payroll');
     }
 }
 
