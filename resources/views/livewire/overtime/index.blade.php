@@ -12,8 +12,8 @@
         'pending'  => 'bg-white border-slate-300',
     ];
 
-    $compact    = $dense ? 'text-[11px]' : 'text-xs';
-    $rowPadding = $dense ? 'py-2 px-4' : 'py-3.5 px-5';
+    $compact    = 'text-[11px]';
+    $rowPadding = 'py-2 px-4';
 
     function sortIcon($field, $current, $dir) {
         if ($current !== $field) return "<i class='bx bx-sort text-slate-300'></i>";
@@ -154,19 +154,6 @@
                 {{-- Right controls --}}
                 <div class="ml-auto flex items-center gap-2">
                     
-                    {{-- View Toggle: Compact / Comfortable --}}
-                    <div class="hidden lg:flex items-center gap-0.5 rounded-xl bg-slate-100 p-1 text-[10px] font-black uppercase tracking-tighter">
-                        <button type="button" wire:click="toggleDense" 
-                            class="rounded-lg px-2.5 py-1.5 transition-all {{ !$dense ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}"
-                            title="Comfortable View">
-                            <i class='bx bx-list-ul text-sm'></i>
-                        </button>
-                        <button type="button" wire:click="toggleDense"
-                            class="rounded-lg px-2.5 py-1.5 transition-all {{ $dense ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}"
-                            title="Compact View">
-                            <i class='bx bx-list-check text-sm'></i>
-                        </button>
-                    </div>
 
                     <select class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-7 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500" wire:model.live="perPage">
                         <option value="10">10</option>
@@ -306,6 +293,7 @@
                             <th wire:click="sortBy('status')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
                                 <div class="flex items-center gap-1">Status {!! sortIcon('status', $sortField, $sortDirection) !!}</div>
                             </th>
+                            <th class="{{ $rowPadding }} whitespace-nowrap">Review Status</th>
                             <th class="{{ $rowPadding }} whitespace-nowrap">Approval</th>
                             <th class="{{ $rowPadding }} whitespace-nowrap text-right">Action</th>
                         </tr>
@@ -354,11 +342,22 @@
                                     <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $meta['classes'] }}">
                                         <i class="bx {{ $meta['icon'] }}"></i>{{ $meta['label'] }}
                                     </span>
-                                    @if ($fot->is_push == 1)
-                                        <div class="mt-1 flex items-center gap-1 text-[9px] font-black text-emerald-600 uppercase tracking-widest">
-                                            <i class='bx bx-check-circle'></i> Payroll Synced
-                                        </div>
-                                    @endif
+                                </td>
+
+                                {{-- Review Status Badge --}}
+                                @php $review = OvertimeIndex::reviewMeta($fot); @endphp
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $review['classes'] }}"
+                                            @if(isset($review['reason'])) title="{{ $review['reason'] }}" @endif>
+                                            <i class="bx {{ $review['icon'] }}"></i>{{ $review['label'] }}
+                                        </span>
+                                        @if(isset($review['reason']))
+                                            <div class="mt-1 text-[9px] text-slate-400 max-w-[150px] truncate font-medium italic" title="{{ $review['reason'] }}">
+                                                {{ $review['reason'] }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 {{-- Inline Approval Stepper --}}
@@ -469,30 +468,32 @@
     {{-- ================================================================
          DELETE CONFIRMATION MODAL
     ================================================================ --}}
-    <div x-cloak x-show="deleteOpen">
-        <div class="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm" x-show="deleteOpen" x-transition.opacity></div>
-        <div class="fixed inset-0 z-[70] flex items-center justify-center p-4" x-show="deleteOpen" x-transition role="dialog" aria-modal="true">
-            <div class="w-full max-w-sm rounded-3xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/80 p-6 text-center relative overflow-hidden">
-                <div class="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
-                <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
-                <div class="relative z-10">
-                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                        <i class='bx bx-trash text-3xl'></i>
-                    </div>
-                    <h3 class="text-base font-black text-slate-800">Delete OT-{{ $pendingDeleteId }}?</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
-                        This will permanently remove all detail rows and approval data for this form. This action cannot be undone.
-                    </p>
-                    <div class="flex gap-2">
-                        <button @click="deleteOpen = false" class="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-black text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-                        <button wire:click="deleteConfirmed" wire:loading.attr="disabled"
-                            class="flex-1 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 disabled:opacity-50 transition-all">
-                            <i class='bx bx-trash'></i> Delete
-                        </button>
+    <template x-teleport="body">
+        <div x-cloak x-show="deleteOpen" class="relative z-[60]">
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" x-show="deleteOpen" x-transition.opacity @click="deleteOpen = false"></div>
+            <div class="fixed inset-0 z-[70] flex items-center justify-center p-4" x-show="deleteOpen" x-transition role="dialog" aria-modal="true">
+                <div class="w-full max-w-sm rounded-3xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/80 p-6 text-center relative overflow-hidden" @click.stop>
+                    <div class="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                            <i class='bx bx-trash text-3xl'></i>
+                        </div>
+                        <h3 class="text-base font-black text-slate-800">Delete OT-{{ $pendingDeleteId }}?</h3>
+                        <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
+                            This will permanently remove all detail rows and approval data for this form. This action cannot be undone.
+                        </p>
+                        <div class="flex gap-2">
+                            <button @click="deleteOpen = false" class="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-black text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
+                            <button wire:click="deleteConfirmed" wire:loading.attr="disabled"
+                                class="flex-1 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 disabled:opacity-50 transition-all">
+                                <i class='bx bx-trash'></i> Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
 </div>

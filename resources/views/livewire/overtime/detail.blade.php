@@ -343,47 +343,49 @@
     </div>{{-- /container --}}
 
     {{-- ======================================================= REJECT MODAL --}}
-    <div x-cloak x-show="rejectOpen">
-        <div class="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm" x-show="rejectOpen" x-transition.opacity></div>
-        <div class="fixed inset-0 z-[70] flex items-center justify-center px-4" x-show="rejectOpen" x-transition
-             role="dialog" aria-modal="true">
-            <div class="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-2xl shadow-2xl border border-white p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2 text-rose-600">
-                        <i class='bx bx-error-circle text-2xl'></i>
-                        <h3 class="text-base font-black tracking-tight">Reject Form Overtime</h3>
+    <template x-teleport="body">
+        <div x-cloak x-show="rejectOpen" class="relative z-[60]">
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" x-show="rejectOpen" x-transition.opacity @click="rejectOpen = false"></div>
+            <div class="fixed inset-0 z-[70] flex items-center justify-center px-4" x-show="rejectOpen" x-transition
+                 role="dialog" aria-modal="true">
+                <div class="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-2xl shadow-2xl border border-white p-6" @click.stop>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2 text-rose-600">
+                            <i class='bx bx-error-circle text-2xl'></i>
+                            <h3 class="text-base font-black tracking-tight">Reject Form Overtime</h3>
+                        </div>
+                        <button type="button" @click="rejectOpen = false"
+                            class="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
+                            <i class='bx bx-x text-xl'></i>
+                        </button>
                     </div>
-                    <button type="button" @click="rejectOpen = false"
-                        class="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
-                        <i class='bx bx-x text-xl'></i>
-                    </button>
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Rejection Reason <span class="text-rose-500">*</span></label>
-                    <textarea
-                        wire:model="rejectReason"
-                        rows="3"
-                        placeholder="Provide a clear rejection reason (minimum 5 characters)…"
-                        class="block w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200 bg-white"
-                    ></textarea>
-                    @error('rejectReason') <p class="mt-2 text-xs font-bold text-rose-600">{{ $message }}</p> @enderror
-                </div>
-                
-                <div class="flex justify-end gap-3">
-                    <button type="button" @click="rejectOpen = false"
-                        class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-                        CANCEL
-                    </button>
-                    <button type="button"
-                        wire:click="submitReject" wire:loading.attr="disabled"
-                        @click="rejectOpen = false"
-                        class="rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-rose-500/30 hover:bg-rose-700 transition-all disabled:opacity-50 inline-flex items-center gap-2">
-                        <i class='bx bx-check'></i> CONFIRM REJECT
-                    </button>
+                    
+                    <div class="mb-6">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Rejection Reason <span class="text-rose-500">*</span></label>
+                        <textarea
+                            wire:model="rejectReason"
+                            rows="3"
+                            placeholder="Provide a clear rejection reason (minimum 5 characters)…"
+                            class="block w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200 bg-white"
+                        ></textarea>
+                        @error('rejectReason') <p class="mt-2 text-xs font-bold text-rose-600">{{ $message }}</p> @enderror
+                    </div>
+                    
+                    <div class="flex justify-end gap-3">
+                        <button type="button" @click="rejectOpen = false"
+                            class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                            CANCEL
+                        </button>
+                        <button type="button"
+                            wire:click="submitReject" wire:loading.attr="disabled"
+                            @click="rejectOpen = false"
+                            class="rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-rose-500/30 hover:bg-rose-700 transition-all disabled:opacity-50 inline-flex items-center gap-2">
+                            <i class='bx bx-check'></i> CONFIRM REJECT
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
 </div>

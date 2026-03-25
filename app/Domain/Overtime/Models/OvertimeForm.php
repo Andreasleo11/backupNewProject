@@ -42,9 +42,18 @@ class OvertimeForm extends Model implements Approvable
         return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id');
     }
 
-    public function rejectedDetails()
+    public function processedDetails()
     {
-        return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')->where('status', 'Rejected');
+        return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')
+                    ->where('status', 'Approved')
+                    ->where('is_processed', 1);
+    }
+
+    public function failedDetails()
+    {
+        return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')
+                    ->where('status', 'Rejected')
+                    ->where('reason', 'like', '%JPAYROLL%');
     }
 
     public function flow()

@@ -65,4 +65,22 @@ class User extends Authenticatable
 
         return $this->employee ? $this->employee->department : null;
     }
+
+    public function signatures(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserSignature::class, 'user_id', 'id');
+    }
+
+    /**
+     * Get the signature path for the current user's default active signature.
+     */
+    public function getSignaturePathAttribute(): ?string
+    {
+        $signature = $this->signatures()
+            ->where('is_default', true)
+            ->whereNull('revoked_at')
+            ->first();
+
+        return $signature ? route('signatures.show', $signature->id) : null;
+    }
 }

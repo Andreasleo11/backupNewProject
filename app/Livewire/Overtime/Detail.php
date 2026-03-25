@@ -136,12 +136,29 @@ class Detail extends Component
     public function getTimelineProperty(): array
     {
         $req = $this->form->approvalRequest;
+        
+        $timeline = [];
+
+        // 1. Prepend the Creator (Requester) as the first step
+        $timeline[] = [
+            'label' => 'Requested by',
+            'approver_name' => $this->form->user?->name ?? 'Unknown',
+            'status' => 'approved', // Creation counts as an initial "approval"
+            'signed_at' => $this->form->created_at,
+            'signature_path' => $this->form->user?->signature_path,
+            'step_order' => 0,
+            'is_current' => false,
+            'can_sign' => false,
+            'step_id' => null,
+            'approval_id' => null,
+            'sequence' => 0, // for loop internal use
+        ];
 
         if (! $req) {
-            return [];
+            return $timeline;
         }
 
-        return $req->steps->sortBy('sequence')->map(function ($step) use ($req) {
+        $steps = $req->steps->sortBy('sequence')->map(function ($step) use ($req) {
             // Read status DIRECTLY from the step row (engine stores APPROVED/REJECTED/PENDING).
             // Do NOT derive from sequence < current_step — that breaks for the final step
             // because current_step is never advanced beyond the last sequence number.
@@ -175,7 +192,9 @@ class Detail extends Component
                 'step_id'        => $step->id,
                 'can_sign'       => $isCurrent && Auth::user()->can('approve', $this->form),
             ];
-        })->values()->toArray();
+        });
+
+        return array_merge($timeline, $steps->toArray());
     }
 
     public function render()
