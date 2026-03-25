@@ -306,13 +306,15 @@ final class ApprovalEngine implements Approvals
                     $usersToNotify = $roleUsers->filter(function ($u) use ($branchValue) {
                         return $u->employee && (string)$u->employee->branch === (string)$branchValue;
                     });
-                } elseif ($roleSlug === 'pr-purchaser' && $approvable instanceof \App\Models\PurchaseRequest && $approvable->to_department) {
+                } elseif (in_array($roleSlug, ['purchaser']) && $approvable instanceof \App\Models\PurchaseRequest && $approvable->to_department) {
                     $roleUsers->load('roles');
-                    // Check for specific sub-role capability: pr-purchaser-{dept_slug}
-                    $targetRole = 'pr-purchaser-' . \Illuminate\Support\Str::slug($approvable->to_department->label());
+                    // Check for specific sub-role capability: purchasing-officer-{dept_slug}
+                    $targetRole = 'purchaser-' . \Illuminate\Support\Str::slug($approvable->to_department->label());
 
-                    $usersToNotify = $roleUsers->filter(function ($u) use ($targetRole) {
-                        return $u->hasRole($targetRole);
+                    $usersToNotify = $roleUsers->filter(function ($u) use ($targetRole, $roleSlug) {
+                        // Fallback to legacy pr-purchaser-{dept} if new one not found? 
+                        // Actually better to just check both or assume migration
+                        return $u->hasRole($targetRole) || $u->hasRole('purchaser-' . str_replace('purchaser-', '', $targetRole));
                     });
                 } else {
                     // Global roles (Director, Verificator) or fallback - Notify all
@@ -432,17 +434,20 @@ final class ApprovalEngine implements Approvals
 
     private function getRoleLabel(string $slug): string
     {
+        if (str_starts_with($slug, 'purchaser-')) {
+            return 'Purchasing (' . ucfirst(str_replace('purchaser-', '', $slug)) . ')';
+        }
+
         return match ($slug) {
-            'pr-dept-head' => 'Dept head',
-            'pr-verificator' => 'Verificator',
-            'pr-director' => 'Director',
-            'pr-gm' => 'General Manager',
-            'pr-purchaser' => 'Purchasing',
+            'department-head' => 'Dept Head',
             'verificator' => 'Verificator',
             'director' => 'Director',
             'general-manager' => 'General Manager',
-            'department-head' => 'Dept Head',
+            'purchaser' => 'Purchasing',
+            'purchasing-manager' => 'Purchasing Manager',
+            'accounting-officer' => 'Accounting',
             'supervisor' => 'Supervisor',
+            'requester', 'staff' => 'Requester',
             default => $slug,
         };
     }

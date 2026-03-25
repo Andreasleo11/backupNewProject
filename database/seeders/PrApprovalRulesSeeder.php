@@ -25,11 +25,11 @@ class PrApprovalRulesSeeder extends Seeder
 
             // 2) Ambil role id yg dipakai di step
             $roleNames = [
-                'pr-dept-head',
-                'pr-gm',
-                'pr-verificator',
-                'pr-purchaser',
-                'pr-director',
+                'department-head',
+                'general-manager',
+                'verificator',
+                'purchaser',
+                'director',
             ];
 
             $roles = Role::whereIn('name', $roleNames)
@@ -61,10 +61,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Maintenance',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-dept-head'], // Formerly pr-head-design
-                        ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'department-head'], // Formerly pr-head-design
+                        ['seq' => 3, 'role' => 'purchaser'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -76,9 +76,9 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Purchasing',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -90,10 +90,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Computer',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'verificator'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -105,10 +105,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Personnel',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'verificator'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
 
@@ -123,9 +123,9 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Maintenance',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -137,9 +137,9 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Purchasing',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -151,10 +151,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Computer',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'verificator'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -166,10 +166,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Personnel',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'purchaser'],
+                        ['seq' => 3, 'role' => 'verificator'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
 
@@ -184,10 +184,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Maintenance',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-gm'],
-                        ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'general-manager'],
+                        ['seq' => 3, 'role' => 'purchaser'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -199,10 +199,10 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Purchasing',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-gm'],
-                        ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'general-manager'],
+                        ['seq' => 3, 'role' => 'purchaser'],
+                        ['seq' => 4, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -214,11 +214,11 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Computer',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-gm'],
-                        ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-verificator'],
-                        ['seq' => 5, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'general-manager'],
+                        ['seq' => 3, 'role' => 'purchaser'],
+                        ['seq' => 4, 'role' => 'verificator'],
+                        ['seq' => 5, 'role' => 'director', 'final' => true],
                     ],
                 ],
                 [
@@ -230,11 +230,11 @@ class PrApprovalRulesSeeder extends Seeder
                         'to_department' => 'Personnel',
                     ],
                     'steps' => [
-                        ['seq' => 1, 'role' => 'pr-dept-head'],
-                        ['seq' => 2, 'role' => 'pr-gm'],
-                        ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-verificator'],
-                        ['seq' => 5, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 1, 'role' => 'department-head'],
+                        ['seq' => 2, 'role' => 'general-manager'],
+                        ['seq' => 3, 'role' => 'purchaser'],
+                        ['seq' => 4, 'role' => 'verificator'],
+                        ['seq' => 5, 'role' => 'director', 'final' => true],
                     ],
                 ],
             ];

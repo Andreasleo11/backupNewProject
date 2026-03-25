@@ -39,7 +39,7 @@ final class PurchaseRequestQueryScoper
         }
 
         // 4. Purchaser: Filter by Target Department
-        if ($user->hasRole('pr-purchaser')) {
+        if ($user->hasAnyRole(['purchaser'])) {
             return $this->scopeForPurchaser($user, $query);
         }
 
@@ -49,7 +49,7 @@ final class PurchaseRequestQueryScoper
         }
 
         // 6. Dept Head: View Department's Requests
-        if ($user->hasRole('pr-dept-head')) {
+        if ($user->hasAnyRole(['department-head'])) {
             return $this->scopeForHead($user, $query);
         }
 

@@ -49,27 +49,27 @@ final class WorkflowStep
 
     public static function deptHead(): self
     {
-        return new self(self::DEPT_HEAD, 'Department Head Review', 'pr-dept-head');
+        return new self(self::DEPT_HEAD, 'Department Head Review', 'department-head');
     }
 
     public static function gm(): self
     {
-        return new self(self::GM, 'GM Review', 'pr-gm');
+        return new self(self::GM, 'GM Review', 'general-manager');
     }
 
     public static function verificator(): self
     {
-        return new self(self::VERIFICATOR, 'Verificator Review', 'pr-verificator');
+        return new self(self::VERIFICATOR, 'Verificator Review', 'verificator');
     }
 
     public static function director(): self
     {
-        return new self(self::DIRECTOR, 'Director Approval', 'pr-director');
+        return new self(self::DIRECTOR, 'Director Approval', 'director');
     }
 
     public static function accounting(): self
     {
-        return new self(self::ACCOUNTING, 'Accounting Processing', 'pr-accounting');
+        return new self(self::ACCOUNTING, 'Accounting Processing', 'accounting-officer');
     }
 
     public static function completed(): self
@@ -94,11 +94,11 @@ final class WorkflowStep
     {
         // Handle variations in role slugs
         return match (true) {
-            str_contains($roleSlug, 'dept-head') => self::deptHead(),
-            str_contains($roleSlug, 'gm') => self::gm(),
+            str_contains($roleSlug, 'department-head') || str_contains($roleSlug, 'dept-head') => self::deptHead(),
+            str_contains($roleSlug, 'general-manager') || str_contains($roleSlug, 'gm') => self::gm(),
             str_contains($roleSlug, 'verificator') => self::verificator(),
             str_contains($roleSlug, 'director') => self::director(),
-            str_contains($roleSlug, 'accounting') => self::accounting(),
+            str_contains($roleSlug, 'accounting-officer') || str_contains($roleSlug, 'accounting') => self::accounting(),
             default => null,
         };
     }

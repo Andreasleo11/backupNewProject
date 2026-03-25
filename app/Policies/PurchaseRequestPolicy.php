@@ -78,7 +78,7 @@ class PurchaseRequestPolicy
         }
 
         // Purchasers might edit at later stages
-        if ($user->hasRole('pr-purchaser') && in_array($pr->status, [1, 6])) {
+        if ($user->hasAnyRole(['purchaser']) && in_array($pr->status, [1, 6])) {
             return true;
         }
 
@@ -106,7 +106,7 @@ class PurchaseRequestPolicy
         // Cancel allowed if draft or just submitted?
         // Usually cancel is allowed if user owns it and it's not fully processed.
         if ($user->can('pr.cancel')) {
-            return $user->id === $pr->user_id_create || $user->hasRole('pr-purchaser');
+            return $user->id === $pr->user_id_create || $user->hasAnyRole(['purchaser']);
         }
 
         return false;
