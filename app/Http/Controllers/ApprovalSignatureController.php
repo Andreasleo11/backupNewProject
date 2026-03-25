@@ -24,8 +24,8 @@ final class ApprovalSignatureController extends Controller
         $approvable = $req->approvable;
         abort_unless($approvable, 404);
 
+        abort_unless(Auth::check(), 401);
         $user = Auth::user();
-        abort_unless($user, 403);
 
         /**
          * Authorization strategy:
@@ -34,12 +34,11 @@ final class ApprovalSignatureController extends Controller
          */
         $authorized = false;
 
-        // A) If you already have policy for the approvable:
-        // (Uncomment once PR policy exists)
-        // Gate::authorize('view', $approvable);
-        // $authorized = true;
+        // A) Use policy for the approvable:
+        Gate::authorize('view', $approvable);
+        $authorized = true;
 
-        // B) Temporary allowlist (safe enough, not open access):
+        // B) Temporary allowlist fallback (rarely reached now):
         if (! $authorized) {
             $isPrivileged = $user->roles()->whereIn('name', ['super-admin', 'admin'])->exists();
 

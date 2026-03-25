@@ -26,6 +26,41 @@ class OvertimePolicy
     }
 
     /**
+     * Determine whether the user can view the specific form.
+     */
+    public function view(User $user, OvertimeForm $form): bool
+    {
+        // 1. Super admin always can
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        // 2. Creator always can
+        if ($user->id === $form->user_id) {
+            return true;
+        }
+
+        // 3. Global viewers (Verificator, Director, etc.) can
+        if ($user->can('overtime.view-all')) {
+            return true;
+        }
+
+        // 4. Current approvers can view the form they are signing
+        $req = $form->approvalRequest;
+        if ($req && $req->status === 'IN_REVIEW') {
+            $currentStep = $req->steps->where('sequence', $req->current_step)->first();
+            if ($currentStep) {
+                $roleSlug = $currentStep->approver_snapshot_role_slug ?? $currentStep->role_slug ?? '';
+                if ($user->hasRole($roleSlug)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * MANAGEMENT department members cannot create overtime forms.
      * Everyone else can.
      */
