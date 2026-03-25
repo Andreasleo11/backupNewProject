@@ -135,27 +135,36 @@ class Detail extends Component
         }
 
         return $req->steps->sortBy('sequence')->map(function ($step) use ($req) {
+            // Read status DIRECTLY from the step row (engine stores APPROVED/REJECTED/PENDING).
+            // Do NOT derive from sequence < current_step — that breaks for the final step
+            // because current_step is never advanced beyond the last sequence number.
+            $rawStatus = strtolower($step->status ?? 'pending'); // normalise to lowercase for view logic
+
+            // Map engine statuses to view statuses
+            $status = match ($rawStatus) {
+                'approved' => 'approved',
+                'rejected' => 'rejected',
+                'canceled' => 'rejected', // treat cancelled as rejected visually
+                default    => 'pending',
+            };
+
             $isCurrent = $req->current_step === $step->sequence && $req->status === 'IN_REVIEW';
-            
-            $status = 'pending';
-            if ($step->sequence < $req->current_step) $status = 'approved';
-            if ($step->sequence === $req->current_step && $req->status === 'REJECTED') $status = 'rejected';
 
             $roleSlug = $step->approver_snapshot_role_slug ?? 'approver';
 
-            // The unified engine maintains action timestamps directly on the step
+            // signed_at and signature are populated by the engine only when APPROVED/REJECTED
             $signedAt = in_array($status, ['approved', 'rejected']) ? $step->acted_at : null;
 
             return [
                 'step_order'     => $step->sequence,
                 'role_slug'      => $roleSlug,
-                'label'          => ucwords(str_replace(['-', '_'], ' ', $roleSlug)),
+                'label'          => $step->approver_label ?? ucwords(str_replace(['-', '_'], ' ', $roleSlug)),
                 'status'         => $status,
                 'is_current'     => $isCurrent,
-                'approver_name'  => $step->approver_name, // fallback or resolved name
+                'approver_name'  => $step->approver_name,
                 'signed_at'      => $signedAt,
-                'signature_path' => $step->signature_url, // Maps to getSignatureUrlAttribute()
-                'approval_id'    => $step->id, // Use step ID for references
+                'signature_path' => $step->signature_url,
+                'approval_id'    => $step->id,
                 'step_id'        => $step->id,
                 'can_sign'       => $isCurrent && Auth::user()->hasRole($roleSlug),
             ];
