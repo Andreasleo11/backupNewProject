@@ -378,7 +378,14 @@ class Index extends Component
                 'is_after_hour',
                 'created_at',
             ])
-            ->with(['user:id,name', 'department:id,name'])
+            ->with([
+                'user:id,name',
+                'department:id,name',
+                // Eager-load approval steps for the inline stepper
+                'approvalRequest.steps' => fn ($q) => $q
+                    ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label'])
+                    ->orderBy('sequence'),
+            ])
             // counts for the Info column (fast subselects)
             ->withCount([
                 'details as approved_count' => fn ($q) => $q->where('status', 'Approved'),
@@ -394,6 +401,52 @@ class Index extends Component
         }, 'first_overtime_date');
 
         return $q;
+    }
+
+    /**
+     * Returns true for roles that can see org-wide analytics and advanced filters.
+     * Regular staff only sees their own submissions and needs a clean, simple UI.
+     */
+    public function isPrivilegedUser(): bool
+    {
+        return Auth::user()->hasAnyRole([
+            'super-admin', 'VERIFICATOR', 'DIRECTOR', 'GM', 'dept-head',
+        ]);
+    }
+
+    /**
+     * Returns true ONLY for the Verificator and super-admin.
+     *
+     * The dashboard metric cards (approved_count / rejected_count / pending_count)
+     * track **detail-row** approval status — individual employee OT lines that the
+     * Verificator reviews after the form's signing flow is complete. These numbers
+     * are meaningless for signers (GM, Director, Dept Head) who only act on the
+     * form-level workflow and never touch individual detail rows.
+     */
+    public function isDetailReviewer(): bool
+    {
+        return Auth::user()->hasAnyRole(['super-admin', 'VERIFICATOR']);
+    }
+
+    /**
+     * Map a raw `status` slug to human-readable label + JIT-safe Tailwind classes.
+     * CRITICAL: Dynamic class strings (bg-{{ $color }}-100) are purged by Tailwind JIT.
+     * Always use complete pre-defined strings here.
+     *
+     * @return array{label: string, classes: string, icon: string}
+     */
+    public static function statusMeta(?string $status): array
+    {
+        return match ($status) {
+            'approved'           => ['label' => 'Fully Approved',        'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
+            'rejected'           => ['label' => 'Rejected',              'classes' => 'bg-rose-100 text-rose-800 border-rose-200',         'icon' => 'bx-x-circle'],
+            'waiting-dept-head'  => ['label' => 'Awaiting Dept Approval','classes' => 'bg-amber-100 text-amber-800 border-amber-200',       'icon' => 'bx-time-five'],
+            'waiting-gm'         => ['label' => 'Awaiting GM Sign-off',  'classes' => 'bg-orange-100 text-orange-800 border-orange-200',    'icon' => 'bx-time-five'],
+            'waiting-director'   => ['label' => 'Awaiting Director',     'classes' => 'bg-purple-100 text-purple-800 border-purple-200',    'icon' => 'bx-time-five'],
+            'waiting-verificator'=> ['label' => 'Awaiting Verificator',  'classes' => 'bg-sky-100 text-sky-800 border-sky-200',             'icon' => 'bx-time-five'],
+            'pending'            => ['label' => 'Pending Submission',    'classes' => 'bg-slate-100 text-slate-700 border-slate-200',       'icon' => 'bx-edit'],
+            default              => ['label' => ucwords(str_replace('-', ' ', $status ?? 'Draft')), 'classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'icon' => 'bx-circle'],
+        };
     }
 
     private function scopeByRole($query)
@@ -557,11 +610,13 @@ class Index extends Component
         $stats = $this->buildStats($dataheader);
 
         return view('livewire.overtime.index', [
-            'dataheader' => $dataheader,
-            'departments' => $this->departments,
-            'user' => Auth::user(),
-            'stats' => $stats,
-        ]);
+            'dataheader'       => $dataheader,
+            'departments'      => $this->departments,
+            'user'             => Auth::user(),
+            'stats'            => $stats,
+            'isPrivileged'     => $this->isPrivilegedUser(),
+            'isDetailReviewer' => $this->isDetailReviewer(),
+        ])->layout('new.layouts.app');
     }
 }
 
