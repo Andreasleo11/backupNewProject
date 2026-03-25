@@ -319,4 +319,14 @@ class PurchaseRequest extends Model implements Approvable
     {
         return route('purchase-requests.show', $this->id);
     }
+
+    public function getApprovableDepartmentName(): ?string
+    {
+        return (string) $this->from_department;
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        return $this->branch?->value;
+    }
 }

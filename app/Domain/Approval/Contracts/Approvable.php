@@ -28,4 +28,14 @@ interface Approvable
      * The URL to view the document.
      */
     public function getApprovableShowUrl(): string;
+
+    /**
+     * Get the department name for notification scoping.
+     */
+    public function getApprovableDepartmentName(): ?string;
+
+    /**
+     * Get the branch value for notification scoping.
+     */
+    public function getApprovableBranchValue(): ?string;
 }

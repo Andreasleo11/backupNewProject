@@ -91,6 +91,16 @@ class OvertimeForm extends Model implements Approvable
         return route('overtime.detail', $this->id);
     }
 
+    public function getApprovableDepartmentName(): ?string
+    {
+        return $this->department?->name;
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        return (string) $this->branch;
+    }
+
     /**
      * Centralized query scope for role-based visibility.
      * This logic is shared by the Index component and the Policy.
