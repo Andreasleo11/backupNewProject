@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Detail;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Observers\DetailObserver;
-use App\Observers\HeaderFormOvertimeObserver;
+use App\Domain\Overtime\Observers\OvertimeFormObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
-        HeaderFormOvertime::observe(HeaderFormOvertimeObserver::class);
+        OvertimeForm::observe(OvertimeFormObserver::class);
         Detail::observe(DetailObserver::class);
 
         Blade::directive('currency', function ($expression) {
@@ -84,3 +84,4 @@ class AppServiceProvider extends ServiceProvider
         Builder::useVite();
     }
 }
+

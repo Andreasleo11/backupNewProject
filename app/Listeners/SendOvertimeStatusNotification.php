@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Events\OvertimeStatusChanged;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Models\User;
 use App\Notifications\FormOvertimeNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,7 +24,7 @@ class SendOvertimeStatusNotification implements ShouldQueue
 
     public function handle(OvertimeStatusChanged $event): void
     {
-        $form = $event->form->loadMissing(['user', 'department', 'flow', 'approvals.step']);
+        $form = $event->form->loadMissing(['user', 'department', 'approvalRequest.steps']);
 
         // Terminal states: notify the creator (and optionally verificators).
         if (in_array($form->status, ['approved', 'rejected'], true)) {
@@ -33,18 +33,26 @@ class SendOvertimeStatusNotification implements ShouldQueue
         }
 
         // Determine the next approver via role_slug on the current step.
-        $currentStep = $form->currentStep();
+        $req = $form->approvalRequest;
+        if (! $req || $req->status !== 'IN_REVIEW') {
+            return;
+        }
+
+        $currentStep = $req->steps->where('sequence', $req->current_step)->first();
         if (! $currentStep) {
             return;
         }
 
-        $roleSlug = $currentStep->role_slug;
+        $roleSlug = $currentStep->approver_snapshot_role_slug ?? $currentStep->role_slug ?? '';
+        if (! $roleSlug) {
+            return;
+        }
 
         // Find users who hold this role.
         $recipients = User::role($roleSlug)
             ->when(
                 // GM: scope to the form's branch if a branch attribute exists on the user.
-                $roleSlug === 'GM',
+                $roleSlug === 'general-manager',
                 fn ($q) => $q->where('branch', $form->branch),
             )
             ->get();
@@ -54,7 +62,7 @@ class SendOvertimeStatusNotification implements ShouldQueue
         }
     }
 
-    private function notifyCreator(HeaderFormOvertime $form): void
+    private function notifyCreator(OvertimeForm $form): void
     {
         $creator = $form->user;
         if ($creator) {
@@ -62,7 +70,7 @@ class SendOvertimeStatusNotification implements ShouldQueue
         }
     }
 
-    private function buildDetails(HeaderFormOvertime $form): array
+    private function buildDetails(OvertimeForm $form): array
     {
         $status = ucwords(str_replace('-', ' ', $form->status));
         $formattedDate = $form->created_at?->format('d-m-Y') ?? '-';
@@ -83,3 +91,4 @@ class SendOvertimeStatusNotification implements ShouldQueue
         ];
     }
 }
+

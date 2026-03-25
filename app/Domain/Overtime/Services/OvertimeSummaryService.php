@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Overtime\Services;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -15,7 +15,7 @@ final class OvertimeSummaryService
      */
     public function generateSummary(string $startDate, string $endDate): Collection
     {
-        $data = DetailFormOvertime::query()
+        $data = OvertimeFormDetail::query()
             ->whereBetween('start_date', [$startDate, $endDate])
             ->whereNull('deleted_at')
             ->where('status', 'Approved')
@@ -74,7 +74,7 @@ final class OvertimeSummaryService
      */
     public function calculateTotalHours(string $nik, string $startDate, string $endDate): float
     {
-        $data = DetailFormOvertime::query()
+        $data = OvertimeFormDetail::query()
             ->where('NIK', $nik)
             ->whereBetween('start_date', [$startDate, $endDate])
             ->whereNull('deleted_at')
@@ -98,3 +98,4 @@ final class OvertimeSummaryService
         return $totalHours;
     }
 }
+

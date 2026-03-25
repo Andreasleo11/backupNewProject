@@ -22,11 +22,12 @@ class ActualOvertimeDetail extends Model
     ];
 
     /**
-     * Relasi ke DetailFormOvertime.
+     * Relasi ke OvertimeFormDetail.
      * Asumsinya: 'key' dan 'voucher' mengarah ke field di tabel detail_form_overtime.
      */
-    public function detailFormOvertime()
+    public function OvertimeFormDetail()
     {
-        return $this->belongsTo(DetailFormOvertime::class, 'key', 'id');
+        return $this->belongsTo(OvertimeFormDetail::class, 'key', 'id');
     }
 }
+

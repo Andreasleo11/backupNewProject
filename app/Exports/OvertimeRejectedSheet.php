@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -20,7 +20,7 @@ class OvertimeRejectedSheet implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return DetailFormOvertime::whereBetween('start_date', [$this->start_date, $this->end_date])
+        return OvertimeFormDetail::whereBetween('start_date', [$this->start_date, $this->end_date])
             ->where('status', 'Rejected')
             ->where(function ($query) {
                 $query->whereNull('reason')->orWhere('reason', '!=', 'Duplicate Data');
@@ -63,3 +63,4 @@ class OvertimeRejectedSheet implements FromCollection, WithHeadings
         ];
     }
 }
+

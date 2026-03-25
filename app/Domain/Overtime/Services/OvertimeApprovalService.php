@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Overtime\Services;
 
-use App\Models\HeaderFormOvertime;
-use App\Models\OvertimeFormApproval;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Support\Facades\Auth;
 
 final class OvertimeApprovalService
 {
     /**
-     * Sign/approve an overtime form at a specific step.
+     * Sign/approve an overtime form.
      */
     public function sign(int $formId, int $stepId): array
     {
-        $form = HeaderFormOvertime::find($formId);
+        $form = OvertimeForm::find($formId);
 
         if (! $form) {
             return [
@@ -24,32 +23,22 @@ final class OvertimeApprovalService
             ];
         }
 
-        $approval = $form->approvals()->where('flow_step_id', $stepId)->first();
-
-        if (! $approval) {
+        try {
+            app(\App\Application\Approval\Contracts\Approvals::class)->approve($form, auth()->id());
+            
+            // Update form status based on approval flow
+            $this->updateFormStatus($form);
+            
+            return [
+                'success' => true,
+                'message' => 'Form signed successfully',
+            ];
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Approval step not found',
+                'message' => $e->getMessage(),
             ];
         }
-
-        $username = Auth::user()->name;
-        $imagePath = $username . '.png';
-
-        $approval->update([
-            'status' => 'approved',
-            'signed_at' => now(),
-            'approver_id' => auth()->id(),
-            'signature_path' => $imagePath,
-        ]);
-
-        // Update form status based on approval flow
-        $this->updateFormStatus($form);
-
-        return [
-            'success' => true,
-            'message' => 'Form signed successfully',
-        ];
     }
 
     /**
@@ -57,7 +46,7 @@ final class OvertimeApprovalService
      */
     public function reject(int $formId, int $approvalId, string $description): array
     {
-        $form = HeaderFormOvertime::find($formId);
+        $form = OvertimeForm::find($formId);
 
         if (! $form) {
             return [
@@ -66,42 +55,46 @@ final class OvertimeApprovalService
             ];
         }
 
-        $form->update([
-            'description' => $description,
-            'status' => 'rejected',
-        ]);
+        try {
+            app(\App\Application\Approval\Contracts\Approvals::class)->reject($form, auth()->id(), $description);
+            
+            $form->update([
+                'description' => $description,
+                'status' => 'rejected',
+            ]);
 
-        OvertimeFormApproval::find($approvalId)?->update(['status' => 'rejected']);
-
-        return [
-            'success' => true,
-            'message' => 'Report rejected',
-        ];
+            return [
+                'success' => true,
+                'message' => 'Report rejected',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
     /**
-     * Update form status based on current approval flow.
+     * Update form status based on current unified approval flow.
      */
-    private function updateFormStatus(HeaderFormOvertime $form): void
+    private function updateFormStatus(OvertimeForm $form): void
     {
-        // currentStep() returns null when all steps are approved.
-        if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved']);
-
+        $req = $form->approvalRequest()->with('steps')->first();
+        if (! $req) {
             return;
         }
 
-        // There is still a pending step — compute its status slug.
-        $next = $form->nextStep();
-        if ($next) {
-            $status = 'waiting-' . str_replace('_', '-', $next->role_slug);
-            $form->update(['status' => $status]);
-        }
-        // If nextStep() is also null but currentStep() wasn't, the flow is empty/misconfigured.
-        // Fail loudly in non-production; silently mark approved in production.
-        else {
-            logger()->warning("OvertimeApprovalService: form #{$form->id} has no next step but currentStep is non-null. Marking approved.");
+        if ($req->status === 'APPROVED') {
             $form->update(['status' => 'approved']);
+        } elseif ($req->status === 'IN_REVIEW') {
+            $currentStep = $req->steps->where('sequence', $req->current_step)->first();
+            if ($currentStep) {
+                $roleSlug = $currentStep->approver_snapshot_role_slug ?? 'approver';
+                $form->update(['status' => 'waiting-' . \Illuminate\Support\Str::slug($roleSlug)]);
+            }
+        } elseif ($req->status === 'REJECTED') {
+            $form->update(['status' => 'rejected']);
         }
     }
 
@@ -110,7 +103,7 @@ final class OvertimeApprovalService
      */
     public function rejectDetail(int $detailId): array
     {
-        $detail = \App\Models\DetailFormOvertime::find($detailId);
+        $detail = \App\Domain\Overtime\Models\OvertimeFormDetail::find($detailId);
 
         if (! $detail) {
             return [
@@ -130,3 +123,4 @@ final class OvertimeApprovalService
         ];
     }
 }
+

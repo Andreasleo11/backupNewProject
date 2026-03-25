@@ -3,15 +3,15 @@
 namespace App\Livewire\Overtime;
 
 use App\Domain\Overtime\Services\OvertimeApprovalService;
-use App\Models\DetailFormOvertime;
-use App\Models\HeaderFormOvertime;
-use App\Models\OvertimeFormApproval;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
+
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Detail extends Component
 {
-    public HeaderFormOvertime $form;
+    public OvertimeForm $form;
     public int $formId;
 
     // Reject modal state
@@ -38,12 +38,10 @@ class Detail extends Component
 
     public function loadForm(): void
     {
-        $this->form = HeaderFormOvertime::with([
+        $this->form = OvertimeForm::with([
             'user',
             'department',
-            'flow.steps',
-            'approvals.step',
-            'approvals.approver',
+            'approvalRequest.steps',
             'details.actualOvertimeDetail',
             'details.employee',
         ])->findOrFail($this->formId);
@@ -95,9 +93,9 @@ class Detail extends Component
 
     public function pushDetail(int $detailId, string $action): void
     {
-        $this->authorize('pushToPayroll', HeaderFormOvertime::class);
+        $this->authorize('pushToPayroll', OvertimeForm::class);
 
-        $detail = DetailFormOvertime::with('employee', 'header')->findOrFail($detailId);
+        $detail = OvertimeFormDetail::with('employee', 'header')->findOrFail($detailId);
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
         $result = $service->pushSingleDetail($detail, $action);
 
@@ -108,7 +106,7 @@ class Detail extends Component
 
     public function pushAll(): void
     {
-        $this->authorize('pushToPayroll', HeaderFormOvertime::class);
+        $this->authorize('pushToPayroll', OvertimeForm::class);
 
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
         $result = $service->pushAllDetails($this->formId);
@@ -126,36 +124,42 @@ class Detail extends Component
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Build approval timeline for the view.
-     * Each item: step_order, role_slug, label, status, approver_name, signed_at, signature_path
+     * Build approval timeline for the view using Unified Engine data.
      */
     public function getTimelineProperty(): array
     {
-        if (! $this->form->flow) {
+        $req = $this->form->approvalRequest;
+
+        if (! $req) {
             return [];
         }
 
-        return $this->form->flow->steps->map(function ($step) {
-            $approval = $this->form->approvals
-                ->firstWhere('flow_step_id', $step->id);
+        return $req->steps->sortBy('sequence')->map(function ($step) use ($req) {
+            $isCurrent = $req->current_step === $step->sequence && $req->status === 'IN_REVIEW';
+            
+            $status = 'pending';
+            if ($step->sequence < $req->current_step) $status = 'approved';
+            if ($step->sequence === $req->current_step && $req->status === 'REJECTED') $status = 'rejected';
 
-            $status = $approval?->status ?? 'pending';
-            $isCurrent = $this->form->currentStep()?->id === $step->id;
+            $roleSlug = $step->approver_snapshot_role_slug ?? 'approver';
+
+            // The unified engine maintains action timestamps directly on the step
+            $signedAt = in_array($status, ['approved', 'rejected']) ? $step->acted_at : null;
 
             return [
-                'step_order'     => $step->step_order,
-                'role_slug'      => $step->role_slug,
-                'label'          => ucwords(str_replace(['-', '_'], ' ', $step->role_slug)),
-                'status'         => $status,    // pending | approved | rejected
+                'step_order'     => $step->sequence,
+                'role_slug'      => $roleSlug,
+                'label'          => ucwords(str_replace(['-', '_'], ' ', $roleSlug)),
+                'status'         => $status,
                 'is_current'     => $isCurrent,
-                'approver_name'  => $approval?->approver?->name,
-                'signed_at'      => $approval?->signed_at,
-                'signature_path' => $approval?->signature_path,
-                'approval_id'    => $approval?->id,
+                'approver_name'  => $step->approver_name, // fallback or resolved name
+                'signed_at'      => $signedAt,
+                'signature_path' => null, // Unified engine doesn't explicitly track image paths yet
+                'approval_id'    => $step->id, // Use step ID for references
                 'step_id'        => $step->id,
-                'can_sign'       => $isCurrent && Auth::user()->hasRole($step->role_slug),
+                'can_sign'       => $isCurrent && Auth::user()->hasRole($roleSlug),
             ];
-        })->toArray();
+        })->values()->toArray();
     }
 
     public function render()
@@ -163,7 +167,8 @@ class Detail extends Component
         return view('livewire.overtime.detail', [
             'timeline' => $this->timeline,
             'user'     => Auth::user(),
-            'canPush'  => Auth::user()->can('pushToPayroll', HeaderFormOvertime::class),
+            'canPush'  => Auth::user()->can('pushToPayroll', OvertimeForm::class),
         ])->layout('new.layouts.app');
     }
 }
+

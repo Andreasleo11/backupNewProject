@@ -7,8 +7,8 @@ namespace App\Domain\Overtime\Services;
 use App\Exports\OvertimeExport;
 use App\Exports\OvertimeExportExample;
 use App\Exports\OvertimeSummaryExport;
-use App\Models\DetailFormOvertime;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -20,8 +20,8 @@ final class OvertimeExportService
      */
     public function exportOvertime(int $headerId): BinaryFileResponse
     {
-        $header = HeaderFormOvertime::with('department')->findOrFail($headerId);
-        $datas = DetailFormOvertime::where('header_id', $headerId)->get();
+        $header = OvertimeForm::with('department')->findOrFail($headerId);
+        $datas = OvertimeFormDetail::where('header_id', $headerId)->get();
 
         $departmentName = $header->department->name;
         $currentDate = Carbon::now()->format('d-m-y');
@@ -53,3 +53,4 @@ final class OvertimeExportService
         );
     }
 }
+

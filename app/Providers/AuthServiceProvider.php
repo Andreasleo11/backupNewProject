@@ -20,7 +20,7 @@ class AuthServiceProvider extends ServiceProvider
         DomainUserSignature::class => UserSignaturePolicy::class,
         \App\Models\DetailPurchaseRequest::class => \App\Policies\PurchaseRequestItemPolicy::class,
         \App\Models\PurchaseRequest::class => \App\Policies\PurchaseRequestPolicy::class,
-        \App\Models\HeaderFormOvertime::class => \App\Policies\OvertimePolicy::class,
+        \App\Domain\Overtime\Models\OvertimeForm::class => \App\Policies\OvertimePolicy::class,
     ];
 
     /**
@@ -44,3 +44,4 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-defects', fn ($user) => $user->hasRole('super-admin') || $user->can('manage-defects'));
     }
 }
+

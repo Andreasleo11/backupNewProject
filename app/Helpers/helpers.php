@@ -5,7 +5,7 @@
 use Illuminate\Support\Str;
 
 if (! function_exists('pickApprovalFlowSlug')) {
-    function pickApprovalFlowSlug(\App\Models\HeaderFormOvertime $header): string
+    function pickApprovalFlowSlug(\App\Domain\Overtime\Models\OvertimeForm $header): string
     {
         $dept = Str::upper($header->department->name ?? '');
         $branch = Str::upper($header->branch ?? '');
@@ -32,3 +32,4 @@ if (! function_exists('pickApprovalFlowSlug')) {
         };
     }
 }
+

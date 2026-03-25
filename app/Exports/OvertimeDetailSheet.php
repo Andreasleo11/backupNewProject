@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
@@ -20,7 +20,7 @@ class OvertimeDetailSheet implements FromView
 
     public function view(): View
     {
-        $details = DetailFormOvertime::with('actualOvertimeDetail')
+        $details = OvertimeFormDetail::with('actualOvertimeDetail')
             ->whereBetween('start_date', [$this->start_date, $this->end_date])
             ->where('status', 'Approved')
             ->get();
@@ -28,3 +28,4 @@ class OvertimeDetailSheet implements FromView
         return view('formovertime.export_detail', compact('details'));
     }
 }
+

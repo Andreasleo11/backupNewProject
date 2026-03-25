@@ -3,7 +3,7 @@
 namespace App\Livewire\Overtime;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +76,7 @@ class Index extends Component
             return;
         }
 
-        $fot = HeaderFormOvertime::with('details')->findOrFail($id);
+        $fot = OvertimeForm::with('details')->findOrFail($id);
 
         // (Optional) Gate/Policy check
         // Gate::authorize('delete', $fot);
@@ -117,7 +117,7 @@ class Index extends Component
         } else {
             // Aggregate across ALL filtered results using a single SQL
             // 1) Rebuild the filtered header query (no order/pagination)
-            $h = HeaderFormOvertime::query();
+            $h = OvertimeForm::query();
             $this->scopeByRole($h);
             $this->scopeFilters($h);
 
@@ -209,7 +209,7 @@ class Index extends Component
     public function mount(): void
     {
         // ⚠️ Move heavy cleanup out of request cycle:
-        // HeaderFormOvertime::doesntHave('details')->delete();
+        // OvertimeForm::doesntHave('details')->delete();
         // Put it in a nightly job/queue instead.
 
         $this->departments = Department::select('id', 'name')->orderBy('name')->get()->toArray();
@@ -366,7 +366,7 @@ class Index extends Component
     private function baseQuery()
     {
         // Minimal columns from header to render table
-        $q = HeaderFormOvertime::query()
+        $q = OvertimeForm::query()
             ->select([
                 'id',
                 'user_id',
@@ -564,3 +564,4 @@ class Index extends Component
         ]);
     }
 }
+

@@ -4,12 +4,13 @@ namespace App\Livewire\Overtime;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\DetailFormOvertime;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Services\OvertimeFormService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Throwable;
@@ -20,12 +21,13 @@ use Throwable;
  * Create Mode (when $formId is null)
  * Edit Mode (when $formId is present)
  */
+#[Layout('new.layouts.app')]
 class Form extends Component
 {
     use WithFileUploads;
 
     public ?int $formId = null;
-    public ?HeaderFormOvertime $form = null;
+    public ?OvertimeForm $form = null;
 
     // Header fields
     public ?int $dept_id = null;
@@ -53,7 +55,7 @@ class Form extends Component
 
         if ($this->formId) {
             // -- Edit Mode Setup --
-            $this->form = HeaderFormOvertime::with(['details', 'department'])->findOrFail($id);
+            $this->form = OvertimeForm::with(['details', 'department'])->findOrFail($id);
             $this->authorize('update', $this->form);
 
             if (! in_array($this->form->status, ['waiting-creator', 'waiting-dept-head'], true)) {
@@ -82,7 +84,7 @@ class Form extends Component
             ])->toArray();
         } else {
             // -- Create Mode Setup --
-            $this->authorize('create', HeaderFormOvertime::class);
+            $this->authorize('create', OvertimeForm::class);
             
             $user = auth()->user();
             $this->dept_id = $user->department_id;
@@ -91,7 +93,7 @@ class Form extends Component
         }
 
         $this->employees = $this->fetchEmployees();
-        $this->recentJobs = DetailFormOvertime::select('job_desc')
+        $this->recentJobs = OvertimeFormDetail::select('job_desc')
             ->whereNotNull('job_desc')
             ->distinct()
             ->limit(15)
@@ -277,7 +279,7 @@ class Form extends Component
 
                     // Delete removed rows
                     if ($this->removedDetailIds) {
-                        DetailFormOvertime::whereIn('id', $this->removedDetailIds)
+                        OvertimeFormDetail::whereIn('id', $this->removedDetailIds)
                             ->where('header_id', $this->form->id)
                             ->delete();
                     }
@@ -299,11 +301,11 @@ class Form extends Component
                         ];
 
                         if (! empty($item['id'])) {
-                            DetailFormOvertime::where('id', $item['id'])
+                            OvertimeFormDetail::where('id', $item['id'])
                                 ->where('header_id', $this->form->id)
                                 ->update($detailData);
                         } else {
-                            DetailFormOvertime::create($detailData);
+                            OvertimeFormDetail::create($detailData);
                         }
                     }
                 });
@@ -377,6 +379,7 @@ class Form extends Component
             'departments'    => Department::orderBy('name')->get(),
             'isMoulding'     => $this->isMouldingDept(),
             'canOverrideDept' => $this->canOverrideDept(),
-        ])->layout('new.layouts.app');
+        ]);
     }
 }
+

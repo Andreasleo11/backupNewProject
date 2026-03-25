@@ -24,7 +24,7 @@ class OvertimeFormApproval extends Model
 
     public function form()
     {
-        return $this->belongsTo(HeaderFormOvertime::class, 'overtime_form_id', 'id');
+        return $this->belongsTo(OvertimeForm::class, 'overtime_form_id', 'id');
     }
 
     public function step()
@@ -37,3 +37,4 @@ class OvertimeFormApproval extends Model
         return $this->hasOne(User::class, 'id', 'approver_id');
     }
 }
+

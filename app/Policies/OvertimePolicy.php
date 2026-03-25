@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\ApprovalFlowStep;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 /**
@@ -37,7 +37,7 @@ class OvertimePolicy
     /**
      * Only the form creator or super-admin can delete a form.
      */
-    public function delete(User $user, HeaderFormOvertime $form): bool
+    public function delete(User $user, OvertimeForm $form): bool
     {
         return $user->id === $form->user_id || $user->hasRole('super-admin');
     }
@@ -46,7 +46,7 @@ class OvertimePolicy
      * A form can be edited by its creator (or super-admin) while it is
      * still in a waiting-creator or waiting-dept-head status.
      */
-    public function update(User $user, HeaderFormOvertime $form): bool
+    public function update(User $user, OvertimeForm $form): bool
     {
         $editableStatuses = ['waiting-creator', 'waiting-dept-head'];
 
@@ -58,23 +58,29 @@ class OvertimePolicy
      * A user can sign (approve) a step if they hold the role_slug
      * defined on that step, or they are super-admin.
      */
-    public function sign(User $user, HeaderFormOvertime $form, ApprovalFlowStep $step): bool
+    public function sign(User $user, OvertimeForm $form, $step = null): bool
     {
-        return $user->hasRole($step->role_slug) || $user->hasRole('super-admin');
+        if (! $step) {
+            $req = $form->approvalRequest;
+            if ($req && $req->status === 'IN_REVIEW') {
+                $step = $req->steps->where('sequence', $req->current_step)->first();
+            }
+        }
+
+        if (! $step) {
+            return false;
+        }
+
+        $roleSlug = $step->approver_snapshot_role_slug ?? $step->role_slug ?? '';
+        return $user->hasRole($roleSlug) || $user->hasRole('super-admin');
     }
 
     /**
      * A user can reject the form if they can sign the current pending step.
      */
-    public function reject(User $user, HeaderFormOvertime $form): bool
+    public function reject(User $user, OvertimeForm $form): bool
     {
-        $step = $form->currentStep();
-
-        if (! $step) {
-            return false; // Nothing to reject (already terminal).
-        }
-
-        return $this->sign($user, $form, $step);
+        return $this->sign($user, $form);
     }
 
     /**
@@ -93,3 +99,4 @@ class OvertimePolicy
         return $user->hasAnyRole(['VERIFICATOR', 'super-admin']);
     }
 }
+

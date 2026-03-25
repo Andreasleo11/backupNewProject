@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Models\User;
 use App\Notifications\DailyOvertimeSummaryNotification;
 use Illuminate\Console\Command;
@@ -37,7 +37,7 @@ class NotifyOvertimeApprovers extends Command
         ];
 
         foreach ($statuses as $status) {
-            $reports = HeaderFormOvertime::with(['department', 'user'])
+            $reports = OvertimeForm::with(['department', 'user'])
                 ->where('status', $status)
                 ->get();
 
@@ -100,3 +100,4 @@ class NotifyOvertimeApprovers extends Command
         }
     }
 }
+

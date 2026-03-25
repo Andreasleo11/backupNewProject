@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Domain\Overtime\Models;
 
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\ActualOvertimeDetail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DetailFormOvertime extends Model
+class OvertimeFormDetail extends Model
 {
     use SoftDeletes;
 
@@ -29,7 +31,7 @@ class DetailFormOvertime extends Model
 
     public function header()
     {
-        return $this->belongsTo(HeaderFormOvertime::class, 'header_id', 'id');
+        return $this->belongsTo(OvertimeForm::class, 'header_id', 'id');
     }
 
     public function employee()
@@ -42,3 +44,4 @@ class DetailFormOvertime extends Model
         return $this->hasOne(ActualOvertimeDetail::class, 'key', 'id');
     }
 }
+

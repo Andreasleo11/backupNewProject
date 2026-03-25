@@ -8,9 +8,9 @@ use App\Domain\Overtime\Services\OvertimeImportService;
 use App\Domain\Overtime\Services\OvertimeJPayrollService;
 use App\Domain\Overtime\Services\OvertimeSummaryService;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Http\Request;
 
 class FormOvertimeController extends Controller
@@ -40,8 +40,8 @@ class FormOvertimeController extends Controller
 
     public function detail($id)
     {
-        $header = HeaderFormOvertime::with('user', 'department', 'approvals', 'approvals.step')->find($id);
-        $datas = DetailFormOvertime::with('actualOvertimeDetail')->where('header_id', $id)->get();
+        $header = OvertimeForm::with('user', 'department', 'approvals', 'approvals.step')->find($id);
+        $datas = OvertimeFormDetail::with('actualOvertimeDetail')->where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
 
@@ -77,8 +77,8 @@ class FormOvertimeController extends Controller
 
     public function edit($id)
     {
-        $header = HeaderFormOvertime::with('user', 'department')->find($id);
-        $datas = DetailFormOvertime::where('header_id', $id)->get();
+        $header = OvertimeForm::with('user', 'department')->find($id);
+        $datas = OvertimeFormDetail::where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
 
@@ -87,11 +87,11 @@ class FormOvertimeController extends Controller
 
     public function update(Request $request, $id)
     {
-        DetailFormOvertime::where('header_id', $id)->delete();
+        OvertimeFormDetail::where('header_id', $id)->delete();
 
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $employeedata) {
-                DetailFormOvertime::create([
+                OvertimeFormDetail::create([
                     'header_id' => $id,
                     'NIK' => $employeedata['nik'],
                     'nama' => $employeedata['nama'],
@@ -113,22 +113,22 @@ class FormOvertimeController extends Controller
 
     public function destroy($id)
     {
-        HeaderFormOvertime::find($id)->delete();
-        DetailFormOvertime::where('header_id', $id)->delete();
+        OvertimeForm::find($id)->delete();
+        OvertimeFormDetail::where('header_id', $id)->delete();
 
         return redirect()->back()->with('success', 'Form Overtime deleted successfully!');
     }
 
     public function destroyDetail($id)
     {
-        DetailFormOvertime::find($id)->delete();
+        OvertimeFormDetail::find($id)->delete();
 
         return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
     }
 
     public function pushSingleDetailToJPayroll($detailId, Request $request)
     {
-        $detail = DetailFormOvertime::with('employee', 'header')->find($detailId);
+        $detail = OvertimeFormDetail::with('employee', 'header')->find($detailId);
 
         if (! $detail) {
             return response()->json(['error' => 'Detail tidak ditemukan'], 404);
@@ -198,7 +198,7 @@ class FormOvertimeController extends Controller
 
     public function reapprove($id)
     {
-        $header = HeaderFormOvertime::findOrFail($id);
+        $header = OvertimeForm::findOrFail($id);
         $header->is_push = 0;
         $header->save();
 
@@ -212,3 +212,4 @@ class FormOvertimeController extends Controller
         return redirect()->back()->with('success', 'Reapproved successfully !');
     }
 }
+

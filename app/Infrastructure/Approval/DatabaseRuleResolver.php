@@ -117,7 +117,27 @@ class DatabaseRuleResolver implements RuleResolver
             }
         }
 
-        // TODO (optional): tambahkan branch_in, etc kalau diperlukan
+        // ---------------------------------------------------
+        // 7) department_id_in (Overtime routing)
+        // ---------------------------------------------------
+        if (isset($expr['department_id_in']) && isset($context['department_id'])) {
+            $allowed = (array) $expr['department_id_in'];
+            if (! in_array($context['department_id'], $allowed)) {
+                return false;
+            }
+        }
+
+        // ---------------------------------------------------
+        // 8) branch_in (Overtime routing)
+        // ---------------------------------------------------
+        if (isset($expr['branch_in']) && isset($context['branch'])) {
+            $allowed = (array) $expr['branch_in'];
+            // Normalize case for branch comparison
+            $normalizedAllowed = array_map('strtoupper', $allowed);
+            if (! in_array(strtoupper($context['branch']), $normalizedAllowed, true)) {
+                return false;
+            }
+        }
 
         // Kalau semua check lulus => match
         return true;

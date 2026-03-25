@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -49,7 +49,7 @@ class OvertimeImport implements ToCollection
             }
 
             // ✅ Skip jika kombinasi NIK + overtime_date sudah ada
-            $exists = DetailFormOvertime::where('NIK', $employee->nik)
+            $exists = OvertimeFormDetail::where('NIK', $employee->nik)
                 ->where('overtime_date', $overtimeDate)
                 ->whereHas('header', function ($query) {
                     $query->where('is_after_hour', $this->isAfterHour);
@@ -60,7 +60,7 @@ class OvertimeImport implements ToCollection
                 continue;
             }
 
-            DetailFormOvertime::create([
+            OvertimeFormDetail::create([
                 'header_id' => $this->headerOvertimeId,
                 'NIK' => $employee->nik,
                 'name' => $employee->name,
@@ -117,3 +117,4 @@ class OvertimeImport implements ToCollection
         }
     }
 }
+

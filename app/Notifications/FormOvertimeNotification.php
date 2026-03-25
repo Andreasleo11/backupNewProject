@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -19,7 +19,7 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(HeaderFormOvertime $report, $details)
+    public function __construct(OvertimeForm $report, $details)
     {
         $this->report = $report;
         $this->details = $details;
@@ -60,3 +60,4 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
         ];
     }
 }
+

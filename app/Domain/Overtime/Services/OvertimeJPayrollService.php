@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Overtime\Services;
 
-use App\Models\DetailFormOvertime;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +20,7 @@ final class OvertimeJPayrollService
     /**
      * Push single overtime detail to J-Payroll system.
      */
-    public function pushSingleDetail(DetailFormOvertime $detail, string $action): array
+    public function pushSingleDetail(OvertimeFormDetail $detail, string $action): array
     {
         // Validate header not already pushed
         if ($detail->header->is_push == 1) {
@@ -53,7 +53,7 @@ final class OvertimeJPayrollService
      */
     public function pushAllDetails(int $headerId): array
     {
-        $header = HeaderFormOvertime::with('details.employee')->find($headerId);
+        $header = OvertimeForm::with('details.employee')->find($headerId);
 
         if (! $header) {
             return [
@@ -114,7 +114,7 @@ final class OvertimeJPayrollService
      */
     public function checkAndUpdateHeaderPushStatus(int $headerId): bool
     {
-        $header = HeaderFormOvertime::with('details')->find($headerId);
+        $header = OvertimeForm::with('details')->find($headerId);
 
         if (! $header) {
             return false;
@@ -136,7 +136,7 @@ final class OvertimeJPayrollService
     /**
      * Reject a detail without pushing to J-Payroll.
      */
-    private function rejectDetail(DetailFormOvertime $detail): array
+    private function rejectDetail(OvertimeFormDetail $detail): array
     {
         $detail->status = 'Rejected';
         $detail->save();
@@ -153,7 +153,7 @@ final class OvertimeJPayrollService
     /**
      * Approve detail and push to J-Payroll.
      */
-    private function approveAndPushDetail(DetailFormOvertime $detail): array
+    private function approveAndPushDetail(OvertimeFormDetail $detail): array
     {
         $payload = $this->buildJPayrollPayload($detail);
 
@@ -221,7 +221,7 @@ final class OvertimeJPayrollService
     /**
      * Push detail to J-Payroll (used in batch processing).
      */
-    private function pushDetailToJPayroll(DetailFormOvertime $detail, HeaderFormOvertime $header): array
+    private function pushDetailToJPayroll(OvertimeFormDetail $detail, OvertimeForm $header): array
     {
         $payload = $this->buildJPayrollPayload($detail);
 
@@ -282,7 +282,7 @@ final class OvertimeJPayrollService
     /**
      * Build J-Payroll API payload from overtime detail.
      */
-    private function buildJPayrollPayload(DetailFormOvertime $detail): array
+    private function buildJPayrollPayload(OvertimeFormDetail $detail): array
     {
         $employee = $detail->employee;
         $header = $detail->header;
@@ -309,3 +309,4 @@ final class OvertimeJPayrollService
         ];
     }
 }
+

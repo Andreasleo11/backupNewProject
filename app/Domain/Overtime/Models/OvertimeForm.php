@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Models;
+namespace App\Domain\Overtime\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
+use App\Models\User;
+use App\Models\ApprovalFlow;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class HeaderFormOvertime extends Model implements Approvable
+class OvertimeForm extends Model implements Approvable
 {
     use SoftDeletes;
 
@@ -37,12 +39,12 @@ class HeaderFormOvertime extends Model implements Approvable
 
     public function details()
     {
-        return $this->hasMany(DetailFormOvertime::class, 'header_id', 'id');
+        return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id');
     }
 
     public function rejectedDetails()
     {
-        return $this->hasMany(DetailFormOvertime::class, 'header_id', 'id')->where('status', 'Rejected');
+        return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')->where('status', 'Rejected');
     }
 
     public function flow()
@@ -50,47 +52,7 @@ class HeaderFormOvertime extends Model implements Approvable
         return $this->belongsTo(ApprovalFlow::class, 'approval_flow_id', 'id');
     }
 
-    public function approvals()
-    {
-        return $this->hasMany(OvertimeFormApproval::class, 'overtime_form_id', 'id');
-    }
 
-    public function currentStep()
-    {
-        return $this->flow
-            ? $this->flow
-                ->steps()
-                ->whereNotIn(
-                    'id',
-                    $this->approvals()->where('status', 'approved')->pluck('flow_step_id'),
-                )
-                ->orderBy('step_order')
-                ->first()
-            : null;
-    }
-
-    public function nextStep(): ?ApprovalFlowStep
-    {
-        if (! $this->flow) {
-            return null;
-        }
-
-        $lastApprovedOrder = $this->approvals()
-            ->where('status', 'approved')
-            ->with('step')
-            ->get()
-            ->pluck('step.step_order')
-            ->max();
-
-        return $this->flow
-            ->steps()
-            ->when(
-                $lastApprovedOrder !== null,
-                fn ($q) => $q->where('step_order', '>', $lastApprovedOrder),
-            )
-            ->orderBy('step_order')
-            ->first();
-    }
 
     // -------------------------------------------------------------------------
     // Approvable contract — makes Overtime polymorphically compatible with the
@@ -98,13 +60,11 @@ class HeaderFormOvertime extends Model implements Approvable
     // -------------------------------------------------------------------------
 
     /**
-     * Overtime uses OvertimeFormApproval pivot, not the PR-style ApprovalRequest morphOne.
-     * Returns null so generic approval UI falls back gracefully; all overtime approval
-     * logic flows through currentStep() / approvals().
+     * MorphOne relation to the unified Approval Engine.
      */
     public function approvalRequest()
     {
-        return null;
+        return $this->morphOne(\App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::class, 'approvable');
     }
 
     public function getApprovableTypeLabel(): string
@@ -122,3 +82,4 @@ class HeaderFormOvertime extends Model implements Approvable
         return route('overtime.detail', $this->id);
     }
 }
+
