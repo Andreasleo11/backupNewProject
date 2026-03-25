@@ -163,7 +163,7 @@
                             @endif
                             @if ($step['signature_path'])
                                 <div class="mt-2 rounded-lg bg-slate-50 p-1 border border-slate-100/50 inline-block">
-                                    <img src="{{ asset('storage/signatures/' . $step['signature_path']) }}" alt="signature" class="h-8 w-auto mix-blend-multiply opacity-80">
+                                    <img src="{{ $step['signature_path'] }}" alt="signature" class="h-8 w-auto mix-blend-multiply opacity-80">
                                 </div>
                             @endif
 

@@ -154,7 +154,7 @@ class Detail extends Component
                 'is_current'     => $isCurrent,
                 'approver_name'  => $step->approver_name, // fallback or resolved name
                 'signed_at'      => $signedAt,
-                'signature_path' => null, // Unified engine doesn't explicitly track image paths yet
+                'signature_path' => $step->signature_url, // Maps to getSignatureUrlAttribute()
                 'approval_id'    => $step->id, // Use step ID for references
                 'step_id'        => $step->id,
                 'can_sign'       => $isCurrent && Auth::user()->hasRole($roleSlug),
