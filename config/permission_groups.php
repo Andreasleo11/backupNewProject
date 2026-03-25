@@ -20,6 +20,7 @@ return [
     'groups' => [
         'Evaluation & Discipline' => ['evaluation.'],
         'Purchase Request'        => ['pr.'],
+        'Overtime'                => ['overtime.'],
         'Approval Engine'         => ['approval.'],
         'User Management'         => ['user.'],
         'Roles & Permissions'     => ['role.', 'permission.'],
@@ -38,9 +39,11 @@ return [
     */
     'role_descriptions' => [
         'super-admin'     => 'Full system access — all permissions',
-        'department-head' => 'Grade evaluations, dept-approve, view all 3 eval tabs for their dept',
+        'department-head' => 'Grade evaluations, dept-approve, view all 3 eval tabs for their dept, and view all Overtime forms.',
         'hrd-manager'     => 'Final-approve evaluations, view all eval tabs company-wide',
-        'general-manager' => 'Final-approve evaluations, view all eval tabs company-wide',
+        'general-manager' => 'Final-approve evaluations, view all Overtime forms company-wide',
+        'verificator'     => 'Final review and payroll push for approved Overtime forms',
+        'director'        => 'Company-wide PR and Overtime approval authority',
         'requester'       => 'Submit, edit, and cancel Purchase Requests',
         'pr-dept-head'    => 'Approve/reject PRs at department level',
         'pr-verificator'  => 'Verify PRs before GM approval',
@@ -48,7 +51,6 @@ return [
         'pr-director'     => 'Final PR approval + batch approve',
         'pr-purchaser'    => 'Process approved PRs for purchasing',
         'pr-admin'        => 'Manage PR approval rules and view all logs',
-        'director'        => 'Company-wide PR approval authority',
     ],
 
 ];
