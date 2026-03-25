@@ -130,15 +130,18 @@
                                         @php
                                             $pretty = $actorLabel;
                                             $map = [
-                                                'pr-dept-head' => 'Dept Head',
-                                                'pr-head-design' => 'Head Design',
-                                                'pr-gm' => 'General Manager',
-                                                'pr-verificator' => 'Verificator',
-                                                'pr-purchaser' => 'Purchaser',
-                                                'pr-director' => 'Director',
+                                                'department-head' => 'Dept Head',
+                                                'general-manager' => 'General Manager',
+                                                'verificator' => 'Verificator',
+                                                'purchaser' => 'Purchaser',
+                                                'director' => 'Director',
+                                                'purchasing-manager' => 'Purchasing Manager',
+                                                'accounting-officer' => 'Accounting',
                                             ];
                                             if (isset($map[$actorLabel])) {
                                                 $pretty = $map[$actorLabel];
+                                            } elseif (str_starts_with($actorLabel, 'purchaser-')) {
+                                                $pretty = 'Purchaser (' . ucfirst(str_replace('purchaser-', '', $actorLabel)) . ')';
                                             }
                                         @endphp
                                         {{ $pretty }}

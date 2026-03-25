@@ -21,7 +21,7 @@ final class PurchaseRequestPermissions
         if ($pr->approvalRequest) {
             // Must support workflow logic AND have permission
             $canApprove = $this->approvals->canAct($pr, (int) $user->id)
-                          && $user->can('approval.approve');
+                          && $user->can('pr.approve');
         }
 
         // 2. Upload: Permission Check
@@ -36,7 +36,7 @@ final class PurchaseRequestPermissions
         // For now, keeping legacy logic slightly adapted or mapped to sensitive roles
         $canAutoApprove =
             $user->is_gm
-            || $user->hasRole('pr-purchaser') // mapped from PURCHASER
+            || $user->hasRole('purchaser') // mapped from PURCHASER
             || $pr->from_department === 'MOULDING';
 
         // 5. Sign & Submit: only the creator can sign & submit their own DRAFT, RETURNED, or REJECTED PR

@@ -39,18 +39,15 @@ return [
     */
     'role_descriptions' => [
         'super-admin'     => 'Full system access — all permissions',
-        'department-head' => 'Grade evaluations, dept-approve, view all 3 eval tabs for their dept, and view all Overtime forms.',
+        'department-head' => 'Grade evaluations, view Overtime forms, and approve PRs at department level.',
         'hrd-manager'     => 'Final-approve evaluations, view all eval tabs company-wide',
-        'general-manager' => 'Final-approve evaluations, view all Overtime forms company-wide',
-        'verificator'     => 'Final review and payroll push for approved Overtime forms',
-        'director'        => 'Company-wide PR and Overtime approval authority',
-        'requester'       => 'Submit, edit, and cancel Purchase Requests',
-        'pr-dept-head'    => 'Approve/reject PRs at department level',
-        'pr-verificator'  => 'Verify PRs before GM approval',
-        'pr-gm'           => 'Approve PRs at GM level',
-        'pr-director'     => 'Final PR approval + batch approve',
-        'pr-purchaser'    => 'Process approved PRs for purchasing',
-        'pr-admin'        => 'Manage PR approval rules and view all logs',
+        'general-manager' => 'Final-approve evaluations, view all Overtime forms, and approve PRs at GM level.',
+        'verificator'     => 'Final review for Overtime forms and PR verification.',
+        'director'        => 'Company-wide PR and Overtime approval authority (Final step).',
+        'staff'           => 'Submit, edit, and cancel Purchase Requests and Overtime forms.',
+        'purchaser'       => 'Process approved PRs for purchasing and manage POs.',
+        'purchasing-manager' => 'Manage PR approval rules and view all logs',
+        'accounting-officer' => 'Review and process accounting aspects of PRs and Overtime.',
     ],
 
 ];

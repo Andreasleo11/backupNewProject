@@ -119,7 +119,7 @@ class PurchaseRequestPolicy
     {
         // This is usually handled by the workflow engine service,
         // but we can wrap the permission check here.
-        return $user->can('approval.approve');
+        return $user->can('pr.approve');
     }
 
     // Add other actions as needed

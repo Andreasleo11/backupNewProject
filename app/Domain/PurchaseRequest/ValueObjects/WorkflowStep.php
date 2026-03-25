@@ -147,7 +147,7 @@ final class WorkflowStep
     public function requiresItemApproval(): bool
     {
         // Roles that can skip item approval
-        $skipItemApproval = ['pr-purchaser'];
+        $skipItemApproval = ['purchaser'];
 
         if (in_array($this->roleSlug, $skipItemApproval)) {
             return false;

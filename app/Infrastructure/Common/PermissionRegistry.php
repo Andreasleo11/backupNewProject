@@ -31,15 +31,15 @@ class PermissionRegistry
             ],
             'Purchase Request' => [
                 'permissions' => [
-                    'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve',
+                    'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject', 'pr.approve-items',
                 ],
                 'roles' => [
                     'staff'              => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'],
-                    'department-head'    => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'approval.approve', 'approval.reject', 'approval.approve-items'],
-                    'verificator'        => ['pr.view', 'pr.view-all', 'pr.print', 'approval.approve', 'approval.reject', 'approval.approve-items'],
-                    'general-manager'    => ['pr.view', 'pr.view-all', 'pr.print', 'approval.approve', 'approval.reject', 'approval.approve-items'],
-                    'director'           => ['pr.view', 'pr.view-all', 'pr.print', 'approval.approve', 'approval.reject', 'approval.approve-items', 'pr.batch-approve'],
-                    'purchaser'          => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'approval.approve'],
+                    'department-head'    => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'verificator'        => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'general-manager'    => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'director'           => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.batch-approve'],
+                    'purchaser'          => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve'],
                     'purchasing-manager' => ['pr.view-all', 'pr.batch-approve', 'approval.view-log'],
                     'accounting-officer' => ['pr.view', 'pr.view-all', 'pr.print'],
                 ],

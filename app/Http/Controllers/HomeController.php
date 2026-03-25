@@ -19,7 +19,7 @@ class HomeController extends Controller
         $user = auth()->user();
 
         // If the user is a director or top-level management, show the advanced dashboard
-        if ($user->hasRole(['director', 'pr-director', 'general-manager-jakarta', 'general-manager-karawang', 'head-management'])) {
+        if ($user->hasRole(['director', 'general-manager', 'purchasing-manager', 'super-admin'])) {
             $prStats = $statsQuery->execute();
 
             return view('director.dashboard', compact('prStats'));

@@ -296,19 +296,19 @@ final class ApprovalEngine implements Approvals
                 $roleSlug = $step->approver_snapshot_role_slug;
 
                 // Scoping Logic
-                if (in_array($roleSlug, ['department-head', 'supervisor', 'pr-dept-head']) && $deptName) {
+                if (in_array($roleSlug, ['department-head', 'supervisor']) && $deptName) {
                     $roleUsers->load('department');
                     $usersToNotify = $roleUsers->filter(function ($u) use ($deptName) {
                         return $u->department && ($u->department->name === $deptName || $this->isLinkedDepartment($u->department->name, $deptName));
                     });
-                } elseif (in_array($roleSlug, ['general-manager', 'pr-gm']) && $branchValue) {
+                } elseif (in_array($roleSlug, ['general-manager']) && $branchValue) {
                     $roleUsers->load('employee');
                     $usersToNotify = $roleUsers->filter(function ($u) use ($branchValue) {
                         return $u->employee && (string)$u->employee->branch === (string)$branchValue;
                     });
                 } elseif (in_array($roleSlug, ['purchaser']) && $approvable instanceof \App\Models\PurchaseRequest && $approvable->to_department) {
                     $roleUsers->load('roles');
-                    // Check for specific sub-role capability: purchasing-officer-{dept_slug}
+                    // Check for specific sub-role capability: purchaser-{dept_slug}
                     $targetRole = 'purchaser-' . \Illuminate\Support\Str::slug($approvable->to_department->label());
 
                     $usersToNotify = $roleUsers->filter(function ($u) use ($targetRole, $roleSlug) {

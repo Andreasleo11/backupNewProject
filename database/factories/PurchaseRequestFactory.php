@@ -51,14 +51,13 @@ class PurchaseRequestFactory extends Factory
      * @param int $currentStep The current approval step (1-4)
      * @param string $type 'office' or 'factory'
      */
-    public function withApprovalWorkflow(int $currentStep = 1, string $type = 'office'): static
+    public function withApprovalWorkflow(int $currentStep = 1, string $type = 'office', ?int $approverId = null): static
     {
         return $this->state(fn (array $attributes) => [
             'workflow_status' => 'IN_REVIEW',
             'status' => 1,
             'type' => $type,
-        ])->afterCreating(function (PurchaseRequest $pr) use ($currentStep) {
-            $type = $pr->type;
+        ])->afterCreating(function (PurchaseRequest $pr) use ($currentStep, $type, $approverId) {
             $totalSteps = $this->getTotalSteps($type);
 
             $approval = ApprovalRequest::factory()->create([
@@ -201,20 +200,20 @@ class PurchaseRequestFactory extends Factory
     private function getStepsConfiguration(string $type): array
     {
         // Use actual test role IDs from TestRoleSeeder
-        // Role ID 100 = pr-dept-head
-        // Role ID 102 = pr-verificator
-        // Role ID 104 = pr-gm
-        // Role ID 105 = pr-director
+        // Role ID 100 = department-head
+        // Role ID 102 = verificator
+        // Role ID 104 = general-manager
+        // Role ID 105 = director
         $baseSteps = [
-            1 => 100,  // pr-dept-head
-            2 => 102,  // pr-verificator
+            1 => 100,  // department-head
+            2 => 102,  // verificator
         ];
 
         if ($type === 'factory') {
-            $baseSteps[3] = 104;  // pr-gm
-            $baseSteps[4] = 105;  // pr-director
+            $baseSteps[3] = 104;  // general-manager
+            $baseSteps[4] = 105;  // director
         } else {
-            $baseSteps[3] = 105;  // pr-director
+            $baseSteps[3] = 105;  // director
         }
 
         return $baseSteps;
@@ -226,10 +225,10 @@ class PurchaseRequestFactory extends Factory
     private function getRoleName(string $roleSlug): string
     {
         $roleNames = [
-            'pr-dept-head' => 'Dept Head',
-            'pr-verificator' => 'Verificator',
-            'pr-gm' => 'General Manager',
-            'pr-director' => 'Director',
+            'department-head' => 'Dept Head',
+            'verificator' => 'Verificator',
+            'general-manager' => 'General Manager',
+            'director' => 'Director',
         ];
 
         return $roleNames[$roleSlug] ?? $roleSlug;
