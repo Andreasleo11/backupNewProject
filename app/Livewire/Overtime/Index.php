@@ -443,60 +443,7 @@ class Index extends Component
 
     private function scopeByRole($query)
     {
-        $user = Auth::user();
-
-        $query->where(function ($query) use ($user) {
-            if ($user->hasRole('super-admin')) {
-                // Super-admin sees everything; no filtering needed.
-                $query->whereNotNull('status');
-            } elseif ($user->can('overtime.review')) {
-                $query->where(function ($subQuery) {
-                    $subQuery->where('status', 'approved')->orWhere(function ($q) {
-                        $q->where('status', 'waiting-dept-head')->whereHas(
-                            'department',
-                            fn ($qq) => $qq->where('name', 'PERSONALIA'),
-                        );
-                    });
-                });
-            } elseif ($user->hasRole('director') || $user->hasPermissionTo('overtime.view-all')) { // Fallback to permission if needed
-                // Director/Global view
-                if ($user->hasRole('director')) {
-                     $query->where('status', 'waiting-director');
-                }
-            } elseif ($user->hasRole('general-manager')) {
-                // GM sees forms that await their approval, scoped to their branch.
-                $query
-                    ->where('status', 'waiting-gm')
-                    ->where('branch', $user->branch ?? 'Jakarta');
-            } elseif ($user->hasRole('department-head')) {
-                $deptName = $user->department?->name;
-                $query
-                    ->whereHas('department', function ($q) use ($deptName) {
-                        $q->where('name', $deptName);
-                        // LOGISTIC head also covers STORE; QC head also covers QA.
-                        if ($deptName === 'LOGISTIC') {
-                            $q->orWhere('name', 'STORE');
-                        } elseif ($deptName === 'QC') {
-                            $q->orWhere('name', 'QA');
-                        }
-                    })
-                    ->where('status', 'waiting-dept-head');
-            } else {
-                // Regular staff: see forms for their own department.
-                $deptName = $user->department?->name;
-                if ($deptName) {
-                    $query->whereHas(
-                        'department',
-                        fn ($q) => $q->where('name', $deptName),
-                    );
-                }
-            }
-
-            // Always include the creator's own submissions.
-            $query->orWhere('user_id', $user->id);
-        });
-
-        return $query;
+        return $query->byRole(Auth::user());
     }
 
     public function clearFilter(string $key): void
