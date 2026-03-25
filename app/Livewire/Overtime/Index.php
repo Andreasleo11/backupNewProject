@@ -453,17 +453,17 @@ class Index extends Component
                         );
                     });
                 });
-            } elseif ($user->hasRole('DIRECTOR') || $user->hasPermissionTo('overtime.view-all')) { // Fallback to permission if needed
+            } elseif ($user->hasRole('director') || $user->hasPermissionTo('overtime.view-all')) { // Fallback to permission if needed
                 // Director/Global view
-                if ($user->hasRole('DIRECTOR')) {
+                if ($user->hasRole('director')) {
                      $query->where('status', 'waiting-director');
                 }
-            } elseif ($user->hasRole('GM')) {
+            } elseif ($user->hasRole('general-manager')) {
                 // GM sees forms that await their approval, scoped to their branch.
                 $query
                     ->where('status', 'waiting-gm')
                     ->where('branch', $user->branch ?? 'Jakarta');
-            } elseif ($user->hasRole('dept-head')) {
+            } elseif ($user->hasRole('department-head')) {
                 $deptName = $user->department?->name;
                 $query
                     ->whereHas('department', function ($q) use ($deptName) {
@@ -526,7 +526,7 @@ class Index extends Component
         }
 
         if (
-            Auth::user()->hasRole('VERIFICATOR') &&
+            Auth::user()->hasRole('verificator') &&
             ($this->isPush === '0' || $this->isPush === '1')
         ) {
             $query->where('is_push', (int) $this->isPush);
@@ -570,7 +570,7 @@ class Index extends Component
         if ($manual) {
             $query->orderBy($this->sortField, $this->sortDirection);
         } else {
-            if ($user->hasRole('VERIFICATOR')) {
+            if ($user->hasRole('verificator')) {
                 $query->orderBy('first_overtime_date', 'asc');
             } else {
                 $query->orderBy('id', 'desc');

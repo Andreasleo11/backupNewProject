@@ -419,6 +419,11 @@ final class ApprovalEngine implements Approvals
             'pr-director' => 'Director',
             'pr-gm' => 'General Manager',
             'pr-purchaser' => 'Purchasing',
+            'verificator' => 'Verificator',
+            'director' => 'Director',
+            'general-manager' => 'General Manager',
+            'department-head' => 'Dept Head',
+            'supervisor' => 'Supervisor',
             default => $slug,
         };
     }

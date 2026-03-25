@@ -15,7 +15,7 @@ class OvertimeFormStatusBadge extends Component
         'waiting-creator' => ['Waiting Creator', 'sky'],
         'waiting-dept-head' => ['Waiting Dept Head', 'amber'],
         'waiting-verificator' => ['Waiting Verificator', 'amber'],
-        'waiting-gm' => ['Waiting GM', 'amber'],
+        'waiting-gm' => ['Waiting General Manager', 'amber'],
         'waiting-director' => ['Waiting Director', 'amber'],
         'waiting-supervisor' => ['Waiting Supervisor', 'indigo'],
         'approved' => ['Approved', 'emerald'],

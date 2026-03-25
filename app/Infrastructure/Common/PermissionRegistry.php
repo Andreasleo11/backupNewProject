@@ -66,11 +66,11 @@ class PermissionRegistry
                     'overtime.view', 'overtime.view-all', 'overtime.create', 'overtime.delete', 'overtime.export', 'overtime.review', 'overtime.push-to-payroll',
                 ],
                 'roles' => [
-                    'VERIFICATOR' => ['overtime.view-all', 'overtime.review', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
-                    'DIRECTOR'    => ['overtime.view-all', 'overtime.export'],
-                    'GM'          => ['overtime.view-all', 'overtime.export'],
-                    'dept-head'   => ['overtime.view-all'],
-                    'staff'       => ['overtime.view', 'overtime.create'],
+                    'verificator'     => ['overtime.view-all', 'overtime.review', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
+                    'director'        => ['overtime.view-all', 'overtime.export'],
+                    'general-manager' => ['overtime.view-all', 'overtime.export'],
+                    'department-head' => ['overtime.view-all'],
+                    'staff'           => ['overtime.view', 'overtime.create'],
                 ],
             ],
         ];
