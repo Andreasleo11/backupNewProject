@@ -39,20 +39,24 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         @forelse ($roles as $role)
             @php
-                // Build module summary: count permissions per module prefix
-                $modulePrefixes = [
-                    'Evaluation'  => 'evaluation.',
-                    'PR'          => 'pr.',
-                    'Approval'    => 'approval.',
-                    'Users'       => 'user.',
-                    'Roles'       => 'role.',
-                    'Departments' => 'department.',
-                    'Employees'   => 'employee.',
-                ];
+                // Build module summary dynamically from config
                 $moduleCounts = [];
-                foreach ($modulePrefixes as $label => $px) {
-                    $count = $role->permissions->filter(fn($p) => str_starts_with($p->name, $px))->count();
-                    if ($count > 0) $moduleCounts[$label] = $count;
+                foreach (config('permission_groups.groups', []) as $label => $prefixes) {
+                    $prefixes = (array) $prefixes;
+                    $count = $role->permissions->filter(fn($p) => 
+                        collect($prefixes)->contains(fn($px) => str_starts_with($p->name, (string)$px))
+                    )->count();
+                    
+                    if ($count > 0) {
+                        // Use a shorter label for the summary chip if possible
+                        $shortLabel = match($label) {
+                            'Evaluation & Discipline' => 'Evaluation',
+                            'Purchase Request'        => 'PR',
+                            'Roles & Permissions'     => 'Roles',
+                            default => $label
+                        };
+                        $moduleCounts[$shortLabel] = $count;
+                    }
                 }
             @endphp
             <div class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
