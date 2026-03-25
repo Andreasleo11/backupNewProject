@@ -46,11 +46,8 @@ class PermissionRegistry
             ],
             'Approval Engine' => [
                 'permissions' => [
-                    'approval.view-log', 'approval.manage-rules', 'approval.approve', 'approval.reject', 'approval.approve-items',
-                ],
-                'roles' => [
-                    'director' => ['pr.view-all', 'approval.approve', 'approval.reject', 'approval.approve-items', 'pr.batch-approve', 'approval.view-log'],
-                ],
+                    'approval.view-log', 'approval.manage-rules',
+                ]
             ],
             'Evaluation & Discipline' => [
                 'permissions' => [
