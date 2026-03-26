@@ -1,11 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" wire:ignore.self x-data="{ revokeOpen: false, revokeTarget: null, revokeLabel: '', revokeId: null }"
-    x-on:open-revoke.window="
-        revokeOpen = true;
-        revokeTarget = $event.detail?.id ?? null;
-        revokeLabel = $event.detail?.label ?? '—';
-        revokeId = $event.detail?.id ?? null;
-     "
-    x-on:keydown.escape.window="revokeOpen = false">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" wire:ignore.self x-data="{ }">
     {{-- Onboarding Banner --}}
     @if (session('onboarding_signature'))
         <div class="mb-8 overflow-hidden rounded-3xl bg-indigo-600 shadow-lg shadow-indigo-200" x-data="{ show: true }" x-show="show" x-transition>
@@ -157,65 +150,97 @@
         </div>
     @endif
 
-    {{-- Revoke Modal (single modal, reused for all items) --}}
-    <div x-show="revokeOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center"
-        aria-labelledby="revoke-title" role="dialog" aria-modal="true">
+    {{-- Revoke Modal (Pushed to layout stack and teleported to body) --}}
+    @push('modals')
+        <div x-data="{ 
+                revokeOpen: false, 
+                revokeTarget: null, 
+                revokeLabel: '', 
+                revokeId: null 
+            }"
+            x-on:open-revoke.window="
+                revokeOpen = true;
+                revokeTarget = $event.detail?.id ?? null;
+                revokeLabel = $event.detail?.label ?? '—';
+                revokeId = $event.detail?.id ?? null;
+            "
+            x-on:keydown.escape.window="revokeOpen = false"
+            x-cloak>
+            
+            <template x-teleport="body">
+                <div x-show="revokeOpen" class="fixed inset-0 z-[100] flex items-center justify-center"
+                    aria-labelledby="revoke-title" role="dialog" aria-modal="true">
 
-        {{-- Backdrop --}}
-        <div class="absolute inset-0 bg-slate-900/50" x-on:click="revokeOpen = false"></div>
+                    {{-- Backdrop --}}
+                    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" x-on:click="revokeOpen = false" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
 
-        {{-- Panel --}}
-        <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-xl ring-1 ring-black/5" x-transition>
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <h2 id="revoke-title" class="text-sm font-semibold text-slate-900">Revoke signature</h2>
-                <button type="button" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                    x-on:click="revokeOpen = false" aria-label="Close">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" />
-                    </svg>
-                </button>
-            </div>
+                    {{-- Panel --}}
+                    <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl ring-1 ring-black/5" 
+                        x-show="revokeOpen"
+                        x-transition:enter="transition ease-out duration-300" 
+                        x-transition:enter-start="opacity-0 translate-y-4 scale-95" 
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100" 
+                        x-transition:leave="transition ease-in duration-200" 
+                        x-transition:leave-start="opacity-100 translate-y-0 scale-100" 
+                        x-transition:leave-end="opacity-0 translate-y-4 scale-95">
+                        
+                        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+                            <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Security Action</h2>
+                            <button type="button" class="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200"
+                                x-on:click="revokeOpen = false" aria-label="Close">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M6 6l12 12M18 6L6 18" stroke-width="2.5" stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        </div>
 
-            <div class="px-5 py-4">
-                <p class="text-sm text-slate-700">You are about to revoke this signature:</p>
+                        <div class="px-6 py-10 text-center">
+                            <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 ring-4 ring-rose-50/50 transition-transform duration-500 hover:scale-110">
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
 
-                <div class="mt-3 space-y-1 text-sm text-slate-600">
-                    <div>Label: <span class="font-semibold text-slate-900" x-text="revokeLabel"></span></div>
-                    <div>ID: <code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs" x-text="revokeId"></code></div>
-                </div>
+                            <h3 id="revoke-title" class="text-xl font-extrabold text-slate-900 tracking-tight">Revoke this signature?</h3>
+                            <p class="mt-3 text-sm text-slate-500 leading-relaxed max-w-[280px] mx-auto">
+                                This action is permanent. Once revoked, this signature will be <span class="text-rose-600 font-bold underline decoration-rose-200 underline-offset-4">deactivated forever</span>.
+                            </p>
 
-                <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                    <div class="flex items-start gap-2">
-                        <svg class="mt-0.5 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M12 9v4m0 4h.01" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" />
-                            <path d="M10.3 4.2 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z"
-                                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-                        </svg>
-                        <div>Revoked signatures cannot be used anymore.</div>
+                            <div class="mt-8 rounded-2xl border border-slate-100 bg-slate-50/30 p-5 text-left backdrop-blur-sm">
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="space-y-1">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Label</p>
+                                        <p class="text-[13px] font-bold text-slate-800" x-text="revokeLabel"></p>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Internal ID</p>
+                                        <p class="text-[13px] font-mono font-bold text-slate-500" x-text="revokeId"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-stretch gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-6 rounded-b-2xl">
+                            <button type="button"
+                                class="w-full sm:flex-1 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 focus:outline-none"
+                                x-on:click="revokeOpen = false">
+                                Nevermind
+                            </button>
+
+                            <button type="button"
+                                class="w-full sm:flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 px-5 py-3 text-sm font-bold text-white shadow-xl shadow-rose-200/50 hover:shadow-rose-300/60 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+                                x-on:click="
+                                        $wire.revoke(revokeTarget);
+                                        revokeOpen = false;
+                                    ">
+                                Yes, Revoke it
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-4">
-                <button type="button"
-                    class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                    x-on:click="revokeOpen = false">
-                    Cancel
-                </button>
-
-                <button type="button"
-                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
-                    x-on:click="
-                            $wire.revoke(revokeTarget);
-                            revokeOpen = false;
-                        ">
-                    Revoke
-                </button>
-            </div>
+            </template>
         </div>
-    </div>
+    @endpush
 
     {{-- Toast --}}
     <div x-data="{ show: false, msg: '', timer: null }"
