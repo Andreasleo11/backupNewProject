@@ -11,15 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Explicitly drop the foreign key constraint first
-            $table->dropForeign('users_role_id_foreign');
-        });
+        if (Schema::hasColumn('users', 'role_id')) {
 
-        Schema::table('users', function (Blueprint $table) {
-            // Then drop the column
-            $table->dropColumn('role_id');
-        });
+            $sm = Schema::getConnection()->getDoctrineSchemaManager();
+            $foreignKeys = $sm->listTableForeignKeys('users');
+
+            foreach ($foreignKeys as $foreign) {
+                if (in_array('role_id', $foreign->getLocalColumns())) {
+                    Schema::table('users', function (Blueprint $table) use ($foreign) {
+                        $table->dropForeign($foreign->getName());
+                    });
+                    break;
+                }
+            }
+
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('role_id');
+            });
+        }
     }
 
     /**
