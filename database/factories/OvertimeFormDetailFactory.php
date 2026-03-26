@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\HeaderFormOvertime;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DetailFormOvertimeFactory extends Factory
+class OvertimeFormDetailFactory extends Factory
 {
-    protected $model = DetailFormOvertime::class;
+    protected $model = OvertimeFormDetail::class;
 
     public function definition(): array
     {
@@ -18,7 +18,7 @@ class DetailFormOvertimeFactory extends Factory
         $endTime = $this->faker->time('H:i:s');
 
         return [
-            'header_id' => HeaderFormOvertime::factory(),
+            'header_id' => OvertimeForm::factory(),
             'NIK' => Employee::factory(),
             'name' => $this->faker->name(),
             'overtime_date' => $startDate->format('Y-m-d'),

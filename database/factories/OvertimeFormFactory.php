@@ -4,12 +4,12 @@ namespace Database\Factories;
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class HeaderFormOvertimeFactory extends Factory
+class OvertimeFormFactory extends Factory
 {
-    protected $model = HeaderFormOvertime::class;
+    protected $model = OvertimeForm::class;
 
     public function definition(): array
     {
@@ -20,7 +20,6 @@ class HeaderFormOvertimeFactory extends Factory
             'status' => 'pending',
             'is_design' => false,
             'is_export' => false,
-            'is_push' => 0,
             'description' => null,
             'is_planned' => true,
             'is_after_hour' => true,
@@ -38,13 +37,6 @@ class HeaderFormOvertimeFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'rejected',
-        ]);
-    }
-
-    public function pushed(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_push' => 1,
         ]);
     }
 }

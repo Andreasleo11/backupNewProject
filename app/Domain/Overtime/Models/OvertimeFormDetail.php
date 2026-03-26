@@ -4,12 +4,13 @@ namespace App\Domain\Overtime\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\ActualOvertimeDetail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OvertimeFormDetail extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
     protected $table = 'detail_form_overtime';
 

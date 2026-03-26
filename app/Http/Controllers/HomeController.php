@@ -14,17 +14,8 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index(\App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery)
+    public function index()
     {
-        $user = auth()->user();
-
-        // If the user is a director or top-level management, show the advanced dashboard
-        if ($user->hasRole(['director', 'general-manager', 'purchasing-manager', 'super-admin'])) {
-            $prStats = $statsQuery->execute();
-
-            return view('director.dashboard', compact('prStats'));
-        }
-
         return view('home');
     }
 }

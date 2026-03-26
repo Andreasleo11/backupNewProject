@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Models\OvertimeFormApproval;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,8 +13,7 @@ class OvertimeFormApprovalFactory extends Factory
     public function definition(): array
     {
         return [
-            'overtime_form_id' => HeaderFormOvertime::factory(),
-            'header_form_overtime_id' => HeaderFormOvertime::factory(),
+            'overtime_form_id' => OvertimeForm::factory(),
             'flow_step_id' => 1,
             'status' => 'pending',
             'approver_id' => null,

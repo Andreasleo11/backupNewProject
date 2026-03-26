@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Overtime\Models\OvertimeForm;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

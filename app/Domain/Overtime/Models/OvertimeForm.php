@@ -3,14 +3,15 @@
 namespace App\Domain\Overtime\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\ApprovalFlow;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OvertimeForm extends Model implements Approvable
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
     protected $table = 'header_form_overtime';
 
@@ -59,6 +60,11 @@ class OvertimeForm extends Model implements Approvable
     public function flow()
     {
         return $this->belongsTo(ApprovalFlow::class, 'approval_flow_id', 'id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(\App\Models\OvertimeFormApproval::class, 'overtime_form_id', 'id');
     }
 
 
