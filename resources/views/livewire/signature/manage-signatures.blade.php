@@ -262,4 +262,32 @@
             </button>
         </div>
     </div>
+
+    @if (session('onboarding_signature'))
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Welcome to the New Approval System! ✍️',
+                        html: '<p class="text-slate-600 leading-relaxed">To ensure your approvals are secure and verified, we need you to set up a <b>digital signature</b>. It only takes a minute!</p>',
+                        icon: 'info',
+                        iconColor: '#6366f1',
+                        confirmButtonText: 'Let\'s get started',
+                        confirmButtonColor: '#4f46e5',
+                        allowOutsideClick: false,
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        },
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl px-10 py-3 font-bold text-sm tracking-wide uppercase',
+                        }
+                    });
+                });
+            </script>
+        @endpush
+    @endif
 </div>

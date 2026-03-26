@@ -92,22 +92,20 @@ class User extends Authenticatable
 
     public function needsSignature(): bool
     {
-        // 1. Explicitly check for roles/permissions that MUST have a signature (Approvers)
-        $mustHave = $this->can('approval.approve') || $this->hasAnyRole([
+        // 1. Check for any permissions that MUST have a signature (Approvers/Makers)
+        $signaturePermissions = \App\Infrastructure\Common\PermissionRegistry::getSignatureRequiredPermissions();
+        
+        if ($this->hasAnyPermission($signaturePermissions)) {
+            return true;
+        }
+
+        // 2. Extra safety: Check common approval roles if permissions aren't fully set up
+        return $this->hasAnyRole([
             'department-head',
             'general-manager',
             'director',
             'verificator',
             'purchasing-manager',
-            'supervisor'
         ]);
-
-        if ($mustHave) {
-            return true;
-        }
-
-        // 2. Also require for anyone who can CREATE purchase requests (Makers)
-        // since they sign the "Maker" section.
-        return $this->can('pr.create') || $this->hasRole('user');
     }
 }
