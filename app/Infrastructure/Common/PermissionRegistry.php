@@ -31,17 +31,17 @@ class PermissionRegistry
             ],
             'Purchase Request' => [
                 'permissions' => [
-                    'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject', 'pr.approve-items',
+                    'pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject', 'pr.approve-items',
                 ],
                 'roles' => [
-                    'staff'              => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'],
-                    'department-head'    => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'verificator'        => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'general-manager'    => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'director'           => ['pr.view', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.batch-approve'],
-                    'purchaser'          => ['pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve'],
-                    'purchasing-manager' => ['pr.view-all', 'pr.batch-approve', 'approval.view-log'],
-                    'accounting-officer' => ['pr.view', 'pr.view-all', 'pr.print'],
+                    'staff'              => ['pr.view', 'pr.view-any', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'],
+                    'department-head'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'verificator'        => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'general-manager'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
+                    'director'           => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.batch-approve'],
+                    'purchaser'          => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve'],
+                    'purchasing-manager' => ['pr.view-any', 'pr.view-all', 'pr.batch-approve', 'approval.view-log'],
+                    'accounting-officer' => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print'],
                 ],
             ],
             'Approval Engine' => [
@@ -69,6 +69,86 @@ class PermissionRegistry
                     'general-manager' => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
                     'department-head' => ['overtime.view-all', 'overtime.approve'],
                     'staff'           => ['overtime.view', 'overtime.create'],
+                ],
+            ],
+            'Inventory & Assets' => [
+                'permissions' => [
+                    'inventory.view', 'inventory.manage',
+                ],
+                'roles' => [
+                    'inventory' => ['inventory.view', 'inventory.manage'],
+                    'operations' => ['inventory.view'],
+                    'manager' => ['inventory.view'],
+                ],
+            ],
+            'Quality Control' => [
+                'permissions' => [
+                    'qc.view', 'qc.manage',
+                ],
+                'roles' => [
+                    'quality' => ['qc.view', 'qc.manage'],
+                    'operations' => ['qc.view'],
+                    'manager' => ['qc.view'],
+                ],
+            ],
+            'Production' => [
+                'permissions' => [
+                    'production.view', 'production.manage',
+                ],
+                'roles' => [
+                    'production' => ['production.view', 'production.manage'],
+                    'operations' => ['production.view'],
+                ],
+            ],
+            'Procurement Extras' => [
+                'permissions' => [
+                    'po.view-any', 'po.manage', 'purchasing.view', 'purchasing.forecast',
+                ],
+                'roles' => [
+                    'procurement' => ['po.view-any', 'po.manage', 'purchasing.view', 'purchasing.forecast'],
+                    'sales' => ['purchasing.forecast'],
+                    'manager' => ['po.view-any', 'purchasing.view'],
+                ],
+            ],
+            'Finance & Budget' => [
+                'permissions' => [
+                    'budget.view', 'budget.manage', 'expense.view',
+                ],
+                'roles' => [
+                    'finance' => ['budget.view', 'budget.manage', 'expense.view'],
+                    'accounting' => ['budget.view', 'expense.view'],
+                    'manager' => ['budget.view', 'expense.view'],
+                ],
+            ],
+            'Operations' => [
+                'permissions' => [
+                    'ops.view', 'ops.manage', 'spk.view', 'spk.manage',
+                ],
+                'roles' => [
+                    'operations' => ['ops.view', 'ops.manage', 'spk.view', 'spk.manage'],
+                    'logistics' => ['ops.view', 'ops.manage'],
+                    'production' => ['spk.view'],
+                    'manager' => ['ops.view', 'spk.view'],
+                ],
+            ],
+            'Personnel' => [
+                'permissions' => [
+                    'personnel.view', 'personnel.manage', 'training.view', 'training.manage', 'document.view', 'document.manage',
+                ],
+                'roles' => [
+                    'hr' => ['personnel.view', 'personnel.manage', 'training.view', 'training.manage', 'document.view', 'document.manage'],
+                    'hrd' => ['personnel.view', 'personnel.manage', 'training.view', 'training.manage', 'document.view', 'document.manage'],
+                    'manager' => ['personnel.view', 'training.view', 'document.view'],
+                ],
+            ],
+            'Compliance' => [
+                'permissions' => [
+                    'compliance.view', 'compliance.manage', 'compliance.review-uploads',
+                ],
+                'roles' => [
+                    'compliance' => ['compliance.view', 'compliance.manage', 'compliance.review-uploads'],
+                    'hr' => ['compliance.view', 'compliance.manage'],
+                    'manager' => ['compliance.view'],
                 ],
             ],
         ];
