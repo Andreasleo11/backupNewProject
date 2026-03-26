@@ -20,6 +20,11 @@ final class ManageSignatures extends Component
 
     public function mount(UserSignatureRepository $repo): void
     {
+        $this->loadData($repo);
+    }
+
+    private function loadData(UserSignatureRepository $repo): void
+    {
         $entities = $repo->listByUser(auth()->id(), true); // only active by default
         $this->items = array_map(function ($e) {
             return [
@@ -34,16 +39,26 @@ final class ManageSignatures extends Component
 
     public function setDefault(int $id, SetDefaultSignature $uc): void
     {
-        $uc->handle(auth()->id(), $id);
-        $this->dispatch('toast', message: 'Default signature updated');
-        $this->mount(app(UserSignatureRepository::class));
+        try {
+            $uc->handle((int) auth()->id(), $id);
+            $this->dispatch('toast', message: 'Default signature updated', type: 'success');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+        
+        $this->loadData(app(UserSignatureRepository::class));
     }
 
     public function revoke(int $id, RevokeSignature $uc): void
     {
-        $uc->handle(auth()->id(), $id, reason: 'user action');
-        $this->dispatch('toast', message: 'Signature revoked');
-        $this->mount(app(UserSignatureRepository::class));
+        try {
+            $uc->handle((int) auth()->id(), $id, reason: 'user action');
+            $this->dispatch('toast', message: 'Signature revoked', type: 'success');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+
+        $this->loadData(app(UserSignatureRepository::class));
     }
 
     public function render()
