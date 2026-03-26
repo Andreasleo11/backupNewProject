@@ -386,8 +386,8 @@ final class ApprovalEngine implements Approvals
         // find default active signature
         $sig = $this->userSignatures->listByUser($by, onlyActive: true)[0] ?? null;
 
-        if (! $sig || ! $sig->isDefault || ! $sig->isActive()) {
-            throw new \DomainException('No default active signature found. Please set a default signature first.');
+        if (! $sig || ! $sig->isActive()) {
+            throw new \DomainException('No active signature found. Please set up your signature first.');
         }
 
         // snapshot to approval_steps

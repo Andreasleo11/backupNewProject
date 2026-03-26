@@ -28,73 +28,127 @@ class MigrateLegacyPrToUnifiedApprovalSeeder extends Seeder
             return;
         }
 
-        DB::transaction(function () use ($legacyPrs, $defaultRule) {
+        $stepLabels = [
+            'MAKER'       => 'Prepared By',
+            'DEPT_HEAD'   => 'Checked By',
+            'VERIFICATOR' => 'Checked By',
+            'DIRECTOR'    => 'Approved By',
+            'PURCHASER'   => 'Known By',
+            'GM'          => 'Approved By',
+            'HEAD_DESIGN' => 'Known By',
+        ];
+
+        $stepOrder = [
+            'MAKER'       => 1,
+            'DEPT_HEAD'   => 2,
+            'VERIFICATOR' => 3,
+            'DIRECTOR'    => 4,
+            'PURCHASER'   => 5,
+            'GM'          => 6,
+            'HEAD_DESIGN' => 7,
+        ];
+
+        DB::transaction(function () use ($legacyPrs, $defaultRule, $stepLabels, $stepOrder) {
             foreach ($legacyPrs as $pr) {
-                // Determine Status
-                $mappedStatus = match ((int) $pr->status) {
-                    4 => 'APPROVED',
-                    5 => 'REJECTED',
-                    3 => 'IN_REVIEW',
-                    8 => 'DRAFT',
-                    default => 'DRAFT',
-                };
+                // Fetch signatures from the intermediate table created in Dec 2025
+                $signatures = DB::table('purchase_request_signatures')
+                    ->where('purchase_request_id', $pr->id)
+                    ->orderBy('created_at')
+                    ->get();
                 
-                // If Cancelled
+                // Determine Status from existing signatures
+                $hasDirector = $signatures->contains('step_code', 'DIRECTOR');
+                $hasGM = $signatures->contains('step_code', 'GM');
+                $hasMaker = $signatures->contains('step_code', 'MAKER');
+
+                $mappedStatus = 'DRAFT';
+                if ($hasDirector || $hasGM) {
+                    $mappedStatus = 'APPROVED';
+                } elseif ($hasMaker || $signatures->isNotEmpty()) {
+                    $mappedStatus = 'IN_REVIEW';
+                }
+                
+                // Handle cancellation
                 if ((int) $pr->is_cancel === 1) {
                     $mappedStatus = 'CANCELED';
                 }
+
+                // Validate submitted_by and signed_by to avoid FK constraint issues with deleted users
+                $submittedBy = DB::table('users')->where('id', $pr->user_id_create)->exists() 
+                    ? $pr->user_id_create 
+                    : null;
 
                 /** @var ApprovalRequest $approvalRequest */
                 $approvalRequest = $pr->approvalRequest()->create([
                     'status'          => $mappedStatus,
                     'rule_template_id'=> $defaultRule->id,
-                    'current_step'    => 1, // Will update based on max step later
-                    'submitted_by'    => $pr->user_id_create,
+                    'current_step'    => 1, 
+                    'submitted_by'    => $submittedBy,
                     'submitted_at'    => $pr->created_at,
-                    'meta'            => [],
+                    'meta'            => ['migrated_from_v2_recovery' => true],
                 ]);
 
-                // Migrate Autographs
-                $maxSequence = 1;
-                $labels = [
-                    1 => 'Created By', 2 => 'Checked By', 3 => 'Known By', 4 => 'Approved By',
-                    5 => 'Approved By', 6 => 'Approved By', 7 => 'Approved By',
-                ];
+                $maxSequence = 0;
+                foreach ($signatures as $sig) {
+                    $sequence = $stepOrder[$sig->step_code] ?? ($maxSequence + 1);
+                    
+                    $actedBy = DB::table('users')->where('id', $sig->signed_by_user_id)->exists()
+                        ? $sig->signed_by_user_id
+                        : null;
 
-                for ($i = 1; $i <= 7; $i++) {
-                    $col = "autograph_{$i}";
-                    $userCol = "autograph_user_{$i}";
+                    $step = ApprovalStep::create([
+                        'approval_request_id'         => $approvalRequest->id,
+                        'sequence'                    => $sequence,
+                        'approver_type'               => 'user',
+                        'approver_id'                 => $actedBy,
+                        'approver_snapshot_name'      => $this->getUserName($sig->signed_by_user_id),
+                        'approver_snapshot_role_slug' => strtolower($sig->step_code),
+                        'approver_snapshot_label'     => $stepLabels[$sig->step_code] ?? 'Approver',
+                        'status'                      => 'APPROVED',
+                        'acted_by'                    => $actedBy,
+                        'acted_at'                    => $sig->signed_at ?: $sig->updated_at,
+                        'remarks'                     => 'Migrated from legacy signatures table',
+                        'signature_image_path'        => $sig->image_path,
+                    ]);
 
-                    if (!empty($pr->$col)) {
-                        $userName = is_string($pr->$userCol) ? $pr->$userCol : 'Unknown';
-                        
-                        ApprovalStep::create([
-                            'approval_request_id'         => $approvalRequest->id,
-                            'sequence'                    => $i,
-                            'approver_type'               => 'user',
-                            'approver_id'                 => 0, // Legacy fallback id
-                            'approver_snapshot_name'      => $userName,
-                            'approver_snapshot_role_slug' => null,
-                            'approver_snapshot_label'     => $labels[$i] ?? "Approver {$i}",
-                            'status'                      => 'APPROVED',
-                            'acted_by'                    => 0, // Legacy fallback id
-                            'acted_at'                    => $pr->updated_at,
-                            'remarks'                     => 'Migrated from legacy system',
-                            'signature_image_path'        => $pr->$col,
-                        ]);
-                        $maxSequence = $i;
+                    // Try to enrich with modern signature link if the user has one
+                    if ($actedBy) {
+                        $userSig = \App\Infrastructure\Persistence\Eloquent\Models\UserSignature::where('user_id', $actedBy)
+                            ->whereNull('revoked_at')
+                            ->orderByDesc('is_default')
+                            ->first();
+
+                        if ($userSig) {
+                            $step->update([
+                                'user_signature_id' => $userSig->id,
+                                'signature_sha256'  => $userSig->sha256,
+                                // We keep the original image path from the legacy record 
+                                // unless it's missing, to preserve history.
+                            ]);
+                        }
                     }
+                    
+                    $maxSequence = max($maxSequence, $sequence);
                 }
                 
                 // Set the correct step pointer
                 if ($mappedStatus === 'APPROVED') {
                     $approvalRequest->update(['current_step' => $maxSequence + 1]);
                 } else {
-                    $approvalRequest->update(['current_step' => $maxSequence]);
+                    $approvalRequest->update(['current_step' => $maxSequence ?: 1]);
                 }
             }
         });
 
-        $this->command->info("Migrated {$legacyPrs->count()} legacy Purchase Requests to unified approval system.");
+        $this->command->info("Recovered and migrated {$legacyPrs->count()} Purchase Requests.");
+    }
+
+    /**
+     * Helper to get user name for snapshot
+     */
+    private function getUserName($userId)
+    {
+        if (!$userId) return 'Unknown';
+        return DB::table('users')->where('id', $userId)->value('name') ?: 'Unknown';
     }
 }
