@@ -37,37 +37,24 @@
 
 <nav class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar px-3 py-3 w-full" role="navigation" aria-label="Main system navigation">
     {{-- High-Priority Search Results (Visible only when searching) --}}
-    <div x-show="q.length > 0" class="mb-6 space-y-1.5 px-2">
-        @php
-            $flattenedItems = [];
-            foreach ($nav as $item) {
-                if ($item['type'] === 'single') $flattenedItems[] = $item;
-                if ($item['type'] === 'group') {
-                    foreach ($item['children'] ?? [] as $child) {
-                        $child['parent_label'] = $item['label'];
-                        $flattenedItems[] = $child;
-                    }
-                }
-            }
-        @endphp
-        @foreach ($flattenedItems as $flatItem)
+    <div x-show="q.length > 0" class="mb-6 space-y-1 px-2 border-b border-slate-100 pb-6">
+        @foreach ($searchableMenu as $flatItem)
             <a href="{{ route($flatItem['route'], $flatItem['params'] ?? []) }}"
                x-show="'{{ strtolower($flatItem['label']) }}'.includes(q.toLowerCase()) || '{{ strtolower($flatItem['parent_label'] ?? '') }}'.includes(q.toLowerCase())"
                class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300 group
                       hover:bg-blue-50/50 hover:translate-x-1
                       {{ $flatItem['active'] ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600' }}">
-                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100/80 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600">
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/80 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all duration-300">
                     @include('new.layouts.partials.nav-icon', ['name' => $flatItem['icon']])
                 </span>
                 <div class="flex flex-col min-w-0">
-                    <span class="font-bold truncate text-xs" x-html="'{{ $flatItem['label'] }}'.replace(new RegExp(q, 'gi'), match => `<mark class='bg-blue-200/50 text-blue-900 rounded-sm px-0.5'>${match}</mark>`)"></span>
+                    <span class="font-bold truncate text-[13px] tracking-tight leading-none pt-1 group-hover:text-blue-700 transition-colors" x-html="'{{ $flatItem['label'] }}'.replace(new RegExp(q, 'gi'), match => `<mark class='bg-blue-100 text-blue-900 rounded-sm px-0.5 font-black'>${match}</mark>`)"></span>
                     @if(isset($flatItem['parent_label']))
-                        <span class="text-[9px] text-slate-400 uppercase tracking-widest">{{ $flatItem['parent_label'] }}</span>
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest mt-1 font-black">{{ $flatItem['parent_label'] }}</span>
                     @endif
                 </div>
             </a>
         @endforeach
-        <div class="h-[1px] w-full bg-slate-100 my-4"></div>
     </div>
 
     <div class="space-y-1.5" role="menubar" x-show="q.length === 0">

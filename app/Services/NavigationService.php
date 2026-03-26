@@ -811,4 +811,40 @@ class NavigationService
 
         return null;
     }
+
+    /**
+     * Get a flat list of all visible menu items for client-side search indexing.
+     */
+    public static function getSearchableMenu(): array
+    {
+        $menu = self::getPersonalizedMenu();
+        $flat = [];
+
+        foreach ($menu as $item) {
+            if ($item['type'] === 'single' && isset($item['route'])) {
+                $flat[] = [
+                    'label' => $item['label'],
+                    'route' => $item['route'],
+                    'params' => $item['params'] ?? [],
+                    'icon' => $item['icon'] ?? 'circle',
+                    'active' => $item['active'] ?? false,
+                ];
+            }
+
+            if ($item['type'] === 'group' && isset($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    $flat[] = [
+                        'label' => $child['label'],
+                        'route' => $child['route'],
+                        'params' => $child['params'] ?? [],
+                        'icon' => $child['icon'] ?? 'circle',
+                        'active' => $child['active'] ?? false,
+                        'parent_label' => $item['label']
+                    ];
+                }
+            }
+        }
+
+        return $flat;
+    }
 }
