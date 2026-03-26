@@ -72,15 +72,31 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the signature path for the current user's default active signature.
+     * Determine if the user has a default active signature.
      */
-    public function getSignaturePathAttribute(): ?string
+    public function hasDefaultSignature(): bool
     {
-        $signature = $this->signatures()
+        return $this->signatures()
             ->where('is_default', true)
             ->whereNull('revoked_at')
-            ->first();
+            ->exists();
+    }
 
-        return $signature ? route('signatures.show', $signature->id) : null;
+    /**
+     * Determine if the user belongs to a role that requires a signature for approvals.
+     */
+    public function needsSignature(): bool
+    {
+        // Approvers, Managers, and Directors must have a signature.
+        // We can check for a specific permission 'approval.approve' 
+        // to make it scalable as new roles are added.
+        return $this->can('approval.approve') || $this->hasAnyRole([
+            'department-head',
+            'general-manager',
+            'director',
+            'verificator',
+            'purchasing-manager',
+            'supervisor'
+        ]);
     }
 }

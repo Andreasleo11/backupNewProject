@@ -6,6 +6,41 @@
         revokeId = $event.detail?.id ?? null;
      "
     x-on:keydown.escape.window="revokeOpen = false">
+    {{-- Onboarding Banner --}}
+    @if (session('onboarding_signature'))
+        <div class="mb-8 overflow-hidden rounded-3xl bg-indigo-600 shadow-lg shadow-indigo-200" x-data="{ show: true }" x-show="show" x-transition>
+            <div class="relative px-6 py-8 sm:px-12 sm:py-10">
+                {{-- Decorative background elements --}}
+                <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-indigo-500/50 blur-3xl"></div>
+                <div class="absolute -bottom-12 left-1/4 h-48 w-48 rounded-full bg-indigo-400/30 blur-3xl"></div>
+                
+                <div class="relative flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20 backdrop-blur-md">
+                        {{-- pen icon --}}
+                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                        </svg>
+                    </div>
+
+                    <div class="flex-1 text-center sm:text-left">
+                        <h2 class="text-2xl font-bold text-white sm:text-3xl">Ready to lead the way? ✍️</h2>
+                        <p class="mt-2 text-lg text-indigo-100/90 leading-relaxed">
+                            Your role is vital for official approvals. To make it official, we need your <span class="font-semibold text-white">digital signature</span> on file. 
+                            It's your "digital badge" that ensures every approval is secure, verified, and professional.
+                        </p>
+                    </div>
+
+                    <div class="shrink-0">
+                        <button type="button" x-on:click="show = false" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 focus:outline-none">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Header --}}
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-2">
