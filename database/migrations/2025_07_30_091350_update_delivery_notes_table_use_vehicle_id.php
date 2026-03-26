@@ -18,9 +18,9 @@ return new class extends Migration
             });
 
             // Step 2: Backfill vehicle_id based on vehicle_number and driver_name
-            \App\Models\DeliveryNote::withTrashed()->chunkById(100, function ($notes) {
+            \App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote::withTrashed()->chunkById(100, function ($notes) {
                 foreach ($notes as $note) {
-                    $vehicle = \App\Models\Vehicle::where('plate_number', $note->vehicle_number)
+                    $vehicle = \App\Infrastructure\Persistence\Eloquent\Models\Vehicle::where('plate_number', $note->vehicle_number)
                         ->where('driver_name', $note->driver_name)
                         ->first();
 
@@ -32,7 +32,7 @@ return new class extends Migration
             });
 
             // ✅ Step 3: Only proceed to make it NOT NULL if there are no NULLs
-            $nullCount = \App\Models\DeliveryNote::whereNull('vehicle_id')->count();
+            $nullCount = \App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote::whereNull('vehicle_id')->count();
 
             if ($nullCount === 0) {
                 Schema::table('delivery_notes', function (Blueprint $table) {

@@ -2,113 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Approval\Contracts\Approvals;
+use App\Application\PurchaseRequest\DTOs\AddSignatureDTO;
+use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
+use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
+use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
+use App\Application\PurchaseRequest\Services\MasterPrItemService;
+use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
+use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
+use App\Application\PurchaseRequest\UseCases\BatchApprovePurchaseRequests;
+use App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests;
+use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
+use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest;
+use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
 use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
+use App\Http\Requests\ApprovePurchaseRequest;
+use App\Http\Requests\RejectPurchaseRequest;
+use App\Http\Requests\SaveSignatureRequest;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
-use App\Models\Department;
-use App\Models\DetailPurchaseRequest;
-use App\Models\File;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\MasterDataPr;
-use App\Models\MonhtlyPR;
 use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Bus;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
 {
-    public function index(Request $request, PurchaseRequestsDataTable $dataTable)
-    {
-        // Get user information
-        $user = Auth::user();
-        $userDepartmentName = $user->department->name;
-        $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
-        $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification->name === 'PURCHASER';
-        $isGM = $user->is_gm === 1;
+    public function __construct(
+        private Approvals $approvals,
+        private PurchaseRequestItemFilter $itemFilter,
+        private MasterPrItemService $masterPrService,
+        private ReturnPurchaseRequest $returnUseCase,
+        private GetDefaultActiveUserSignature $getDefaultSignature,
+        private BatchApprovePurchaseRequests $batchApproveUseCase,
+        private BatchRejectPurchaseRequests $batchRejectUseCase,
+        private \App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder $contextBuilder,
+    ) {}
 
-        // Determine conditions based on user department and role
-        $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
-
-        if ($isPersonaliaHead) {
-            $purchaseRequestsQuery->where(function ($query) {
-                $query
-                    ->whereNotNull('autograph_1')
-                    ->whereNotNull('autograph_2')
-                    ->whereNotNull('autograph_5')
-                    ->where(function ($query) {
-                        $query
-                            ->whereNull('autograph_3')
-                            ->orWhereNotNull('autograph_3')
-                            ->where(function ($query) {
-                                $query
-                                    ->where('to_department', 'Personnel')
-                                    ->where('type', 'office')
-                                    ->orWhere('to_department', 'Computer');
-                            });
-                    })
-                    ->orWhere('from_department', 'PERSONALIA');
-            });
-        } elseif ($isGM) {
-            $purchaseRequestsQuery
-                ->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
-                ->whereNull('autograph_6')
-                ->where(function ($query) use ($userDepartmentName) {
-                    $query->where('type', 'factory');
-                    if ($userDepartmentName === 'MOULDING') {
-                        $query->where('from_department', 'MOULDING');
-                    } else {
-                        $query->where('from_department', '!=', 'MOULDING');
-                    }
-                });
-        } elseif ($isHead) {
-            $purchaseRequestsQuery->where(function ($query) use ($userDepartmentName) {
-                $query->where('from_department', $userDepartmentName);
-            });
-
-            if ($userDepartmentName === 'PURCHASING') {
-                $purchaseRequestsQuery->orWhere(
-                    'to_department',
-                    ucwords(strtolower($userDepartmentName)),
-                );
-            } elseif ($userDepartmentName === 'LOGISTIC') {
-                $purchaseRequestsQuery->orWhere('from_department', 'STORE');
-            }
-        } elseif ($isPurchaser) {
-            $purchaseRequestsQuery->where(function ($query) {
-                $query
-                    ->where(function ($query) {
-                        $query->where(function ($query) {
-                            $query->where('type', 'office')->orWhere('from_department', 'MOULDING');
-                        });
-                    })
-                    ->orWhere(function ($query) {
-                        $query->where('type', 'factory');
-                    });
-            });
-
-            if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
-                $purchaseRequestsQuery->where(
-                    'to_department',
-                    ucwords(strtolower($userDepartmentName)),
-                );
-            } elseif ($user->email === 'nur@daijo.co.id') {
-                $purchaseRequestsQuery->where('to_department', 'Maintenance');
-            } elseif ($userDepartmentName === 'PERSONALIA') {
-                $purchaseRequestsQuery->where('to_department', 'Personnel');
-            }
-
-            $purchaseRequestsQuery->whereNotNull('autograph_1');
-        } elseif ($user->role->name === 'SUPERADMIN') {
-            $purchaseRequestsQuery->whereNotNull('autograph_1');
-        } else {
-            $purchaseRequestsQuery->where('from_department', $userDepartmentName);
-        }
-
+    public function index(
+        Request $request,
+        PurchaseRequestsDataTable $dataTable,
+        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query,
+        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery
+    ) {
         // Check if reset is requested
         if ($request->has('reset')) {
             // Clear session filters
@@ -118,7 +59,7 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch');
 
             // Redirect without any filters
-            return redirect()->route('purchaserequest.home');
+            return redirect()->route('purchase-requests.index');
         }
 
         // Apply filters from request or session
@@ -127,30 +68,30 @@ class PurchaseRequestController extends Controller
         $status = $request->status ?: $request->session()->get('status');
         $branch = $request->branch ?: $request->session()->get('branch');
 
-        // Filter query
         if ($startDate && $endDate) {
-            $purchaseRequestsQuery->whereBetween('date_pr', [$startDate, $endDate]);
             $request->session()->put('start_date', $startDate);
             $request->session()->put('end_date', $endDate);
         }
 
         if ($status) {
-            $purchaseRequestsQuery->where('status', $status);
             $request->session()->put('status', $status);
         }
 
         if ($branch) {
-            $purchaseRequestsQuery->where('branch', $branch);
             $request->session()->put('branch', $branch);
         }
 
-        // Fetch purchase requests with pagination
-        $purchaseRequests = $purchaseRequestsQuery
-            ->orderBy('created_at', 'desc')
-            // ->where(function($query) use ($user) {
-            //     $query->orWhere('user_id_create', $user->id);
-            // })
-            ->paginate(10);
+        $dto = new \App\Application\PurchaseRequest\DTOs\GetPurchaseRequestListDTO(
+            userId: Auth::id(),
+            startDate: $startDate,
+            endDate: $endDate,
+            status: $status,
+            branch: $branch,
+            perPage: 10
+        );
+
+        // Fetch purchase requests using the Query class
+        $purchaseRequests = $query->handle($dto);
 
         // Append the filter parameters to the pagination links
         $purchaseRequests->appends([
@@ -160,466 +101,154 @@ class PurchaseRequestController extends Controller
             'branch' => $branch,
         ]);
 
-        // return view('purchaseRequest.index', compact('purchaseRequests'));
-        return $dataTable->render('purchaseRequest.index');
-    }
+        // Get stats for dashboard
+        $stats = $statsQuery->execute();
 
-    public function getChartData(Request $request, $year, $month)
-    {
-        $purchaseRequests = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->groupBy('to_department')
-            ->get();
+        // Determine if the user can batch-approve/reject PRs (separate from individual pr.approve)
+        $canBatchApprove = Auth::user()->can('pr.batch-approve');
 
-        $labels = $purchaseRequests->pluck('to_department');
-        $counts = $purchaseRequests->pluck('count');
-
-        return response()->json(['labels' => $labels, 'counts' => $counts]);
+        return $dataTable->render('purchase-requests.index', compact('stats', 'canBatchApprove'));
     }
 
     public function create()
     {
         $items = MasterDataPr::get();
         $departments = Department::all();
+        $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
 
-        return view('purchaseRequest.create', compact('items', 'departments'));
+        return view('purchase-requests.pr-form', [
+            'items' => $items,
+            'departments' => $departments,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+        ]);
     }
 
-    public function insert(StorePurchaseRequest $request)
+    public function edit(int $id)
     {
-        $items = $request->input('items', []);
-        $isDraft = $request->is_draft;
+        $purchaseRequest = PurchaseRequest::with(['itemDetail', 'approvalRequest.steps.actedUser'])->findOrFail($id);
 
-        // Process each item
-        $processedItems = array_map(function ($item) {
-            $item['price'] = $this->sanitizeCurrencyInput($item['price']);
-
-            return $item;
-        }, $items);
-
-        $userIdCreate = Auth::id();
-        // Define common data
-        $commonData = [
-            'user_id_create' => $userIdCreate,
-            'from_department' => $request->input('from_department'),
-            'to_department' => $request->input('to_department'),
-            'date_pr' => $request->input('date_of_pr'),
-            'date_required' => $request->input('date_of_required'),
-            'remark' => $request->input('remark'),
-            'supplier' => $request->input('supplier'),
-            'pic' => $request->input('pic'),
-            'type' => $request->input('type'),
-            'autograph_1' => strtoupper(Auth::user()->name).'.png',
-            'autograph_user_1' => Auth::user()->name,
-            'status' => 1,
-            'branch' => $request->branch,
-        ];
-
-        if (
-            $commonData['from_department'] == 'PLASTIC INJECTION' ||
-            ($commonData['from_department'] === 'MAINTENANCE MACHINE' &&
-                $commonData['branch'] === 'KARAWANG')
-        ) {
-            $commonData['status'] = 7;
+        // Only the creator can edit
+        if (auth()->id() !== (int) $purchaseRequest->user_id_create) {
+            abort(403, 'You are not authorized to edit this request.');
         }
 
-        if ($isDraft) {
-            $commonData['autograph_1'] = null;
-            $commonData['autograph_user_1'] = null;
-            $commonData['status'] = 8;
+        // Determine editable states using workflow_status (modern)
+        $workflowStatus = $purchaseRequest->workflow_status; // computed attribute
+
+        $editableWorkflowStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
+
+        $isEditable = in_array($workflowStatus, $editableWorkflowStatuses);
+
+        if (! $isEditable) {
+            abort(403, 'This request cannot be edited in its current state (' . $workflowStatus . ').');
         }
 
-        if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
-            if ($request->is_import === 'true') {
-                $commonData['is_import'] = true;
-            } else {
-                $commonData['is_import'] = false;
-            }
-        } elseif ($commonData['from_department'] === 'PERSONALIA') {
-            $commonData['autograph_2'] = 'Bernadett.png';
-            $commonData['autograph_user_2'] = 'Bernadett';
-            $commonData['status'] = 6;
-        }
-
-        $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
-        if (in_array($request->from_department, $officeDepartments)) {
-            $commonData['type'] = 'office';
-            if ($request->from_department === 'PE') {
-                $commonData['type'] = 'factory';
-            }
-        } else {
-            $commonData['type'] = 'factory';
-        }
-
-        // Create the purchase request
-        $purchaseRequest = PurchaseRequest::create($commonData);
-
-        $this->verifyAndInsertItems($processedItems, $purchaseRequest);
-        // $this->executeSendPRNotificationCommand();
-
-        return redirect()
-            ->route('purchaserequest.home')
-            ->with('success', 'Purchase request created successfully');
-    }
-
-    private function verifyAndInsertItems($items, $purchaseRequest)
-    {
-        if (isset($items) && is_array($items)) {
-            foreach ($items as $itemData) {
-                $itemName = $itemData['item_name'];
-                $quantity = $itemData['quantity'];
-                $purpose = $itemData['purpose'];
-                $price = $this->sanitizeCurrencyInput($itemData['price']);
-                $uom = strtoupper($itemData['uom']);
-                $currency = $itemData['currency'];
-
-                $commonData = [
-                    'purchase_request_id' => $purchaseRequest->id,
-                    'item_name' => $itemName,
-                    'quantity' => $quantity,
-                    'purpose' => $purpose,
-                    'price' => $price,
-                    'uom' => $uom,
-                    'currency' => $currency,
-                ];
-
-                if (
-                    $purchaseRequest->from_department == 'PERSONALIA' ||
-                    $purchaseRequest->from_department == 'PLASTIC INJECTION' ||
-                    $purchaseRequest->from_department == 'MAINTENANCE MACHINE'
-                ) {
-                    $commonData['is_approve_by_head'] = 1;
-                }
-
-                DetailPurchaseRequest::create($commonData);
-            }
-        }
-    }
-
-    private function sanitizeCurrencyInput($input)
-    {
-        // Remove possible currency prefixes
-        $input = preg_replace('/[Rp$¥]\.?\s*/', '', $input);
-
-        // Remove commas
-        $input = str_replace(',', '', $input);
-
-        // Return the sanitized input
-        return $input;
-    }
-
-    public function detail($id)
-    {
+        $items = MasterDataPr::get();
         $departments = Department::all();
-        $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
-        if (! $purchaseRequest) {
-            // Handle the case where the purchase request is not found
-            abort(404, 'Purchase request not found');
+        $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
+
+        return view('purchase-requests.pr-form', [
+            'purchaseRequest' => $purchaseRequest,
+            'items' => $items,
+            'departments' => $departments,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+        ]);
+    }
+
+    public function store(
+        StorePurchaseRequest $request,
+        \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
+    ) {
+        // Always create as draft — workflow is started explicitly via performSignAndSubmit
+        $request->merge(['is_draft' => true]);
+        $dto = \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO::fromValidated($request, $priceSanitizer);
+        $pr = app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
+
+        if ($request->input('submit_action') === 'sign_and_submit') {
+            $this->performSignAndSubmit($pr, auth()->id(), $approvals, $addSignature);
+
+            return redirect()->route('purchase-requests.show', $pr->id)
+                ->with('success', 'Purchase request submitted and signed successfully.');
         }
 
-        foreach ($purchaseRequest->itemDetail as $detail) {
-            $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
+        if ($request->input('submit_action') === 'save_and_setup_signature') {
+            return redirect()->route('signatures.manage', ['return_to' => route('purchase-requests.edit', $pr->id)])
+                ->with('success', 'Purchase request saved as draft. Please set up your signature before submitting.');
         }
 
-        $fromDepartment = Department::where('name', $purchaseRequest->from_department)->first();
-        if (! $fromDepartment) {
-            // Handle the case where the department is not found
-            abort(404, 'Department not found');
-        }
-        $fromDeptNo = $fromDepartment->dept_no;
-        $user = Auth::user();
-        $userCreatedBy = $purchaseRequest->createdBy;
+        return redirect()->route('purchase-requests.show', $pr->id)
+            ->with('success', 'Purchase request saved as draft.');
+    }
 
-        // $this->updateStatus($purchaseRequest);
+    public function show(int $id, GetPurchaseRequestDetail $query)
+    {
+        /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
+        $user = auth()->user();
 
-        $timestamp = strtotime($purchaseRequest->created_at);
-        $formattedDate = date('Ymd', $timestamp);
-        $doc_id = $purchaseRequest->doc_num;
+        $vm = $query->handle($id, $user);
 
-        $files = File::where('doc_id', $doc_id)->get();
-
-        // Filter itemDetail based on user role
-        $filteredItemDetail = $purchaseRequest->itemDetail
-            ->filter(function ($detail) use ($user, $purchaseRequest) {
-                $detail->quantity = $this->formatDecimal($detail->quantity);
-                if ($user->specification->name === 'DIRECTOR') {
-                    if ($purchaseRequest->type === 'factory') {
-                        if ($purchaseRequest->to_department === 'Computer') {
-                            return $detail->is_approve_by_head &&
-                                $detail->is_approve_by_gm &&
-                                $detail->is_approve_by_verificator;
-                        }
-
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    } else {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
-                    }
-                } elseif ($user->specification->name === 'VERIFICATOR') {
-                    if (
-                        $purchaseRequest->to_department === 'Computer' &&
-                        $purchaseRequest->type === 'factory'
-                    ) {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    }
-
-                    return $detail->is_approve_by_head;
-                } else {
-                    return true; // Include all details for other roles
-                }
-            })
-            ->values(); // Ensure that the result is an array
-
-        if ($purchaseRequest->status == 4) {
-            // dd($filteredItemDetail);
-            $this->updateMasterPRItems($filteredItemDetail);
+        // Pass signature preview URL for the Sign & Submit modal on show page
+        $canSignAndSubmit = $vm->flags['canSignAndSubmit'] ?? false;
+        $signaturePreviewUrl = null;
+        if ($canSignAndSubmit && ($vm->flags['defaultSignaturePath'] ?? null)) {
+            $defaultSig = $this->getDefaultSignature->execute((int) $user->id);
+            $signaturePreviewUrl = $defaultSig ? route('signatures.show', $defaultSig->id) : null;
         }
 
-        return view(
-            'purchaseRequest.detail',
-            compact(
-                'purchaseRequest',
-                'user',
-                'userCreatedBy',
-                'files',
-                'filteredItemDetail',
-                'departments',
-                'fromDeptNo',
-            ),
+        return view('purchase-requests.show', [
+            'purchaseRequest' => $vm->purchaseRequest,
+            'user' => $user,
+            'userCreatedBy' => $vm->meta['userCreatedBy'],
+            'files' => $vm->files,
+            'filteredItemDetail' => $vm->filteredItemDetail,
+            'departments' => $vm->departments,
+            'fromDeptNo' => $vm->fromDeptNo,
+            'approval' => $vm->approval,
+            'flags' => $vm->flags,
+            'totals' => $vm->totals,
+            'signaturePreviewUrl' => $signaturePreviewUrl,
+        ]);
+    }
+
+    /**
+     * Render a partial view containing key details of a PR for quick inspection.
+     */
+    public function quickView(int $id, GetPurchaseRequestDetail $query)
+    {
+        /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
+        $user = auth()->user();
+        $vm = $query->handle($id, $user);
+
+        return view('purchase-requests.partials.quick-view-content', [
+            'pr' => $vm->purchaseRequest,
+            'filteredItemDetail' => $vm->filteredItemDetail,
+            'totals' => $vm->totals,
+            'flags' => $vm->flags,
+        ]);
+    }
+
+    public function saveSignaturePath(
+        SaveSignatureRequest $request,
+        $prId,
+        int $section,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $useCase
+    ) {
+        $dto = new \App\Application\PurchaseRequest\DTOs\AddSignatureDTO(
+            purchaseRequestId: (int) $prId,
+            signedByUserId: $request->user()->id,
+            section: $section,
+            imagePath: $request->input('imagePath')
         );
-    }
 
-    private function updateStatus($purchaseRequest)
-    {
-        // If PR not Rejected
-        if ($purchaseRequest->status !== 5) {
-            if ($purchaseRequest->autograph_1 !== null) {
-                $purchaseRequest->status = 1;
-            }
-
-            // After Dept Head Autograph
-            if ($purchaseRequest->autograph_2 !== null) {
-                if (
-                    $purchaseRequest->from_department === 'MOULDING' ||
-                    $purchaseRequest->from_department === 'QA' ||
-                    $purchaseRequest->from_department === 'QC' ||
-                    $purchaseRequest->type === 'office'
-                ) {
-                    // If it's moulding/qa/qc then direct to purchaser
-                    $purchaseRequest->status = 6;
-                } elseif ($purchaseRequest->type === 'factory') {
-                    // When GM has not signed
-                    $purchaseRequest->status = 7;
-                }
-            }
-
-            // After GM Autograph
-            if ($purchaseRequest->autograph_6 !== null) {
-                // Waiting for purchaser
-                $purchaseRequest->status = 6;
-            }
-
-            // After Purchaser Autograph
-            if ($purchaseRequest->autograph_5 !== null) {
-                if (
-                    ($purchaseRequest->to_department === 'Purchasing' &&
-                        $purchaseRequest->type === 'factory') ||
-                    $purchaseRequest->to_department === 'Maintenance'
-                ) {
-                    if (
-                        $purchaseRequest->from_department === 'COMPUTER' ||
-                        $purchaseRequest->from_department === 'PERSONALIA'
-                    ) {
-                        // To verificator
-                        $purchaseRequest->status = 2;
-                    } else {
-                        // Direct to Director
-                        $purchaseRequest->status = 3;
-                    }
-                } elseif (
-                    $purchaseRequest->to_department === 'Computer' ||
-                    $purchaseRequest->to_department === 'Personnel'
-                ) {
-                    // When verificator has not signed
-                    $purchaseRequest->status = 2;
-                }
-            }
-
-            // After Verificator Autograph
-            if ($purchaseRequest->autograph_3 !== null) {
-                // Status when director has not signed
-                $purchaseRequest->status = 3;
-            }
-
-            // After Director Autograph
-            if ($purchaseRequest->autograph_4 !== null) {
-                // Status when PR approved
-                $purchaseRequest->status = 4;
-            }
-        }
-
-        // Save the updated status
-        $purchaseRequest->save();
-    }
-
-    private function updateMasterPRItems($items)
-    {
-        if (isset($items)) {
-            foreach ($items as $itemData) {
-                $itemName = $itemData['item_name'];
-                $price = $this->sanitizeCurrencyInput($itemData['price']);
-                $currency = $itemData['currency'];
-
-                // Check if the item exists in MasterDataPr
-                $existingItem = MasterDataPr::where('name', $itemName)->first();
-                // dd($existingItems);
-                if (! $existingItem) {
-                    // Case 1: Item not available in MasterDataPr
-                    MasterDataPr::create([
-                        'name' => $itemName,
-                        'currency' => $currency,
-                        'price' => $price, // Store the initial price
-                    ]);
-                } else {
-                    // Case 2: Item available in MasterDataPr
-                    $existingItem->update([
-                        'price' => $existingItem->latest_price,
-                        'latest_price' => $price,
-                    ]);
-                }
-            }
-        }
-    }
-
-    private function formatDecimal($value)
-    {
-        // Check if the number has no decimal part (i.e., is an integer)
-        if (floor($value) == $value) {
-            // If it's an integer, cast it to int to remove the decimal point
-            return (int) $value;
-        } else {
-            // If it has a decimal part, return it as is
-            return $value;
-        }
-    }
-
-    public function saveImagePath(Request $request, $prId, $section)
-    {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
-
-        // Save $imagePath to the database for the specified $reportId and $section
-        $pr = PurchaseRequest::find($prId);
-
-        if (Auth::user()->specification->name === 'DIRECTOR') {
-            $pr->update([
-                "autograph_{$section}" => $imagePath,
-                "autograph_user_{$section}" => $username,
-                'approved_at' => now(),
-            ]);
-        } else {
-            $pr->update([
-                "autograph_{$section}" => $imagePath,
-                "autograph_user_{$section}" => $username,
-            ]);
-        }
-
-        $this->updateStatus($pr);
+        $useCase->handle($dto);
 
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
-    public function monthlyview()
-    {
-        $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyviewmonth(Request $request)
-    {
-        // Get the month inputted by the user
-        $selectedMonth = $request->input('month');
-
-        // Extract year and month from the selected month input
-        $year = date('Y', strtotime($selectedMonth));
-        $month = date('m', strtotime($selectedMonth));
-
-        // Save the year and month to the MonhtlyPR model
-        MonhtlyPR::create([
-            'month' => $month,
-            'year' => $year,
-            // Add other fields as needed
-        ]);
-
-        // Fetch purchase requests for the selected month
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->where('from_department', auth()->user()->department->name)
-            ->get();
-
-        // Pass the filtered data to the view
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyprlist()
-    {
-        $monthlist = MonhtlyPR::get();
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-    }
-
-    public function monthlydetail($id)
-    {
-        $monthdetail = MonhtlyPR::find($id);
-
-        // Extract year and month from the selected month input
-        // Extract year and month from the selected month input
-        // $year = date('Y', strtotime($monthdetail->year));
-        // $month = date('m', strtotime($monthdetail->month));
-
-        $year = $monthdetail->year;
-        $month = $monthdetail->month;
-
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->get();
-
-        // dd($monthdetail);
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-    }
-
-    public function saveImagePathMonthly(Request $request, $monthprId, $section)
-    {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
-
-        // Save $imagePath to the database for the specified $reportId and $section
-        $monthpr = MonhtlyPR::find($monthprId);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-
-        return response()->json(['success' => 'Autograph saved successfully!']);
-    }
-
-    // REVISI PR DROPDOWN ITEM + PRICE
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
@@ -638,221 +267,232 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function update(UpdatePurchaseRequest $request, $id)
-    {
+    public function update(
+        UpdatePurchaseRequest $request,
+        $id,
+        \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
+    ) {
         $validated = $request->validated();
-        // Define the additional attribute and its value
-        $additionalData = [
-            'updated_at' => now(),
-        ];
 
-        if ($request->is_import === 'true') {
-            $additionalData['is_import'] = true;
-        } else {
-            $additionalData['is_import'] = false;
+        // Build DTO
+        $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePurchaseRequestDTO(
+            purchaseRequestId: (int) $id,
+            updatedByUserId: Auth::id(),
+            toDepartment: $validated['to_department'],
+            branch: $validated['branch'],
+            datePr: $validated['date_of_pr'],
+            dateRequired: $validated['date_of_required'],
+            remark: $validated['remark'] ?? null,
+            supplier: $validated['supplier'] ?? null,
+            pic: $validated['pic'] ?? null,
+            items: array_map(fn ($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
+                itemName: $item['item_name'],
+                quantity: (float) $item['quantity'],
+                uom: $item['uom'],
+                price: (float) $this->masterPrService->sanitizeCurrencyInput($item['price']),
+                currency: $item['currency'] ?? 'IDR',
+                purpose: $item['purpose'] ?? ''
+            ), $validated['items']),
+            isImport: $request->is_import === 'true',
+        );
+
+        // Execute UseCase
+        $useCase->handle($dto);
+
+        if ($request->input('submit_action') === 'sign_and_submit') {
+            $pr = PurchaseRequest::findOrFail((int) $id);
+            $this->performSignAndSubmit(
+                $pr,
+                Auth::id(),
+                app(Approvals::class),
+                app(\App\Application\PurchaseRequest\UseCases\AddSignature::class)
+            );
+
+            return redirect()->route('purchase-requests.show', $id)
+                ->with('success', 'Purchase request updated, signed, and submitted.');
         }
 
-        $pr = PurchaseRequest::find($id);
-        $isPurchaser = Auth::user()->specification->name === 'PURCHASER';
-        $isHead = Auth::user()->is_head === 1;
-
-        // dept head update
-        if ($pr->status === 1) {
-            if ($isHead) {
-                $additionalData['autograph_2'] = null;
-                $additionalData['autograph_user_2'] = null;
-            }
-            $additionalData['status'] = 1;
-            $dataToUpdate = array_merge($validated, $additionalData);
-
-            $pr->update($dataToUpdate);
-        } elseif ($pr->status === 6) {
-            if ($isPurchaser) {
-                $additionalData['autograph_5'] = null;
-                $additionalData['autograph_user_5'] = null;
-            } elseif ($isHead) {
-                $additionalData['autograph_2'] = null;
-                $additionalData['autograph_user_2'] = null;
-            }
-            $additionalData['status'] = 6;
-
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
-            // dd($dataToUpdate);
-            $pr->update($dataToUpdate);
-
-            // verificator update
-        } elseif ($pr->status === 3) {
-            $additionalData['autograph_3'] = null;
-            $additionalData['autograph_user_3'] = null;
-            $additionalData['status'] = 3;
-
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
-
-            // dd($dataToUpdate);
-            $pr->update($dataToUpdate);
-        } else {
-            $pr->update($additionalData);
+        if ($request->input('submit_action') === 'save_and_setup_signature') {
+            return redirect()->route('signatures.manage', ['return_to' => route('purchase-requests.edit', $id)])
+                ->with('success', 'Purchase request saved as draft. Please set up your signature before submitting.');
         }
 
-        // Delete and Store it again
-        $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
+        return redirect()->route('purchase-requests.show', $id)
+            ->with('success', 'Purchase request saved as draft.');
+    }
 
-        $this->verifyAndInsertItems($request->items, $pr);
-
-        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-
-        foreach ($details as $detail) {
-            foreach ($oldDetails as $oldDetail) {
-                // If the current detail name equal with the old detail name than it will replaced with the old one
-                if ($detail->item_name === $oldDetail->item_name) {
-                    $detail->update([
-                        'is_approve_by_head' => $oldDetail->is_approve_by_head,
-                        'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
-                        'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
-                    ]);
-                } else {
-                    $detail->update([
-                        'is_approve_by_head' => auth()->user()->specification->name === 'PURCHASER'
-                                ? 1
-                                : $oldDetail->is_approve_by_head,
-                    ]);
-
-                    if ($pr->type === 'factory') {
-                        $detail->update([
-                            'is_approve_by_gm' => auth()->user()->specification->name === 'PURCHASER'
-                                    ? 1
-                                    : $oldDetail->is_approve_by_gm,
-                        ]);
-                    }
-                }
-            }
+    /**
+     * Sign & Submit from the show page (DRAFT PR, creator only).
+     */
+    public function signAndSubmit(
+        Request $request,
+        PurchaseRequest $purchaseRequest,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
+    ) {
+        // Only the creator can sign & submit their own DRAFT
+        if ((int) auth()->id() !== (int) $purchaseRequest->user_id_create) {
+            abort(403, 'Only the creator can sign and submit this request.');
+        }
+        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
+        if (! in_array($purchaseRequest->workflow_status, $allowedStatuses)) {
+            abort(422, 'Only DRAFT, RETURNED, or REJECTED requests can be submitted.');
         }
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase request updated successfully!']);
+        $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals, $addSignature);
+
+        return redirect()->route('purchase-requests.show', $purchaseRequest->id)
+            ->with('success', 'Purchase request signed and submitted for approval.');
     }
 
-    public function destroy($id)
-    {
-        DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
-        PurchaseRequest::find($id)->delete();
-        DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+    /**
+     * Shared: save MAKER signature + start approval workflow.
+     */
+    private function performSignAndSubmit(
+        PurchaseRequest $pr,
+        int $userId,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
+    ): void {
+        $defaultSig = $this->getDefaultSignature->execute($userId);
+        abort_unless($defaultSig !== null, 422, 'You must set up a signature before submitting.');
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase request deleted succesfully!']);
+        // Save MAKER signature (section 1)
+        $addSignature->handle(new AddSignatureDTO(
+            purchaseRequestId: $pr->id,
+            signedByUserId: $userId,
+            section: 1,
+            imagePath: $defaultSig->filePath,
+        ));
+
+        // Build approval context from the PR model (required by the rule resolver to match templates)
+        $pr->loadMissing('items');
+        $ctx = $this->contextBuilder->build(
+            fromDepartment: $pr->from_department,
+            toDepartment: $pr->to_department->value,
+            branch: $pr->branch->value,
+            isOffice: $pr->type === 'office',
+            items: $pr->items->toArray(),
+        );
+
+        // Start approval workflow with context
+        $approvals->submit($pr, $userId, $ctx);
     }
 
-    public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'description' => 'string|max:255',
-        ]);
+    public function destroy(
+        $id,
+        \App\Application\PurchaseRequest\UseCases\DeletePurchaseRequest $useCase
+    ) {
+        try {
+            // Execute UseCase
+            $useCase->handle((int) $id, Auth::id());
 
-        PurchaseRequest::find($id)->update([
-            'status' => 5,
-            'description' => $request->description,
-        ]);
+            return redirect()
+                ->back()
+                ->with(['success' => 'Purchase request deleted successfully!']);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, $e->getMessage());
+        } catch (\DomainException $e) {
+            // Domain exceptions contain user-friendly messages about business rules
+            abort(403, $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Deletion failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase Request rejected']);
-    }
-
-    public function approveAllDetailItems($prId, $type)
-    {
-        if ($type === 'GM') {
-            $details = DetailPurchaseRequest::where('purchase_request_id', $prId)
-                ->where('is_approve_by_head', true)
-                ->get();
-
-            foreach ($details as $detail) {
-                $detail->update(['is_approve_by_gm' => true]);
-            }
-
-            return response()->json(['success' => 'All detail approved successfully!']);
+            return redirect()
+                ->back()
+                ->with(['error' => 'Failed to delete purchase request']);
         }
-
-        return response()->json(['error' => 'Something went wrong!']);
     }
 
-    public function exportToPdf($id)
+    public function exportToPdf(int $id, GetPurchaseRequestDetail $query)
     {
         $user = Auth::user();
-        $purchaseRequest = PurchaseRequest::with('itemDetail', 'createdBy')->find($id);
-        $userCreatedBy = $purchaseRequest->createdBy;
+        
+        // Use the centralized view model to fetch the exact same data structure as the 'show' detail page
+        $vm = $query->handle($id, $user);
 
-        // Filter itemDetail based on user role
-        $filteredItemDetail = $purchaseRequest->itemDetail
-            ->filter(function ($detail) use ($user, $purchaseRequest) {
-                $detail->quantity = $this->formatDecimal($detail->quantity);
-                if ($user->specification->name === 'DIRECTOR') {
-                    if ($purchaseRequest->type === 'factory') {
-                        if ($purchaseRequest->to_department === 'Computer') {
-                            return $detail->is_approve_by_head &&
-                                $detail->is_approve_by_gm &&
-                                $detail->is_approve_by_verificator;
-                        }
-
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    } else {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
-                    }
-                } elseif ($user->specification->name === 'VERIFICATOR') {
-                    if (
-                        $purchaseRequest->to_department === 'Computer' &&
-                        $purchaseRequest->type === 'factory'
-                    ) {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    }
-
-                    return $detail->is_approve_by_head;
-                } else {
-                    return true; // Include all details for other roles
-                }
-            })
-            ->values(); // Ensure that the result is an array
+        // Map digital signatures for the PDF footer
+        $signatures = $vm->purchaseRequest->signatures->mapWithKeys(function ($sig) {
+            return [$sig->section => $sig->signature_path];
+        })->toArray();
 
         $pdf = Pdf::loadView(
             'pdf/pr-pdf',
-            compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'),
+            [
+                'purchaseRequest' => $vm->purchaseRequest,
+                'user' => $user,
+                'userCreatedBy' => $vm->meta['userCreatedBy'],
+                'filteredItemDetail' => $vm->filteredItemDetail,
+                'totals' => $vm->totals,
+                'departments' => $vm->departments,
+                'approval' => $vm->approval,
+                'signatures' => $signatures,
+            ]
         )->setPaper('a4', 'landscape');
 
-        // return view('pdf.pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'));
         return $pdf->download(
-            'Purchase Request-'.
-                $purchaseRequest->id.
-                ' ('.
-                $purchaseRequest->pr_no.
-                ')'.
+            'Purchase Request-' .
+                $vm->purchaseRequest->id .
+                ' (' .
+                $vm->purchaseRequest->pr_no .
+                ')' .
                 '.pdf',
         );
     }
 
-    public function cancel(Request $request, $id)
-    {
-        PurchaseRequest::find($id)->update([
-            'is_cancel' => true,
-            'description' => $request->description,
-        ]);
+    public function cancel(
+        Request $request,
+        $id,
+        \App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest $useCase
+    ) {
+        try {
+            // Build DTO
+            $dto = new \App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO(
+                purchaseRequestId: (int) $id,
+                cancelledByUserId: Auth::id(),
+                reason: $request->description
+            );
 
-        return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+            // Execute UseCase
+            $useCase->handle($dto);
+
+            return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, $e->getMessage());
+        } catch (\DomainException $e) {
+            // Domain exceptions contain user-friendly messages
+            abort(403, $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
+
+            return redirect()->back()->with('error', 'Failed to cancel purchase request');
+        }
     }
 
-    public function updatePoNumber(Request $request, $id)
-    {
-        PurchaseRequest::find($id)->update([
-            'po_number' => $request->po_number,
-        ]);
+    public function updatePoNumber(
+        Request $request,
+        $id,
+        \App\Application\PurchaseRequest\UseCases\UpdatePoNumber $useCase
+    ) {
+        try {
+            // Build DTO
+            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO(
+                purchaseRequestId: (int) $id,
+                poNumber: $request->po_number,
+                updatedByUserId: Auth::id()
+            );
 
-        return redirect()
-            ->back()
-            ->with('success', 'Purchase request PO Number updated successfully!');
+            // Execute UseCase
+            $useCase->handle($dto);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Purchase request PO Number updated successfully!');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update PO Number');
+        }
     }
 
     public function exportExcel()
@@ -866,5 +506,153 @@ class PurchaseRequestController extends Controller
             new PurchaseRequestWithDetailsExport($purchaseRequestIds),
             "purchase requests for $authDepartment .xlsx",
         );
+    }
+
+    public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
+    {
+        try {
+            $useCase->handle(new ApprovalActionDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                remarks: $request->input('remarks')
+            ));
+
+            return back()->with('toast_success', 'Purchase Request approved successfully!');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return back()->with('error', $e->getMessage())->setStatusCode(403);
+        } catch (\DomainException|\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
+        }
+    }
+
+    public function reject(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
+    {
+        try {
+            $useCase->handle(new ApprovalActionDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                remarks: $request->input('remarks')
+            ));
+
+            return back()->with('toast_success', 'Purchase Request rejected.');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return back()->with('error', $e->getMessage())->setStatusCode(403);
+        } catch (\DomainException|\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
+        }
+    }
+
+    public function returnForRevision(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $request->validate(['reason' => 'required|string|max:500']);
+
+        try {
+            $this->returnUseCase->handle(new ReturnPurchaseRequestDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                reason: $request->input('reason'),
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'PR returned to creator for revision.']);
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Batch approve multiple PRs at once.
+     * Requires 'pr.batch-approve' permission — separate from individual 'pr.approve'.
+     */
+    public function batchApprove(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+
+        $ids = $request->input('ids', []);
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $result = $this->batchApproveUseCase->handle($ids, $userId);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'batch_id' => $result['batch_id'] ?? null,
+            'approved' => $result['approved'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
+        ]);
+    }
+
+    /**
+     * Batch reject multiple PRs at once.
+     * Requires 'pr.batch-approve' permission — separate from individual 'pr.approve'.
+     */
+    public function batchReject(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+
+        $ids = $request->input('ids', []);
+        $rejectionReason = $request->input('rejection_reason', '');
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $result = $this->batchRejectUseCase->handle($ids, $userId, $rejectionReason);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'batch_id' => $result['batch_id'] ?? null,
+            'rejected' => $result['rejected'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
+        ]);
+    }
+
+    /**
+     * Poll the status of specific job batches.
+     * Used by the frontend Alpine component to render progress bars.
+     */
+    public function batchStatus(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+        
+        $ids = $request->input('ids', []);
+        $statuses = [];
+
+        foreach ((array) $ids as $id) {
+            $batch = Bus::findBatch($id);
+            if ($batch) {
+                $statuses[] = [
+                    'id' => $batch->id,
+                    'name' => $batch->name,
+                    'totalJobs' => $batch->totalJobs,
+                    'pendingJobs' => $batch->pendingJobs,
+                    'failedJobs' => $batch->failedJobs,
+                    'progress' => $batch->progress(),
+                    'finished' => $batch->finished(),
+                    'canceled' => $batch->canceled(),
+                ];
+            }
+        }
+
+        return response()->json(['success' => true, 'batches' => $statuses]);
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSuratPerintahKerjaRequest;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\File;
 use App\Models\SuratPerintahKerja;
 use App\Models\User;
@@ -21,23 +21,23 @@ class SuratPerintahKerjaController extends Controller
 
         $reportsQuery = SuratPerintahKerja::with('fromDepartment', 'createdBy');
 
-        if ($authUser->department->name !== 'COMPUTER') {
+        if ($authUser->department?->name !== 'COMPUTER' && ! $authUser->hasRole('super-admin')) {
             if (
-                $authUser->department->name === 'PERSONALIA' ||
-                $authUser->department->name === 'MAINTENANCE'
+                $authUser->department?->name === 'PERSONALIA' ||
+                $authUser->department?->name === 'MAINTENANCE'
             ) {
                 // Show all records where to_department matches the user's department
                 $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function (
                     $query,
                 ) use ($authUser) {
-                    $query->where('to_department', $authUser->department->name);
+                    $query->where('to_department', $authUser->department?->name);
                 });
             } else {
                 // For other departments, show records where fromDepartment or pelapor matches
                 $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function (
                     $query,
                 ) use ($authUser) {
-                    $query->where('id', $authUser->department->id);
+                    $query->where('id', $authUser->department?->id);
                 })->orWhere('pelapor', $authUser->name);
             }
         }
@@ -53,7 +53,7 @@ class SuratPerintahKerjaController extends Controller
             if (in_array($filterColumn, $validColumns)) {
                 switch ($filterAction) {
                     case 'contains':
-                        $reportsQuery->where($filterColumn, 'like', '%'.$filterValue.'%');
+                        $reportsQuery->where($filterColumn, 'like', '%' . $filterValue . '%');
                         break;
                     case 'equals':
                         $reportsQuery->where($filterColumn, '=', $filterValue);
@@ -121,7 +121,7 @@ class SuratPerintahKerjaController extends Controller
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $filename = time().'_'.$file->getClientOriginalName();
+                $filename = time() . '_' . $file->getClientOriginalName();
                 // $filePath = $file->storeAs('files', $filename, 'public');
                 $fileType = $file->getMimeType();
                 $fileSize = $file->getSize();
@@ -282,7 +282,7 @@ class SuratPerintahKerjaController extends Controller
             return redirect()->back()->with('success', 'SPK deleted successfully!');
         } catch (Exception $e) {
             // Log the exception message for debugging
-            Log::error('Failed to delete SPK: '.$e->getMessage());
+            Log::error('Failed to delete SPK: ' . $e->getMessage());
 
             return redirect()
                 ->back()
@@ -405,5 +405,10 @@ class SuratPerintahKerjaController extends Controller
         SuratPerintahKerja::find($id)->update(['status_laporan' => 5]);
 
         return redirect()->back()->with('success', 'Spk finished!');
+    }
+
+    public function reject($id)
+    {
+        return 'Not implemented';
     }
 }

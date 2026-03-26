@@ -1,67 +1,114 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
-    <div class="container mt-4">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('employee_trainings.index') }}">Employee
-                        Trainings</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Detail</li>
+    <div class="max-w-4xl px-4 py-6 mx-auto space-y-5">
+        {{-- Breadcrumb --}}
+        <nav aria-label="Breadcrumb" class="text-sm">
+            <ol class="flex flex-wrap gap-1 text-slate-500">
+                <li>
+                    <a href="{{ route('employee_trainings.index') }}"
+                       class="hover:text-slate-700">
+                        Employee Trainings
+                    </a>
+                </li>
+                <li aria-hidden="true" class="text-slate-400">/</li>
+                <li class="font-medium text-slate-700">
+                    Detail
+                </li>
             </ol>
         </nav>
 
-        <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h2 fw-bold"><i class="fas fa-info-circle"></i>Employee Training Details</h2>
-            <a href="{{ route('employee_trainings.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+        {{-- Header --}}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h1 class="text-xl font-semibold text-slate-900">
+                    Employee Training Details
+                </h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Detailed information for this training record.
+                </p>
+            </div>
+
+            <a href="{{ route('employee_trainings.index') }}"
+               class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                Back to List
             </a>
         </div>
 
-        <!-- Card with Information -->
-        <div class="card shadow-lg border-0 p-3">
-            <div class="card-body">
-                <div class="row">
-                    <!-- Employee Details -->
-                    <div class="col-md-6 mb-4">
-                        <h6 class="text-uppercase text-muted"><i class="fas fa-user"></i> Employee Details</h6>
-                        <div class="p-3">
-                            <p class="mb-2"><strong>Name:</strong> {{ $training->employee->Nama }}</p>
-                            <p class="mb-2"><strong>NIK:</strong> {{ $training->employee->NIK }}</p>
-                            <p class="mb-0"><strong>Department:</strong> {{ $training->employee->Dept }}</p>
+        {{-- Card --}}
+        <div class="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="p-6 space-y-6">
+                <div class="grid gap-6 md:grid-cols-2">
+                    {{-- Employee details --}}
+                    <section class="space-y-2">
+                        <h2 class="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                            Employee Details
+                        </h2>
+                        <div class="p-4 space-y-1 border rounded-xl border-slate-200 bg-slate-50/60">
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">Name:</span>
+                                <span class="ml-1 text-slate-800">{{ $training->employee->name }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">NIK:</span>
+                                <span class="ml-1 text-slate-800">{{ $training->employee->nik }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">Department:</span>
+                                <span class="ml-1 text-slate-800">{{ $training->employee->dept_code }}</span>
+                            </p>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Training Details -->
-                    <div class="col-md-6 mb-4">
-                        <h6 class="text-uppercase text-muted"><i class="fas fa-chalkboard-teacher"></i> Training
-                            Details
-                        </h6>
-                        <div class="p-3">
-                            <p class="mb-2"><strong>Description:</strong> {{ $training->description }}</p>
-                            <p class="mb-2"><strong>Last Training Date:</strong>
-                                {{ \Carbon\Carbon::parse($training->last_training_at)->format('d-m-Y') }}</p>
-                            <p class="mb-0">
-                                <strong>Evaluated: </strong>
+                    {{-- Training details --}}
+                    <section class="space-y-2">
+                        <h2 class="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                            Training Details
+                        </h2>
+                        <div class="p-4 space-y-1 border rounded-xl border-slate-200 bg-slate-50/60">
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">Description:</span>
+                                <span class="ml-1 text-slate-800">{{ $training->description }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">Last Training Date:</span>
+                                <span class="ml-1 text-slate-800">
+                                    {{ \Carbon\Carbon::parse($training->last_training_at)->format('d-m-Y') }}
+                                </span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="font-medium text-slate-600">Evaluated:</span>
                                 @if ($training->evaluated)
-                                    <span class="badge bg-success">Yes</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                                        Yes
+                                    </span>
                                 @else
-                                    <span class="badge bg-danger">No</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                                        No
+                                    </span>
                                 @endif
                             </p>
-
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
-            <div class="card-footer text-end bg-light pb-0">
-                <a href="{{ route('employee_trainings.edit', $training->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ route('employee_trainings.destroy', $training->id) }}" method="POST" class="d-inline">
+
+            {{-- Footer actions --}}
+            <div class="flex items-center justify-end gap-2 px-6 py-3 bg-slate-50 border-t border-slate-200">
+                <a href="{{ route('employee_trainings.edit', $training->id) }}"
+                   class="inline-flex items-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
+                    Edit
+                </a>
+
+                <form action="{{ route('employee_trainings.destroy', $training->id) }}"
+                      method="POST"
+                      onsubmit="return confirm('Are you sure you want to delete this training record?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Are you sure?')">Delete</button>
+                    <button type="submit"
+                            class="inline-flex items-center rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1">
+                        Delete
+                    </button>
                 </form>
             </div>
         </div>

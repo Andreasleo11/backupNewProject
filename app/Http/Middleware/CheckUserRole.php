@@ -11,15 +11,26 @@ class CheckUserRole
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = auth()->user();
 
         // Check if the user's role matches the provided role
-        if ($user && in_array($user->role_id, $roles)) {
-            return $next($request);
+        if (! $user) {
+            return redirect('/home');
+        }
+
+        foreach ($roles as $role) {
+            // Check numeric role_id (legacy) or attribute
+            if (isset($user->role_id) && is_numeric($role) && (int) $user->role_id === (int) $role) {
+                return $next($request);
+            }
+            // Check string role name (Spatie)
+            if ($user->hasRole($role)) {
+                return $next($request);
+            }
         }
 
         // Redirect or handle unauthorized access

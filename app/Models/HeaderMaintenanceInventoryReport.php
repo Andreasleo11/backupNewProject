@@ -39,7 +39,7 @@ class HeaderMaintenanceInventoryReport extends Model
         $sequenceNumber = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
 
         // Return the formatted document number
-        return 'MIR/'.$date.'/'.$sequenceNumber;
+        return 'MIR/' . $date . '/' . $sequenceNumber;
     }
 
     public function detail()

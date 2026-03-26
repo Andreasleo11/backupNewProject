@@ -55,7 +55,7 @@ class PurchaseRequestUpdated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'PR with id = '.$this->pr->id.' has just been updated!',
+            'message' => 'PR with id = ' . $this->pr->id . ' has just been updated!',
             'status' => $this->pr->status,
         ];
     }

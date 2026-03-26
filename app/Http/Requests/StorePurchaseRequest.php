@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ToDepartment;
 use App\Rules\SanitizedNumeric;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,23 +31,25 @@ class StorePurchaseRequest extends FormRequest
                 'max:255',
                 Rule::exists('departments', 'name'),
             ],
-            'to_department' => 'required|string|max:255',
+            'to_department' => ['required', Rule::in(ToDepartment::values())],
             'date_of_pr' => 'required|date',
             'date_of_required' => 'required|date',
             'remark' => 'nullable|string',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
-            'branch' => ['required', 'string', Rule::in(['JAKARTA', 'KARAWANG'])],
-            // 'type' => [
-            //     'nullable',
-            //     'string',
-            //     Rule::in(['factory', 'office'])
-            // ],
-            // 'is_import' => 'nullable|boolean',
+            'branch' => ['required', Rule::enum(\App\Enums\Branch::class)],
+            'type' => [
+                'nullable',
+                'string',
+                Rule::in(['factory', 'office']),
+            ],
+            'is_import' => 'nullable|boolean',
+            'is_draft' => 'nullable|boolean',
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
-            'items.*.price' => ['required', new SanitizedNumeric],
-            'is_draft' => 'required|boolean',
+            'items.*.quantity' => 'required|numeric',
+            'items.*.uom' => 'required|string|max:50',
+            'items.*.price' => ['nullable', new SanitizedNumeric],
         ];
     }
 
@@ -64,12 +67,15 @@ class StorePurchaseRequest extends FormRequest
             'date_of_required.required' => 'The date required field is required.',
             'supplier.required' => 'The supplier field is required.',
             'pic.required' => 'The PIC field is required.',
-            'type.required' => 'The type field is required.',
-            'items.required' => 'At least one item is required.',
-            'items.*.name.required' => 'Each item must have a name.',
-            'items.*.price.required' => 'Each item must have a price.',
+            'type.in' => 'The type field must be factory or office.',
+            'is_import.boolean' => 'The is import field must be boolean.',
             'is_draft.required' => 'The draft field is required.',
             'is_draft.boolean' => 'The draft should be boolean.',
+            'items.required' => 'At least one item is required.',
+            'items.*.item_name.required' => 'Each item must have a name.',
+            'items.*.quantity.required' => 'Each item must have a quantity.',
+            'items.*.uom.required' => 'Each item unit of measure (UOM) is required.',
+            'items.*.numeric' => 'Each item must be numeric.',
         ];
     }
 }

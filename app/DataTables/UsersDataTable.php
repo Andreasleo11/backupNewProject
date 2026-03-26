@@ -15,7 +15,7 @@ class UsersDataTable extends DataTable
     /**
      * Build the DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -48,7 +48,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model::with(['role', 'department', 'specification'])->newQuery();
+        return $model::with(['roles', 'department'])->newQuery();
     }
 
     /**
@@ -112,8 +112,9 @@ class UsersDataTable extends DataTable
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),
-            Column::make('specification')
-                ->data('specification.name')
+            Column::make('roles')
+                ->data('roles.0.name')
+                ->title('Roles')
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),
@@ -132,6 +133,6 @@ class UsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Users_'.date('YmdHis');
+        return 'Users_' . date('YmdHis');
     }
 }

@@ -186,7 +186,7 @@ class StepDetail extends Component
             );
         } else {
             $this->document_number =
-                'DETAIL-'.now()->format('Ymd-His').'-'.strtoupper(Str::random(4));
+                'DETAIL-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4));
         }
     }
 
@@ -194,7 +194,7 @@ class StepDetail extends Component
     {
         $p = $period ?? ($this->period ?? 1);
 
-        return 'p'.$p;
+        return 'p' . $p;
     }
 
     public function computeSaveFlags(): void
@@ -224,7 +224,7 @@ class StepDetail extends Component
         $data['shift'] = session('stepHeaderSaved.shift') ?? $data['shift'];
         $data['period'] = $this->period ?? $data['period'];
 
-        $this->periodKey = 'p'.$this->period;
+        $this->periodKey = 'p' . $this->period;
 
         // stash whatever fields you need for this period
         $data['details'][$this->periodKey] = [

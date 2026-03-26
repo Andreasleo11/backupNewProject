@@ -67,7 +67,7 @@ class ReportWizardPreview extends Component
                     'customer' => $this->report['customer'],
                     'invoice_no' => $this->report['invoice_no'],
                     'created_by' => Auth::user()->name,
-                    'autograph_1' => Auth::user()->name.'.png',
+                    'autograph_1' => Auth::user()->name . '.png',
                 ]);
             }
 
@@ -89,7 +89,7 @@ class ReportWizardPreview extends Component
 
             if ($report) {
                 $customer = $report->customer;
-                $pdfName = 'pdfs/verification-report-'.$report->id.'.pdf';
+                $pdfName = 'pdfs/verification-report-' . $report->id . '.pdf';
                 $pdfPath[] = Storage::url($pdfName);
 
                 $this->savePdf($report->id);
@@ -101,13 +101,13 @@ class ReportWizardPreview extends Component
                 $mailData = [
                     'to' => $to,
                     'cc' => $cc,
-                    'subject' => 'QAQC Verification Report Mail '.$customer,
-                    'body' => 'Mail from '.env('APP_NAME'),
+                    'subject' => 'QAQC Verification Report Mail ' . $customer,
+                    'body' => 'Mail from ' . env('APP_NAME'),
                     'file_paths' => $pdfPath,
                 ];
                 // dd($mailData);
 
-                Mail::send(new QaqcMail($mailData));
+                // Mail::send(new QaqcMail($mailData));
             }
 
             return $report;
@@ -150,8 +150,8 @@ class ReportWizardPreview extends Component
         )->setPaper('a4', 'landscape');
 
         // Define the file path and name
-        $fileName = 'verification-report-'.$report->id.'.pdf';
-        $filePath = 'pdfs/'.$fileName; // Adjust the directory structure as needed
+        $fileName = 'verification-report-' . $report->id . '.pdf';
+        $filePath = 'pdfs/' . $fileName; // Adjust the directory structure as needed
 
         // Save the PDF file to the public storage
         Storage::disk('public')->put($filePath, $pdf->output());

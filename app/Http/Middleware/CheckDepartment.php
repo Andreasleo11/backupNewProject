@@ -12,14 +12,13 @@ class CheckDepartment
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next, ...$departments): Response
     {
         $user = Auth::user();
         if (
-            ($user->department->name && in_array($user->department->name, $departments)) ||
-            $user->role_id == 1
+            ($user->department->name && in_array($user->department->name, $departments)) || $user
         ) {
             return $next($request);
         }

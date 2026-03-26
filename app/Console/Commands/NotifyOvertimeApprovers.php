@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Models\User;
 use App\Notifications\DailyOvertimeSummaryNotification;
 use Illuminate\Console\Command;
@@ -37,7 +37,7 @@ class NotifyOvertimeApprovers extends Command
         ];
 
         foreach ($statuses as $status) {
-            $reports = HeaderFormOvertime::with(['department', 'user'])
+            $reports = OvertimeForm::with(['department', 'user'])
                 ->where('status', $status)
                 ->get();
 
@@ -60,30 +60,21 @@ class NotifyOvertimeApprovers extends Command
                     break;
 
                 case 'waiting-supervisor':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'SUPERVISOR'),
-                    )->first();
+                    $user = User::role('supervisor')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
                 case 'waiting-verificator':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'VERIFICATOR'),
-                    )->first();
+                    $user = User::role('verificator')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
                 case 'waiting-director':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'DIRECTOR'),
-                    )->first();
+                    $user = User::role('director')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
@@ -109,3 +100,4 @@ class NotifyOvertimeApprovers extends Command
         }
     }
 }
+

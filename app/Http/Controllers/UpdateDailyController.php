@@ -172,13 +172,13 @@ class UpdateDailyController extends Controller
             $excelFileName = 'databomwip.xlsx';
             $excelFilePath = public_path($excelFileName);
 
-            Excel::store(new BomWip($allData), 'public/AutomateFile/'.$excelFileName);
+            Excel::store(new BomWip($allData), 'public/AutomateFile/' . $excelFileName);
 
             // $filePath = Storage::url($fileName);
             return $excelFileName;
         } catch (\Exception $e) {
             // Log or handle the error
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
 
         // Return the file name or path
@@ -192,14 +192,14 @@ class UpdateDailyController extends Controller
             // Import the Excel file using the BomWipImport class
             Excel::import(
                 new BomWipImport,
-                public_path('/storage/AutomateFile/'.$excelFileName),
+                public_path('/storage/AutomateFile/' . $excelFileName),
             );
 
             // If the import is successful, return a success message or any other response
             return 'Excel file imported successfully.';
         } catch (\Exception $e) {
             // If an error occurs during the import, log the error or handle it as needed
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
     }
 
@@ -238,7 +238,7 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delactual.xlsx';
             $excelFilePath = public_path($excelFileName);
 
-            Excel::store(new Delactual($data), 'public/AutomateFile/'.$excelFileName);
+            Excel::store(new Delactual($data), 'public/AutomateFile/' . $excelFileName);
 
             // $filePath = Storage::url($fileName);
             return $excelFileName;
@@ -246,7 +246,7 @@ class UpdateDailyController extends Controller
             return 'Excel file processed and imported successfully.';
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
     }
 
@@ -257,14 +257,14 @@ class UpdateDailyController extends Controller
             // Import the Excel file using the BomWipImport class
             Excel::import(
                 new DelactualImport,
-                public_path('/storage/AutomateFile/'.$excelFileName),
+                public_path('/storage/AutomateFile/' . $excelFileName),
             );
 
             // If the import is successful, return a success message or any other response
             return 'Excel file imported successfully.';
         } catch (\Exception $e) {
             // If an error occurs during the import, log the error or handle it as needed
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
     }
 
@@ -303,20 +303,20 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delsched.csv';
             $excelFilePath = public_path($excelFileName);
 
-            Excel::store(new Delsched($data), 'public/AutomateFile/'.$excelFileName);
+            Excel::store(new Delsched($data), 'public/AutomateFile/' . $excelFileName);
 
             // $filePath = Storage::url($fileName);
             return $excelFileName;
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
     }
 
     private function importDelschedFile($excelFileName)
     {
         // Get the file path
-        $filePath = public_path('storage/AutomateFile/'.$excelFileName);
+        $filePath = public_path('storage/AutomateFile/' . $excelFileName);
 
         // Read the CSV file into an array
         $data = array_map('str_getcsv', file($filePath));
@@ -449,20 +449,20 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delso.csv';
             $excelFilePath = public_path($excelFileName);
 
-            Excel::store(new Delso($data), 'public/AutomateFile/'.$excelFileName);
+            Excel::store(new Delso($data), 'public/AutomateFile/' . $excelFileName);
 
             // $filePath = Storage::url($fileName);
             return $excelFileName;
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
-            return 'Error: '.$e->getMessage();
+            return 'Error: ' . $e->getMessage();
         }
     }
 
     private function importDelsoFile($excelFileName)
     {
         // Import the Excel file using the DelschedImport class
-        Excel::import(new DelsoImport, public_path('storage/AutomateFile/'.$excelFileName));
+        Excel::import(new DelsoImport, public_path('storage/AutomateFile/' . $excelFileName));
 
         // If the import is successful, return a success message
         return 'Excel file imported successfully.';
@@ -506,7 +506,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'inventoryfg.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new InventoryFg($allData), 'public/AutomateFile/'.$excelFileName);
+        Excel::store(new InventoryFg($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -517,7 +517,7 @@ class UpdateDailyController extends Controller
         // Import the Excel file using the DelschedImport class
         Excel::import(
             new InventoryFgImport,
-            public_path('storage/AutomateFile/'.$excelFileName),
+            public_path('storage/AutomateFile/' . $excelFileName),
         );
 
         // If the import is successful, return a success message
@@ -553,7 +553,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'inventorymtr.csv';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new InventoryMtr($allData), 'public/AutomateFile/'.$excelFileName);
+        Excel::store(new InventoryMtr($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -564,7 +564,7 @@ class UpdateDailyController extends Controller
         // Import the Excel file using the DelschedImport class
         Excel::import(
             new InventoryMtrImport,
-            public_path('storage/AutomateFile/'.$excelFileName),
+            public_path('storage/AutomateFile/' . $excelFileName),
         );
 
         // If the import is successful, return a success message
@@ -594,7 +594,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'lineproduction.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new LineProduction($allData), 'public/AutomateFile/'.$excelFileName);
+        Excel::store(new LineProduction($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -605,7 +605,7 @@ class UpdateDailyController extends Controller
         // Import the Excel file using the DelschedImport class
         Excel::import(
             new LineProductionImport,
-            public_path('storage/AutomateFile/'.$excelFileName),
+            public_path('storage/AutomateFile/' . $excelFileName),
         );
 
         // If the import is successful, return a success message
@@ -649,7 +649,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'sapreject.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new SapReject($allData), 'public/AutomateFile/'.$excelFileName);
+        Excel::store(new SapReject($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -658,7 +658,7 @@ class UpdateDailyController extends Controller
     private function importSapRejectFile($excelFileName)
     {
         // Import the Excel file using the DelschedImport class
-        Excel::import(new SapRejectImport, public_path('storage/AutomateFile/'.$excelFileName));
+        Excel::import(new SapRejectImport, public_path('storage/AutomateFile/' . $excelFileName));
 
         // If the import is successful, return a success message
         return 'Excel file imported successfully.';

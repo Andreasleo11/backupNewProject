@@ -57,7 +57,7 @@ class ImportantDocController extends Controller
             // dd($request->file('files'));
             foreach ($request->file('files') as $file) {
                 // Generate a unique filename
-                $fileName = time().'-'.$file->getClientOriginalName();
+                $fileName = time() . '-' . $file->getClientOriginalName();
 
                 // Read file content
                 $fileData = file_get_contents($file->getRealPath());
@@ -135,8 +135,6 @@ class ImportantDocController extends Controller
     {
         // Retrieve the document from the database
         $document = $file;
-
-        dd($document);
 
         // Initialize Dompdf
         $dompdf = new Dompdf;

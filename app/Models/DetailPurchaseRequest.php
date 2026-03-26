@@ -2,14 +2,23 @@
 
 namespace App\Models;
 
-use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class DetailPurchaseRequest extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'purchase_request_id',
@@ -26,6 +35,20 @@ class DetailPurchaseRequest extends Model
         'received_quantity',
     ];
 
+    /**
+     * Get the purchase request that owns this item.
+     * Proper relationship naming convention.
+     */
+    public function purchaseRequest()
+    {
+        return $this->belongsTo(PurchaseRequest::class);
+    }
+
+    /**
+     * Alias for purchaseRequest() for backward compatibility.
+     *
+     * @deprecated Use purchaseRequest() instead
+     */
     public function itemDetail()
     {
         return $this->belongsTo(PurchaseRequest::class);

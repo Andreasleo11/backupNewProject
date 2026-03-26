@@ -32,20 +32,36 @@ final class UserSignature
     public function withDefault(bool $isDefault): self
     {
         return new self(
-            $this->id, $this->userId, $this->label, $this->kind,
-            $this->filePath, $this->svgPath, $this->sha256,
-            $isDefault, $this->metadata, $this->createdAt,
-            $this->updatedAt, $this->revokedAt
+            $this->id,
+            $this->userId,
+            $this->label,
+            $this->kind,
+            $this->filePath,
+            $this->svgPath,
+            $this->sha256,
+            $isDefault,
+            $this->metadata,
+            $this->createdAt,
+            $this->updatedAt,
+            $this->revokedAt
         );
     }
 
     public function revokedCopy(DateTimeImmutable $ts): self
     {
         return new self(
-            $this->id, $this->userId, $this->label, $this->kind,
-            $this->filePath, $this->svgPath, $this->sha256,
-            false, $this->metadata, $this->createdAt,
-            $this->updatedAt, $ts
+            $this->id,
+            $this->userId,
+            $this->label,
+            $this->kind,
+            $this->filePath,
+            $this->svgPath,
+            $this->sha256,
+            false,
+            $this->metadata,
+            $this->createdAt,
+            $this->updatedAt,
+            $ts
         );
     }
 }

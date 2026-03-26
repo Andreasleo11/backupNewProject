@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Departments;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\RequirementUpload;
 use App\Services\ComplianceService;
 use Carbon\Carbon;
@@ -125,7 +125,12 @@ class Compliance extends Component
 
     public function openUpload(int $requirementId): void
     {
-        $this->dispatch('open-upload', requirementId: $requirementId, departmentId: $this->department->id);
+        $this->dispatch('open-upload', $requirementId, $this->department->id);
+    }
+
+    public function openHistory(int $requirementId): void
+    {
+        $this->dispatch('open-recent-uploads', $requirementId, $this->department->id);
     }
 
     public function mount(Department $department, ComplianceService $svc): void
@@ -141,8 +146,8 @@ class Compliance extends Component
         // Filters
         if ($this->search !== '') {
             $term = mb_strtolower($this->search);
-            $rows = $rows->filter(fn ($r) =>
-                str_contains(mb_strtolower($r['code']), $term) ||
+            $rows = $rows->filter(
+                fn ($r) => str_contains(mb_strtolower($r['code']), $term) ||
                 str_contains(mb_strtolower($r['name']), $term)
             );
         }
@@ -156,10 +161,10 @@ class Compliance extends Component
         // Sort
         $rows = $rows->sortBy(function ($r) {
             return match ($this->sort) {
-                'name'    => $r['name'],
+                'name' => $r['name'],
                 'percent' => $r['percent'],
                 'expires' => $r['last_valid_until']?->timestamp ?? -INF,
-                default   => $r['code'],
+                default => $r['code'],
             };
         }, SORT_REGULAR, $this->dir === 'desc');
 

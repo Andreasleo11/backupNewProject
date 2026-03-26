@@ -15,7 +15,7 @@ class ProdplanInjItemDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -72,6 +72,6 @@ class ProdplanInjItemDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ProdplanInjItem_'.date('YmdHis');
+        return 'ProdplanInjItem_' . date('YmdHis');
     }
 }

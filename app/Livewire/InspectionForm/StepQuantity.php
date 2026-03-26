@@ -34,7 +34,7 @@ class StepQuantity extends Component
 
     public function mount()
     {
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
         $saved = session("stepDetailSaved.quantities.{$this->periodKey}", []);
 
         if ($saved) {

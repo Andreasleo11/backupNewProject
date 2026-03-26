@@ -16,7 +16,7 @@ class DirectorQaqcReportsDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -149,6 +149,6 @@ class DirectorQaqcReportsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DirectorReport_'.date('YmdHis');
+        return 'DirectorReport_' . date('YmdHis');
     }
 }

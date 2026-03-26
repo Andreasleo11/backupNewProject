@@ -2,125 +2,83 @@
 
 namespace App\Http\Controllers;
 
-ini_set('max_execution_time', 100000);
-
-use App\Exports\OvertimeExport;
-use App\Exports\OvertimeExportExample;
-use App\Exports\OvertimeSummaryExport;
-use App\Models\ActualOvertimeDetail;
-use App\Models\Department;
-use App\Models\DetailFormOvertime;
-use App\Models\Employee;
-use App\Models\HeaderFormOvertime;
-use App\Models\OvertimeFormApproval;
-use Carbon\Carbon;
+use App\Domain\Overtime\Services\OvertimeApprovalService;
+use App\Domain\Overtime\Services\OvertimeExportService;
+use App\Domain\Overtime\Services\OvertimeImportService;
+use App\Domain\Overtime\Services\OvertimeJPayrollService;
+use App\Domain\Overtime\Services\OvertimeSummaryService;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
 
 class FormOvertimeController extends Controller
 {
+    public function __construct(
+        private readonly OvertimeApprovalService $approvalService,
+        private readonly OvertimeJPayrollService $jpayrollService,
+        private readonly OvertimeImportService $importService,
+        private readonly OvertimeExportService $exportService,
+        private readonly OvertimeSummaryService $summaryService
+    ) {}
+
     public function rejectDetailServerSide($id)
     {
-        DetailFormOvertime::find($id)->update([
-            'status' => 'Rejected',
-            'reason' => 'Rejected manually from DISS server',
-        ]);
+        $result = $this->approvalService->rejectDetail($id);
 
-        return redirect()->back()->with('success', 'Detail rejected successfully !');
+        return redirect()->back()->with(
+            $result['success'] ? 'success' : 'error',
+            $result['message']
+        );
     }
 
     public function downloadTemplate()
     {
-        return Excel::download(new OvertimeExportExample, 'overtime_template.xlsx');
+        return $this->exportService->downloadTemplate();
     }
 
     public function detail($id)
     {
-        $header = HeaderFormOvertime::with(
-            'user',
-            'department',
-            'approvals',
-            'approvals.step',
-        )->find($id);
-        $datas = DetailFormOvertime::with('actualOvertimeDetail')->Where('header_id', $id)->get();
+        $header = OvertimeForm::with('user', 'department', 'approvals', 'approvals.step')->find($id);
+        $datas = OvertimeFormDetail::with('actualOvertimeDetail')->where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
 
-        // dd($header);
         return view('formovertime.detail', compact('header', 'datas', 'employees', 'departements'));
     }
 
     public function sign(Request $request, $id)
     {
-        $username = Auth::user()->name;
-        $imagePath = $username.'.png';
+        $result = $this->approvalService->sign($id, $request->step_id);
 
-        $form = HeaderFormOvertime::find($id);
-        $approval = $form->approvals()->where('flow_step_id', $request->step_id)->firstOrFail();
-        // dd($form->currentStep());
-        $approval->update([
-            'status' => 'approved',
-            'signed_at' => now(),
-            'approver_id' => auth()->id(),
-            'signature_path' => $imagePath,
-        ]);
-
-        // Update form status if final step
-
-        if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved']);
-        } elseif ($form->nextStep()) {
-            $status = 'waiting-'.str_replace('_', '-', $form->nextStep()->role_slug);
-            $form->update(['status' => $status]);
-        } else {
-            $form->update(['status' => 'Unknown']);
-        }
-
-        return redirect()->back()->with('success', 'Form signed successfully.');
+        return redirect()->back()->with(
+            $result['success'] ? 'success' : 'error',
+            $result['message']
+        );
     }
 
     public function reject(Request $request, $id)
     {
-        $request->validate([
-            'description' => 'required',
-        ]);
+        $request->validate(['description' => 'required']);
 
-        HeaderFormOvertime::find($id)->update([
-            'description' => $request->description,
-            'status' => 'rejected',
-        ]);
+        $result = $this->approvalService->reject($id, $request->approval_id, $request->description);
 
-        OvertimeFormApproval::find($request->approval_id)->update(['status' => 'rejected']);
-
-        return redirect()->back()->with('success', 'Report rejected!');
+        return redirect()->back()->with(
+            $result['success'] ? 'success' : 'error',
+            $result['message']
+        );
     }
 
     public function exportOvertime($headerId)
     {
-        $header = HeaderFormOvertime::with('department')->find($headerId);
-        $datas = DetailFormOvertime::where('header_id', $headerId)->get();
-
-        $departmentName = $header->department->name;
-        $currentDate = Carbon::now()->format('d-m-y'); // or any format you prefer
-
-        $fileName = "overtime_{$departmentName}_{$currentDate}.xlsx";
-
-        $header->update(['is_export' => true]);
-
-        return Excel::download(new OvertimeExport($header, $datas), $fileName);
+        return $this->exportService->exportOvertime($headerId);
     }
 
     public function edit($id)
     {
-        $header = HeaderFormOvertime::with('user', 'department')->find($id);
-
-        $datas = DetailFormOvertime::Where('header_id', $id)->get();
-
+        $header = OvertimeForm::with('user', 'department')->find($id);
+        $datas = OvertimeFormDetail::where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
 
@@ -129,315 +87,64 @@ class FormOvertimeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->all();
-        // dd($data);
-
-        DetailFormOvertime::where('header_id', $id)->delete();
+        OvertimeFormDetail::where('header_id', $id)->delete();
 
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $employeedata) {
-                $nik = $employeedata['NIK'];
-                $nama = $employeedata['nama'];
-                $jobdesc = $employeedata['jobdesc'];
-                $startdate = $employeedata['startdate'];
-                $starttime = $employeedata['starttime'];
-                $enddate = $employeedata['enddate'];
-                $endtime = $employeedata['endtime'];
-                $break = $employeedata['break'];
-                $remark = $employeedata['remark'];
-
-                DetailFormOvertime::create([
+                OvertimeFormDetail::create([
                     'header_id' => $id,
-                    'NIK' => $nik,
-                    'nama' => $nama,
-                    'job_desc' => $jobdesc,
-                    'start_date' => $startdate,
-                    'start_time' => $starttime,
-                    'end_date' => $enddate,
-                    'end_time' => $endtime,
-                    'break' => $break,
-                    'remarks' => $remark,
+                    'NIK' => $employeedata['nik'],
+                    'nama' => $employeedata['nama'],
+                    'job_desc' => $employeedata['jobdesc'],
+                    'start_date' => $employeedata['startdate'],
+                    'start_time' => $employeedata['starttime'],
+                    'end_date' => $employeedata['enddate'],
+                    'end_time' => $employeedata['endtime'],
+                    'break' => $employeedata['break'],
+                    'remarks' => $employeedata['remark'],
                 ]);
             }
         }
 
         return redirect()
-            ->route('formovertime.detail', ['id' => $id])
+            ->route('overtime.detail', ['id' => $id])
             ->with('success', 'Form Overtime updated successfully.');
     }
 
     public function destroy($id)
     {
-        HeaderFormOvertime::find($id)->delete();
-        DetailFormOvertime::where('header_id', $id)->delete();
+        OvertimeForm::find($id)->delete();
+        OvertimeFormDetail::where('header_id', $id)->delete();
 
         return redirect()->back()->with('success', 'Form Overtime deleted successfully!');
     }
 
     public function destroyDetail($id)
     {
-        DetailFormOvertime::find($id)->delete();
+        OvertimeFormDetail::find($id)->delete();
 
         return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
     }
 
     public function pushSingleDetailToJPayroll($detailId, Request $request)
     {
-        $action = $request->query('action'); // 'approve' atau 'reject'
-
-        $detail = DetailFormOvertime::with('employee', 'header')->find($detailId);
+        $detail = OvertimeFormDetail::with('employee', 'header')->find($detailId);
 
         if (! $detail) {
             return response()->json(['error' => 'Detail tidak ditemukan'], 404);
         }
 
-        if ($detail->header->is_push == 1) {
-            return response()->json(['error' => 'Header sudah dipush'], 400);
-        }
+        $action = $request->query('action');
+        $result = $this->jpayrollService->pushSingleDetail($detail, $action);
 
-        // Kalau aksi adalah reject, langsung update status-nya
-        if ($action === 'reject') {
-            $detail->status = 'Rejected';
-            $detail->save();
-
-            $this->checkAndUpdateHeaderPushStatus($detail->header_id);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Data berhasil direject',
-            ]);
-        }
-
-        // Jika bukan approve, maka tidak valid
-        if ($action !== 'approve') {
-            return response()->json(['error' => 'Aksi tidak valid'], 400);
-        }
-
-        $header = $detail->header;
-        $employee = $detail->employee;
-
-        $payload = [
-            'OTType' => '1',
-            'OTDate' => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
-            'JobDesc' => Str::limit($detail->job_desc, 250),
-            'Department' => $employee->organization_structure ?? 0,
-            'StartDate' => Carbon::parse($detail->start_date)->format('d/m/Y'),
-            'StartTime' => Carbon::parse($detail->start_time)->format('H:i'),
-            'EndDate' => Carbon::parse($detail->end_date)->format('d/m/Y'),
-            'EndTime' => Carbon::parse($detail->end_time)->format('H:i'),
-            'BreakTime' => $detail->break,
-            'Remark' => Str::limit(
-                "({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}",
-                250,
-            ),
-            'Choice' => '1',
-            'CompanyArea' => '10000',
-            'EmpList' => [
-                'NIK1' => $detail->NIK,
-            ],
-        ];
-
-        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
-                'Content-Type' => 'application/json',
-            ])->post($url, $payload);
-
-            $responseData = [
-                'NIK' => $detail->NIK,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ];
-
-            $responseJson = json_decode($response->body(), true);
-
-            if (
-                $response->successful() &&
-                isset($responseJson['status']) &&
-                $responseJson['status'] == '200'
-            ) {
-                $detail->is_processed = 1;
-                $detail->status = 'Approved';
-                $detail->save();
-
-                $this->checkAndUpdateHeaderPushStatus($detail->header_id);
-
-                Log::info("✅ Success push for detail ID: $detailId", $responseData);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data berhasil dipush & diapprove',
-                    'response' => $responseData,
-                ]);
-            } else {
-                Log::warning(
-                    "⚠️ Push rejected for detail ID: $detailId - JPayroll response not success",
-                    $responseData,
-                );
-
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: '.
-                            ($responseJson['msg'] ?? 'Unknown error'),
-                        'response' => $responseData,
-                    ],
-                    400,
-                );
-            }
-        } catch (\Exception $e) {
-            Log::error("❌ Exception push for detail ID: $detailId", [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Terjadi exception saat push',
-                    'error' => $e->getMessage(),
-                ],
-                500,
-            );
-        }
+        return response()->json($result, $result['code'] ?? 200);
     }
 
     public function pushAllDetailsToJPayroll($headerId)
     {
-        $header = HeaderFormOvertime::with('details.employee')->find($headerId);
+        $result = $this->jpayrollService->pushAllDetails($headerId);
 
-        if (! $header) {
-            return response()->json(['error' => 'Header tidak ditemukan'], 404);
-        }
-
-        if ($header->is_push == 1) {
-            return response()->json(['error' => 'Header sudah dipush sebelumnya'], 400);
-        }
-
-        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
-
-        $successCount = 0;
-        $failed = [];
-
-        foreach ($header->details as $detail) {
-            if ($detail->status === 'Rejected') {
-                continue;
-            }
-
-            if ($detail->status === 'Approved' && $detail->is_processed == 1) {
-                continue;
-            }
-
-            $employee = $detail->employee;
-
-            $payload = [
-                'OTType' => '1',
-                'OTDate' => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
-                'JobDesc' => Str::limit($detail->job_desc, 250),
-                'Department' => $employee->organization_structure ?? 0,
-                'StartDate' => Carbon::parse($detail->start_date)->format('d/m/Y'),
-                'StartTime' => Carbon::parse($detail->start_time)->format('H:i'),
-                'EndDate' => Carbon::parse($detail->end_date)->format('d/m/Y'),
-                'EndTime' => Carbon::parse($detail->end_time)->format('H:i'),
-                'BreakTime' => $detail->break,
-                'Remark' => Str::limit(
-                    "({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}",
-                    250,
-                ),
-                'Choice' => '1',
-                'CompanyArea' => '10000',
-                'EmpList' => [
-                    'NIK1' => $detail->NIK,
-                ],
-            ];
-
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
-                    'Content-Type' => 'application/json',
-                ])->post($url, $payload);
-
-                $responseJson = $response->json();
-                $responseData = [
-                    'NIK' => $detail->NIK,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ];
-
-                if (
-                    $response->successful() &&
-                    isset($responseJson['status']) &&
-                    $responseJson['status'] == '200'
-                ) {
-                    $detail->is_processed = 1;
-                    $detail->status = 'Approved';
-                    $detail->save();
-
-                    $successCount++;
-                    Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
-                } else {
-                    $msg = $responseJson['msg'] ?? 'Unknown error';
-
-                    $detail->status = 'Rejected';
-                    $detail->reason = "Reject JPAYROLL karena {$msg}";
-                    $detail->save();
-
-                    Log::warning(
-                        "⚠️ Push rejected & status updated for detail ID: {$detail->id}",
-                        $responseData,
-                    );
-
-                    $failed[] = [
-                        'detail_id' => $detail->id,
-                        'NIK' => $detail->NIK,
-                        'reason' => 'Rejected by JPayroll',
-                    ];
-                }
-            } catch (\Exception $e) {
-                Log::error("❌ Exception push for detail ID: {$detail->id}", [
-                    'error' => $e->getMessage(),
-                ]);
-
-                $failed[] = [
-                    'detail_id' => $detail->id,
-                    'NIK' => $detail->NIK,
-                    'reason' => 'Exception: '.$e->getMessage(),
-                ];
-            }
-        }
-
-        // Setelah semua proses
-        $this->checkAndUpdateHeaderPushStatus($headerId);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Proses push selesai',
-            'total_success' => $successCount,
-            'total_failed' => count($failed),
-            'failed_details' => $failed,
-        ]);
-    }
-
-    private function checkAndUpdateHeaderPushStatus($headerId)
-    {
-        $header = HeaderFormOvertime::with('details')->find($headerId);
-
-        if (! $header) {
-            return false;
-        }
-
-        // Cek kalau semua detail punya status (tidak null)
-        $hasPending = $header->details->contains(function ($detail) {
-            return is_null($detail->status);
-        });
-
-        if (! $hasPending) {
-            $header->is_push = 1;
-            $header->save();
-        }
-
-        return ! $hasPending;
+        return response()->json($result, $result['code'] ?? 200);
     }
 
     public function summaryView(Request $request)
@@ -450,49 +157,12 @@ class FormOvertimeController extends Controller
                 'end_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            $data = DetailFormOvertime::query()
-                ->whereBetween('start_date', [$request->start_date, $request->end_date])
-                ->whereNull('deleted_at')
-                ->where('status', 'Approved')
-                ->get();
-
-            $grouped = [];
-            foreach ($data as $item) {
-                $start = Carbon::parse("{$item->start_date} {$item->start_time}");
-                $end = Carbon::parse("{$item->end_date} {$item->end_time}");
-
-                if ($end->lessThan($start)) {
-                    $end->addDay(); // fallback (shouldn't happen with correct end_date)
-                }
-
-                $totalMinutes = $start->diffInMinutes($end) - $item->break;
-                $totalHours = $totalMinutes / 60;
-
-                $key = $item->NIK.'|'.$item->name;
-
-                if (! isset($grouped[$key])) {
-                    $grouped[$key] = [
-                        'NIK' => $item->NIK,
-                        'nama' => $item->name,
-                        'start_date' => $item->start_date,
-                        'end_date' => $item->end_date,
-                        'total_ot' => $totalHours,
-                    ];
-                } else {
-                    $grouped[$key]['total_ot'] += $totalHours;
-                    if ($item->start_date < $grouped[$key]['start_date']) {
-                        $grouped[$key]['start_date'] = $item->start_date;
-                    }
-                    if ($item->end_date > $grouped[$key]['end_date']) {
-                        $grouped[$key]['end_date'] = $item->end_date;
-                    }
-                }
-            }
-
-            $summary = collect(array_values($grouped));
+            $summary = $this->summaryService->generateSummary(
+                $request->start_date,
+                $request->end_date
+            );
         }
 
-        // dd($summary);
         return view('formovertime.export_summary', compact('summary'));
     }
 
@@ -503,10 +173,7 @@ class FormOvertimeController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        return Excel::download(
-            new OvertimeSummaryExport($request->start_date, $request->end_date),
-            'Overtime-Summary.xlsx',
-        );
+        return $this->exportService->exportSummary($request->start_date, $request->end_date);
     }
 
     public function showForm()
@@ -520,122 +187,18 @@ class FormOvertimeController extends Controller
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
-        $file = $request->file('file');
-        $data = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
-        $sheet = $data->getActiveSheet();
-        $rows = $sheet->toArray();
+        $result = $this->importService->importFromExcel($request->file('file')->getRealPath());
 
-        DB::beginTransaction();
-        try {
-            foreach ($rows as $index => $row) {
-                // Skip header rows (row index 0 - 3) dan baris tanpa kolom 1
-                if ($index < 4 || empty($row[0])) {
-                    continue;
-                }
-
-                // Ambil key dari kolom pertama
-                if (preg_match("/LINE\s*(\d+)\s*ID/", $row[0], $matches)) {
-                    $key = intval($matches[1]);
-                } else {
-                    continue;
-                }
-
-                $voucher = $row[1];
-                $in_date = $row[2] ?? null;
-                $in_time = $row[3] ?? null;
-                $out_date = $row[4] ?? null;
-                $out_time = $row[5] ?? null;
-                $nett = $row[6] ?? null;
-
-                $in_date_formatted = null;
-                $out_date_formatted = null;
-                $in_time_formatted = null;
-                $out_time_formatted = null;
-
-                // In Date
-                if (! empty($in_date)) {
-                    if (is_numeric($in_date)) {
-                        $in_date_formatted = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
-                            $in_date,
-                        )->format('Y-m-d');
-                    } elseif (preg_match("/\d{2}\/\d{2}\/\d{4}/", $in_date)) {
-                        try {
-                            $in_date_formatted = Carbon::createFromFormat(
-                                'd/m/Y',
-                                $in_date,
-                            )->format('Y-m-d');
-                        } catch (\Exception $e) {
-                            $in_date_formatted = null;
-                        }
-                    }
-                }
-
-                // Out Date
-                if (! empty($out_date)) {
-                    if (is_numeric($out_date)) {
-                        $out_date_formatted = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
-                            $out_date,
-                        )->format('Y-m-d');
-                    } elseif (preg_match("/\d{2}\/\d{2}\/\d{4}/", $out_date)) {
-                        try {
-                            $out_date_formatted = Carbon::createFromFormat(
-                                'd/m/Y',
-                                $out_date,
-                            )->format('Y-m-d');
-                        } catch (\Exception $e) {
-                            $out_date_formatted = null;
-                        }
-                    }
-                }
-
-                // In Time
-                $in_time_formatted = is_numeric($in_time)
-                    ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
-                        $in_time,
-                    )->format('H:i:s')
-                    : (! empty($in_time)
-                        ? $in_time
-                        : null);
-
-                // Out Time
-                $out_time_formatted = is_numeric($out_time)
-                    ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
-                        $out_time,
-                    )->format('H:i:s')
-                    : (! empty($out_time)
-                        ? $out_time
-                        : null);
-
-                // Netto
-                $nett_overtime = is_numeric($nett) ? floatval($nett) : null;
-
-                // Simpan ke DB
-                ActualOvertimeDetail::updateOrCreate(
-                    ['key' => $key],
-                    [
-                        'voucher' => strval($voucher),
-                        'in_date' => $in_date_formatted,
-                        'in_time' => $in_time_formatted,
-                        'out_date' => $out_date_formatted,
-                        'out_time' => $out_time_formatted,
-                        'nett_overtime' => $nett_overtime,
-                    ],
-                );
-            }
-
-            DB::commit();
-
-            return back()->with('success', 'File berhasil diimpor.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return back()->withErrors('Gagal impor: '.$e->getMessage());
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
         }
+
+        return back()->withErrors($result['message']);
     }
 
     public function reapprove($id)
     {
-        $header = HeaderFormOvertime::findOrFail($id);
+        $header = OvertimeForm::findOrFail($id);
         $header->is_push = 0;
         $header->save();
 
@@ -649,3 +212,4 @@ class FormOvertimeController extends Controller
         return redirect()->back()->with('success', 'Reapproved successfully !');
     }
 }
+

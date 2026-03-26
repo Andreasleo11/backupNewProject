@@ -3,7 +3,7 @@
 namespace App\Livewire\Compliance;
 
 use App\Exports\Compliance\DashboardExport;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\DepartmentComplianceMonthly;
 use App\Models\DepartmentComplianceSnapshot;
 use App\Models\RequirementUpload;
@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 
-#[Layout('layouts.app')]
+#[Layout('new.layouts.app')]
 class Dashboard extends Component
 {
     public string $search = '';

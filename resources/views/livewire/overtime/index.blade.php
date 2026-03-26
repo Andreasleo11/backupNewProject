@@ -1,639 +1,499 @@
-@section('title', 'Form Overtime List - ' . env('APP_NAME'))
+@section('title', 'Overtime Requests')
+@section('page-title', $isPrivileged ? 'Overtime Overview' : 'My Overtime Requests')
+@section('page-subtitle', $isPrivileged ? 'Monitor and manage overtime submissions across departments' : 'Track the status of your submitted overtime requests')
 
-<div x-data x-init="$nextTick(() => {
-    [...document.querySelectorAll('[data-bs-toggle=tooltip]')].forEach(el => new bootstrap.Tooltip(el));
-})">
+@php
+    use App\Livewire\Overtime\Index as OvertimeIndex;
 
-    @include('partials.alert-success-error')
+    // Stepper status → dot classes (JIT-safe full strings)
+    $stepDot = [
+        'approved' => 'bg-emerald-500 border-emerald-500',
+        'rejected' => 'bg-rose-500 border-rose-500',
+        'pending'  => 'bg-white border-slate-300',
+    ];
 
-    {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="fw-bold mb-0">Form Overtime List</h2>
-        @if (Auth::user()->department->name !== 'MANAGEMENT')
-            <a href="{{ route('overtime.create') }}" class="btn btn-success shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Create Form Overtime
+    $compact    = 'text-[11px]';
+    $rowPadding = 'py-2 px-4';
+
+    function sortIcon($field, $current, $dir) {
+        if ($current !== $field) return "<i class='bx bx-sort text-slate-300'></i>";
+        return $dir === 'asc' ? "<i class='bx bx-sort-up text-indigo-600'></i>" : "<i class='bx bx-sort-down text-indigo-600'></i>";
+    }
+@endphp
+
+<div class="space-y-6"
+    x-data="{ deleteOpen: false, filtersOpen: false }"
+    x-on:show-delete-modal.window="deleteOpen = true"
+    x-on:hide-delete-modal.window="deleteOpen = false">
+
+    {{-- ===== HEADER ===== --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm border border-slate-200/60">
+                <i class='bx bx-time-five text-xl'></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">
+                    {{ $isPrivileged ? 'Overtime Overview' : 'My Overtime Requests' }}
+                </h1>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    {{ $dataheader->total() }} {{ Str::plural('record', $dataheader->total()) }} match your current filters
+                </p>
+            </div>
+        </div>
+
+        @if (!$user->hasRole('MANAGEMENT'))
+            <a href="{{ route('overtime.create') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500">
+                <i class='bx bx-plus-circle text-lg'></i>
+                New Overtime Request
             </a>
         @endif
     </div>
 
-    {{-- Breadcrumb --}}
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb bg-light rounded py-2">
-            <li class="breadcrumb-item"><a href="{{ route('overtime.index') }}">Form Overtime</a></li>
-            <li class="breadcrumb-item active">List</li>
-        </ol>
-    </nav>
-
-    <div class="mb-4">
-        <div class="pb-2">
-            <div class="d-flex align-items-center justify-content-between">
-                <span class="text-sm fw-bold text-secondary">Info Summary</span>
-
-                {{-- Scope switch (All results vs This page) --}}
-                <div class="btn-group btn-group-sm p-2" role="group" aria-label="Stats scope">
-                    <input type="radio" class="btn-check" id="scopeAll" name="statsScope" value="all"
-                        wire:model.live="statsScope">
-                    <label class="btn btn-outline-secondary" for="scopeAll">All results</label>
-
-                    <input type="radio" class="btn-check" id="scopePage" name="statsScope" value="page"
-                        wire:model.live="statsScope">
-                    <label class="btn btn-outline-secondary" for="scopePage">This page</label>
+    {{-- ================================================================
+         SECTION A: DETAIL-LEVEL REVIEW METRICS — Verificator / super-admin only.
+         These counts (approved/rejected/pending) reflect individual OT detail
+         rows that the Verificator approves/rejects AFTER the signing flow completes.
+         They are meaningless to signers (GM, Director, Dept Head) who only
+         interact with the form-level approval flow.
+    ================================================================ --}}
+    @if ($isDetailReviewer)
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Detail Review Status</span>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Per-employee rows across all visible forms</p>
                 </div>
             </div>
 
-            {{-- Skeleton while stats recompute --}}
-            <div class="row g-3 d-none" wire:loading.class.remove="d-none"
-                wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage,statsScope">
-                @for ($i = 0; $i < 3; $i++)
-                    <div class="col-12 col-md-4">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="placeholder-glow">
-                                    <span class="placeholder rounded-circle d-inline-block"
-                                        style="width:36px;height:36px;"></span>
-                                    <div class="mt-2">
-                                        <span class="placeholder col-6"></span>
-                                        <div class="mt-1"><span class="placeholder col-6 col-md-3"></span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            {{-- Skeleton --}}
+            <div class="grid grid-cols-3 gap-4" wire:loading wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage">
+                @for($i = 0; $i < 3; $i++)
+                <div class="glass-card rounded-2xl border border-slate-100/60 p-5 animate-pulse">
+                    <div class="flex items-center gap-4"><div class="h-12 w-12 rounded-xl bg-slate-100"></div><div class="flex-1 space-y-2"><div class="h-2 w-1/3 rounded bg-slate-100"></div><div class="h-5 w-1/4 rounded bg-slate-100"></div><div class="h-1.5 w-full rounded-full bg-slate-100"></div></div></div>
+                </div>
                 @endfor
             </div>
 
-            {{-- Cards (visible when NOT loading) --}}
-            <div class="row g-3" wire:loading.remove
-                wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage,statsScope">
-                {{-- Approved --}}
-                <div class="col-12 col-md-4">
-                    <button type="button"
-                        class="card border-0 shadow-sm h-100 w-100 text-start stat-card {{ $infoStatus === 'approved' ? 'stat-card--active' : '' }}"
-                        wire:click="setInfoFilter('approved')"
-                        aria-pressed="{{ $infoStatus === 'approved' ? 'true' : 'false' }}">
-                        <div class="card-body d-flex align-items-center gap-3">
-                            <span class="badge rounded-circle p-3 bg-success-subtle text-success"><i
-                                    class="bi bi-check2"></i></span>
-                            <div>
-                                <div class="text-muted small">Approved</div>
-                                <div class="fs-5 fw-semibold">{{ number_format($stats['approved']) }}</div>
-                                <div class="progress mt-1" style="height:4px;">
-                                    <div class="progress-bar bg-success" role="progressbar"
-                                        style="width: {{ $stats['pct_approved'] }}%"
-                                        aria-valuenow="{{ $stats['pct_approved'] }}" aria-valuemin="0"
-                                        aria-valuemax="100"></div>
-                                </div>
+            {{-- Metric Cards --}}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3" wire:loading.remove wire:target="startDate,endDate,dept,infoStatus,isPush,search,range,perPage">
+                @foreach ([
+                    ['key' => 'approved', 'label' => 'Approved',  'icon' => 'bx-check-circle',   'color' => 'emerald', 'base' => 'bg-emerald-100 text-emerald-600', 'hover' => 'group-hover:bg-emerald-500', 'bar' => 'bg-emerald-500', 'ring' => 'border-emerald-400 bg-emerald-50/40'],
+                    ['key' => 'rejected', 'label' => 'Rejected',  'icon' => 'bx-x-circle',       'color' => 'rose',    'base' => 'bg-rose-100 text-rose-600',       'hover' => 'group-hover:bg-rose-500',    'bar' => 'bg-rose-500',    'ring' => 'border-rose-400 bg-rose-50/40'],
+                    ['key' => 'pending',  'label' => 'Pending',   'icon' => 'bx-time-five',      'color' => 'amber',   'base' => 'bg-amber-100 text-amber-600',     'hover' => 'group-hover:bg-amber-500',   'bar' => 'bg-amber-500',   'ring' => 'border-amber-400 bg-amber-50/40'],
+                ] as $card)
+                <button type="button" wire:click="setInfoFilter('{{ $card['key'] }}')"
+                    class="glass-card group flex w-full rounded-2xl p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none
+                        {{ $infoStatus === $card['key'] ? 'border-2 '.$card['ring'] : 'border border-slate-100/60' }}">
+                    <div class="flex w-full items-center gap-4">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl {{ $card['base'] }} {{ $card['hover'] }} group-hover:text-white transition-colors duration-300">
+                            <i class="bx {{ $card['icon'] }} text-2xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ $card['label'] }}</div>
+                            <div class="mt-1 text-2xl font-black text-slate-800 tabular-nums">{{ number_format($stats[$card['key']]) }}</div>
+                            <div class="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="{{ $card['bar'] }} h-full transition-all duration-500" style="width: {{ $stats['pct_'.$card['key']] }}%"></div>
                             </div>
                         </div>
-                    </button>
-                </div>
-
-                {{-- Rejected --}}
-                <div class="col-12 col-md-4">
-                    <button type="button"
-                        class="card border-0 shadow-sm h-100 w-100 text-start stat-card {{ $infoStatus === 'rejected' ? 'stat-card--active' : '' }}"
-                        wire:click="setInfoFilter('rejected')"
-                        aria-pressed="{{ $infoStatus === 'rejected' ? 'true' : 'false' }}">
-                        <div class="card-body d-flex align-items-center gap-3">
-                            <span class="badge rounded-circle p-3 bg-danger-subtle text-danger"><i
-                                    class="bi bi-x-lg"></i></span>
-                            <div>
-                                <div class="text-muted small">Rejected</div>
-                                <div class="fs-5 fw-semibold">{{ number_format($stats['rejected']) }}</div>
-                                <div class="progress mt-1" style="height:4px;">
-                                    <div class="progress-bar bg-danger" role="progressbar"
-                                        style="width: {{ $stats['pct_rejected'] }}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-
-                {{-- Pending --}}
-                <div class="col-12 col-md-4">
-                    <button type="button"
-                        class="card border-0 shadow-sm h-100 w-100 text-start stat-card {{ $infoStatus === 'pending' ? 'stat-card--active' : '' }}"
-                        wire:click="setInfoFilter('pending')"
-                        aria-pressed="{{ $infoStatus === 'pending' ? 'true' : 'false' }}">
-                        <div class="card-body d-flex align-items-center gap-3">
-                            <span class="badge rounded-circle p-3 bg-secondary-subtle text-secondary"><i
-                                    class="bi bi-hourglass-split"></i></span>
-                            <div>
-                                <div class="text-muted small">Pending</div>
-                                <div class="fs-5 fw-semibold">{{ number_format($stats['pending']) }}</div>
-                                <div class="progress mt-1" style="height:4px;">
-                                    <div class="progress-bar bg-secondary" role="progressbar"
-                                        style="width: {{ $stats['pct_pending'] }}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
+                    </div>
+                </button>
+                @endforeach
             </div>
         </div>
-    </div>
+    @endif
 
-    {{-- Tiny CSS touch for hover/active --}}
-    <style>
-        .stat-card {
-            transition: transform .08s ease, box-shadow .2s ease;
-        }
+    {{-- ================================================================
+         SECTION B: "Action Required" alert strip (dept-head / GM only)
+         Surfaces pending signatures without needing to read the table.
+    ================================================================ --}}
+    @if ($isDetailReviewer && $stats['pending'] > 0 && $infoStatus !== 'pending')
+        <div class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <i class='bx bx-bell-ring text-xl text-amber-600'></i>
+            <div class="flex-1 text-xs font-bold text-amber-800">
+                <strong>{{ $stats['pending'] }} {{ Str::plural('form', $stats['pending']) }}</strong> are waiting for approval action.
+            </div>
+            <button wire:click="setInfoFilter('pending')" class="rounded-lg bg-amber-500 px-3 py-1.5 text-[10px] font-black text-white hover:bg-amber-600 transition-colors">
+                View Pending
+            </button>
+        </div>
+    @endif
 
-        .stat-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .08) !important;
-        }
+    {{-- ================================================================
+         SECTION C: TOOLBAR + FILTERS
+         Always-visible: Search + Quick Ranges + Per-page
+         Collapsible:    Date range, Department, advanced filters
+    ================================================================ --}}
+    <div class="glass-card rounded-2xl border border-slate-100/60 shadow-sm">
+        <div class="p-4 space-y-3">
 
-        .stat-card--active {
-            outline: 2px solid var(--bs-primary);
-        }
-    </style>
-
-    {{-- FILTERS / TOOLBAR CARD --}}
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-
-            {{-- Top row: Search + quick ranges + density + right tools --}}
-            <div class="d-flex flex-wrap gap-2 align-items-center">
+            {{-- Top Row (always visible) --}}
+            <div class="flex flex-wrap items-center gap-2">
 
                 {{-- Search --}}
-                <div class="input-group" style="max-width: 360px">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Search ID / Admin / Branch"
-                        wire:model.live.debounce.400ms="search">
+                <div class="relative w-full max-w-xs">
+                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class='bx bx-search'></i>
+                    </span>
+                    <input type="text"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2 pl-9 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                        placeholder="Search..." wire:model.live.debounce.400ms="search">
                 </div>
 
-                {{-- Quick date ranges (desktop) --}}
-                <div class="btn-group d-none d-md-inline-flex" role="group" aria-label="Quick ranges">
-                    <button type="button" class="btn btn-outline-secondary {{ $range === 'today' ? 'active' : '' }}"
-                        aria-pressed="{{ $range === 'today' ? 'true' : 'false' }}"
-                        wire:click="setRange('today')">Today</button>
-
-                    <button type="button" class="btn btn-outline-secondary {{ $range === '7d' ? 'active' : '' }}"
-                        aria-pressed="{{ $range === '7d' ? 'true' : 'false' }}" wire:click="setRange('7d')">Last 7
-                        days</button>
-
-                    <button type="button" class="btn btn-outline-secondary {{ $range === '30d' ? 'active' : '' }}"
-                        aria-pressed="{{ $range === '30d' ? 'true' : 'false' }}" wire:click="setRange('30d')">Last 30
-                        days</button>
-
-                    <button type="button" class="btn btn-outline-secondary {{ $range === 'mtd' ? 'active' : '' }}"
-                        aria-pressed="{{ $range === 'mtd' ? 'true' : 'false' }}" title="Month-to-Date"
-                        wire:click="setRange('mtd')">MTD</button>
+                {{-- Quick Ranges (desktop) --}}
+                <div class="hidden md:flex items-center gap-0.5 rounded-xl bg-slate-100 p-1 text-xs font-bold">
+                    @foreach (['today' => 'Today', '7d' => '7d', '30d' => '30d', 'mtd' => 'MTD'] as $k => $v)
+                        <button type="button" wire:click="setRange('{{ $k }}')"
+                            class="rounded-lg px-3 py-1.5 transition-all {{ $range === $k ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">
+                            {{ $v }}
+                        </button>
+                    @endforeach
                 </div>
 
-                {{-- Right tools --}}
-                <div class="ms-auto d-flex align-items-center gap-2">
-                    {{-- Per-page --}}
-                    <select class="form-select form-select" style="max-width: 120px" wire:model.live="perPage">
-                        <option value="10">10 / page</option>
-                        <option value="25">25 / page</option>
-                        <option value="50">50 / page</option>
+                {{-- Right controls --}}
+                <div class="ml-auto flex items-center gap-2">
+                    
+
+                    <select class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-7 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500" wire:model.live="perPage">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
                     </select>
 
-                    {{-- Density toggle --}}
-                    <div class="btn-group ms-1" role="group" aria-label="Density">
-                        <input type="radio" class="btn-check" id="denseOn" name="density" value="1"
-                            wire:model.live="dense">
-                        <label class="btn btn-outline-secondary btn" for="denseOn" data-bs-toggle="tooltip"
-                            title="Compact rows">
-                            <i class="bi bi-list"></i>
-                        </label>
-
-                        <input type="radio" class="btn-check" id="denseOff" name="density" value="0"
-                            wire:model.live="dense">
-                        <label class="btn btn-outline-secondary btn" for="denseOff" data-bs-toggle="tooltip"
-                            title="Comfortable rows">
-                            <i class="bi bi-ui-checks-grid"></i>
-                        </label>
-                    </div>
-
-                    {{-- Mobile: open offcanvas --}}
-                    <button class="btn btn-outline-secondary btn d-md-none" data-bs-toggle="offcanvas"
-                        data-bs-target="#filterOffcanvas">
-                        <i class="bi bi-sliders"></i> Filters
+                    {{-- Toggle advanced filters --}}
+                    <button @click="filtersOpen = !filtersOpen"
+                        class="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all
+                            {{ ($startDate || $endDate || $dept || $infoStatus || ($isPush !== null && $isPush !== '')) ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                        <i class='bx bx-slider-alt'></i>
+                        <span class="hidden sm:inline">Filters</span>
+                        @php 
+                            $activeCount = (int)!!$startDate + (int)!!$endDate + (int)!!$dept + (int)!!$infoStatus + (int)($isPush !== null && $isPush !== ''); 
+                        @endphp
+                        @if ($activeCount > 0)
+                            <span class="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/30 text-[9px] font-black">{{ $activeCount }}</span>
+                        @endif
                     </button>
+
+                    {{-- Export: only for privileged --}}
+                    @if ($isPrivileged)
+                        <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
+                            class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all">
+                            <i class='bx bx-export'></i> Export
+                        </button>
+                    @endif
                 </div>
             </div>
 
-            {{-- Desktop filter fields (inline) --}}
-            <div class="row g-3 align-items-end mt-3 d-none d-md-flex">
-                <div class="col-auto">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    <input id="start_date" type="date" class="form-control shadow-sm" wire:model.live="startDate"
-                        placeholder=" ">
-                    @error('startDate')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
+            {{-- Collapsible Advanced Filters --}}
+            <div x-show="filtersOpen" x-collapse x-cloak class="border-t border-slate-100 pt-3">
+                <div class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">From</label>
+                        <input type="date" wire:model.live="startDate" class="rounded-xl border-0 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">To</label>
+                        <input type="date" wire:model.live="endDate" class="rounded-xl border-0 bg-slate-50 py-2 px-3 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500">
+                    </div>
 
-                <div class="col-auto">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input id="end_date" type="date" class="form-control shadow-sm" wire:model.live="endDate"
-                        placeholder=" ">
-                    @error('endDate')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
-                </div>
+                    {{-- Department: only meaningful for privileged roles --}}
+                    @if ($isPrivileged)
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Department</label>
+                        <select wire:model.live="dept" class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-8 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 min-w-[160px] focus:ring-indigo-500">
+                            <option value="">All Departments</option>
+                            @foreach ($departments as $d)
+                                <option value="{{ $d['id'] }}">{{ $d['name'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
 
-                <div class="col-auto">
-                    <label for="dept" class="form-label">Department</label>
-                    <select id="dept" class="form-select shadow-sm" wire:model.live="dept">
-                        <option value="">-- All --</option>
-                        @foreach ($departments as $d)
-                            <option value="{{ $d['id'] }}">{{ $d['name'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                @if ($user->specification->name === 'VERIFICATOR')
-                    <div class="col-auto">
-                        <label for="info_status" class="form-label">Info</label>
-                        <select id="info_status" class="form-select shadow-sm" wire:model.live="infoStatus">
-                            <option value="">-- Semua --</option>
+                    @if ($isDetailReviewer)
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</label>
+                        <select wire:model.live="infoStatus" class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-8 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500">
+                            <option value="">All</option>
                             <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
-
-                    <div class="col-auto">
-                        <label for="is_push" class="form-label">Push by Verificator</label>
-                        <select id="is_push" class="form-select shadow-sm" wire:model.live="isPush">
-                            <option value="">-- All --</option>
-                            <option value="1">Already Pushed</option>
-                            <option value="0">Not Yet Pushed</option>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Payroll Push</label>
+                        <select wire:model.live="isPush" class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-8 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500">
+                            <option value="">Any</option>
+                            <option value="1">Pushed</option>
+                            <option value="0">Not Pushed</option>
                         </select>
                     </div>
-                @endif
+                    @endif
 
-                <div class="col-auto">
-                    <label class="form-label d-block">&nbsp;</label>
-                    <button type="button" class="btn btn-outline-secondary shadow-sm" wire:click="resetFilters"
-                        wire:loading.attr="disabled">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Clear all
-                    </button>
-                </div>
-
-                {{-- Export CSV --}}
-                <div class="col-auto ms-auto">
-                    <button type="button" class="btn btn-outline-primary" wire:click="exportCsv"
-                        wire:loading.attr="disabled"><i class="bi bi-download"></i> Export CSV
-                    </button>
+                    <div class="ml-auto">
+                        <button wire:click="resetFilters" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-500 hover:bg-slate-50 transition-all shadow-sm">
+                            <i class='bx bx-reset'></i> Clear All
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {{-- Applied filters chips --}}
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                @if ($range)
-                    <span class="badge rounded-pill text-bg-light border">
-                        Range: {{ strtoupper($range) }}
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('range')"></button>
-                    </span>
-                @endif
-
-                @if ($startDate && $endDate)
-                    <span class="badge rounded-pill text-bg-light border">
-                        {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} –
-                        {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('dates')"></button>
-                    </span>
-                @endif
-
-                @if ($dept)
-                    <span class="badge rounded-pill text-bg-light border">
-                        Dept: {{ collect($departments)->firstWhere('id', $dept)['name'] ?? $dept }}
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('dept')"></button>
-                    </span>
-                @endif
-
-                @if ($infoStatus)
-                    <span class="badge rounded-pill text-bg-light border">
-                        Info: {{ ucfirst($infoStatus) }}
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('infoStatus')"></button>
-                    </span>
-                @endif
-
-                @if ($isPush !== null && $isPush !== '')
-                    <span class="badge rounded-pill text-bg-light border">
-                        {{ $isPush === '1' ? 'Pushed' : 'Not pushed' }}
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('isPush')"></button>
-                    </span>
-                @endif
-
-                @if ($search)
-                    <span class="badge rounded-pill text-bg-light border">
-                        Search: “{{ $search }}”
-                        <button class="btn-close btn-close-white ms-2" aria-label="Clear"
-                            wire:click="clearFilter('search')"></button>
-                    </span>
-                @endif
+            {{-- Active Filter Chips --}}
+            @php $anyChip = $range || ($startDate && $endDate) || $dept || $infoStatus || $search; @endphp
+            @if ($anyChip)
+            <div class="flex flex-wrap gap-1.5 pt-1">
+                @if ($range)       <button wire:click="clearFilter('range')"     class="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-black text-indigo-700 hover:bg-indigo-100">Range: {{ strtoupper($range) }} <i class='bx bx-x'></i></button> @endif
+                @if ($startDate && $endDate) <button wire:click="clearFilter('dates')" class="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-black text-indigo-700 hover:bg-indigo-100">{{ date('d M y', strtotime($startDate)) }} – {{ date('d M y', strtotime($endDate)) }} <i class='bx bx-x'></i></button> @endif
+                @if ($dept)        <button wire:click="clearFilter('dept')"      class="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-black text-indigo-700 hover:bg-indigo-100">{{ collect($departments)->firstWhere('id', $dept)['name'] ?? 'Dept' }} <i class='bx bx-x'></i></button> @endif
+                @if ($infoStatus)  <button wire:click="clearFilter('infoStatus')"class="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-black text-indigo-700 hover:bg-indigo-100">{{ ucfirst($infoStatus) }} <i class='bx bx-x'></i></button> @endif
+                @if ($search)      <button wire:click="clearFilter('search')"    class="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-black text-indigo-700 hover:bg-indigo-100">"{{ $search }}" <i class='bx bx-x'></i></button> @endif
             </div>
-
+            @endif
         </div>
     </div>
 
-    {{-- MOBILE OFFCANVAS with the same fields --}}
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="filterOffcanvasLabel">Filters</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="vstack gap-3">
-                <div>
-                    <label class="form-label">Date range</label>
-                    <div class="d-flex gap-2">
-                        <input type="date" class="form-control" wire:model.live="startDate">
-                        <input type="date" class="form-control" wire:model.live="endDate">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="form-label">Quick ranges</label>
-                    <div class="btn-group w-100" role="group" aria-label="Quick ranges">
-                        <button class="btn btn-outline-secondary {{ $range === 'today' ? 'active' : '' }}"
-                            wire:click="setRange('today')">Today</button>
-                        <button class="btn btn-outline-secondary {{ $range === '7d' ? 'active' : '' }}"
-                            wire:click="setRange('7d')">7d</button>
-                        <button class="btn btn-outline-secondary {{ $range === '30d' ? 'active' : '' }}"
-                            wire:click="setRange('30d')">30d</button>
-                        <button class="btn btn-outline-secondary {{ $range === 'mtd' ? 'active' : '' }}"
-                            wire:click="setRange('mtd')">MTD</button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="form-label">Department</label>
-                    <select class="form-select" wire:model.live="dept">
-                        <option value="">-- All --</option>
-                        @foreach ($departments as $d)
-                            <option value="{{ $d['id'] }}">{{ $d['name'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                @if ($user->specification->name === 'VERIFICATOR')
-                    <div>
-                        <label class="form-label">Info</label>
-                        <select class="form-select" wire:model.live="infoStatus">
-                            <option value="">-- Semua --</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="form-label">Push by Verificator</label>
-                        <select class="form-select" wire:model.live="isPush">
-                            <option value="">-- All --</option>
-                            <option value="1">Already Pushed</option>
-                            <option value="0">Not Yet Pushed</option>
-                        </select>
-                    </div>
-                @endif
-
-                <div class="d-grid">
-                    <button class="btn btn-outline-secondary" data-bs-dismiss="offcanvas" wire:click="resetFilters">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Clear all
-                    </button>
-                </div>
+    {{-- ================================================================
+         SECTION D: TABLE + EMPTY STATE
+    ================================================================ --}}
+    @if ($dataheader->total() === 0 && !$anyChip ?? false)
+        {{-- ===== ZERO-RECORD EMPTY STATE (New User Onboarding) ===== --}}
+        <div class="glass-card rounded-2xl border border-slate-100/60 shadow-sm py-20 px-6 text-center">
+            <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-emerald-50 border border-slate-100 shadow-inner mb-5">
+                <i class='bx bx-time text-5xl text-indigo-300'></i>
             </div>
+            <h3 class="text-lg font-black text-slate-700 tracking-tight">No overtime requests yet</h3>
+            <p class="mt-2 text-sm font-medium text-slate-400 max-w-xs mx-auto leading-relaxed">
+                Submit your first overtime request to get started. It only takes a minute.
+            </p>
+            @if (Auth::user()->department?->name !== 'MANAGEMENT')
+                <a href="{{ route('overtime.create') }}" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
+                    <i class='bx bx-plus-circle text-lg'></i> Create My First Request
+                </a>
+            @endif
         </div>
-    </div>
+    @else
+        {{-- ===== DATA TABLE ===== --}}
+        <div class="glass-card overflow-hidden rounded-2xl border border-slate-100/60 shadow-sm">
+            <div class="overflow-x-auto" wire:loading.class="opacity-60 pointer-events-none">
 
-    @php
-        function sortIcon($field, $current, $dir)
-        {
-            if ($current !== $field) {
-                return 'bi bi-arrow-down-up text-muted';
-            }
-            return $dir === 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down';
-        }
-        function ariaSort($field, $current, $dir)
-        {
-            if ($current !== $field) {
-                return 'none';
-            }
-            return $dir === 'asc' ? 'ascending' : 'descending';
-        }
-
-        $compact = $dense ? 'table-sm table-compact' : '';
-    @endphp
-
-    {{-- Table --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive" wire:loading.class="opacity-50">
-                {{-- ===== DATA TABLE (shown when NOT loading) ===== --}}
-                <table wire:loading.remove wire:key="table-data"
-                    class="table table-hover table-striped table-bordered align-middle text-center mb-0 {{ $compact }}">
-
-                    <thead class="table-light sticky-top" style="top:0; z-index:2;">
+                {{-- Actual data table --}}
+                <table class="min-w-full text-left align-middle" wire:loading.remove wire:key="tbl-data">
+                    <thead class="border-b border-slate-200/60 bg-slate-50/80 text-[10px] font-black uppercase tracking-widest text-slate-500">
                         <tr>
-                            <th role="button" wire:click="sortBy('id')"
-                                aria-sort="{{ ariaSort('id', $sortField, $sortDirection) }}">
-                                ID <i class="{{ sortIcon('id', $sortField, $sortDirection) }}"></i>
+                            <th wire:click="sortBy('id')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
+                                <div class="flex items-center gap-1"># {!! sortIcon('id', $sortField, $sortDirection) !!}</div>
                             </th>
-                            <th>Admin</th>
-                            <th>Dept</th>
-                            <th>Branch</th>
-                            <th role="button" wire:click="sortBy('first_overtime_date')"
-                                aria-sort="{{ ariaSort('first_overtime_date', $sortField, $sortDirection) }}">
-                                Overtime Date <i
-                                    class="{{ sortIcon('first_overtime_date', $sortField, $sortDirection) }}"></i>
+                            <th class="{{ $rowPadding }} whitespace-nowrap">Submitted By</th>
+                            @if ($isPrivileged)
+                                <th class="{{ $rowPadding }} whitespace-nowrap">Dept / Branch</th>
+                            @endif
+                            <th wire:click="sortBy('first_overtime_date')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
+                                <div class="flex items-center gap-1">OT Date {!! sortIcon('first_overtime_date', $sortField, $sortDirection) !!}</div>
                             </th>
-                            <th role="button" wire:click="sortBy('status')"
-                                aria-sort="{{ ariaSort('status', $sortField, $sortDirection) }}">
-                                Status <i class="{{ sortIcon('status', $sortField, $sortDirection) }}"></i>
+                            <th wire:click="sortBy('status')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
+                                <div class="flex items-center gap-1">Status {!! sortIcon('status', $sortField, $sortDirection) !!}</div>
                             </th>
-                            <th>Type</th>
-                            <th>Is After Hour?</th>
-                            <th>Info</th>
-                            <th>Action</th>
-                            <th>Created At</th>
+                            <th class="{{ $rowPadding }} whitespace-nowrap">Review Status</th>
+                            <th class="{{ $rowPadding }} whitespace-nowrap">Approval</th>
+                            <th class="{{ $rowPadding }} whitespace-nowrap text-right">Action</th>
                         </tr>
                     </thead>
-
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100/60 bg-white/30 {{ $compact }}">
                         @forelse ($dataheader as $fot)
-                            <tr wire:key="row-{{ $fot->id }}"
-                                class="{{ $fot->is_planned ? '' : 'bg-danger-subtle' }}">
-                                <td>{{ $fot->id }}</td>
-                                <td>{{ $fot->user->name }}</td>
-                                <td>
-                                    <span
-                                        class="badge bg-light text-secondary border">{{ $fot->department->name }}</span>
-                                </td>
-                                <td>{{ $fot->branch }}</td>
-                                <td>
-                                    {{ $fot->first_overtime_date ? \Carbon\Carbon::parse($fot->first_overtime_date)->format('d-m-Y') : '-' }}
-                                </td>
-                                <td>
-                                    <x-overtime-form-status-badge :status="$fot->status" />
-                                    @if ($fot->is_push == 1)
-                                        <div class="text-success small mt-1" data-bs-toggle="tooltip"
-                                            title="Pushed by Verificator">
-                                            <i class="bi bi-check-circle me-1"></i> Finish by Bu Bernadett
-                                        </div>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge rounded-pill px-3 py-2 fs-6 {{ $fot->is_planned ? 'bg-light text-secondary border border-secondary' : 'bg-danger text-white' }}"
-                                        data-bs-toggle="tooltip"
-                                        title="Planned if created before today; otherwise Urgent">
+                            @php
+                                $meta  = OvertimeIndex::statusMeta($fot->status);
+                                $steps = $fot->approvalRequest?->steps ?? collect();
+                            @endphp
+                            <tr wire:key="row-{{ $fot->id }}" class="group hover:bg-indigo-50/30 transition-colors">
+
+                                {{-- # / Plan badge --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <div class="font-black text-slate-800 tabular-nums">#{{ $fot->id }}</div>
+                                    <span class="mt-1 inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[9px] font-black uppercase
+                                        {{ $fot->is_planned ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-rose-50 border-rose-100 text-rose-600' }}">
+                                        <i class='bx {{ $fot->is_planned ? 'bx-calendar-check' : 'bx-alarm-exclamation' }}'></i>
                                         {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
                                     </span>
                                 </td>
-                                <td>{{ $fot->is_after_hour ? 'Yes' : 'No' }}</td>
-                                <td class="text-start">
-                                    <div class="d-flex flex-column gap-1">
-                                        @if ($fot->approved_count)
-                                            <span class="badge bg-success">Approved: {{ $fot->approved_count }}</span>
-                                        @endif
-                                        @if ($fot->rejected_count)
-                                            <span class="badge bg-danger">Rejected: {{ $fot->rejected_count }}</span>
-                                        @endif
-                                        @if ($fot->pending_count)
-                                            <span class="badge bg-secondary">Pending: {{ $fot->pending_count }}</span>
+
+                                {{-- Submitted By --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <div class="font-bold text-slate-700">{{ $fot->user?->name ?? 'Unknown' }}</div>
+                                    <div class="text-[9px] text-slate-400 mt-0.5 tabular-nums">{{ $fot->created_at?->format('d M y · H:i') }}</div>
+                                </td>
+
+                                {{-- Dept/Branch: privileged only --}}
+                                @if ($isPrivileged)
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <span class="inline-flex rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-black text-slate-600">
+                                        {{ $fot->department?->name ?? '-' }}
+                                    </span>
+                                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ $fot->branch }}</div>
+                                </td>
+                                @endif
+
+                                {{-- OT Date --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap font-bold text-slate-700">
+                                    {{ $fot->first_overtime_date ? date('D, d M Y', strtotime($fot->first_overtime_date)) : '—' }}
+                                </td>
+
+                                {{-- Status Badge (JIT-safe via statusMeta) --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $meta['classes'] }}">
+                                        <i class="bx {{ $meta['icon'] }}"></i>{{ $meta['label'] }}
+                                    </span>
+                                </td>
+
+                                {{-- Review Status Badge --}}
+                                @php $review = OvertimeIndex::reviewMeta($fot); @endphp
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    <div class="flex flex-col">
+                                        <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $review['classes'] }}"
+                                            @if(isset($review['reason'])) title="{{ $review['reason'] }}" @endif>
+                                            <i class="bx {{ $review['icon'] }}"></i>{{ $review['label'] }}
+                                        </span>
+                                        @if(isset($review['reason']))
+                                            <div class="mt-1 text-[9px] text-slate-400 max-w-[150px] truncate font-medium italic" title="{{ $review['reason'] }}">
+                                                {{ $review['reason'] }}
+                                            </div>
                                         @endif
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                        <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
-                                            class="btn btn-outline-secondary btn-sm" target="_blank">
-                                            <i class="bi bi-info-circle"></i> Detail
+
+                                {{-- Inline Approval Stepper --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap">
+                                    @can('viewTimeline', $fot)
+                                        @if ($steps->isEmpty())
+                                            <span class="text-[10px] text-slate-400 italic">Not submitted</span>
+                                        @else
+                                            <div class="flex items-center gap-1">
+                                                @foreach ($steps as $step)
+                                                    @php
+                                                        // Engine stores UPPERCASE: APPROVED / REJECTED / PENDING
+                                                        $dotStatus = match(strtolower($step->status ?? '')) {
+                                                            'approved'            => 'approved',
+                                                            'rejected', 'canceled'=> 'rejected',
+                                                            default               => 'pending',
+                                                        };
+                                                    @endphp
+                                                    {{-- Connector line (not before first dot) --}}
+                                                    @if (!$loop->first)
+                                                        <div class="h-px w-3 {{ $dotStatus === 'approved' ? 'bg-emerald-400' : 'bg-slate-200' }}"></div>
+                                                    @endif
+
+                                                    {{-- Dot with tooltip --}}
+                                                    <div title="{{ $step->approver_snapshot_label ?? 'Step '.$step->sequence }}"
+                                                        class="relative h-4 w-4 rounded-full border-2 flex items-center justify-center cursor-default transition-all
+                                                            {{ $stepDot[$dotStatus] }}">
+                                                        @if ($dotStatus === 'approved')
+                                                            <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M1 4l2 2 4-4"/></svg>
+                                                        @elseif($dotStatus === 'rejected')
+                                                            <svg class="h-2 w-2 text-white" fill="none" viewBox="0 0 8 8"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M2 2l4 4M6 2L2 6"/></svg>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <div class="mt-1 text-[9px] text-slate-400 tabular-nums">
+                                                {{ $steps->filter(fn($s) => strtolower($s->status ?? '') === 'approved')->count() }}/{{ $steps->count() }} signed
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="flex items-center gap-1 opacity-20 filter grayscale">
+                                            @for($i=0; $i<3; $i++)
+                                                <div class="h-3 w-3 rounded-full bg-slate-200"></div>
+                                            @endfor
+                                        </div>
+                                    @endcan
+                                </td>
+
+                                {{-- Action: only the Detail link on the list. Delete lives in the detail page. --}}
+                                <td class="{{ $rowPadding }} whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                        <a href="{{ route('overtime.detail', $fot->id) }}"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors shadow-sm"
+                                            title="View Details">
+                                            <i class='bx bx-right-arrow-alt text-lg'></i>
                                         </a>
-                                        <button class="btn btn-outline-danger btn-sm"
-                                            wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
-                                            wire:loading.attr="disabled" title="Delete this record">
-                                            <i class="bi bi-trash"></i> Delete
+                                        {{-- Delete: only shown to authorized users --}}
+                                        @can('delete', $fot)
+                                        <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-600 hover:text-white transition-colors shadow-sm"
+                                            title="Delete">
+                                            <i class='bx bx-trash'></i>
                                         </button>
+                                        @endcan
                                     </div>
-                                </td>
-                                <td>
-                                    {{ \Carbon\Carbon::parse($fot->created_at)->timezone('Asia/Jakarta')->format('d-m-Y') }}
                                 </td>
                             </tr>
                         @empty
+                            {{-- Filtered-empty state (filters active, 0 results) --}}
                             <tr>
-                                <td colspan="11" class="text-center text-muted py-5">
-                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
-                                    No data matches your filters.
+                                <td colspan="{{ $isPrivileged ? 7 : 6 }}" class="px-6 py-16 text-center">
+                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
+                                        <i class='bx bx-filter-alt text-3xl'></i>
+                                    </div>
+                                    <h3 class="text-sm font-black text-slate-700">No results match your filters</h3>
+                                    <p class="text-xs text-slate-400 mt-1">Try adjusting your date range or removing some filters.</p>
+                                    <button wire:click="resetFilters" class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-600 hover:bg-slate-200 transition-all">
+                                        <i class='bx bx-reset'></i> Clear All Filters
+                                    </button>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
 
-                {{-- ===== SKELETON TABLE (shown ONLY while loading) ===== --}}
-                @php
-                    $cols = 11;
-                    $rows = min($perPage ?? 10, 10);
-                @endphp
-                <table wire:loading wire:key="table-skeleton"
-                    wire:target="resetFilters,setRange,sortBy,perPage,search,dept,startDate,endDate,infoStatus,isPush"
-                    class="table table-hover table-striped table-bordered align-middle text-center mb-0 {{ $compact }}"
-                    style="table-layout: fixed;" aria-busy="true">
-                    <colgroup>
-                        <col style="width:6%">
-                        <col style="width:14%">
-                        <col style="width:10%">
-                        <col style="width:12%">
-                        <col style="width:12%">
-                        <col style="width:10%">
-                        <col style="width:7%">
-                        <col style="width:7%">
-                        <col style="width:9%">
-                        <col style="width:7%">
-                        <col style="width:6%">
-                    </colgroup>
-
-                    <thead class="table-light sticky-top" style="top:0; z-index:2;">
+                {{-- Skeleton Loader --}}
+                @php $cols = $isPrivileged ? 7 : 6; @endphp
+                <table class="min-w-full" wire:loading wire:key="tbl-skeleton" wire:target="resetFilters,setRange,sortBy,perPage,search,dept,startDate,endDate,infoStatus,isPush">
+                    <tbody class="divide-y divide-slate-100/60">
+                        @for ($i = 0; $i < min(8, $perPage); $i++)
                         <tr>
-                            <th>ID</th>
-                            <th>Admin</th>
-                            <th>Dept</th>
-                            <th>Branch</th>
-                            <th>Overtime Date</th>
-                            <th>Status</th>
-                            <th>Type</th>
-                            <th>Is After Hour?</th>
-                            <th>Info</th>
-                            <th>Action</th>
-                            <th>Created At</th>
+                            @for ($j = 0; $j < $cols; $j++)
+                                <td class="{{ $rowPadding }} animate-pulse"><div class="h-4 rounded bg-slate-100"></div></td>
+                            @endfor
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        @for ($r = 0; $r < $rows; $r++)
-                            <tr>
-                                @for ($c = 0; $c < $cols; $c++)
-                                    <td class="py-2">
-                                        <span class="placeholder-glow d-block">
-                                            <span class="placeholder d-block w-100" style="height:1rem;"></span>
-                                        </span>
-                                    </td>
-                                @endfor
-                            </tr>
                         @endfor
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
+    @endif
 
     {{-- Pagination --}}
-    <div class="mt-3">
-        {{ $dataheader->links() }}
-    </div>
+    @if ($dataheader->hasPages())
+        <div class="pb-8">{{ $dataheader->links() }}</div>
+    @endif
 
-    {{-- Delete Confirmation Modal (no <script> tag) --}}
-    <div x-data="{
-        m: null,
-        init() {
-            this.m = new bootstrap.Modal(this.$refs.modal, { backdrop: 'static', keyboard: false });
-            // Listen for Livewire browser events
-            window.addEventListener('show-delete-modal', () => this.m.show());
-            window.addEventListener('hide-delete-modal', () => this.m.hide());
-        },
-        close() { this.m?.hide(); }
-    }" x-init="init()">
-        <div class="modal fade" id="deleteModal" x-ref="modal" tabindex="-1" aria-labelledby="deleteModalLabel"
-            aria-hidden="true" wire:ignore.self>
-            <div class="modal-dialog">
-                <div class="modal-content shadow">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModalLabel">Delete Form Overtime</h5>
-                        <button type="button" class="btn-close" @click="close()" aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        Are you sure you want to delete
-                        <strong>#{{ $pendingDeleteId }}</strong>?
-                        <div class="text-muted small mt-1">This action cannot be undone.</div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @click="close()">Cancel</button>
-                        <button type="button" class="btn btn-danger" wire:click="deleteConfirmed"
-                            wire:target="deleteConfirmed" wire:loading.attr="disabled">
-                            <span class="spinner-border spinner-border-sm me-1" wire:loading
-                                wire:target="deleteConfirmed"></span>
-                            Delete
-                        </button>
+    {{-- ================================================================
+         DELETE CONFIRMATION MODAL
+    ================================================================ --}}
+    <template x-teleport="body">
+        <div x-cloak x-show="deleteOpen" class="relative z-[60]">
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" x-show="deleteOpen" x-transition.opacity @click="deleteOpen = false"></div>
+            <div class="fixed inset-0 z-[70] flex items-center justify-center p-4" x-show="deleteOpen" x-transition role="dialog" aria-modal="true">
+                <div class="w-full max-w-sm rounded-3xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/80 p-6 text-center relative overflow-hidden" @click.stop>
+                    <div class="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                            <i class='bx bx-trash text-3xl'></i>
+                        </div>
+                        <h3 class="text-base font-black text-slate-800">Delete OT-{{ $pendingDeleteId }}?</h3>
+                        <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
+                            This will permanently remove all detail rows and approval data for this form. This action cannot be undone.
+                        </p>
+                        <div class="flex gap-2">
+                            <button @click="deleteOpen = false" class="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-black text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
+                            <button wire:click="deleteConfirmed" wire:loading.attr="disabled"
+                                class="flex-1 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 disabled:opacity-50 transition-all">
+                                <i class='bx bx-trash'></i> Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 
 </div>

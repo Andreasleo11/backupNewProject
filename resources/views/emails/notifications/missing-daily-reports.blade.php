@@ -12,7 +12,7 @@
         | # | Employee Name | NIK | Missing Dates |
         |--:|---------------|-------|----------------|
         @foreach ($employees as $index => $entry)
-            | {{ $index + 1 }} | {{ $entry['employee']->Nama }} | {{ $entry['employee']->NIK }} |
+            | {{ $index + 1 }} | {{ $entry['employee']->name }} | {{ $entry['employee']->nik }} |
             {!! implode('<br>', $entry['dates']) !!} |
         @endforeach
     @endcomponent

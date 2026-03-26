@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Detail;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Observers\DetailObserver;
-use App\Observers\HeaderFormOvertimeObserver;
+use App\Domain\Overtime\Observers\OvertimeFormObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +27,33 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class
         );
+
+        $this->app->bind(
+            \App\Domain\Verification\Repositories\VerificationReportRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentVerificationReportRepository::class
+        );
+
+        $this->app->bind(\App\Domain\Approval\Contracts\RuleResolver::class, \App\Infrastructure\Approval\Services\DefaultRuleResolver::class);
+        $this->app->bind(\App\Application\Approval\Contracts\Approvals::class, \App\Infrastructure\Approval\Services\ApprovalEngine::class);
+
+        $this->app->bind(\App\Application\Auth\UserRoles::class, \App\Infrastructure\Auth\SpatieUserRoles::class);
+
+        $this->app->bind(
+            \App\Domain\User\Repositories\UserRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentUserRepository::class,
+        );
+
+        $this->app->bind(
+            \App\Domain\Employee\Repositories\EmployeeRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEmployeeRepository::class,
+        );
+
+        $this->app->bind(
+            \App\Domain\Department\Repositories\DepartmentRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentDepartmentRepository::class,
+        );
+
+        $this->app->bind(\App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository::class, \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentPurchaseRequestRepository::class);
     }
 
     /**
@@ -35,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
-        HeaderFormOvertime::observe(HeaderFormOvertimeObserver::class);
+        OvertimeForm::observe(OvertimeFormObserver::class);
         Detail::observe(DetailObserver::class);
 
         Blade::directive('currency', function ($expression) {
@@ -57,3 +84,4 @@ class AppServiceProvider extends ServiceProvider
         Builder::useVite();
     }
 }
+

@@ -23,7 +23,7 @@ class PurchaseOrderDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -138,7 +138,7 @@ class PurchaseOrderDataTable extends DataTable
                     // Filter by the selected month-year values
                     return $query->where(function ($q) use ($values) {
                         foreach ($values as $value) {
-                            $q->orWhere('invoice_date', 'like', $value.'%'); // Match YYYY-MM format
+                            $q->orWhere('invoice_date', 'like', $value . '%'); // Match YYYY-MM format
                         }
                     });
                 },
@@ -169,7 +169,7 @@ class PurchaseOrderDataTable extends DataTable
                     // Filter by the selected month-year values
                     return $query->where(function ($q) use ($values) {
                         foreach ($values as $value) {
-                            $q->orWhere('tanggal_pembayaran', 'like', $value.'%'); // Match YYYY-MM format
+                            $q->orWhere('tanggal_pembayaran', 'like', $value . '%'); // Match YYYY-MM format
                         }
                     });
                 },
@@ -239,12 +239,12 @@ class PurchaseOrderDataTable extends DataTable
 
             ->rawColumns($rawColumns)
             ->setRowId(function ($po) {
-                return 'row-'.$po->id; // Set a unique row ID
+                return 'row-' . $po->id; // Set a unique row ID
             });
         // Conditionally add the checkbox column for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $dataTable->addColumn('checkbox', function ($po) {
-                return '<input type="checkbox" class="row-checkbox" value="'.$po->id.'">';
+                return '<input type="checkbox" class="row-checkbox" value="' . $po->id . '">';
             });
             $dataTable->rawColumns(array_merge(['checkbox'], $rawColumns));
         }
@@ -302,7 +302,7 @@ class PurchaseOrderDataTable extends DataTable
         ];
 
         // Add conditional buttons for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $buttons = array_merge(
                 [
                     Button::make()
@@ -375,7 +375,7 @@ class PurchaseOrderDataTable extends DataTable
         ];
 
         // Conditionally add the checkbox column for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             array_unshift(
                 $columns,
                 Column::computed('checkbox')
@@ -399,6 +399,6 @@ class PurchaseOrderDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurchaseOrder_'.date('YmdHis');
+        return 'PurchaseOrder_' . date('YmdHis');
     }
 }

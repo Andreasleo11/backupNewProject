@@ -25,13 +25,13 @@ final class Sort
     /**
      * Build from user input.
      *
-     * @param  string|null  $field  Requested field (e.g. "expense_date")
-     * @param  string|null  $dir  "asc"|"desc" (anything else => "asc")
-     * @param  array  $allowed  Either:
-     *                          - ['expense_date','item_name','line_total']  (list)
-     *                          - ['date' => 'expense_date', 'item' => 'item_name'] (alias map)
-     * @param  string  $defaultField  Fallback field if invalid
-     * @param  string  $defaultDir  "asc" | "desc"
+     * @param string|null $field Requested field (e.g. "expense_date")
+     * @param string|null $dir "asc"|"desc" (anything else => "asc")
+     * @param array $allowed Either:
+     *                       - ['expense_date','item_name','line_total']  (list)
+     *                       - ['date' => 'expense_date', 'item' => 'item_name'] (alias map)
+     * @param string $defaultField Fallback field if invalid
+     * @param string $defaultDir "asc" | "desc"
      */
     public static function fromInput(
         ?string $field,

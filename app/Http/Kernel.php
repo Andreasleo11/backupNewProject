@@ -38,11 +38,13 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\TrackPageVisits::class,
+            \App\Http\Middleware\EnsureUserHasSignature::class,
         ],
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -71,7 +73,10 @@ class Kernel extends HttpKernel
         'checkSession' => \App\Http\Middleware\CheckSessionId::class,
         'checkDepartment' => \App\Http\Middleware\CheckDepartment::class,
         'cors' => \App\Http\Middleware\CorsMiddleware::class,
-        'permission' => \App\Http\Middleware\CheckPermission::class,
         'is.head.or.management' => \App\Http\Middleware\IsHeadOrManagement::class,
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        'evaluation.access' => \App\Http\Middleware\EvaluationAccess::class,
     ];
 }

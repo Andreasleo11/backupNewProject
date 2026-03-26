@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\Destination;
+use App\Infrastructure\Persistence\Eloquent\Models\Destination;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('new.layouts.app')]
 class DestinationIndex extends Component
 {
     public $search = '';
@@ -19,7 +21,7 @@ class DestinationIndex extends Component
 
     public function render()
     {
-        $destinations = Destination::where('name', 'like', '%'.$this->search.'%')->get();
+        $destinations = Destination::where('name', 'like', '%' . $this->search . '%')->get();
 
         return view('livewire.destination-index', [
             'destinations' => $destinations,

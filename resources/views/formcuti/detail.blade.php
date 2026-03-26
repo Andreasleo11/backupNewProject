@@ -1,170 +1,212 @@
-@extends('layouts.app')
-@push('extraCss')
+@extends('new.layouts.app')
+
+@push('head')
     <style>
         .autograph-box {
             width: 200px;
-            /* Adjust the width as needed */
             height: 100px;
-            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc;
-            /* Add border for better visibility */
+            background-position: center;
+            border: 1px solid #e2e8f0;
         }
     </style>
 @endpush
 
 @section('content')
-    <section aria-label="header" class="container">
-        <div class="row text-center">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {{-- Breadcrumb + Header --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+                <nav class="mb-1" aria-label="Breadcrumb">
+                    <ol class="flex items-center gap-1 text-xs text-slate-500">
+                        <li>
+                            <a href="{{ route('formcuti') }}" class="hover:text-slate-700">Form Cuti</a>
+                        </li>
+                        <li class="text-slate-400">/</li>
+                        <li class="font-medium text-slate-700">
+                            Detail
+                        </li>
+                    </ol>
+                </nav>
+                <h1 class="text-lg sm:text-xl font-semibold text-slate-900">
+                    Detail Form Cuti
+                </h1>
+                <p class="mt-1 text-xs sm:text-sm text-slate-500">
+                    Doc No: <span class="font-medium text-slate-700">{{ $formcuti->doc_num }}</span>
+                </p>
+            </div>
+        </div>
 
-            <div class="col">
-                <h2>Dept Head</h2>
-                <div class="autograph-box container" id="autographBox1"></div>
-                <div class="container mt-2 border-1" id="autographuser1"></div>
-                @if (Auth::check() &&
-                        Auth::user()->department &&
-                        Auth::user()->is_head == 1 &&
-                        Auth::user()->department == $formcuti->department)
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formcuti->id }})">Acc Dept
-                        Head</button>
+        {{-- Signature --}}
+        <section class="mb-6">
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
+                <h2 class="text-sm font-semibold text-slate-800 mb-2 text-center sm:text-left">
+                    Dept Head
+                </h2>
+
+                <div class="flex flex-col items-center sm:flex-row sm:items-center sm:gap-6">
+                    <div class="autograph-box rounded-lg bg-slate-50" id="autographBox1"></div>
+                    <div class="mt-2 sm:mt-0 text-xs text-slate-700" id="autographuser1"></div>
+                </div>
+
+                @if (
+                    Auth::check() &&
+                    Auth::user()->department &&
+                    Auth::user()->is_head == 1 &&
+                    Auth::user()->department == $formcuti->department)
+                    <div class="mt-4">
+                        <button
+                            id="btn1"
+                            type="button"
+                            onclick="addAutograph(1, {{ $formcuti->id }})"
+                            class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                        >
+                            Acc Dept Head
+                        </button>
+                    </div>
                 @endif
             </div>
+        </section>
 
-        </div>
-    </section>
-
-    <section aria-label="table-report" class="container mt-5">
-        <div class="card">
-            <div class="mt-4 text-center">
-                <span class="h1 fw-semibold">FORM CUTI</span>
-                <div class="fs-6 mt-2 col">
-                    <span class="text-secondary">Doc No : </span> {{ $formcuti->doc_num }} <br>
-                    <span class="text-secondary">No Karyawan : </span> {{ $formcuti->no_karyawan }} <br>
-                    <span class="text-secondary">Dibuat oleh : </span> {{ $formcuti->name }}
+        {{-- Detail Card --}}
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="p-4 sm:p-6">
+                <div class="text-center mb-4">
+                    <h2 class="text-base sm:text-lg font-semibold text-slate-900 tracking-wide">
+                        FORM CUTI
+                    </h2>
+                    <div class="mt-2 text-xs sm:text-sm text-slate-600 space-y-0.5">
+                        <p>
+                            <span class="text-slate-500">No Karyawan:</span>
+                            <span class="font-medium text-slate-800">{{ $formcuti->no_karyawan }}</span>
+                        </p>
+                        <p>
+                            <span class="text-slate-500">Dibuat oleh:</span>
+                            <span class="font-medium text-slate-800">{{ $formcuti->name }}</span>
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover text-center table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th class="align-middle">Name</th>
-                                <th class="align-middle">Jabatan</th>
-                                <th class="align-middle">Departemen</th>
-                                <th class="align-middle">Jenis Cuti</th>
-                                <th class="align-middle">Pengganti</th>
-                                <th class="align-middle">Tanggal Masuk</th>
-                                <th class="align-middle">Tanggal Permohonan</th>
-                                <th class="align-middle">Mulai</th>
-                                <th class="align-middle">Selesai</th>
-                                <th class="align-middle">Waktu Cuti</th>
 
+                <div class="overflow-x-auto mt-4">
+                    <table class="min-w-full table-auto border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                <th class="px-3 py-2 border border-slate-200 text-center">Name</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Jabatan</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Departemen</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Jenis Cuti</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Pengganti</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Tanggal Masuk</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Tanggal Permohonan</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Mulai</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Selesai</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Waktu Cuti</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>{{ $formcuti->name }}</td>
-                                <td>{{ $formcuti->jabatan }}</td>
-                                <td>{{ $formcuti->department }}</td>
-                                <td>{{ $formcuti->jenis_cuti }}</td>
-                                <td>{{ $formcuti->pengganti }}</td>
-                                <td>{{ $formcuti->tanggal_masuk }}</td>
-                                <td>{{ $formcuti->tanggal_permohonan }}</td>
-                                <td>{{ $formcuti->mulai_tanggal }}</td>
-                                <td>{{ $formcuti->sampai_tanggal }}</td>
-                                <td>{{ $formcuti->waktu_cuti }}</td>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->name }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->jabatan }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->department }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ ucfirst($formcuti->jenis_cuti) }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->pengganti }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->tanggal_masuk }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->tanggal_permohonan }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->mulai_tanggal }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->sampai_tanggal }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formcuti->waktu_cuti }} {{ $formcuti->satuan_waktu_cuti ?? '' }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-        </div>
-    </section>
+        </section>
+    </div>
 @endsection
 
-<script>
-    // Function to add autograph to the specified box
-    function addAutograph(section, formId) {
-        // Get the div element
-        var autographBox = document.getElementById('autographBox' + section);
+@push('scripts')
+    <script>
+        function addAutograph(section, formId) {
+            const autographBox = document.getElementById('autographBox' + section);
 
-        console.log('Section:', section);
-        console.log('Report ID:', formId);
-        var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-        console.log('username :', username);
-        var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-        console.log('image path :', imageUrl);
+            const username = '{{ Auth::check() ? Auth::user()->name : '' }}';
+            const imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
 
-        autographBox.style.backgroundImage = "url('" + imageUrl + "')";
+            autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
-        // Make an AJAX request to save the image path
-        fetch('/save-aurographed-path/' + formId + '/' + section, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({
-                    imagePath: imageUrl,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            fetch('/save-aurographed-path/' + formId + '/' + section, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        imagePath: imageUrl,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
 
-        checkAutographStatus(formId);
-    }
-
-
-    function checkAutographStatus(formId) {
-        // Assume you have a variable from the server side indicating the autograph status
-        var autographs = {
-            autograph_1: '{{ $formcuti->autograph_1 ?? null }}',
-        };
-
-        var autographNames = {
-            autograph_name_1: '{{ $formcuti->autograph_user_1 ?? null }}',
-        };
-
-        // Loop through each autograph status and update the UI accordingly
-        i = 1;
-        var autographBox = document.getElementById('autographBox' + i);
-        var autographInput = document.getElementById('autographInput' + i);
-        var autographNameBox = document.getElementById('autographuser' + i);
-        var btnId = document.getElementById('btn' + i);
-
-
-
-        // Check if autograph status is present in the database
-        if (autographs['autograph_' + i]) {
-
-            if (btnId) {
-                // console.log(btnId);
-                btnId.style.display = 'none';
-            }
-
-            // Construct URL based on the current location
-            var url = '/' + autographs['autograph_' + i];
-
-            // Update the background image using the URL
-            autographBox.style.backgroundImage = "url('" + url + "')";
-
-            var autographName = autographNames['autograph_name_' + i];
-            autographNameBox.textContent = autographName;
-            autographNameBox.style.display = 'block';
+            checkAutographStatus(formId);
         }
-    }
 
+        function checkAutographStatus(formId) {
+            const autographs = {
+                autograph_1: '{{ $formcuti->autograph_1 ?? null }}',
+            };
 
-    // Call the function to check autograph status on page load
-    window.onload = function() {
-        checkAutographStatus({{ $formcuti->id }});
-    };
-</script>
+            const autographNames = {
+                autograph_name_1: '{{ $formcuti->autograph_user_1 ?? null }}',
+            };
+
+            const i = 1;
+            const autographBox = document.getElementById('autographBox' + i);
+            const autographNameBox = document.getElementById('autographuser' + i);
+            const btnId = document.getElementById('btn' + i);
+
+            if (autographs['autograph_' + i]) {
+                if (btnId) {
+                    btnId.style.display = 'none';
+                }
+
+                const url = '/' + autographs['autograph_' + i];
+                autographBox.style.backgroundImage = "url('" + url + "')";
+
+                const autographName = autographNames['autograph_name_' + i];
+                autographNameBox.textContent = autographName;
+                autographNameBox.style.display = 'block';
+            }
+        }
+
+        window.onload = function() {
+            checkAutographStatus({{ $formcuti->id }});
+        };
+    </script>
+@endpush

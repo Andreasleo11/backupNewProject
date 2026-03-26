@@ -5,7 +5,7 @@ namespace App\Providers;
 // use Illuminate\Support\Facades\Gate;
 
 use App\Domain\Signature\Entities\UserSignature as DomainUserSignature;
-use App\Policies\SignaturePolicy;
+use App\Policies\UserSignaturePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +17,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        DomainUserSignature::class => SignaturePolicy::class,
+        DomainUserSignature::class => UserSignaturePolicy::class,
+        \App\Models\DetailPurchaseRequest::class => \App\Policies\PurchaseRequestItemPolicy::class,
+        \App\Models\PurchaseRequest::class => \App\Policies\PurchaseRequestPolicy::class,
+        \App\Domain\Overtime\Models\OvertimeForm::class => \App\Policies\OvertimePolicy::class,
     ];
 
     /**
@@ -29,8 +32,16 @@ class AuthServiceProvider extends ServiceProvider
             //   return method_exists($user, 'hasRoles')
             //     ? $user->hasRole('Admin')
             //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
-            return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
+            return $user->hasRole('super-admin') || in_array($user->email, ['yuli@daijo.co.id']);
         });
+
         $this->registerPolicies();
+        Gate::define('manage-approvals', function ($user) {
+            // adjust to your roles/permissions system
+            return $user->hasRole('super-admin') || $user->can('manage-approvals');
+        });
+
+        Gate::define('manage-defects', fn ($user) => $user->hasRole('super-admin') || $user->can('manage-defects'));
     }
 }
+

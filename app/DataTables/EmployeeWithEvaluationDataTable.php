@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
@@ -16,7 +16,7 @@ class EmployeeWithEvaluationDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -202,6 +202,6 @@ class EmployeeWithEvaluationDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EmployeeWithEvaluation_'.date('YmdHis');
+        return 'EmployeeWithEvaluation_' . date('YmdHis');
     }
 }

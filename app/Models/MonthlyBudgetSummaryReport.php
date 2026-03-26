@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
+use App\Infrastructure\Approval\Concerns\HasApproval;
 use App\Notifications\MonthlyBudgetSummaryReportCreated;
 use App\Notifications\MonthlyBudgetSummaryReportUpdated;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,25 +12,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class MonthlyBudgetSummaryReport extends Model
+class MonthlyBudgetSummaryReport extends Model implements Approvable
 {
-    use HasFactory, SoftDeletes;
+    use HasApproval, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'report_date',
         'creator_id',
-        'created_autograph',
-        'is_known_autograph',
-        'approved_autograph',
         'doc_num',
-        'is_reject',
-        'reject_reason',
         'is_moulding',
-        'is_cancel',
-        'cancel_reason',
-        'status',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $appends = ['total_amount', 'mom'];
 
@@ -106,25 +110,128 @@ class MonthlyBudgetSummaryReport extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    /**
+     * Get workflow status from approval request.
+     */
+    public function getWorkflowStatusAttribute(): ?string
+    {
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get cancellation reason from approval action.
+     */
+    public function getCancellationReasonAttribute(): ?string
+    {
+        return $this->approvalRequest?->actions()
+            ->where('to_status', 'CANCELED')
+            ->latest()
+            ->first()?->remarks;
+    }
+
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+        if (!$approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+        $currentStep = $approval->steps()->where('sequence', $approval->current_step)->first();
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Get all workflow steps for visualization.
+     */
+    public function getWorkflowSignaturesAttribute(): array
+    {
+        if (!$this->approvalRequest) {
+            return [];
+        }
+
+        return $this->approvalRequest->steps()
+            ->orderBy('sequence')
+            ->with('actedUser')
+            ->get()
+            ->map(function ($step) {
+                $uiStatus = match ($step->status) {
+                    'APPROVED' => 'signed',
+                    'REJECTED' => 'rejected',
+                    'CANCELED' => 'canceled',
+                    default   => 'pending',
+                };
+
+                return [
+                    'step_code'  => $step->approver_label ?? 'Approver',
+                    'user'       => $step->actedUser,
+                    'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
+                    'image'      => $step->signature_url,
+                    'at'         => $step->acted_at,
+                    'status'     => $uiStatus,
+                    'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
+                    'source'     => 'approval_system',
+                ];
+            })
+            ->toArray();
+    }
+
     public function files()
     {
         return $this->hasMany(File::class, 'doc_id', 'doc_num');
     }
 
     // Queries
-    public function scopeApproved($query)
+
+    public function scopeFilteredByUser($query, $user)
     {
-        return $query->where('status', 5);
+        if ($user->hasRole('super-admin') || $user->email === 'nur@daijo.co.id' || $user->hasRole('purchaser')) {
+            return $query;
+        }
+
+        $isGm = $user->hasRole('general-manager');
+        $isDirector = $user->hasRole('director');
+
+        return $query->where(function ($q) use ($user, $isGm, $isDirector) {
+            // A. Creator always sees their own
+            $q->where('creator_id', $user->id);
+
+            // B. GM Logic (Step 1 for Summary)
+            if ($isGm) {
+                $q->orWhere(function ($gq) {
+                    $gq->whereHas('approvalRequest', function ($aq) {
+                        $aq->where(function ($sub) {
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 1);
+                        })->orWhere(function ($sub) {
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    });
+                });
+            }
+
+            // C. Director Logic (Step 2 for Summary)
+            if ($isDirector) {
+                $q->orWhere(function ($dq) {
+                    $dq->whereHas('approvalRequest', function ($aq) {
+                         $aq->where(function ($sub) {
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                        })->orWhere(function ($sub) {
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    });
+                });
+            }
+        });
     }
 
-    public function scopeWaitingDirector($query)
+    /**
+     * Check if the report is currently a draft or returned.
+     */
+    public function isDraft(): bool
     {
-        return $query->where('status', 4);
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 5);
+        $status = $this->workflow_status;
+        return $status === 'DRAFT' || $status === 'RETURNED';
     }
 
     // Other
@@ -135,104 +242,31 @@ class MonthlyBudgetSummaryReport extends Model
         static::created(function ($report) {
             $prefix = 'MBSR';
             if ($report->is_moulding) {
-                $prefix = $prefix.'/MOULD';
+                $prefix = $prefix . '/MOULD';
             }
             $id = $report->id;
             $date = $report->created_at->format('dmY');
             $docNum = "$prefix/$id/$date";
 
             $report->update(['doc_num' => $docNum]);
-
-            $report->sendNotification('created');
-        });
-
-        static::updated(function ($report) {
-            if ($report->isDirty('status')) {
-                $report->sendNotification('updated');
-            }
         });
     }
 
-    private function sendNotification($event)
+    // --- Approvable Interface ---
+
+    public function getApprovableTypeLabel(): string
     {
-        $details = $this->prepareNotificationdetails();
-        $this->notifyUsers($details, $event);
+        return 'Monthly Budget Summary Report';
     }
 
-    private function prepareNotificationDetails()
+    public function getApprovableIdentifier(): string
     {
-        $status = $this->getStatusText($this->status);
-
-        $commonDetails = [
-            'greeting' => 'Monthly Budget Summary Report Notification',
-            'actionText' => 'Check Now',
-            'actionURL' => route('monthly.budget.summary.report.show', $this->id),
-        ];
-
-        $reportDate = \Carbon\Carbon::parse($this->report_date)->format('F Y');
-
-        $commonDetails['body'] = "Notification for Monthly Budget Summary Report: <br>
-            - Document Number : $this->doc_num <br>
-            - Month : $reportDate <br>
-            - Status : $status";
-
-        return $commonDetails;
+        return $this->doc_num;
     }
 
-    private function getStatusText($status)
+    public function getApprovableShowUrl(): string
     {
-        switch ($status) {
-            case 1:
-                return 'Waiting Creator';
-            case 2:
-                return 'Waiting GM';
-            case 3:
-                return 'Waiting Dept Head';
-            case 4:
-                return 'Waiting Director';
-            case 5:
-                return 'Approved';
-            case 6:
-                return 'Rejected';
-            case 7:
-                return 'Cancelled';
-            default:
-                return 'Unknown';
-        }
+        return route('monthly-budget-summary.show', $this->id);
     }
 
-    private function notifyUsers($details, $event)
-    {
-        $creator = $this->user; // Convert to array
-        $users = [];
-        array_push($users, $creator);
-
-        if ($event === 'created') {
-            // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
-        } elseif ($event === 'updated') {
-            if ($this->status == 2) {
-                $gm = User::where('is_gm', 1)->first();
-                array_push($users, $gm);
-            } elseif ($this->status == 3) {
-                $mouldingHead = User::whereHas('department', function ($query) {
-                    $query->where('name', 'MOULDING');
-                })
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'DESIGN');
-                    })
-                    ->where('is_head', 1)
-                    ->first();
-                array_push($users, $mouldingHead);
-            } elseif ($this->status == 4) {
-                $director = User::with('specification')
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'DIRECTOR');
-                    })
-                    ->first();
-                array_push($users, $director);
-            }
-
-            Notification::send($users, new MonthlyBudgetSummaryReportUpdated($this, $details));
-        }
-    }
 }

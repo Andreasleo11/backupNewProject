@@ -10,7 +10,7 @@ class InventoryMtrImport implements ToModel
     public function model(array $row)
     {
         /**
-         * @param  array  $row
+         * @param array $row
          * @return \Illuminate\Database\Eloquent\Model|null
          */
         return new sapInventoryMtr([

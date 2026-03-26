@@ -23,13 +23,13 @@ abstract class BaseDeliveryScheduleStep implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info(static::class.' started.');
+            Log::info(static::class . ' started.');
             $this->executeStep();
-            Log::info(static::class.' completed successfully.');
+            Log::info(static::class . ' completed successfully.');
             // After each success
             Event::dispatch(new DeliveryScheduleStepProgressed(static::class, 'completed'));
         } catch (Throwable $e) {
-            Log::error(static::class.' failed: '.$e->getMessage());
+            Log::error(static::class . ' failed: ' . $e->getMessage());
             // In catch block:
             Event::dispatch(new DeliveryScheduleStepProgressed(static::class, 'failed'));
             throw $e;

@@ -36,7 +36,7 @@
                 $jamLembur = round($durationMinutes / 60, 2);
             @endphp
             <tr>
-                <td>{{ $row->NIK }}</td>
+                <td>{{ $row->nik }}</td>
                 <td>{{ $row->header_id }}</td>
                 <td>{{ $row->id }}</td>
                 <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d/m/Y') }}</td>

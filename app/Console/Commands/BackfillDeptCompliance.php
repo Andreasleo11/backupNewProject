@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\UpdateDepartmentComplianceSnapshot;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Console\Command;
 
 class BackfillDeptCompliance extends Command

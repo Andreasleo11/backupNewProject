@@ -54,7 +54,7 @@ class SPKUpdated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'SPK with id = '.$this->spk->id.' has just been updated!',
+            'message' => 'SPK with id = ' . $this->spk->id . ' has just been updated!',
             'status' => $this->spk->status_laporan,
         ];
     }

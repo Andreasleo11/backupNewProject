@@ -9,11 +9,11 @@
 </style>
 
 @include('partials.reject-confirmation-modal', [
-    'route' => route('monthly.budget.report.reject', $report->id),
+    'route' => route('spk.reject', $report->id),
     'doc_num' => $report->doc_num,
 ])
 
-<div class="row text-center">
+<div class="row text-center" x-data>
     {{-- CREATOR AUTOGRAPH --}}
     <div class="col my-3">
         <h3>Creator</h3>
@@ -30,18 +30,26 @@
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST"
                         id="formCreatorAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="creator_autograph" value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '1',
                         'title' => 'Sign Confirmation',
-                        'body' => 'Are you sure want to sign this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formCreatorAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to sign this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formCreatorAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Confirm
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-1"
-                        class="btn btn-success">Sign</button>
+
+                    {{-- OPEN MODAL BUTTON (Tailwind + Alpine, no Bootstrap data-bs-*) --}}
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-1')">
+                        Sign
+                    </button>
                 </div>
             </div>
         @endif
@@ -66,25 +74,33 @@
         @if ($showDeptHeadAutographButtons)
             <div class="row px-4 d-flex justify-content-center g-2 gx-4">
                 <div class="col-auto">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
-                        class="btn btn-danger">Reject</button>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation" class="btn btn-danger">
+                        Reject
+                    </button>
                 </div>
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST"
                         id="formDeptHeadAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="dept_head_autograph"
                             value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '2',
                         'title' => 'Approval Confirmation',
-                        'body' => 'Are you sure want to approve this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formDeptHeadAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to approve this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formDeptHeadAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Approve
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-2"
-                        class="btn btn-success">Approve</button>
+
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-2')">
+                        Approve
+                    </button>
                 </div>
             </div>
         @endif
@@ -110,23 +126,31 @@
         @if ($showPpicAutographButtons)
             <div class="row px-4 d-flex justify-content-center g-2 gx-4">
                 <div class="col-auto">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
-                        class="btn btn-danger">Reject</button>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation" class="btn btn-danger">
+                        Reject
+                    </button>
                 </div>
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST" id="formPpicAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="ppic_autograph" value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '6',
                         'title' => 'Approval Confirmation',
-                        'body' => 'Are you sure want to approve this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formPpicAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to approve this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formPpicAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Approve
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-6"
-                        class="btn btn-success">Approve</button>
+
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-6')">
+                        Approve
+                    </button>
                 </div>
             </div>
         @endif
@@ -155,22 +179,30 @@
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST"
                         id="formAdminAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="admin_autograph" value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '3',
                         'title' => 'Sign Confirmation',
-                        'body' => 'Are you sure want to sign this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formAdminAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to sign this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formAdminAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Confirm
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-3"
-                        class="btn btn-success">Sign</button>
+
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-3')">
+                        Sign
+                    </button>
                 </div>
             </div>
         @endif
     </div>
+
     {{-- PIC AUTOGRAPH --}}
     <div class="my-3 col">
         <h3>PIC</h3>
@@ -192,23 +224,31 @@
             <div class="row px-4 d-flex justify-content-center g-2 gx-4">
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST" id="formPicAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="pic_autograph" value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '4',
                         'title' => 'Sign Confirmation',
-                        'body' => 'Are you sure want to sign this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formPicAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to sign this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formPicAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Confirm
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-4"
-                        class="btn btn-success">Sign</button>
+
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-4')">
+                        Sign
+                    </button>
                 </div>
             </div>
         @endif
     </div>
-    {{-- APPROVED AUTOGRAPH AUTOGRAPH --}}
+
+    {{-- APPROVED AUTOGRAPH --}}
     <div class="my-3 col">
         <h3>Approved</h3>
         <div class="autograph-box container" id="autographBox5"></div>
@@ -234,37 +274,44 @@
         @if ($showApprovedAutographButtons)
             <div class="row px-4 d-flex justify-content-center g-2 gx-4">
                 <div class="col-auto">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
-                        class="btn btn-danger">Reject</button>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-confirmation" class="btn btn-danger">
+                        Reject
+                    </button>
                 </div>
                 <div class="col-auto">
                     <form action="{{ route('spk.save.autograph', $report->id) }}" method="POST"
                         id="formApprovedAutograph">
-                        @csrf @method('PUT')
+                        @csrf
+                        @method('PUT')
                         <input type="hidden" name="approved_autograph"
                             value="{{ ucwords($authUser->name) . '.png' }}">
                     </form>
+
                     @include('partials.confirmation-modal', [
                         'id' => '5',
                         'title' => 'Approval Confirmation',
-                        'body' => 'Are you sure want to approve this report?',
-                        'submitButton' =>
-                            '<button class="btn btn-success" onclick="document.getElementById(\'formApprovedAutograph\').submit()">Confirm</button>',
+                        'body' => 'Are you sure you want to approve this report?',
+                        'submitButton' => '<button type="button"
+                                                    onclick="document.getElementById(\'formApprovedAutograph\').submit()"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                    Approve
+                                                </button>',
                     ])
-                    <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-5"
-                        class="btn btn-success">Approve</button>
+
+                    <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-5')">
+                        Approve
+                    </button>
                 </div>
             </div>
         @endif
     </div>
 </div>
 
-@push('extraJs')
+@push('scripts')
     <script>
         checkAutographStatus();
 
         function checkAutographStatus() {
-            // Assume you have a variable from the server side indicating the autograph status
             var autographs = {
                 autograph_1: '{{ $report->creator_autograph ?? null }}',
                 autograph_2: '{{ $report->dept_head_autograph ?? null }}',
@@ -274,13 +321,11 @@
                 autograph_6: '{{ $report->ppic_autograph ?? null }}',
             };
 
-            // Loop through each autograph status and update the UI accordingly
             for (var i = 1; i <= 6; i++) {
                 var autographBox = document.getElementById('autographBox' + i);
                 var autographNameBox = document.getElementById('autographUser' + i);
 
-                // Check if autograph status is present in the database
-                if (autographs['autograph_' + i]) {
+                if (autographs['autograph_' + i] && autographBox && autographNameBox) {
                     var url = '/autographs/' + autographs['autograph_' + i];
                     var autographName = autographs['autograph_' + i].split('.')[0];
 

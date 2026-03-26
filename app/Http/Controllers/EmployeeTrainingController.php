@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\EmployeeTrainingDataTable;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EmployeeTraining;
 use Illuminate\Http\Request;
 

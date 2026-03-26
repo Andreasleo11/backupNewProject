@@ -3,7 +3,7 @@
 namespace App\Livewire\Vehicles;
 
 use App\Models\ServiceRecord;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -30,7 +30,7 @@ class Show extends Component
 
         // Mirror your index role logic
         $user = auth()->user();
-        $this->canManage = $user->role->name === 'SUPERADMIN' || ($user->department->name === 'PERSONALIA');
+        $this->canManage = $user->hasRole('super-admin') || ($user->department->name === 'PERSONALIA');
     }
 
     public function deleteService(int $id): void
@@ -71,7 +71,7 @@ class Show extends Component
 
         $records = (clone $base)
             ->when($this->year !== 'all', fn ($q) => $q->whereYear('service_date', $this->year))
-            ->when($this->workshop !== '', fn ($q) => $q->where('workshop', 'like', '%'.$this->workshop.'%'))
+            ->when($this->workshop !== '', fn ($q) => $q->where('workshop', 'like', '%' . $this->workshop . '%'))
             ->orderByDesc('service_date')
             ->paginate($this->perPage);
 

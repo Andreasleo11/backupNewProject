@@ -158,7 +158,7 @@ class StepHeader extends Component
 
         if (! $this->document_number) {
             $this->document_number =
-                'INSP-'.now()->format('Ymd-His').'-'.strtoupper(Str::random(4));
+                'INSP-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4));
         }
 
         if (! $this->inspection_date) {

@@ -2,10 +2,10 @@
 
 namespace App\DataTables;
 
+use App\Application\PurchaseRequest\Services\PurchaseRequestQueryScoper;
 use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
-use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -14,29 +14,24 @@ use Yajra\DataTables\Services\DataTable;
 
 class PurchaseRequestsDataTable extends DataTable
 {
+    public function __construct(
+        private readonly PurchaseRequestQueryScoper $queryScoper
+    ) {}
+
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param QueryBuilder $query Results from query() method.
      */
-    protected $statusMap = [
-        1 => 'WAITING FOR DEPT HEAD',
-        2 => 'WAITING FOR VERIFICATOR',
-        3 => 'WAITING FOR DIRECTOR',
-        4 => 'APPROVED',
-        5 => 'REJECTED',
-        6 => 'WAITING FOR PURCHASER',
-        7 => 'WAITING FOR GM',
-        8 => 'DRAFT',
-    ];
-
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('checkbox', function ($pr) {
+                return '<input type="checkbox" class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 pr-checkbox cursor-pointer mx-auto block" value="' . $pr->id . '">';
+            })
             ->addColumn('action', 'purchaserequests.action')
             ->editColumn('status', function ($pr) {
-                return view('partials.pr-status-badge', ['pr' => $pr])->render();
+                return view('partials.workflow-status-badge', ['pr' => $pr])->render();
             })
             ->editColumn('action', function ($pr) {
                 return view('partials.pr-action-buttons', [
@@ -54,60 +49,35 @@ class PurchaseRequestsDataTable extends DataTable
                         ->format('d-m-Y (H:i)')
                     : '';
             })
-            ->searchPane(
-                'branch',
-                PurchaseRequest::query()
-                    ->select('branch as value', 'branch as label')
-                    ->distinct()
-                    ->get(),
-                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn('branch', $values);
-                },
-            )
-            ->searchPane(
-                'from_department',
-                PurchaseRequest::query()
-                    ->select('from_department as value', 'from_department as label')
-                    ->distinct()
-                    ->get(),
-                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn('from_department', $values);
-                },
-            )
-            ->searchPane(
-                'to_department',
-                PurchaseRequest::query()
-                    ->select('to_department as value', 'to_department as label')
-                    ->distinct()
-                    ->get(),
-                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn('to_department', $values);
-                },
-            )
-            ->searchPane(
-                'status',
-                PurchaseRequest::query()
-                    ->select(
-                        'status as value',
-                        DB::raw(
-                            '(CASE '.
-                                implode(
-                                    ' ',
-                                    array_map(
-                                        function ($key, $label) {
-                                            return "WHEN status = $key THEN '$label'";
-                                        },
-                                        array_keys($this->statusMap),
-                                        $this->statusMap,
-                                    ),
-                                ).
-                                ' ELSE status END) as label',
-                        ),
-                    )
-                    ->distinct()
-                    ->get(),
-            )
-            ->rawColumns(['action', 'status'])
+            ->addColumn('workflow_status', function ($pr) {
+                if (! $pr->workflow_status) {
+                    return '<span class="text-slate-400 text-xs">-</span>';
+                }
+
+                $badge = view('partials.workflow-status-badge', ['pr' => $pr])->render();
+
+                // Add current approver if in review
+                if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {
+                    return $badge . '<div class="text-[10px] text-slate-500 mt-1">' . $pr->workflow_step . '</div>';
+                }
+
+                return $badge;
+            })
+            ->addColumn('document', function ($pr) {
+                // Combine PR No and Doc Num
+                $prNo = $pr->pr_no ? e($pr->pr_no) : '<span class="text-slate-400 italic">No PR Num</span>';
+                $docNum = $pr->doc_num ? e($pr->doc_num) : '';
+
+                return "<div><div class='font-bold text-slate-800'>{$prNo}</div><div class='text-xs text-slate-500'>{$docNum}</div></div>";
+            })
+            ->addColumn('routing', function ($pr) {
+                // Combine From Dept -> To Dept
+                $from = $pr->from_department ? e($pr->from_department) : 'Unknown';
+                $to = $pr->to_department->value ?? ($pr->to_department ?? 'Unknown');
+
+                return "<div class='text-sm'><span class='text-slate-600'>{$from}</span> <i class='bi bi-arrow-right text-indigo-400 mx-1'></i> <span class='text-slate-800 font-medium'>{$to}</span></div>";
+            })
+            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'routing'])
             ->setRowId('id');
     }
 
@@ -116,115 +86,88 @@ class PurchaseRequestsDataTable extends DataTable
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        $user = auth()->user();
-        $userDepartmentName = $user->department->name ?? null;
-        $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
-        $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification->name === 'PURCHASER';
-        $isGM = $user->is_gm === 1;
+        $query = $model->newQuery()->with([
+            'files',
+            'createdBy',
+            'approvalRequest' => function ($q) {
+                $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step');
+            },
+        ]);
 
-        // Initialize the query
-        $query = $model->newQuery()->with('files', 'createdBy');
+        // Apply Custom UI Filters from the Dropdowns
+        if (request()->filled('custom_status')) {
+            $statusString = request('custom_status');
 
-        $query->where(function ($q) use ($userDepartmentName, $user, $isPersonaliaHead, $isGM, $isHead, $isPurchaser) {
-            if ($isPersonaliaHead) {
-                $q->where(function ($query) {
-                    $query
-                        ->whereNotNull("autograph_1")
-                        ->where(function ($query) {
-                            $query
-                                ->whereNotNull("autograph_2")
-                                ->orWhere(function($query){
-                                    $query->where('autograph_2')
-                                        ->where('from_department', 'PLASTIC INJECTION');
-                                })
-                                ->where("branch", "JAKARTA")
-                                ->orWhere(function ($query) {
-                                    $query->where("type", "factory")->where("branch", "KARAWANG");
-                                });
-                        })
-                        ->whereNotNull("autograph_5")
-                        ->where(function ($query) {
-                            $query
-                                ->whereNull("autograph_3")
-                                ->orWhereNotNull("autograph_3")
-                                ->where(function ($query) {
-                                    $query
-                                        ->where("to_department", "Personnel")
-                                        ->where("type", "office")
-                                        ->orWhere("to_department", "Computer");
-                                });
-                        })
-                        ->orWhere("from_department", "PERSONALIA");
-                });
-            } elseif ($isGM) {
-                $q
-                    ->whereNotNull("autograph_1")
-                    ->whereNull("autograph_6")
-                    ->where(function ($query) use ($userDepartmentName) {
-                        $query->where("type", "factory");
-                        if ($userDepartmentName === "MOULDING") {
-                            $query->where("from_department", "MOULDING");
-                        } else {
-                            $query->where("from_department", "!=", "MOULDING");
-                        }
-                    });
-                // Pawarid case
-                if ($userDepartmentName !== "PLASTIC INJECTION") {
-                    $q->whereNotNull("autograph_2");
+            $query->where(function ($q) use ($statusString) {
+                if ($statusString === 'DRAFT') {
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'DRAFT'))
+                      ->orWhereDoesntHave('approvalRequest');
+                } elseif ($statusString === 'CANCELED') {
+                    $q->where('purchase_requests.is_cancel', 1);
+                } elseif ($statusString === 'IN_REVIEW') {
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'IN_REVIEW'));
+                } elseif ($statusString === 'APPROVED') {
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'APPROVED'));
+                } elseif ($statusString === 'REJECTED') {
+                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'REJECTED'));
                 }
-            } elseif ($isHead) {
-                $q->where(function ($query) use ($userDepartmentName) {
-                    $query->where("from_department", $userDepartmentName);
-                });
+            });
 
-                if ($userDepartmentName === "PURCHASING") {
-                    $q->orWhere("to_department", ucwords(strtolower($userDepartmentName)));
-                } elseif ($userDepartmentName === "LOGISTIC") {
-                    $q->orWhere("from_department", "STORE");
-                }
-            } elseif ($isPurchaser) {
-                $q->where(function ($query) {
-                    $query
-                        ->where(function ($query) {
-                            $query->where(function ($query) {
-                                $query->where("type", "office")->orWhere("from_department", "MOULDING");
-                            });
-                        })
-                        ->orWhere(function ($query) {
-                            $query->where("type", "factory");
-                        });
-                });
-
-                if ($userDepartmentName === "COMPUTER" || $userDepartmentName === "PURCHASING") {
-                    $q->where("to_department", ucwords(strtolower($userDepartmentName)));
-                } elseif ($user->email === "nur@daijo.co.id") {
-                    $q->where("to_department", "Maintenance");
-                } elseif ($userDepartmentName === "PERSONALIA") {
-                    $q->where("to_department", "Personnel");
-                }
-
-                $q->where(function ($query) use ($user){
-                    $query->whereNotNull("autograph_1")->orWhere("user_id_create", $user->id);
-                });
-            } elseif ($user->role->name === "SUPERADMIN") {
-                $q->whereNot("from_department", "ADMIN");
-            } else {
-                $q->where(function ($subQuery) use ($userDepartmentName, $user) {
-                    $subQuery->where("from_department", $userDepartmentName);
-
-                    if (auth()->user()->department->name === "QA") {
-                        $subQuery
-                            ->orWhere("from_department", "QC")
-                            ->orWhere("user_id_create", $user->id);
-                    }
+            // If it's not canceled search, make sure we only grab non-canceled PRs
+            if ($statusString !== 'CANCELED') {
+                $query->where(function ($q) {
+                    $q->whereNull('purchase_requests.is_cancel')->orWhere('purchase_requests.is_cancel', 0);
                 });
             }
+        }
 
-            $q->orWhere('user_id_create', $user->id);
-        });
+        if (request()->filled('custom_department')) {
+            $dept = request('custom_department');
+            // Based on our routing, we usually filter by target department representing where it's going
+            $query->where('to_department', $dept);
+        }
 
-        return $query;
+        if (request()->filled('custom_date')) {
+            $dates = explode(' to ', request('custom_date'));
+            if (count($dates) === 2) {
+                $query->whereBetween('date_pr', [trim($dates[0]), trim($dates[1])]);
+            } elseif (count($dates) === 1) {
+                $query->whereDate('date_pr', trim($dates[0]));
+            }
+        }
+
+        // Apply URL Top-Card Filters
+        if (request()->filled('filter')) {
+            $filter = request('filter');
+
+            if ($filter === 'my_approval') {
+                $userId = auth()->id();
+                $roleIds = auth()->user()->roles->pluck('id')->toArray();
+
+                $query->inReview()
+                    ->whereHas('approvalRequest.steps', function ($q) use ($userId, $roleIds) {
+                        $q->where('sequence', \Illuminate\Support\Facades\DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
+                            ->whereNull('acted_at')
+                            ->where(function ($q2) use ($userId, $roleIds) {
+                                $q2->where(function ($u) use ($userId) {
+                                    $u->where('approver_type', 'user')
+                                        ->where('approver_id', $userId);
+                                })->orWhere(function ($r) use ($roleIds) {
+                                    $r->where('approver_type', 'role')
+                                        ->whereIn('approver_id', $roleIds);
+                                });
+                            });
+                    });
+            } elseif ($filter === 'in_review') {
+                $query->inReview();
+            } elseif ($filter === 'approved_month') {
+                $query->workflowApproved()
+                    ->whereYear('purchase_requests.updated_at', now()->year)
+                    ->whereMonth('purchase_requests.updated_at', now()->month);
+            }
+        }
+
+        return $this->queryScoper->scopeForUser(auth()->user(), $query);
     }
 
     /**
@@ -236,16 +179,8 @@ class PurchaseRequestsDataTable extends DataTable
             ->setTableId('purchaserequests-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom('PBflrtip')
-            ->addColumnDef([
-                'searchPanes' => [
-                    'show' => true,
-                    'viewTotal' => false,
-                    'viewCount' => false,
-                ],
-            ])
-            ->orderBy(3)
-            // ->selectStyleSingle()
+            ->dom('Bfrtip')
+            ->orderBy(1)
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
@@ -260,14 +195,31 @@ class PurchaseRequestsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('doc_num'),
+            Column::make('checkbox')
+                ->title('<input type="checkbox" id="check-all-prs" class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer mx-auto block">')
+                ->searchable(false)
+                ->orderable(false)
+                ->exportable(false)
+                ->printable(false)
+                ->width('40px')
+                ->addClass('text-center align-middle'),
+            Column::make('id')->visible(false),
+            Column::computed('document')
+                ->title('Document')
+                ->exportable(false)
+                ->printable(false),
             Column::make('branch'),
-            Column::make('date_pr'),
-            Column::make('from_department'),
-            Column::make('to_department'),
-            Column::make('pr_no'),
-            Column::make('supplier'),
+            Column::make('date_pr')->title('Req. Date'),
+            Column::computed('routing')
+                ->title('Routing')
+                ->exportable(false)
+                ->printable(false),
+            Column::make('supplier')->title('Supplier'),
+            Column::computed('workflow_status')
+                ->title('Status')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
@@ -275,9 +227,15 @@ class PurchaseRequestsDataTable extends DataTable
             Column::computed('status')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
-            Column::make('approved_at')->title('Approved Date')->data('approved_at'),
-            Column::make('po_number'),
+                ->addClass('text-center')
+                ->visible(false), // Hide legacy status column
+            Column::make('po_number')->title('PO Number'),
+
+            // Hidden columns for standard export/search purposes to still work
+            Column::make('pr_no')->visible(false),
+            Column::make('doc_num')->visible(false),
+            Column::make('from_department')->visible(false),
+            Column::make('to_department')->visible(false),
         ];
     }
 
@@ -286,6 +244,6 @@ class PurchaseRequestsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurchaseRequests_'.date('YmdHis');
+        return 'PurchaseRequests_' . date('YmdHis');
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Livewire\Vehicles;
 
 use App\Enums\VehicleStatus;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -58,7 +58,7 @@ class Form extends Component
             ],
             'brand' => ['nullable', 'string', 'max:80'],
             'model' => ['nullable', 'string', 'max:120'],
-            'year' => ['nullable', 'integer', 'min:1900', 'max:'.date('Y')],
+            'year' => ['nullable', 'integer', 'min:1900', 'max:' . date('Y')],
             'vin' => ['nullable', 'string', 'max:50'],
             'odometer' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', Rule::in(array_column(VehicleStatus::cases(), 'value'))],
@@ -68,7 +68,7 @@ class Form extends Component
 
     public function mount(?Vehicle $vehicle): void
     {
-        $this->fullFeature = auth()->user()?->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()?->hasrole('super-admin') || (auth()->user()->department->name === 'PERSONALIA');
 
         if ($vehicle?->exists) {
             $this->vehicle = $vehicle;

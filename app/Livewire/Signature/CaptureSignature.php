@@ -10,9 +10,13 @@ use App\Domain\Signature\ValueObjects\SignatureKind;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
 final class CaptureSignature extends Component
 {
+    #[Url]
+    public ?string $return_to = null;
+
     public string $label = 'Primary';
 
     public ?string $pngDataUrl = null; // data:image/png;base64,...
@@ -34,13 +38,13 @@ final class CaptureSignature extends Component
         $bytes = base64_decode($base64, true);
         abort_unless($bytes !== false, 422, 'Invalid PNG payload');
 
-        $dir = 'signatures/'.auth()->id();
-        $pngPath = $dir.'/'.Str::uuid().'.png';
+        $dir = 'signatures/' . auth()->id();
+        $pngPath = $dir . '/' . Str::uuid() . '.png';
         Storage::disk('private')->put($pngPath, $bytes);
 
         $svgPath = null;
         if ($this->svgText) {
-            $svgPath = $dir.'/'.Str::uuid().'.svg';
+            $svgPath = $dir . '/' . Str::uuid() . '.svg';
             Storage::disk('private')->put($svgPath, $this->svgText);
         }
 
@@ -62,6 +66,10 @@ final class CaptureSignature extends Component
         $useCase->handle($dto);
 
         $this->dispatch('toast', message: 'Signature captured.');
+
+        if ($this->return_to) {
+            return redirect()->to($this->return_to);
+        }
 
         return redirect()->route('signatures.manage');
     }

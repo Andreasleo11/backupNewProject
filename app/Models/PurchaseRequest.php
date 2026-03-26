@@ -2,17 +2,71 @@
 
 namespace App\Models;
 
-use App\Notifications\PurchaseRequestCreated;
-use App\Notifications\PurchaseRequestUpdated;
-use App\Traits\LogsActivity;
+use App\Domain\Approval\Contracts\Approvable;
+use App\Enums\ToDepartment;
+use App\Infrastructure\Approval\Concerns\HasApproval;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-class PurchaseRequest extends Model
+class PurchaseRequest extends Model implements Approvable
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasApproval, HasFactory, LogsActivity, SoftDeletes;
+
+    /**
+     * Get combined activities from PR and its Items.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCombinedActivitiesAttribute()
+    {
+        // 1. Get PR Logs
+        $prLogs = $this->activities;
+
+        // 2. Get Item Logs
+        $itemIds = $this->items()->pluck('id');
+
+        $itemLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\DetailPurchaseRequest::class)
+            ->whereIn('subject_id', $itemIds)
+            ->with('causer')
+            ->get();
+
+        // 3. Get File Logs (New)
+        // Assuming files are linked via doc_num. We need to find File IDs first.
+        // Since there is no direct relationship defined yet (files() accessor might exist but using raw query for safety)
+        $fileIds = \App\Models\File::where('doc_id', $this->doc_num)->pluck('id');
+
+        $fileLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\File::class)
+            ->whereIn('subject_id', $fileIds)
+            ->with('causer')
+            ->get();
+
+        // 4. Get Approval Actions
+        $approvalActions = collect();
+        if ($this->approvalRequest) {
+            $approvalActions = $this->approvalRequest->actions()
+                ->with('causer')
+                ->get();
+        }
+
+        // 5. Merge & Sort desc
+        return $prLogs->concat($itemLogs)
+            ->concat($fileLogs)
+            ->concat($approvalActions)
+            ->sortByDesc('created_at');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'user_id_create',
@@ -20,27 +74,8 @@ class PurchaseRequest extends Model
         'date_required',
         'remark',
         'to_department',
-        'autograph_1',
-        'autograph_2',
-        'autograph_3',
-        'autograph_4',
-        'autograph_5',
-        'autograph_6',
-        'autograph_7',
-        'autograph_user_1',
-        'autograph_user_2',
-        'autograph_user_3',
-        'autograph_user_4',
-        'autograph_user_5',
-        'autograph_user_6',
-        'autograph_user_7',
-        'attachment_pr',
-        'status',
         'pr_no',
         'supplier',
-        'description',
-        'approved_at',
-        'updated_at',
         'pic',
         'type',
         'from_department',
@@ -50,6 +85,104 @@ class PurchaseRequest extends Model
         'doc_num',
         'branch',
     ];
+
+    protected $casts = [
+        'to_department' => ToDepartment::class,
+        'branch' => \App\Enums\Branch::class,
+    ];
+
+    public function items()
+    {
+        // sesuaikan, kalau sudah pakai PurchaseRequestItem ganti di sini
+        return $this->hasMany(DetailPurchaseRequest::class);
+    }
+
+    public function fromDepartment()
+    {
+        return $this->belongsTo(Department::class, 'from_department', 'name');
+        // atau 'from_department_id' kalau sudah dinormalisasi
+    }
+
+    public function signatures()
+    {
+        return $this->hasMany(PurchaseRequestSignature::class);
+    }
+
+    /**
+     * Get all signatures, merging modern approval steps, legacy signatures relationship, and legacy columns.
+     * Useful during the transition period.
+     */
+    public function getAllSignaturesAttribute(): array
+    {
+        $signatures = collect();
+
+        if ($this->approvalRequest) {
+            $approvalSignatures = $this->approvalRequest->steps()
+                ->whereNotNull('acted_at')
+                ->whereNotNull('signature_image_path')
+                ->with('actedUser')
+                ->get()
+                ->map(function ($step) {
+                    return [
+                        'step_code' => $step->approver_label ?? 'Approver',
+                        'user' => $step->actedUser,
+                        'name' => $step->approver_name ?? 'Unknown',
+                        'image' => $step->signature_image_path,
+                        'at' => $step->acted_at,
+                        'source' => 'approval_system',
+                    ];
+                });
+            $signatures = $signatures->merge($approvalSignatures);
+        }
+
+        return $signatures->unique(function ($item) {
+            return $item['step_code'] . $item['name'];
+        })->values()->toArray();
+    }
+
+    /**
+     * Get all workflow steps for visualization, including pending and empty slots.
+     */
+    public function getWorkflowSignaturesAttribute(): array
+    {
+        if ($this->approvalRequest) {
+            $approvalSteps = $this->approvalRequest->steps()
+                ->orderBy('sequence')
+                ->with('actedUser')
+                ->get()
+                ->map(function ($step) {
+                    $status = strtoupper($step->status);
+
+                    $uiStatus = match ($status) {
+                        'APPROVED' => 'signed',
+                        'REJECTED' => 'rejected',
+                        'PENDING', 'IN_PROGRESS' => 'pending',
+                        default => 'pending',
+                    };
+
+                    if ($step->acted_at && $step->signature_image_path) {
+                        $uiStatus = 'signed';
+                    }
+
+                    return [
+                        'step_code' => $step->approver_label ?? 'Approver',
+                        'user' => $step->actedUser,
+                        'name' => $step->approver_name ?? 'Waiting...',
+                        'image' => $step->signature_url,
+                        'at' => $step->acted_at,
+                        'status' => $uiStatus,
+                        'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
+                        'source' => 'approval_system',
+                    ];
+                });
+
+            if ($approvalSteps->isNotEmpty()) {
+                return $approvalSteps->toArray();
+            }
+        }
+
+        return [];
+    }
 
     public function itemDetail()
     {
@@ -61,284 +194,139 @@ class PurchaseRequest extends Model
         return $this->belongsTo(User::class, 'user_id_create');
     }
 
+    /**
+     * Alias for createdBy() for better semantic clarity
+     */
+    public function creator()
+    {
+        return $this->createdBy();
+    }
+
     public function files()
     {
         return $this->hasMany(File::class, 'doc_id', 'doc_num');
     }
 
-    public function scopeApproved($query)
+    /**
+     * Reset item-level approvals when PR is returned for revision.
+     */
+    public function resetItemApprovals(): void
     {
-        return $query->where('status', 4);
+        $this->itemDetail()->update([
+            'is_approve_by_head' => null,
+            'is_approve_by_gm' => null,
+            'is_approve_by_verificator' => null,
+            'is_approve' => null,
+        ]);
     }
 
-    public function scopeWaiting($query)
+    /**
+     * Get workflow status from approval request.
+     * This replaces the workflow_status column.
+     */
+    public function getWorkflowStatusAttribute(): ?string
     {
-        return $query->where('status', 3);
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 5);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($pr) {
-            // Map department names to codes
-            $toDepartmentCodes = [
-                'Computer' => 'CP',
-                'Personnel' => 'HRD',
-                'Maintenance' => 'MT',
-                'Purchasing' => 'PUR',
-            ];
-
-            // Map branches to area codes
-            $branchCodes = [
-                'JAKARTA' => 'JKT',
-                'KARAWANG' => 'KRW',
-            ];
-
-            // Get the date portion
-            $date = $pr->created_at->format('ymd'); // Day-Month-Year format (e.g., '240819' for August 24, 2019)
-
-            // Get the department code
-            $toDepartment = $pr->to_department;
-            $toDepartmentCode = $toDepartmentCodes[$toDepartment] ?? 'UNK'; // Use 'UNK' for unknown departments
-
-            // Get the area code from the branch
-            $branch = $pr->branch;
-            $areaCode = $branchCodes[$branch] ?? 'UNK'; // Use 'UNK' for unknown branches
-
-            // Fetch the last record's doc_num for the current date and branch code
-            $latest = static::where('doc_num', 'like', "%/PR/{$areaCode}/{$date}/%")
-                ->orderBy('id', 'desc')
-                ->first();
-
-            if ($latest) {
-                // Extract the increment part from the latest doc_num
-                $lastIncrement = (int) substr($latest->doc_num, -3); // Assuming the increment is always 3 digits
-            } else {
-                $lastIncrement = 0; // No records found for today
-            }
-
-            // Calculate the next increment number
-            $increment = str_pad($lastIncrement + 1, 3, '0', STR_PAD_LEFT);
-
-            // Build the docNum
-            $docNum = "{$toDepartmentCode}/PR/{$areaCode}/{$date}/{$increment}";
-
-            $prNo = substr($toDepartment, 0, 4).'-'.$pr->id;
-
-            $pr->update(['pr_no' => $prNo, 'doc_num' => $docNum]);
-            $pr->sendNotification('created');
-        });
-
-        static::updated(function ($pr) {
-            $statusChanged = $pr->isDirty('status');
-
-            if ($statusChanged && $pr->status != 8) {
-                $pr->sendNotification('updated');
-            }
-        });
-    }
-
-    private function sendNotification($event)
-    {
-        $details = $this->prepareNotificationDetails($event);
-        $this->notifyUsers($details, $event);
-    }
-
-    private function prepareNotificationDetails($event)
-    {
-        $status = $this->getStatusText($this->status);
-
-        $commonDetails = [
-            'greeting' => 'Purchase Request Notification',
-            'actionText' => 'Check Now',
-            'actionURL' => route('purchaserequest.detail', $this->id),
-        ];
-
-        if ($event == 'created' || $event == 'updated') {
-            $commonDetails['body'] = "Here's the detail : <br>
-                - Doc. Num : $this->doc_num <br>
-                - PR No. : $this->pr_no <br>
-                - Created By : {$this->createdBy->name} <br>
-                - Date PR : $this->date_pr <br>
-                - Date Required : $this->date_required <br>
-                - PIC : $this->pic <br>
-                - Remark : $this->remark <br>
-                - To Department : $this->to_department <br>
-                - Status : $status";
+        // If cancelled, return CANCELED
+        if ((int) $this->is_cancel === 1) {
+            return 'CANCELED';
         }
 
-        return $commonDetails;
+        // Return status from approval request, or DRAFT if no approval
+        return $this->approvalRequest?->status ?? 'DRAFT';
     }
 
-    private function getStatusText($status)
+    /**
+     * Get current workflow step (approver label).
+     * This replaces the workflow_step column.
+     */
+    public function getWorkflowStepAttribute(): ?string
     {
-        switch ($status) {
-            case 1:
-                return 'WAITING FOR DEPT HEAD';
-            case 2:
-                return 'WAITING FOR VERIFICATOR';
-            case 3:
-                return 'WAITING FOR DIRECTOR';
-            case 4:
-                return 'APPROVED';
-            case 5:
-                return 'REJECTED';
-            case 6:
-                return 'WAITING FOR PURCHASER';
-            case 7:
-                return 'WAITING FOR GM';
-            default:
-                return 'NOT DEFINED';
+        $approval = $this->approvalRequest;
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
+            return null;
         }
+
+        $currentStep = $approval->steps()
+            ->where('sequence', $approval->current_step)
+            ->first();
+
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
     }
 
-    private function notifyUsers($details, $event)
+    /**
+     * Get current approver name (alias for workflow_step).
+     */
+    public function getCurrentApproverAttribute(): ?string
     {
-        $users = [$this->createdBy];
+        return $this->workflow_step;
+    }
 
-        if ($event == 'created') {
-            if ($this->to_department === 'Maintenance') {
-                if (
-                    $this->from_department === 'PLASTIC INJECTION' &&
-                    $this->branch === 'KARAWANG'
-                ) {
-                    $user = null;
-                } else {
-                    $user = User::where('email', 'nur@daijo.co.id')->first();
-                }
-            }
+    /**
+     * Scope: Filter PRs that are in review.
+     */
+    public function scopeInReview(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'IN_REVIEW')
+        );
+    }
 
-            $createdNotificationUsers = isset($user) ? array_merge($users, [$user]) : $users;
-            Notification::send(
-                $createdNotificationUsers,
-                new PurchaseRequestCreated($this, $details),
-            );
-        } else {
-            $status = $this->status;
-            switch ($status) {
-                case 1:
-                    if (
-                        $this->from_department === 'PLASTIC INJECTION' ||
-                        ($this->from_department === 'MAINTENANCE MACHINE' &&
-                            $this->branch === 'KARAWANG')
-                    ) {
-                        $deptHead = null;
-                    } elseif ($this->from_department === 'MOULDING') {
-                        if ($this->is_import === 1) {
-                            $deptHead = User::where('email', 'fang@daijo.co.id')->first();
-                        } else {
-                            // if is_import is false or null, notification will sent to fang and ong
-                            $deptHead = User::where('is_head', 1)
-                                ->whereHas('department', function ($query) {
-                                    $query->where('name', $this->from_department);
-                                })
-                                ->get();
-                        }
-                    } elseif ($this->from_department === 'STORE') {
-                        $deptHead = User::where('is_head', 1)
-                            ->whereHas('department', function ($query) {
-                                $query->where('name', 'LOGISTIC');
-                            })
-                            ->first();
-                    } else {
-                        $deptHead = User::where('is_head', 1)
-                            ->whereHas('department', function ($query) {
-                                $query->where('name', $this->from_department);
-                            })
-                            ->first();
-                    }
+    /**
+     * Scope: Filter PRs that are approved by workflow.
+     */
+    public function scopeWorkflowApproved(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'APPROVED')
+        );
+    }
 
-                    $user = $deptHead ?: $this->createdBy;
-                    break;
-                case 7:
-                    if (
-                        $this->from_department === 'PLASTIC INJECTION' ||
-                        $this->from_department === 'MAINTENANCE MACHINE'
-                    ) {
-                        if ($this->branch === 'KARAWANG') {
-                            $gm = User::where('email', 'pawarid_pannin@daijo.co.id')->first();
-                        } else {
-                            $gm = User::where('email', 'albert@daijo.co.id')->first();
-                        }
-                    } else {
-                        $gm = User::whereHas('department', function ($query) {
-                            $query->where('name', '!=', 'MOULDING')->where('is_gm', 1);
-                        })->first();
-                    }
-                    $user = $gm ?: $this->createdBy;
-                    break;
-                case 6:
-                    if ($this->to_department === 'Computer') {
-                        $purchaser = User::where('email', 'vicky@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Purchasing') {
-                        $purchaser = User::where('email', 'dian@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Maintenance') {
-                        $purchaser = User::where('email', 'nur@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Personnel') {
-                        $purchaser = User::where('email', 'ani_apriani@daijo.co.id')->first();
-                    } else {
-                        $purchaser = $this->createdBy;
-                    }
+    /**
+     * Scope: Filter PRs that are rejected by workflow.
+     */
+    public function scopeWorkflowRejected(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'REJECTED')
+        );
+    }
 
-                    $user = $purchaser;
-                    break;
-                case 2:
-                    $verificator = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'VERIFICATOR');
-                        })
-                        ->where('is_head', 1)
-                        ->first();
+    /**
+     * Scope: Filter PRs that are cancelled.
+     */
+    public function scopeCancelled(Builder $query): Builder
+    {
+        return $query->where('is_cancel', 1);
+    }
 
-                    $user = $verificator ?: $this->createdBy;
-                    break;
-                case 3:
-                    $director = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'DIRECTOR');
-                        })
-                        ->first();
+    // --- Approvable Interface ---
 
-                    $user = $director ?: $this->createdBy;
-                    break;
-                case 4:
-                case 5:
-                    $user = $this->createdBy;
-                    break;
-                default:
-                    $user = $this->createdBy;
-                    break;
-            }
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Purchase Request';
+    }
 
-            if ($this->to_department === 'Purchasing' && $this->status === 4) {
-                $purchasingUsers = User::whereHas('department', function ($query) {
-                    $query->where('name', 'PURCHASING');
-                })->get();
-                $users = array_merge($users, $purchasingUsers->all());
-            } elseif ($this->to_department === 'Maintenance') {
-                $ccUser = User::where('email', 'nur@daijo.co.id')->first();
-                if ($ccUser) {
-                    $users = array_merge($users, [$ccUser]);
-                }
-            }
+    public function getApprovableIdentifier(): string
+    {
+        return $this->pr_no ?? (string)$this->doc_num;
+    }
 
-            // If $user is a collection, merge its users; if it's a single object, wrap it in an array
-            if ($user instanceof \Illuminate\Support\Collection) {
-                $updatedNotificationUsers = array_merge($users, $user->all());
-            } else {
-                $updatedNotificationUsers = isset($user) ? array_merge($users, [$user]) : $users;
-            }
+    public function getApprovableShowUrl(): string
+    {
+        return route('purchase-requests.show', $this->id);
+    }
 
-            Notification::send(
-                $updatedNotificationUsers,
-                new PurchaseRequestUpdated($this, $details),
-            );
-        }
+    public function getApprovableDepartmentName(): ?string
+    {
+        return (string) $this->from_department;
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        return $this->branch?->value;
     }
 }

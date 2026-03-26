@@ -22,16 +22,23 @@ class ComplianceService
             ->whereMorphedTo('scope', $scope)
             ->get();
 
+        $requirementIds = $assignments->pluck('requirement_id');
+
+        // Fetch all uploads for these requirements in one query (N+1 optimization)
+        $allUploads = RequirementUpload::whereIn('requirement_id', $requirementIds)
+            ->whereMorphedTo('scope', $scope)
+            ->latest()
+            ->get()
+            ->groupBy('requirement_id');
+
         $today = Carbon::today();
 
-        return $assignments->map(function ($a) use ($scope, $today) {
+        return $assignments->map(function ($a) use ($scope, $today, $allUploads) {
             /** @var Requirement $req */
             $req = $a->requirement;
 
-            $uploads = RequirementUpload::where('requirement_id', $req->id)
-                ->whereMorphedTo('scope', $scope)
-                ->latest()
-                ->get();
+            // Pull uploads from memory collection
+            $uploads = $allUploads->get($req->id, collect());
 
             // filter valid uploads
             $validUploads = $uploads->filter(function ($u) use ($req, $today) {
@@ -69,7 +76,7 @@ class ComplianceService
         $mandatory = $rows->where(fn ($r) => $r['assignment']->is_mandatory);
         $total = $mandatory->count();
         if ($total === 0) {
-            return 100;
+            return 0; // Return 0% when no requirements exist instead of 100%
         }
         $ok = $mandatory->where('status', 'OK')->count();
 

@@ -11,7 +11,7 @@
     <tbody>
         @foreach ($summary as $row)
             <tr>
-                <td>{{ $row->NIK }}</td>
+                <td>{{ $row->nik }}</td>
                 <td>{{ $row->nama }}</td>
                 <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d-m-Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($row->end_date)->format('d-m-Y') }}</td>

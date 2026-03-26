@@ -109,7 +109,7 @@ class SendWeeklyComplianceDigest extends Command
                 //     break;
         }
 
-        $this->info('Weekly digest sent to '.count($notifiables).' recipient(s). Rows included: '.$rows->count().". Threshold: {$threshold}%.");
+        $this->info('Weekly digest sent to ' . count($notifiables) . ' recipient(s). Rows included: ' . $rows->count() . ". Threshold: {$threshold}%.");
 
         return self::SUCCESS;
     }

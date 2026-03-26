@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('new.layouts.app')]
 class VehicleForm extends Component
 {
     public $vehicleId;
@@ -26,7 +28,7 @@ class VehicleForm extends Component
     public function rules()
     {
         return [
-            'plate_number' => 'required|string|max:255|unique:vehicles,plate_number,'.$this->vehicleId,
+            'plate_number' => 'required|string|max:255|unique:vehicles,plate_number,' . $this->vehicleId,
             'driver_name' => 'required|string|max:255',
         ];
     }

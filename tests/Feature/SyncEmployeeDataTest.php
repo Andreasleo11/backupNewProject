@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationDataWeekly;
 use App\Services\JPayrollService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,11 +67,11 @@ test('it syncs employees, leave, and attendance correctly', function () {
     expect(Employee::count())->toBe(1);
 
     $employee = Employee::first();
-    expect($employee->Nama)
+    expect($employee->name)
         ->toBe('Test Employee')
-        ->and($employee->Dept)
+        ->and($employee->dept_code)
         ->toBe('310')
-        ->and($employee->employee_status)
+        ->and($employee->employment_type)
         ->toBe('TETAP')
         ->and($employee->jatah_cuti_tahun)
         ->toBe(10);

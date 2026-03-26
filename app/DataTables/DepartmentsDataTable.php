@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -15,7 +15,7 @@ class DepartmentsDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -102,6 +102,6 @@ class DepartmentsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Departments_'.date('YmdHis');
+        return 'Departments_' . date('YmdHis');
     }
 }

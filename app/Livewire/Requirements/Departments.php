@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Requirements;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\Requirement;
 use App\Models\RequirementAssignment;
 use App\Models\RequirementUpload;
@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Layout('layouts.app')]
+#[Layout('new.layouts.app')]
 class Departments extends Component
 {
     use WithPagination;

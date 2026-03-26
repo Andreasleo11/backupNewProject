@@ -2,17 +2,19 @@
 
 namespace App\Livewire\Overtime;
 
-use App\Models\Department;
-use App\Models\HeaderFormOvertime;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('new.layouts.app')]
 class Index extends Component
 {
     use WithPagination;
@@ -48,15 +50,12 @@ class Index extends Component
     #[Url(as: 'dir')]
     public string $sortDirection = 'desc';
 
-    #[Url(as: 'dense')]
-    public bool $dense = false;
 
     #[Url(as: 'range')]
     public ?string $range = null; // 'today'|'7d'|'30d'|'mtd'|null
 
     public array $departments = [];
 
-    public string $statsScope = 'all'; // 'all' or 'page'
 
     public ?int $pendingDeleteId = null; // fired from the Delete button
 
@@ -76,10 +75,10 @@ class Index extends Component
             return;
         }
 
-        $fot = HeaderFormOvertime::with('details')->findOrFail($id);
+        $fot = OvertimeForm::with('details')->findOrFail($id);
 
-        // (Optional) Gate/Policy check
-        // Gate::authorize('delete', $fot);
+        // Gate/Policy check
+        $this->authorize('delete', $fot);
 
         // If FK doesn't cascade, do it here:
         $fot->details()->delete();
@@ -108,50 +107,39 @@ class Index extends Component
      * - When scope = 'page', compute from the current page collection (fast and simple).
      * - When scope = 'all', do one aggregate query across all filtered results (efficient).
      */
-    public function buildStats(LengthAwarePaginator $page)
+    public function buildStats()
     {
-        if ($this->statsScope === 'page') {
-            $approved = (int) $page->sum('approved_count');
-            $rejected = (int) $page->sum('rejected_count');
-            $pending = (int) $page->sum('pending_count');
-        } else {
-            // Aggregate across ALL filtered results using a single SQL
-            // 1) Rebuild the filtered header query (no order/pagination)
-            $h = HeaderFormOvertime::query();
-            $this->scopeByRole($h);
-            $this->scopeFilters($h);
+        // Global scope - re-run query for totals only across all filtered results
+        $h = OvertimeForm::query();
+        $this->scopeByRole($h);
+        $this->scopeFilters($h, true);
 
-            // 2) Use a subquery for header ids
-            $idsSub = $h->select('id');
+        // Use a subquery for header ids to get correct matches
+        $idsSub = $h->select('id');
 
-            // 3) Aggregate on details + join headers for 'urgent'
-            $row = DB::table('detail_form_overtime as d')
-                ->join('header_form_overtime as h', 'h.id', '=', 'd.header_id')
-                ->whereIn('d.header_id', $idsSub)
-                ->selectRaw(
-                    "
+        // Aggregate on details
+        $row = DB::table('detail_form_overtime as d')
+            ->whereIn('d.header_id', $idsSub)
+            ->selectRaw("
                 SUM(CASE WHEN d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
                 SUM(CASE WHEN d.status IS NULL THEN 1 ELSE 0 END) as pending
-            ",
-                )
-                ->first();
+            ")
+            ->first();
 
-            $approved = (int) ($row->approved ?? 0);
-            $rejected = (int) ($row->rejected ?? 0);
-            $pending = (int) ($row->pending ?? 0);
-        }
-
-        $total = max(1, $approved + $rejected + $pending); // avoid /0
+        $approved = (int) ($row->approved ?? 0);
+        $rejected = (int) ($row->rejected ?? 0);
+        $pending = (int) ($row->pending ?? 0);
+        $total = max(1, $approved + $rejected + $pending);
 
         return [
-            'approved' => $approved,
-            'rejected' => $rejected,
-            'pending' => $pending,
-            'total' => $total,
+            'approved'     => $approved,
+            'rejected'     => $rejected,
+            'pending'      => $pending,
+            'total'        => $total,
             'pct_approved' => round(($approved * 100) / $total),
             'pct_rejected' => round(($rejected * 100) / $total),
-            'pct_pending' => round(($pending * 100) / $total),
+            'pct_pending'  => round(($pending * 100) / $total),
         ];
     }
 
@@ -208,8 +196,9 @@ class Index extends Component
 
     public function mount(): void
     {
+        $this->authorize('viewAny', OvertimeForm::class);
         // ⚠️ Move heavy cleanup out of request cycle:
-        // HeaderFormOvertime::doesntHave('details')->delete();
+        // OvertimeForm::doesntHave('details')->delete();
         // Put it in a nightly job/queue instead.
 
         $this->departments = Department::select('id', 'name')->orderBy('name')->get()->toArray();
@@ -224,7 +213,6 @@ class Index extends Component
         $this->isPush = null;
         $this->search = '';
         $this->range = null;
-        $this->infoStatus = null;
         $this->resetPage();
     }
 
@@ -277,13 +265,11 @@ class Index extends Component
     public function updatedStartDate(): void
     {
         $this->syncRangeWithDates();
-        $this->resetPage();
     }
 
     public function updatedEndDate(): void
     {
         $this->syncRangeWithDates();
-        $this->resetPage();
     }
 
     private function syncRangeWithDates(): void
@@ -313,6 +299,8 @@ class Index extends Component
 
     public function exportCsv()
     {
+        $this->authorize('export', OvertimeForm::class);
+
         // Stream the current filtered result set.
         return response()->streamDownload(
             function () {
@@ -366,7 +354,7 @@ class Index extends Component
     private function baseQuery()
     {
         // Minimal columns from header to render table
-        $q = HeaderFormOvertime::query()
+        $q = OvertimeForm::query()
             ->select([
                 'id',
                 'user_id',
@@ -378,7 +366,14 @@ class Index extends Component
                 'is_after_hour',
                 'created_at',
             ])
-            ->with(['user:id,name', 'department:id,name'])
+            ->with([
+                'user:id,name',
+                'department:id,name',
+                // Eager-load approval steps for the inline stepper
+                'approvalRequest.steps' => fn ($q) => $q
+                    ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label'])
+                    ->orderBy('sequence'),
+            ])
             // counts for the Info column (fast subselects)
             ->withCount([
                 'details as approved_count' => fn ($q) => $q->where('status', 'Approved'),
@@ -396,88 +391,139 @@ class Index extends Component
         return $q;
     }
 
-    private function scopeByRole($query)
+    /**
+     * Returns true for roles that can see org-wide analytics and advanced filters.
+     * Regular staff only sees their own submissions and needs a clean, simple UI.
+     */
+    public function isPrivilegedUser(): bool
     {
-        $user = Auth::user();
-
-        $query->where(function ($query) use ($user) {
-            if ($user->role->name === 'SUPERADMIN') {
-                $query->whereNotNull('status');
-
-                $overtimeforms = HeaderFormOvertime::whereHas(
-                    'user',
-                    fn ($q) => $q->where('name', 'ani'),
-                )
-                    ->whereHas('department', fn ($q) => $q->where('name', 'BUSINESS'))
-                    ->where('status', '!=', 'waiting-creator')
-                    ->get();
-
-                $andriani = \App\Models\User::where('name', 'andriani')->first();
-
-                foreach ($overtimeforms as $form) {
-                    foreach ($form->approvals as $approval) {
-                        if ($approval->step->role_slug === 'creator') {
-                            $approval->approver_id = $andriani->id;
-                            $approval->signature_path = 'andriani.png';
-                            $approval->save();
-                        }
-                    }
-
-                    $form->user_id = $andriani->id;
-                    $form->saveQuietly();
-                }
-            } elseif ($user->specification->name === 'VERIFICATOR') {
-                $query->where(function ($subQuery) {
-                    $subQuery->where('status', 'approved')->orWhere(function ($q) {
-                        $q->where('status', 'waiting-dept-head')->whereHas(
-                            'department',
-                            fn ($qq) => $qq->where('name', 'PERSONALIA'),
-                        );
-                    });
-                });
-            } elseif ($user->specification->name === 'DIRECTOR') {
-                $query->where('status', 'waiting-director');
-            } elseif ($user->is_gm) {
-                $query
-                    ->where('status', 'waiting-gm')
-                    ->where('branch', $user->name === 'pawarid' ? 'Karawang' : 'Jakarta');
-            } elseif ($user->is_head) {
-                $query
-                    ->whereHas('department', function ($q) use ($user) {
-                        $q->where('dept_id', $user->department->id);
-                        if ($user->department->name === 'LOGISTIC') {
-                            $q->orWhere('name', 'STORE');
-                        }elseif($user->department->name === 'QC') {
-                            $q->orWhere('name', 'QA');
-                        }
-                    })
-                    ->where('status', 'waiting-dept-head');
-            } else {
-                if ($user->name === 'Umi') {
-                    $query->whereHas('department', fn ($q) => $q->whereIn('name', ['QA', 'QC']));
-                } elseif ($user->name === 'nurul') {
-                    $query->whereHas(
-                        'department',
-                        fn ($q) => $q->whereIn('name', ['PLASTIC INJECTION', 'MAINTENANCE MACHINE']),
-                    );
-                } else {
-                    $query->whereHas(
-                        'department',
-                        fn ($q) => $q->where('name', $user->department->name),
-                    );
-                }
-            }
-
-            // Always include creator's own entries (kept inside the role group)
-            $query->orWhere('user_id', $user->id);
-        });
-
-        return $query;
+        return Auth::user()->can('overtime.view-all');
     }
 
-    private function scopeFilters($query)
+    /**
+     * Returns true ONLY for the Verificator and super-admin.
+     *
+     * The dashboard metric cards (approved_count / rejected_count / pending_count)
+     * track **detail-row** approval status — individual employee OT lines that the
+     * Verificator reviews after the form's signing flow is complete. These numbers
+     * are meaningless for signers (GM, Director, Dept Head) who only act on the
+     * form-level workflow and never touch individual detail rows.
+     */
+    public function isDetailReviewer(): bool
     {
-        $query->whereYear('created_at', 2026);
+        return Auth::user()->can('overtime.review');
+    }
+
+    /**
+     * Map a raw `status` slug to human-readable label + JIT-safe Tailwind classes.
+     * CRITICAL: Dynamic class strings (bg-{{ $color }}-100) are purged by Tailwind JIT.
+     * Always use complete pre-defined strings here.
+     *
+     * @return array{label: string, classes: string, icon: string}
+     */
+    public static function statusMeta(?string $status): array
+    {
+        return match ($status) {
+            'approved'           => ['label' => 'Fully Approved',        'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
+            'rejected'           => ['label' => 'Rejected',              'classes' => 'bg-rose-100 text-rose-800 border-rose-200',         'icon' => 'bx-x-circle'],
+            'waiting-dept-head'  => ['label' => 'Awaiting Dept Approval','classes' => 'bg-amber-100 text-amber-800 border-amber-200',       'icon' => 'bx-time-five'],
+            'waiting-gm'         => ['label' => 'Awaiting GM Sign-off',  'classes' => 'bg-orange-100 text-orange-800 border-orange-200',    'icon' => 'bx-time-five'],
+            'waiting-director'   => ['label' => 'Awaiting Director',     'classes' => 'bg-purple-100 text-purple-800 border-purple-200',    'icon' => 'bx-time-five'],
+            'waiting-verificator'=> ['label' => 'Awaiting Verificator',  'classes' => 'bg-sky-100 text-sky-800 border-sky-200',             'icon' => 'bx-time-five'],
+            'pending'            => ['label' => 'Pending Submission',    'classes' => 'bg-slate-100 text-slate-700 border-slate-200',       'icon' => 'bx-edit'],
+            default              => ['label' => ucwords(str_replace('-', ' ', $status ?? 'Draft')), 'classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'icon' => 'bx-circle'],
+        };
+    }
+
+    public static function reviewMeta($fot): array
+    {
+        $status = strtolower($fot->status ?? '');
+
+        if ($fot->is_push == 1) {
+            $totalCount = $fot->details()->count();
+            $processedCount = $fot->processedDetails()->count();
+            $failedSyncCount = $fot->failedDetails()->count();
+
+            if ($failedSyncCount > 0) {
+                // Get unique failed reasons (specifically JPAYROLL errors)
+                $reasons = $fot->failedDetails()
+                    ->pluck('reason')
+                    ->unique()
+                    ->filter()
+                    ->values()
+                    ->all();
+                
+                $reasonText = implode('; ', $reasons);
+
+                return [
+                    'label'   => 'Sync Errors',
+                    'classes' => 'bg-rose-100 text-rose-700 border-rose-200/50',
+                    'icon'    => 'bx-error-alt',
+                    'reason'  => $reasonText ?: 'Validation failed on payroll push.',
+                ];
+            }
+
+            if ($processedCount === 0 && $totalCount > 0) {
+                 return [
+                    'label'   => 'Sync Failed',
+                    'classes' => 'bg-rose-50 text-rose-600 border-rose-100',
+                    'icon'    => 'bx-x-circle',
+                    'reason'  => 'Form was pushed but no rows were successfully processed.',
+                ];
+            }
+
+            if ($processedCount < $totalCount) {
+                return [
+                    'label'   => 'Partial Sync',
+                    'classes' => 'bg-amber-50 text-amber-600 border-amber-100',
+                    'icon'    => 'bx-list-check',
+                    'reason'  => "Only {$processedCount} of {$totalCount} rows were successfully synced.",
+                ];
+            }
+
+            return [
+                'label'   => 'Synced Successfully',
+                'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200/50',
+                'icon'    => 'bx-check-double',
+            ];
+        }
+
+        if ($status === 'approved') {
+            return [
+                'label'   => 'Awaiting Review',
+                'classes' => 'bg-amber-100 text-amber-700 border-amber-200/50',
+                'icon'    => 'bx-time-five',
+            ];
+        }
+
+        return [
+            'label'   => 'Pending Approval',
+            'classes' => 'bg-slate-100 text-slate-500 border-slate-200/50',
+            'icon'    => 'bx-dots-horizontal-rounded',
+        ];
+    }
+
+    private function scopeByRole($query)
+    {
+        return $query->byRole(Auth::user());
+    }
+
+    public function clearFilter(string $key): void
+    {
+        match ($key) {
+            'range'      => [$this->range = null, $this->startDate = null, $this->endDate = null],
+            'dates'      => [$this->startDate = null, $this->endDate = null, $this->range = null],
+            'dept'       => $this->dept = null,
+            'infoStatus' => $this->infoStatus = null,
+            'isPush'     => $this->isPush = null,
+            'search'     => $this->search = '',
+            default      => null,
+        };
+        $this->resetPage();
+    }
+
+    private function scopeFilters($query, bool $excludeInfoStatus = false)
+    {
         if ($this->startDate && $this->endDate) {
             $start = $this->startDate;
             $end = $this->endDate;
@@ -494,13 +540,13 @@ class Index extends Component
         }
 
         if (
-            Auth::user()->specification->name === 'VERIFICATOR' &&
+            Auth::user()->hasRole('verificator') &&
             ($this->isPush === '0' || $this->isPush === '1')
         ) {
             $query->where('is_push', (int) $this->isPush);
         }
 
-        if ($this->infoStatus) {
+        if (! $excludeInfoStatus && $this->infoStatus) {
             $status = $this->infoStatus;
             $query->whereHas('details', function ($q) use ($status) {
                 $status === 'pending'
@@ -516,9 +562,9 @@ class Index extends Component
                 if (ctype_digit($s)) {
                     $qq->orWhere('id', (int) $s);
                 }
-                $qq->orWhere('branch', 'like', $s.'%')->orWhereHas(
+                $qq->orWhere('branch', 'like', $s . '%')->orWhereHas(
                     'user',
-                    fn ($u) => $u->where('name', 'like', $s.'%'),
+                    fn ($u) => $u->where('name', 'like', $s . '%'),
                 );
             });
         }
@@ -538,7 +584,7 @@ class Index extends Component
         if ($manual) {
             $query->orderBy($this->sortField, $this->sortDirection);
         } else {
-            if ($user->specification->name === 'VERIFICATOR') {
+            if ($user->hasRole('verificator')) {
                 $query->orderBy('first_overtime_date', 'asc');
             } else {
                 $query->orderBy('id', 'desc');
@@ -548,10 +594,10 @@ class Index extends Component
         return $query;
     }
 
-    private function buildQuery($q)
+    private function buildQuery($q, bool $excludeInfoStatus = false)
     {
         $this->scopeByRole($q);
-        $this->scopeFilters($q);
+        $this->scopeFilters($q, $excludeInfoStatus);
         $this->applySorting($q);
 
         return $q;
@@ -565,13 +611,16 @@ class Index extends Component
         $dataheader = $q->paginate($this->perPage);
 
         // Build stats for cards
-        $stats = $this->buildStats($dataheader);
+        $stats = $this->buildStats();
 
         return view('livewire.overtime.index', [
-            'dataheader' => $dataheader,
-            'departments' => $this->departments,
-            'user' => Auth::user(),
-            'stats' => $stats,
+            'dataheader'       => $dataheader,
+            'departments'      => $this->departments,
+            'user'             => Auth::user(),
+            'stats'            => $stats,
+            'isPrivileged'     => $this->isPrivilegedUser(),
+            'isDetailReviewer' => $this->isDetailReviewer(),
         ]);
     }
 }
+

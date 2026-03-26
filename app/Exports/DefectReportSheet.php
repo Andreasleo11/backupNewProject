@@ -31,6 +31,7 @@ class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
         // Generate rows with dynamic defect category columns
         foreach ($this->defectData as $item) {
             $row = [
+                'Customer' => $item['customer'],
                 'Part Name' => $item['part_name'],
                 'Quantity' => $item['rec_quantity'],
             ];
@@ -60,7 +61,7 @@ class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
         }
 
         // Generate headings with dynamic defect category columns
-        $headings = ['Part Name', 'Quantity'];
+        $headings = ['Customer', 'Part Name', 'Quantity'];
         foreach ($defectCategories as $category => $_) {
             $headings[] = $category;
         }

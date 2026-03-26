@@ -24,15 +24,19 @@ class UpdatePurchaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date_pr' => 'required|date',
-            'date_required' => 'required|date',
+            'from_department' => 'required|string|max:255',
+            'to_department' => 'required|string|max:255',
+            'branch' => ['required', Rule::enum(\App\Enums\Branch::class)],
+            'date_of_pr' => 'required|date',
+            'date_of_required' => 'required|date',
             'remark' => 'nullable|string|max:255',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
+            'items.*.quantity' => 'required|numeric|min:1',
             'items.*.price' => ['required', new SanitizedNumeric],
-            'items.*.uom' => ['required', 'string'],
+            'items.*.uom' => 'required|string|max:50',
             'items.*.currency' => ['required', 'string', Rule::in(['IDR', 'CNY', 'USD'])],
             'items.*.purpose' => 'required|string|max:255',
         ];
@@ -46,10 +50,10 @@ class UpdatePurchaseRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'date_pr.required' => 'The date of PR is required.',
-            'date_pr.date' => 'The date of PR must be a valid date.',
-            'date_required.required' => 'The date of required is required.',
-            'date_required.date' => 'The date of required must be a valid date.',
+            'date_of_pr.required' => 'The date of PR is required.',
+            'date_of_pr.date' => 'The date of PR must be a valid date.',
+            'date_of_required.required' => 'The date of required is required.',
+            'date_of_required.date' => 'The date of required must be a valid date.',
             'remark.string' => 'The remark must be a string.',
             'remark.max' => 'The remark may not be greater than 255 characters.',
             'supplier.required' => 'The supplier is required.',

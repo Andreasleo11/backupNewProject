@@ -56,8 +56,8 @@ class MissingDailyReportsNotification extends Notification implements ShouldQueu
             'total_employees' => count($this->employees),
             'employees' => collect($this->employees)->map(
                 fn ($entry) => [
-                    'name' => $entry['employee']->Nama,
-                    'NIK' => $entry['employee']->NIK,
+                    'name' => $entry['employee']->name,
+                    'NIK' => $entry['employee']->nik,
                     'missing_dates' => $entry['dates'],
                 ],
             ),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ToDepartment;
 use App\Models\foremindFinal;
 use App\Models\PurchaseRequest;
 use App\Models\PurchasingContact;
@@ -27,11 +28,11 @@ class PurchasingController extends Controller
 
         foreach ($statuses as $key => $status) {
             $data[$key] = PurchaseRequest::where('status', $status)
-                ->where('to_department', 'Purchasing')
+                ->where('to_department', ToDepartment::PURCHASING->value)
                 ->whereHas('createdBy', function ($query) {
                     $query->orWhere('id', auth()->user()->id);
                 })
-                ->orWhere('from_department', 'Purchasing')
+                ->orWhere('from_department', ToDepartment::PURCHASING->value)
                 ->get()
                 ->count();
         }
@@ -39,7 +40,7 @@ class PurchasingController extends Controller
         $twoDaysAgo = Carbon::now()->subDays(2);
 
         $prOver2Days = PurchaseRequest::where('status', $status)
-            ->where('to_department', 'Purchasing')
+            ->where('to_department', ToDepartment::PURCHASING->value)
             ->whereHas('createdBy', function ($query) {
                 $query->orWhere('id', auth()->user()->id);
             })

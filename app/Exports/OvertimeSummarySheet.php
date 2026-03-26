@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\DetailFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromView;
@@ -21,7 +21,7 @@ class OvertimeSummarySheet implements FromView
 
     public function view(): View
     {
-        $summary = DetailFormOvertime::query()
+        $summary = OvertimeFormDetail::query()
             ->select(
                 'NIK',
                 'name',
@@ -41,3 +41,4 @@ class OvertimeSummarySheet implements FromView
         return view('formovertime.export_summary_excel', compact('summary'));
     }
 }
+

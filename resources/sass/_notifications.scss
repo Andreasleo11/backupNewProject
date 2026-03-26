@@ -77,8 +77,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  // default (info)
   background: #eef3ff;
   color: #0d6efd;
+
+  // Category modifiers — driven by the 'category' key in each notification's toArray()
+  &--info    { background: #eef3ff; color: #0d6efd; }
+  &--success { background: #e8f8f0; color: #198754; }
+  &--danger  { background: #fdecea; color: #dc3545; }
+  &--warning { background: #fff8e6; color: #fd7e14; }
+
+  // Smaller variant for the modal header
+  &--sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    font-size: 0.85rem;
+  }
 }
 .title {
   line-height: 1.2;
@@ -86,6 +102,7 @@
 .clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
 
 class DeliveryNoteController extends Controller
 {

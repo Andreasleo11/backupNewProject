@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\FormKeluar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +30,7 @@ class FormKeluarController extends Controller
         $satuan_waktu_keluar = $request->input('satuan_waktu_keluar');
 
         // Concatenate the values
-        $waktu_keluar .= ' '.$satuan_waktu_keluar;
+        $waktu_keluar .= ' ' . $satuan_waktu_keluar;
         // dd($request->all());
 
         $formcuti = FormKeluar::create([
@@ -50,7 +50,7 @@ class FormKeluarController extends Controller
         ]);
 
         return redirect()
-            ->route('formkeluar.home')
+            ->route('formkeluar')
             ->with('success', 'form keluar created successfully');
     }
 
@@ -65,7 +65,7 @@ class FormKeluarController extends Controller
     public function saveImagePath(Request $request, $formId, $section)
     {
         $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
 
         // Save $imagePath to the database for the specified $reportId and $section
         $fc = FormKeluar::find($formId);

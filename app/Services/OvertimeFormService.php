@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Imports\OvertimeImport;
 use App\Models\ApprovalFlow;
-use App\Models\DetailFormOvertime;
-use App\Models\HeaderFormOvertime;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Models\OvertimeForm;
 use App\Support\ApprovalFlowResolver;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -18,20 +18,15 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class OvertimeFormService
 {
-    public static function create(Collection $data): HeaderFormOvertime
+    public static function create(Collection $data): OvertimeForm
     {
         return DB::transaction(function () use ($data) {
             $excelFile = $data->get('excel_file');
             $isPlanned = self::determineIsPlanned($data, $excelFile);
             $headerData = self::buildHeaderData($data, $isPlanned);
 
-            // Resolve the approval flow
-            $flowSlug = ApprovalFlowResolver::for($headerData);
-            $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
-            $headerData['approval_flow_id'] = $flow->id;
-
-            // Create header first to obtain ID, but DO NOT seed approvals yet
-            $header = HeaderFormOvertime::create($headerData);
+            // Create header first to obtain ID
+            $header = OvertimeForm::create($headerData);
 
             // Create details (Excel vs manual)
             $createdCount = 0;
@@ -56,11 +51,27 @@ class OvertimeFormService
                 ]);
             }
 
-            // Sees approval steps only when details exist
-            foreach ($flow->steps as $step) {
-                $header->approvals()->create([
-                    'flow_step_id' => $step->id,
-                    'status' => 'pending',
+            // Submit to Unified Approval Engine
+            $context = [
+                'department_id' => (int) $header->dept_id,
+                'branch' => $header->branch,
+                'is_design' => (bool) $header->is_design,
+            ];
+
+            try {
+                app(\App\Application\Approval\Contracts\Approvals::class)->submit($header, Auth::id(), $context);
+
+                // Backward compatibility: maintain legacy 'status' string (e.g. 'waiting-general-manager')
+                $req = $header->approvalRequest()->with('steps')->first();
+                if ($req && $currentStep = $req->steps->where('sequence', $req->current_step)->first()) {
+                    $roleSlug = $currentStep->approver_snapshot_role_slug ?? 'approver';
+                    $header->update(['status' => 'waiting-' . \Illuminate\Support\Str::slug($roleSlug)]);
+                }
+
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Overtime Approval Engine Error: ' . $e->getMessage(), ['exception' => $e]);
+                throw ValidationException::withMessages([
+                    'items' => ["Sistem tidak dapat menentukan alur persetujuan. Silakan hubungi admin. (" . $e->getMessage() . ")"],
                 ]);
             }
 
@@ -85,7 +96,7 @@ class OvertimeFormService
     private static function determineIsPlanned(Collection $data, $excelFile): bool
     {
         if ($excelFile instanceof UploadedFile && $excelFile->isValid()) {
-            $rows = Excel::toArray([], $excelFile);
+            $rows = Excel::toArray(new \stdClass(), $excelFile);
             $sheet0 = $rows[0] ?? [];
             $dataRows = array_slice($sheet0, 3); // skip header rows if your template uses 0-2
             $firstRow = $dataRows[0] ?? null;
@@ -127,7 +138,7 @@ class OvertimeFormService
         $import = new OvertimeImport($headerId, $isAfterHour);
 
         // use absolute path
-        Excel::import($import, storage_path('app/'.$path));
+        Excel::import($import, storage_path('app/' . $path));
         Storage::delete($path);
 
         return (int) ($import->createdCount ?? 0);
@@ -146,14 +157,14 @@ class OvertimeFormService
             ->map(function ($i) {
                 // Combine date & time safely
                 $start = Carbon::parse(
-                    trim(($i['start_date'] ?? '').' '.($i['start_time'] ?? '00:00')),
+                    trim(($i['start_date'] ?? '') . ' ' . ($i['start_time'] ?? '00:00')),
                 );
                 $end = Carbon::parse(
-                    trim(($i['end_date'] ?? '').' '.($i['end_time'] ?? '00:00')),
+                    trim(($i['end_date'] ?? '') . ' ' . ($i['end_time'] ?? '00:00')),
                 );
 
                 if ($end->lt($start)) {
-                    return null;
+                    return;
                 }
 
                 $i['_start'] = $start;
@@ -171,19 +182,19 @@ class OvertimeFormService
         // Build unique pair list and preftech existing once (avoid N+1)
         $pairs = $rows->map(fn ($i) => [$i['nik'], $i['overtime_date']])->unique()->values();
 
-        $existing = DetailFormOvertime::query()
+        $existing = OvertimeFormDetail::query()
             ->whereHas('header', function ($q) use ($isAfterHour) {
                 $q->where('is_after_hour', $isAfterHour);
             })
             ->whereIn('NIK', $pairs->pluck(0))
             ->whereIn('overtime_date', $pairs->pluck(1))
             ->get(['NIK', 'overtime_date'])
-            ->map(fn ($d) => $d['NIK'].'|'.$d['overtime_date'])
+            ->map(fn ($d) => $d['NIK'] . '|' . $d['overtime_date'])
             ->all();
 
         $inserts = [];
         foreach ($rows as $i) {
-            $key = $i['nik'].'|'.$i['overtime_date'];
+            $key = $i['nik'] . '|' . $i['overtime_date'];
             if (in_array($key, $existing, true)) {
                 continue;
             }
@@ -208,8 +219,9 @@ class OvertimeFormService
             return 0;
         }
 
-        DetailFormOvertime::insert($inserts);
+        OvertimeFormDetail::insert($inserts);
 
         return count($inserts);
     }
 }
+

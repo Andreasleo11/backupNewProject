@@ -2,103 +2,88 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\PurchaseRequest\DTOs\ItemApprovalActionDTO;
+use App\Application\PurchaseRequest\UseCases\ApproveItem;
+use App\Application\PurchaseRequest\UseCases\RejectItem;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestDetailService;
 use App\Models\DetailPurchaseRequest;
-use App\Models\PurchaseRequest;
 use Illuminate\Http\Request;
 
 class DetailPurchaseRequestController extends Controller
 {
-    public function approve($id, Request $request)
+    public function __construct(
+        private readonly PurchaseRequestDetailService $detailService,
+        private readonly ApproveItem $approveItemUseCase,
+        private readonly RejectItem $rejectItemUseCase
+    ) {}
+
+    public function approve(DetailPurchaseRequest $item)
     {
-        $type = $request->type;
+        try {
+            $this->authorize('approve', $item);
 
-        if ($type == 'head') {
-            DetailPurchaseRequest::find($id)->update(['is_approve_by_head' => true]);
-        } elseif ($type == 'verificator') {
-            DetailPurchaseRequest::find($id)->update(['is_approve_by_verificator' => true]);
-        } elseif ($type == 'director') {
-            DetailPurchaseRequest::find($id)->update(['is_approve' => true]);
+            $this->approveItemUseCase->handle(new ItemApprovalActionDTO(
+                itemId: $item->id,
+                actorUser: auth()->user()
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'Item approved successfully!']);
+
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
         }
-
-        return redirect()
-            ->back()
-            ->with(['success' => 'Detail approved successfully!']);
     }
 
-    public function reject($id, Request $request)
+    public function reject(DetailPurchaseRequest $item)
     {
-        $type = $request->type;
+        try {
+            $this->authorize('reject', $item);
 
-        if ($type == 'head') {
-            DetailPurchaseRequest::find($id)->update(['is_approve_by_head' => false]);
-        } elseif ($type == 'verificator') {
-            DetailPurchaseRequest::find($id)->update(['is_approve_by_verificator' => false]);
-        } elseif ($type == 'director') {
-            DetailPurchaseRequest::find($id)->update(['is_approve' => false]);
+            $this->rejectItemUseCase->handle(new ItemApprovalActionDTO(
+                itemId: $item->id,
+                actorUser: auth()->user()
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'Item rejected successfully!']);
+
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
         }
-
-        return redirect()
-            ->back()
-            ->with(['success' => 'Detail rejected successfully!']);
     }
 
     public function update(Request $request)
     {
         if ($request->ajax()) {
-            $detail = DetailPurchaseRequest::find($request->pk);
+            $success = $this->detailService->updateDetail(
+                $request->pk,
+                $request->name,
+                $request->value
+            );
 
-            if ($request->name == 'item_name') {
-                $detail->update([
-                    'item_name' => $request->value,
-                ]);
-            } elseif ($request->name == 'quantity') {
-                $detail->update([
-                    'quantity' => $request->value,
-                ]);
-            } elseif ($request->name == 'purpose') {
-                $detail->update([
-                    'purpose' => $request->value,
-                ]);
-            } elseif ($request->name == 'price') {
-                $value = $request->value;
-                // Remove all dots to handle multiple thousand separators
-                $numericValue = str_replace('.', '', $value);
-
-                // Extract numeric part using regular expression
-                preg_match("/\d+(\.\d+)?/", $numericValue, $matches);
-
-                // Get the first match which should be "9000000"
-                $numericValue = $matches[0];
-
-                // Convert to integer
-                $numericValue = (int) str_replace('.', '', $numericValue);
-
-                $detail->update([
-                    'price' => $numericValue,
-                ]);
-            }
-
-            return response()->json(['success' => 'Detail updated successfully!']);
+            return response()->json([
+                'success' => $success ? 'Detail updated successfully!' : 'Failed to update detail',
+            ]);
         }
-        // return redirect()->back()->with(['success' => 'Detail updated successfully!']);
     }
 
     public function updateReceivedQuantity(Request $request, $id)
     {
-        DetailPurchaseRequest::find($id)->update([
-            'received_quantity' => $request->received_quantity,
-        ]);
+        $this->detailService->updateReceivedQuantity($id, $request->received_quantity);
 
         return redirect()->back()->with('success', 'Update received successfully!');
     }
 
     public function updateAllReceivedQuantity($id)
     {
-        $pr = PurchaseRequest::find($id);
-
-        DetailPurchaseRequest::where('report_id', $id)->update([
-            'received_quantity' => $pr->quantity,
-        ]);
+        $this->detailService->updateAllReceivedQuantity($id);
 
         return redirect()->back()->with('success', 'Update all received successfully!');
     }

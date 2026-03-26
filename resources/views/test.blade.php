@@ -186,14 +186,14 @@
 
                     <div class="row">
                         <div class="col-md-4">
-                            <p><strong>NIK:</strong> {{ $user->NIK }}</p>
-                            <p><strong>Name:</strong> {{ $user->Nama }}</p>
-                            <p><strong>Gender:</strong> {{ $user->Gender }}</p>
+                            <p><strong>NIK:</strong> {{ $user->nik }}</p>
+                            <p><strong>Name:</strong> {{ $user->name }}</p>
+                            <p><strong>Gender:</strong> {{ $user->gender }}</p>
                         </div>
                         <div class="col-md-4">
                             <p><strong>Department:</strong> {{ $user->department->name ?? 0 }}</p>
-                            <p><strong>Branch:</strong> {{ $user->Branch }}</p>
-                            <p><strong>Employee Status:</strong> {{ $user->employee_status }}</p>
+                            <p><strong>Branch:</strong> {{ $user->branch }}</p>
+                            <p><strong>Employee Status:</strong> {{ $user->employment_type }}</p>
                         </div>
                         <div class="col-md-4">
                             <p><strong>Status:</strong> {{ $user->status }}</p>

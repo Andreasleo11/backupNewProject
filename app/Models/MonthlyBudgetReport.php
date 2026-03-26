@@ -2,31 +2,36 @@
 
 namespace App\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
+use App\Infrastructure\Approval\Concerns\HasApproval;
 use App\Notifications\MonthlyBudgetReportUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 
-class MonthlyBudgetReport extends Model
+class MonthlyBudgetReport extends Model implements Approvable
 {
-    use HasFactory, SoftDeletes;
+    use HasApproval, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'dept_no',
         'creator_id',
         'report_date',
-        'created_autograph',
-        'is_known_autograph',
-        'approved_autograph',
-        'reject_reason',
-        'is_reject',
         'doc_num',
-        'status',
-        'is_cancel',
-        'cancel_reason',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     // Relations
     public function details()
@@ -44,24 +49,193 @@ class MonthlyBudgetReport extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    // Queries
-    public function scopeApprovedByDirector($query)
+    public function files()
     {
-        return $query
-            ->whereHas('department', function ($query) {
-                $query->where('name', 'QA')->orWhere('name', 'QC');
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
+    }
+
+    /**
+     * Get combined activities from Report, Files, and Approval Actions.
+     */
+    public function getCombinedActivitiesAttribute()
+    {
+        // 1. Get Report Logs
+        $reportLogs = $this->activities;
+
+        // 2. Get File Logs
+        $fileIds = File::where('doc_id', $this->doc_num)->pluck('id');
+        $fileLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', File::class)
+            ->whereIn('subject_id', $fileIds)
+            ->with('causer')
+            ->get();
+
+        // 3. Get Approval Actions
+        $approvalActions = collect();
+        if ($this->approvalRequest) {
+            $approvalActions = $this->approvalRequest->actions()
+                ->with('causer')
+                ->get();
+        }
+
+        // 4. Merge & Sort desc
+        return $reportLogs
+            ->concat($fileLogs)
+            ->concat($approvalActions)
+            ->sortByDesc('created_at');
+    }
+
+    /**
+     * Get workflow status from approval request.
+     */
+    public function getWorkflowStatusAttribute(): ?string
+    {
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get cancellation reason from approval action.
+     */
+    public function getCancellationReasonAttribute(): ?string
+    {
+        return $this->approvalRequest?->actions()
+            ->where('to_status', 'CANCELED')
+            ->latest()
+            ->first()?->remarks;
+    }
+
+    /**
+     * Check if the report is currently a draft or returned.
+     */
+    public function isDraft(): bool
+    {
+        $status = $this->workflow_status;
+        return $status === 'DRAFT' || $status === 'RETURNED';
+    }
+
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+        if (!$approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+        $currentStep = $approval->steps()->where('sequence', $approval->current_step)->first();
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Get all workflow steps for visualization.
+     */
+    public function getWorkflowSignaturesAttribute(): array
+    {
+        if (!$this->approvalRequest) {
+            return [];
+        }
+
+        return $this->approvalRequest->steps()
+            ->orderBy('sequence')
+            ->with('actedUser')
+            ->get()
+            ->map(function ($step) {
+                $uiStatus = match ($step->status) {
+                    'APPROVED' => 'signed',
+                    'REJECTED' => 'rejected',
+                    'CANCELED' => 'canceled',
+                    default   => 'pending',
+                };
+
+                return [
+                    'step_code'  => $step->approver_label ?? 'Approver',
+                    'user'       => $step->actedUser,
+                    'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
+                    'image'      => $step->signature_url,
+                    'at'         => $step->acted_at,
+                    'status'     => $uiStatus,
+                    'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
+                    'source'     => 'approval_system',
+                ];
             })
-            ->where('status', 6);
+            ->toArray();
     }
 
-    public function scopeWaiting($query)
-    {
-        return $query->where('status', 5);
-    }
+    // Queries
 
-    public function scopeRejected($query)
+    public function scopeFilteredByUser($query, $user)
     {
-        return $query->where('status', 7);
+        // 1. Admins & Special Overrides
+        if ($user->hasRole('super-admin') || $user->email === 'nur@daijo.co.id' || $user->hasRole('purchaser')) {
+            return $query;
+        }
+
+        $isHead = $user->hasRole('department-head');
+        $isGm = $user->hasRole('general-manager');
+        $isDirector = $user->hasRole('director');
+
+        return $query->where(function ($q) use ($user, $isHead, $isGm, $isDirector) {
+            // A. Creator always sees their own
+            $q->where('creator_id', $user->id);
+
+            // B. Department Head Logic
+            if ($isHead) {
+                $q->orWhere(function ($hq) use ($user) {
+                    // Must be in their department (including special cross-dept roles)
+                    $hq->whereHas('department', function ($dq) use ($user) {
+                        $dq->where('id', $user->department_id);
+                        if ($user->department?->name === 'QA') {
+                            $dq->orWhere('name', 'QC');
+                        }
+                        if ($user->department?->name === 'LOGISTIC') {
+                            $dq->orWhere('name', 'STORE');
+                        }
+                    })->where(function ($sq) {
+                        // AND (In Review & Waiting for them at Step 1) OR (Acted on Step 1) OR (Finished)
+                        $sq->whereHas('approvalRequest', function ($aq) {
+                            $aq->where(function ($sub) {
+                                $sub->where('status', 'IN_REVIEW')->where('current_step', 1);
+                            })->orWhere(function ($sub) {
+                                $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
+                            })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                        })->orWhereDoesntHave('approvalRequest'); // Drafts in their dept
+                    });
+                });
+            }
+
+            // C. GM Logic
+            if ($isGm) {
+                $q->orWhere(function ($gq) {
+                    $gq->whereHas('approvalRequest', function ($aq) {
+                        $aq->where(function ($sub) {
+                            // Waiting for them at Step 2 (Standard/Moulding)
+                            $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                        })->orWhere(function ($sub) {
+                            // Already acted at Step 2
+                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                        })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                    })->whereHas('department', function ($dq) {
+                        // Preserve existing exclusions for GM (Director handles QA/QC)
+                        $dq->whereNotIn('name', ['QA', 'QC']);
+                    });
+                });
+            }
+
+            // D. Director Logic
+            if ($isDirector) {
+                $q->orWhere(function ($dq) {
+                    $dq->whereHas('department', fn($deptQ) => $deptQ->whereIn('name', ['QA', 'QC']))
+                       ->whereHas('approvalRequest', function ($aq) {
+                            $aq->where(function ($sub) {
+                                // Waiting for them (Director is Step 2 for QA/QC)
+                                $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
+                            })->orWhere(function ($sub) {
+                                // Already acted
+                                $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                            })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
+                       });
+                });
+            }
+        });
     }
 
     // Other
@@ -76,139 +250,23 @@ class MonthlyBudgetReport extends Model
             $docNum = "$prefix/$id/$date";
 
             $report->update(['doc_num' => $docNum]);
-
-            $report->sendNotification('created');
-        });
-
-        static::updated(function ($report) {
-            if ($report->isDirty('status')) {
-                $report->sendNotification('updated');
-            }
         });
     }
 
-    private function sendNotification($event)
+    // --- Approvable Interface ---
+
+    public function getApprovableTypeLabel(): string
     {
-        $details = $this->prepareNotificationDetails();
-        $this->notifyUsers($details, $event);
+        return 'Monthly Budget Report';
     }
 
-    private function prepareNotificationDetails()
+    public function getApprovableIdentifier(): string
     {
-        $status = $this->getStatusText($this->status);
-
-        $commonDetails = [
-            'greeting' => 'Monthly Budget Report Notification',
-            'actionText' => 'Check Now',
-            'actionURL' => route('monthly.budget.report.show', $this->id),
-        ];
-
-        $commonDetails['body'] = "Notification for Monthly Budget Report: <br>
-            - Document Number : $this->doc_num <br>
-            - Creator : {$this->user->name} <br>
-            - Department : {$this->department->name} <br>
-            - Status : $status";
-
-        return $commonDetails;
+        return $this->doc_num;
     }
 
-    private function getStatusText($status)
+    public function getApprovableShowUrl(): string
     {
-        switch ($status) {
-            case 1:
-                return 'Waiting Creator';
-            case 2:
-                return 'Waiting Dept Head';
-            case 3:
-                return 'Waiting Head Design';
-            case 4:
-                return 'Waiting GM';
-            case 5:
-                return 'Waiting Director';
-            case 6:
-                return 'Approved';
-            case 7:
-                return 'Rejected';
-            default:
-                return 'Unknown';
-        }
-    }
-
-    private function notifyUsers($details, $event)
-    {
-        if ($event == 'created') {
-            // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
-        } else {
-            $creator = [$this->user]; // Convert to array
-            $user = null; // Initialize $user to avoid undefined variable error
-            $cc = null;
-
-            if (
-                $this->created_autograph &&
-                ! $this->is_known_autograph &&
-                ! $this->approved_autograph
-            ) {
-                if ($this->department->name === 'MOULDING') {
-                    $user = User::with('department', 'specification')
-                        ->whereHas('department', function ($query) {
-                            $query->where('name', 'MOULDING');
-                        })
-                        ->where('is_head', 1)
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'design');
-                        })
-                        ->first();
-                } elseif ($this->department->name === 'STORE') {
-                    $user = User::where('is_head', 1)
-                        ->whereHas('department', function ($query) {
-                            $query->where('name', 'LOGISTIC');
-                        })
-                        ->first();
-                } elseif ($this->department->name === 'PLASTIC INJECTION') {
-                    $user = User::where('email', 'albert@daijo.co.id')->first();
-                } else {
-                    $user = User::where('department_id', $this->department->id)
-                        ->where('is_head', 1)
-                        ->first();
-                }
-            } elseif (
-                $this->created_autograph &&
-                $this->is_known_autograph &&
-                ! $this->approved_autograph
-            ) {
-                if ($this->department->name === 'MOULDING') {
-                    $user = User::with('department', 'specification')
-                        ->whereHas('department', function ($query) {
-                            $query->where('name', 'MOULDING');
-                        })
-                        ->where('is_head', 1)
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', '!=', 'design');
-                        })
-                        ->first();
-                } elseif ($this->department->name === 'QA' || $this->department->name === 'QC') {
-                    $user = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'DIRECTOR');
-                        })
-                        ->first();
-                } else {
-                    $user = User::where('email', 'albert@daijo.co.id')->first();
-                }
-            }
-
-            $cc = User::where('name', 'nur')->first();
-            $users = isset($user) ? array_merge($creator, [$user, $cc]) : $creator;
-
-            // Ensure $users is not empty before sending notifications
-            if (! empty($users)) {
-                Notification::send($users, new MonthlyBudgetReportUpdated($this, $details));
-            } else {
-                // Log or handle the case where no users were found
-                Log::warning(
-                    'No valid users found to send the notification for MonthlyBudgetReportUpdated.',
-                );
-            }
-        }
+        return route('monthly-budget-reports.show', $this->id);
     }
 }

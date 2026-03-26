@@ -2,7 +2,7 @@
 
 namespace App\Livewire\DeliveryNote;
 
-use App\Models\DeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
 use Livewire\Component;
 
 class DeliveryNotePrint extends Component

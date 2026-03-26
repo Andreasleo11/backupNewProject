@@ -13,9 +13,8 @@
     "barryvdh/laravel-snappy": "^1.0",
     "creagia/laravel-sign-pad": "^2.1",
     "datatables.net/datatables.net-dt": "^2.0",
-    "doctrine/dbal": "^3.9",
+    "doctrine/dbal": "^3.10",
     "endroid/qr-code": "^6.0",
-    "filament/filament": "3.3",
     "guzzlehttp/guzzle": "^7.8",
     "h4cc/wkhtmltoimage-amd64": "0.12.x",
     "h4cc/wkhtmltopdf-amd64": "0.12.x",
@@ -29,7 +28,8 @@
     "ramsey/uuid": "^4.7",
     "setasign/fpdf": "^1.8",
     "smalot/pdfparser": "^2.11",
-    "spatie/laravel-permission": "^6.3",
+    "spatie/laravel-activitylog": "^4.10",
+    "spatie/laravel-permission": "^6.23",
     "twbs/bootstrap": "^5.3",
     "wemersonjanuario/wkhtmltopdf-windows": "0.12.2.3",
     "yajra/laravel-datatables": "^10.1",
@@ -38,12 +38,15 @@
     "yajra/laravel-datatables-oracle": "10.3.1"
   },
   "require-dev": {
+    "beyondcode/laravel-er-diagram-generator": "^5.0",
     "fakerphp/faker": "^1.9.1",
-    "laravel/pint": "^1.25",
+    "larastan/larastan": "^2.11",
+    "laravel/pint": "*",
     "laravel/sail": "^1.18",
     "mockery/mockery": "^1.4.4",
     "nunomaduro/collision": "^7.0",
     "pestphp/pest": "^2.36",
+    "phpstan/phpstan": "^1.12",
     "spatie/laravel-ignition": "^2.0"
   },
   "autoload": {
@@ -61,8 +64,7 @@
   "scripts": {
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi",
-      "@php artisan filament:upgrade"
+      "@php artisan package:discover --ansi"
     ],
     "post-update-cmd": [
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -73,7 +75,17 @@
     "post-create-project-cmd": [
       "@php artisan key:generate --ansi"
     ],
-    "pint": "pint"
+    "pint": "pint",
+    "pint:test": "pint --test",
+    "stan": "phpstan analyse --memory-limit=2G",
+    "stan:baseline": "phpstan analyse --generate-baseline",
+    "test": "php artisan test",
+    "test:coverage": "php artisan test --coverage",
+    "quality": [
+      "@pint:test",
+      "@stan",
+      "@test"
+    ]
   },
   "extra": {
     "laravel": {

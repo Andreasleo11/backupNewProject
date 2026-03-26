@@ -43,7 +43,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         $name = ucwords($notifiable->name);
         $mail = (new MailMessage)
             ->subject(
-                'Overtime Approval Summary – '.ucwords(str_replace('-', ' ', $this->status)),
+                'Overtime Approval Summary – ' . ucwords(str_replace('-', ' ', $this->status)),
             )
             ->greeting("Dear {$name},")
             ->line('Here are the overtime forms waiting for your action:');
@@ -63,7 +63,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         <tbody>';
 
         foreach ($this->reports as $report) {
-            $url = route('formovertime.detail', $report->id);
+            $url = route('overtime.detail', $report->id);
             $table .= "<tr>
             <td>{$report->id}</td>
             <td>{$report->department->name}</td>

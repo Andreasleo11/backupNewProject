@@ -83,7 +83,7 @@ class StepPackaging extends Component
     public function mount($second_inspection_document_number = null)
     {
         $this->second_inspection_document_number = $second_inspection_document_number;
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
 
         $this->packagings = session("stepDetailSaved.packagings.{$this->periodKey}", []);
         $this->sessionSaved = session("stepDetailSaved.packagings.{$this->periodKey}", []);

@@ -27,7 +27,6 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
-     *`1`1
      *
      * @return array<int, string>
      */
@@ -56,7 +55,7 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'PR with id = '.$this->pr->id.' has just been created!',
+            'message' => 'PR with id = ' . $this->pr->id . ' has just been created!',
             'status' => $this->pr->status,
         ];
     }

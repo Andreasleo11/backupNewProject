@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
@@ -15,7 +15,7 @@ class EmployeeJabatanImport implements ToCollection
             $nik = str_pad($row[1], 5, '0', STR_PAD_LEFT); // Ensure 5-digit format
             $jabatan = $row[3];
 
-            Employee::where('NIK', $nik)->update(['jabatan' => $jabatan]);
+            Employee::where('nik', $nik)->update(['jabatan' => $jabatan]);
         }
     }
 }

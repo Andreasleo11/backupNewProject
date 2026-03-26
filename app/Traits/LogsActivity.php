@@ -5,6 +5,19 @@ namespace App\Traits;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @deprecated This trait is deprecated. Use Spatie\Activitylog\Traits\LogsActivity instead.
+ * All models have been migrated to use Spatie's activity logging.
+ * Migration date: 2026-01-29
+ *
+ * Models that previously used this trait:
+ * - App\Models\Detail
+ * - App\Models\DetailPurchaseRequest
+ * - App\Models\File
+ * - App\Models\Report
+ * - App\Models\PurchaseRequest
+ * - App\Models\Defect
+ */
 trait LogsActivity
 {
     public static function bootLogsActivity()
@@ -25,7 +38,7 @@ trait LogsActivity
     protected static function logActivity($model, $action)
     {
         ActivityLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => Auth::id() ?? 0, // Fallback to system user when no auth context
             'action' => $action,
             'model_type' => get_class($model),
             'model_id' => $model->id,

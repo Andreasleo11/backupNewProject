@@ -15,7 +15,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -23,7 +23,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
             ->addColumn(
                 'action',
                 '
-                                    <a href="{{ route("purchaserequest.detail", ["id" => $id]) }}" class="btn btn-secondary me-2">
+                                    <a href="{{ route("purchase-requests.show", ["id" => $id]) }}" class="btn btn-secondary me-2">
                                         <i class="bx bx-info-circle" ></i> Detail
                                     </a>
 
@@ -124,6 +124,6 @@ class DirectorPurchaseRequestDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurchaseRequest_'.date('YmdHis');
+        return 'PurchaseRequest_' . date('YmdHis');
     }
 }

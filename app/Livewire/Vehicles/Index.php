@@ -4,7 +4,7 @@ namespace App\Livewire\Vehicles;
 
 use App\Enums\VehicleStatus;
 use App\Models\ServiceRecord;
-use App\Models\Vehicle;
+use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
 use Illuminate\Database\QueryException;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -33,7 +33,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()->hasRole('super-admin') || (auth()->user()->department->name === 'PERSONALIA');
     }
 
     public function sortBy(string $field): void
@@ -113,10 +113,10 @@ class Index extends Component
             ->when(
                 $this->q,
                 fn ($q) => $q->where(function ($w) {
-                    $w->where('plate_number', 'like', '%'.$this->q.'%')
-                        ->orWhere('brand', 'like', '%'.$this->q.'%')
-                        ->orWhere('model', 'like', '%'.$this->q.'%')
-                        ->orWhere('driver_name', 'like', '%'.$this->q.'%');
+                    $w->where('plate_number', 'like', '%' . $this->q . '%')
+                        ->orWhere('brand', 'like', '%' . $this->q . '%')
+                        ->orWhere('model', 'like', '%' . $this->q . '%')
+                        ->orWhere('driver_name', 'like', '%' . $this->q . '%');
                 }),
             )
             ->when($this->fullFeature && $this->status !== 'all', function ($q) {

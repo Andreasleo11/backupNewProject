@@ -67,6 +67,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
                 if (! isset($this->defectData[$partName])) {
                     // Initialize the defectData for this part_name
                     $this->defectData[$partName] = [
+                        'customer' => $detail->report->customer,
                         'part_name' => $partName,
                         'rec_quantity' => 0,
                         'defects' => [],

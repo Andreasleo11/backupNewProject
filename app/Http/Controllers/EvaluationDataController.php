@@ -4,181 +4,23 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EvaluationDataDataTable;
 use App\Exports\EvaluationDataExp;
-use App\Exports\EvaluationDataWeeklyExp;
 use App\Imports\EvaluationDataImport;
-use App\Imports\EvaluationWeeklyDataImport;
-use App\Models\Department;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationDataController extends Controller
 {
-    public function index(EvaluationDataDataTable $dataTable)
-    {
-        $datas = EvaluationData::with('karyawan')->get();
-
-        // dd($datas);
-        return $dataTable->render('setting.evaluationindex', compact('datas'));
-    }
-
-    public function update(Request $request)
-    {
-        $uploadedFiles = $request->file('excel_files');
-
-        $excelFileName = $this->processExcelFile($uploadedFiles);
-        $this->importExcelFile($excelFileName);
-
-        return redirect()->back();
-    }
-
-    public function processExcelFile($files)
-    {
-        $allData = [];
-        foreach ($files as $file) {
-            // Read the XLS file
-            $data = Excel::toArray([], $file);
-            // Remove the first row (header)
-            array_shift($data[0]);
-            array_shift($data[0]);
-
-            // Remove the first element from each row
-            foreach ($data[0] as &$row) {
-                array_splice($row, 1, 1); // Remove the second element
-            }
-
-            foreach ($data[0] as &$row) {
-                // Convert the date string to a DateTime object
-                $date = DateTime::createFromFormat('d/m/Y', $row[1]);
-                $row[1] = $date->format('Y-m-d');
-            }
-            // Append data from this file to the allData array
-            $allData = array_merge($allData, $data[0]);
-        }
-
-        $excelFileName = 'EvaluationData.xlsx';
-        $excelFilePath = public_path($excelFileName);
-
-        Excel::store(new EvaluationDataExp($allData), 'public/Evaluation/'.$excelFileName);
-
-        // $filePath = Storage::url($fileName);
-        return $excelFileName;
-    }
-
-    public function importExcelFile($excelFileName)
-    {
-        Excel::import(
-            new EvaluationDataImport,
-            public_path('/storage/Evaluation/'.$excelFileName),
-        );
-
-        // If the import is successful, return a success message or any other response
-        return 'Excel file imported successfully.';
-    }
-
-    public function delete(Request $request)
-    {
-        $selectedMonth = $request->input('filter_status');
-        $selectedYear = date('Y');
-
-        $startDate = $selectedYear.'-'.$selectedMonth.'-01';
-        $endDate = date('Y-m-t', strtotime($startDate));
-
-        EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
-
-        return redirect()->back()->with('success', 'Data for selected month has been deleted.');
-        // dd($request->all());
-    }
-
-    public function weeklyIndex()
-    {
-        return view('setting.weeklyindex');
-    }
-
-    public function updateWeekly(Request $request)
-    {
-        $uploadedFiles = $request->file('excel_files');
-
-        $excelFileName = $this->processExcelFileWeekly($uploadedFiles);
-        $this->importExcelFileWeekly($excelFileName);
-
-        return redirect()->back();
-    }
-
-    public function processExcelFileWeekly($files)
-    {
-        $allData = [];
-        foreach ($files as $file) {
-            // Read the XLS file
-            $data = Excel::toArray([], $file);
-            // Remove the first row (header)
-            array_shift($data[0]);
-            array_shift($data[0]);
-
-            // Remove the first element from each row
-            foreach ($data[0] as &$row) {
-                array_splice($row, 1, 1); // Remove the second element
-            }
-
-            foreach ($data[0] as &$row) {
-                // Convert the date string to a DateTime object
-                $date = DateTime::createFromFormat('d/m/Y', $row[1]);
-                $row[1] = $date->format('Y-m-d');
-            }
-            // Append data from this file to the allData array
-            $allData = array_merge($allData, $data[0]);
-        }
-
-        $excelFileName = 'EvaluationData.xlsx';
-        $excelFilePath = public_path($excelFileName);
-
-        Excel::store(new EvaluationDataWeeklyExp($allData), 'public/Evaluation/'.$excelFileName);
-
-        // $filePath = Storage::url($fileName);
-        return $excelFileName;
-    }
-
-    public function importExcelFileWeekly($excelFileName)
-    {
-        Excel::import(
-            new EvaluationWeeklyDataImport,
-            public_path('/storage/Evaluation/'.$excelFileName),
-        );
-
-        // If the import is successful, return a success message or any other response
-        return 'Excel file imported successfully.';
-    }
-
-    public function singleEmployee(Request $request)
-    {
-        // Get the year input from the user, default to the current year if not provided
-        $year = $request->input('year', now()->year - 1);
-
-        // Fetch the user and filter the evaluation data by the selected year
-        $user = Employee::with(
-            [
-                'evaluationData' => function ($query) use ($year) {
-                    $query->whereYear('Month', $year); // Filter data by year
-                },
-            ],
-            'department',
-        )->first();
-        // dd($user);
-
-        // Pass the user and year to the view
-        return view('test', compact('user', 'year'));
-    }
-
     public function evaluationformatrequestpageYayasan()
     {
-        $statuses = Employee::where('employee_status', 'YAYASAN')->distinct()->pluck('status');
+        $statuses = Employee::where('employment_type', 'YAYASAN')->distinct()->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) {
-            $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -189,12 +31,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageAllin()
     {
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -205,12 +47,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageMagang()
     {
-        $statuses = Employee::whereIn('employee_status', ['MAGANG'])
+        $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -221,12 +63,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageAllinPerpanjangan()
     {
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -235,35 +77,19 @@ class EvaluationDataController extends Controller
         return view('setting.formatrequestallinperpanjangan', compact('statuses', 'departments'));
     }
 
-    public function allEmployees(Request $request)
-    {
-        // Get the year input, default to the previous year if not provided
-        $year = $request->input('year', now()->year - 1);
 
-        // Fetch all employees with their evaluation data filtered by the selected year
-        $employees = Employee::with([
-            'evaluationData' => function ($query) use ($year) {
-                $query->whereYear('Month', $year);
-            },
-            'department',
-        ])->get();
-
-        $magang=null;
-        // Pass employees and the selected year to the view
-        return view('test', compact('employees', 'year','magang'));
-    }
 
     public function getFormatYearallin(Request $request)
     {
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -272,9 +98,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->whereNull('end_date') // Filter by user-selected department
             ->get();
 
@@ -287,13 +113,13 @@ class EvaluationDataController extends Controller
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['MAGANG'])
+        $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
-            ->pluck('status', 'start_date');
+            ->pluck('employment_scheme', 'start_date');
         $magang = 1;
 
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -302,9 +128,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
@@ -318,7 +144,7 @@ class EvaluationDataController extends Controller
         $year = $request->input('year');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])->pluck(
+        $allowedDepartments = Employee::whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])->pluck(
             'Dept',
         ); // Get department codes
 
@@ -329,9 +155,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
@@ -344,12 +170,12 @@ class EvaluationDataController extends Controller
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -358,12 +184,14 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
         return view('evaluasiPerpanjanganKaryawan', compact('employees', 'year', 'magang'));
     }
+
 }
+

@@ -55,7 +55,7 @@ class OvertimeExport implements FromCollection, WithCustomStartCell, WithHeading
     public function map($data): array
     {
         return [
-            $data->NIK,
+            $data->nik,
             Carbon::parse($data->start_date)->format('d/m/Y'),
             $data->job_desc,
             Carbon::parse($data->start_date)->format('d/m/Y'),

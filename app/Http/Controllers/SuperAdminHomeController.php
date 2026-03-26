@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\File;
 
 class SuperAdminHomeController extends Controller
 {
-    public function index()
-    {
-        return view('superadmin_home');
-    }
-
     public function updateEmailpage()
     {
         // Get the 'to' and 'cc' values from the configuration file
@@ -51,7 +46,7 @@ class SuperAdminHomeController extends Controller
 
         // Write the updated configuration to the file
         $path = config_path('email.php');
-        File::put($path, '<?php return '.var_export($config, true).';');
+        File::put($path, '<?php return ' . var_export($config, true) . ';');
 
         // Clear the config cache
         Artisan::call('config:clear');

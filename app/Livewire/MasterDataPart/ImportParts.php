@@ -50,7 +50,7 @@ class ImportParts extends Component
 
         // 1) Persist upload (never pass UploadedFile to the queue)
         $ext = $this->file->getClientOriginalExtension() ?: 'xlsx';
-        $name = 'parts-'.now()->format('Ymd-His').'-'.Str::uuid().'.'.$ext;
+        $name = 'parts-' . now()->format('Ymd-His') . '-' . Str::uuid() . '.' . $ext;
         $path = $this->file->storeAs('imports', $name, 'local'); // storage/app/imports/...
 
         // 2) Pre-scan rows from stored file (sync)

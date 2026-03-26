@@ -1,249 +1,187 @@
-<div class="container py-4">
-    {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h5 mb-0">{{ $department->name }} — Compliance</h1>
-        <div class="w-50">
-            <div class="progress" role="progressbar" aria-valuenow="{{ $percent }}" aria-valuemin="0"
-                aria-valuemax="100">
-                <div class="progress-bar {{ $percent == 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%">
-                    {{ $percent }}%
-                </div>
+{{-- Department Compliance Detail — Livewire component view --}}
+{{-- Tailwind, synced with new.layouts.app --}}
+
+@section('title', $department->name . ' — Compliance')
+@section('page-title', $department->name)
+@section('page-subtitle', 'Document compliance requirements')
+
+<div>
+    {{-- Page header --}}
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0 font-bold text-white text-base">
+                {{ strtoupper(mb_substr($department->name, 0, 2)) }}
             </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800">{{ $department->name }}</h1>
+                @if($department->code)
+                    <p class="text-sm text-slate-500 mt-0.5">{{ $department->code }}</p>
+                @endif
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            {{-- Overall compliance bar --}}
+            <div class="flex items-center gap-2">
+                <div class="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all {{ $percent >= 100 ? 'bg-emerald-500' : ($percent < 50 ? 'bg-rose-500' : 'bg-amber-500') }}"
+                        style="width: {{ $percent }}%"></div>
+                </div>
+                <span class="text-sm font-bold {{ $percent >= 100 ? 'text-emerald-600' : ($percent < 50 ? 'text-rose-600' : 'text-amber-600') }}">
+                    {{ $percent }}%
+                </span>
+            </div>
+            <a href="{{ route('departments.index') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+                <i class="bx bx-arrow-back text-base"></i> Departments
+            </a>
         </div>
     </div>
 
     {{-- Toolbar --}}
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body py-3">
-            <div class="row g-2 align-items-center">
-                <div class="col-12 col-lg-5">
-                    <div class="position-relative">
-                        <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
-                        <input type="text" class="form-control ps-5"
-                            placeholder="Search requirement by code or name…" wire:model.live.debounce.300ms="search">
-                    </div>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <select class="form-select form-select-sm" wire:model.live="status" title="Status">
-                        <option value="all">All</option>
-                        <option value="ok">OK</option>
-                        <option value="pending">Pending</option>
-                        <option value="missing">Missing</option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <select class="form-select form-select-sm" wire:model.live="sort" title="Sort">
-                        <option value="code">Sort: Code</option>
-                        <option value="name">Sort: Name</option>
-                        <option value="percent">Sort: % Complete</option>
-                        <option value="expires">Sort: Expires</option>
-                    </select>
-                </div>
-                <div class="col-12 col-lg-3 d-flex align-items-center justify-content-lg-end gap-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="onlyUnmet" wire:model.live="onlyUnmet">
-                        <label for="onlyUnmet" class="form-check-label">Show unmet only</label>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm" wire:click="sortBy('{{ $sort }}')">
-                        <i class="bi {{ $dir === 'asc' ? 'bi-sort-down' : 'bi-sort-up' }}"></i>
-                    </button>
-                </div>
-            </div>
+    <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
+        {{-- Search --}}
+        <div class="relative flex-1 min-w-[180px]">
+            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <input type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Search by code or name…"
+                class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
+
+        {{-- Status filter chips --}}
+        <div class="flex flex-wrap gap-2">
+            @foreach(['all' => 'All', 'ok' => 'OK', 'pending' => 'Pending', 'missing' => 'Missing'] as $val => $label)
+                @php
+                    $active = $status === $val;
+                    $colors = match($val) {
+                        'ok'      => $active ? 'bg-emerald-500 text-white border-emerald-500' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50',
+                        'pending' => $active ? 'bg-amber-500 text-white border-amber-500' : 'border-amber-200 text-amber-600 hover:bg-amber-50',
+                        'missing' => $active ? 'bg-rose-500 text-white border-rose-500' : 'border-rose-200 text-rose-600 hover:bg-rose-50',
+                        default   => $active ? 'bg-slate-700 text-white border-slate-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50',
+                    };
+                @endphp
+                <button wire:click="$set('status', '{{ $val }}')"
+                    class="rounded-full border px-3 py-1 text-xs font-semibold transition-all {{ $colors }}">
+                    {{ $label }}
+                </button>
+            @endforeach
+        </div>
+
+        {{-- Sort --}}
+        <div class="flex items-center gap-2">
+            <select wire:model.live="sort"
+                class="rounded-xl border border-slate-200 text-sm py-2 px-3 focus:ring-2 focus:ring-indigo-400 outline-none">
+                <option value="code">Code</option>
+                <option value="name">Name</option>
+                <option value="percent">% Complete</option>
+                <option value="expires">Expires</option>
+            </select>
+            <button wire:click="sortBy('{{ $sort }}')"
+                class="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors">
+                <i class="bx {{ $dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down' }} text-lg"></i>
+            </button>
+        </div>
+
+        {{-- Unmet toggle --}}
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <div class="relative">
+                <input type="checkbox" wire:model.live="onlyUnmet" class="sr-only peer">
+                <div class="w-9 h-5 rounded-full bg-slate-200 peer-checked:bg-rose-500 transition-colors"></div>
+                <div class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
+            </div>
+            <span class="text-xs font-medium text-slate-600">Unmet only</span>
+        </label>
     </div>
 
-    {{-- Desktop table --}}
-    <div class="table-responsive d-none d-md-block">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light sticky-top">
-                <tr>
-                    <th role="button" wire:click="sortBy('code')">
-                        Code
-                        @if ($sort === 'code')
-                            <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
-                        @endif
-                    </th>
-                    <th role="button" wire:click="sortBy('name')">
-                        Requirement
-                        @if ($sort === 'name')
-                            <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
-                        @endif
-                    </th>
-                    <th style="width:340px" role="button" wire:click="sortBy('percent')">
-                        Progress
-                        @if ($sort === 'percent')
-                            <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
-                        @endif
-                    </th>
-                    <th role="button" wire:click="sortBy('expires')" title="Latest valid-until">
-                        Expires / Next due
-                        @if ($sort === 'expires')
-                            <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
-                        @endif
-                    </th>
-                    <th>Status</th>
-                    <th class="text-end">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $rows = $this->filteredSortedRows; @endphp
-                @forelse($rows as $r)
-                    @php
-                        $p = (int) $r['percent'];
-                        $expires = $r['last_valid_until']?->format('Y-m-d');
-                        $due = $r['next_due']?->format('Y-m-d');
-                    @endphp
-                    <tr @class([
-                        'table-warning' => $p < 100,
-                    ])>
-                        <td class="text-muted small">{{ $r['code'] }}</td>
-                        <td>
-                            <div class="fw-semibold" title="{{ $r['allowed_summary'] }}">{{ $r['name'] }}</div>
-                            <div class="small text-muted">
-                                Min {{ $r['min'] }}
-                                @if ($r['requires_approval'])
-                                    · needs approval
+    {{-- Requirements list --}}
+    <div class="glass-card overflow-hidden">
+        <div class="divide-y divide-slate-50">
+            @php $rows = $this->filteredSortedRows; @endphp
+            @forelse($rows as $r)
+                @php
+                    $p = (int) $r['percent'];
+                    $expires = $r['last_valid_until']?->format('d M Y');
+                    $due = $r['next_due']?->format('d M Y');
+                    $statusColors = ['OK' => ['bg-emerald-100', 'text-emerald-700'], 'Pending' => ['bg-amber-100', 'text-amber-700'], 'Missing' => ['bg-rose-100', 'text-rose-700']];
+                    [$sbg, $stxt] = $statusColors[$r['status']] ?? ['bg-slate-100', 'text-slate-600'];
+                    $barColor = $p >= 100 ? 'bg-emerald-500' : ($p < 50 ? 'bg-rose-500' : 'bg-amber-400');
+                @endphp
+                <div class="px-5 py-4 hover:bg-slate-50/50 transition-colors" wire:key="req-{{ $r['id'] }}">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+
+                        {{-- Requirement info --}}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <span class="text-xs font-mono font-semibold text-slate-400">{{ $r['code'] }}</span>
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $sbg }} {{ $stxt }}">
+                                    {{ $r['status'] }}
+                                </span>
+                                @if($r['pending'] > 0)
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+                                        {{ $r['pending'] }} pending
+                                    </span>
+                                @endif
+                                @if($r['requires_approval'])
+                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                        <i class="bx bx-shield-quarter text-xs"></i> Approval required
+                                    </span>
                                 @endif
                             </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1" role="progressbar"
-                                    aria-valuenow="{{ $p }}" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="progress-bar {{ $p == 100 ? 'bg-success' : '' }}"
-                                        style="width: {{ $p }}%"></div>
+                            <p class="text-sm font-semibold text-slate-800" title="{{ $r['allowed_summary'] }}">{{ $r['name'] }}</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Min {{ $r['min'] }} document(s)</p>
+                        </div>
+
+                        {{-- Progress + actions --}}
+                        <div class="flex flex-col items-end gap-3 shrink-0">
+                            {{-- Progress bar --}}
+                            <div class="flex items-center gap-2 w-44">
+                                <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="{{ $barColor }} h-full rounded-full transition-all" style="width: {{ $p }}%"></div>
                                 </div>
-                                <span class="small text-muted">{{ $r['valid_count'] }} / {{ $r['min'] }}</span>
-                                @if (($r['pending'] ?? 0) > 0)
-                                    <span class="badge text-bg-warning">Pending {{ $r['pending'] }}</span>
-                                @endif
+                                <span class="text-xs font-semibold text-slate-500 w-12 text-right">
+                                    {{ $r['valid_count'] }}/{{ $r['min'] }}
+                                </span>
                             </div>
-                        </td>
-                        <td>
-                            @if ($expires)
-                                <span class="badge text-bg-light border">exp {{ $expires }}</span>
+
+                            {{-- Expiry / due --}}
+                            @if($expires)
+                                <span class="text-xs text-slate-400">Expires <strong>{{ $expires }}</strong></span>
                             @elseif($due)
-                                <span class="badge text-bg-danger-subtle text-danger">due {{ $due }}</span>
-                            @else
-                                <span class="text-muted small">—</span>
+                                <span class="text-xs font-semibold text-rose-500">Due {{ $due }}</span>
                             @endif
-                        </td>
-                        <td>
-                            @php $clr = ['OK'=>'success','Pending'=>'warning','Missing'=>'danger'][$r['status']] ?? 'secondary'; @endphp
-                            <span class="badge text-bg-{{ $clr }}">{{ $r['status'] }}</span>
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-primary" wire:click="openUpload({{ $r['id'] }})">
-                                    Upload
+
+                            {{-- Actions --}}
+                            <div class="flex gap-2" x-data>
+                                <button type="button" 
+                                    @click="$dispatch('trigger-upload-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
+                                    class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm shadow-indigo-200 transition-all">
+                                    <i class="bx bx-upload text-sm"></i> Upload
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary" title="Recent Uploads"
-                                    wire:click="$dispatch('open-recent-uploads', { requirementId: {{ $r['id'] }}, departmentId: {{ $department->id }} })">
-                                    <i class="bi bi-clock-history"></i>
-                                    @if ($r['pending'] ?? (0 ?? 0))
-                                        <span
-                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning">
-                                            {{ $r['pending'] }}
-                                        </span>
+                                <button type="button" 
+                                    @click="$dispatch('trigger-history-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
+                                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold transition-all">
+                                    <i class="bx bx-history text-sm"></i> History
+                                    @if($r['pending'] > 0)
+                                        <span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-amber-400 text-white text-[10px] font-bold">{{ $r['pending'] }}</span>
                                     @endif
                                 </button>
                             </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No assigned requirements match your
-                            filters.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- Mobile cards --}}
-    <div class="d-md-none">
-        @php $rows = $this->filteredSortedRows; @endphp
-        @forelse($rows as $r)
-            @php
-                $p = (int) $r['percent'];
-                $expires = $r['last_valid_until']?->format('Y-m-d');
-                $due = $r['next_due']?->format('Y-m-d');
-                $clr = ['OK' => 'success', 'Pending' => 'warning', 'Missing' => 'danger'][$r['status']] ?? 'secondary';
-            @endphp
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="small text-muted">{{ $r['code'] }}</div>
-                            <div class="fw-semibold">{{ $r['name'] }}</div>
-                            <div class="small text-muted">Min {{ $r['min'] }} @if ($r['requires_approval'])
-                                    · needs approval
-                                @endif
-                            </div>
-                        </div>
-                        <span class="badge text-bg-{{ $clr }}">{{ $r['status'] }}</span>
-                    </div>
-                    <div class="mt-3">
-                        <div class="progress" role="progressbar" aria-valuenow="{{ $p }}"
-                            aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar {{ $p == 100 ? 'bg-success' : '' }}"
-                                style="width: {{ $p }}%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2 small">
-                            <span class="text-muted">{{ $r['valid_count'] }} / {{ $r['min'] }}</span>
-                            <div class="d-flex align-items-center gap-2">
-                                @if (($r['pending'] ?? 0) > 0)
-                                    <span class="badge text-bg-warning">Pending {{ $r['pending'] }}</span>
-                                @endif
-                                @if ($expires)
-                                    <span class="badge text-bg-light border">exp {{ $expires }}</span>
-                                @elseif($due)
-                                    <span class="badge text-bg-danger-subtle text-danger">due
-                                        {{ $due }}</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2 mt-3">
-                            <a class="btn btn-sm btn-outline-secondary w-50"
-                                href="{{ route('departments.compliance', ['department' => $department, 'requirement' => $r['id']]) }}">Manage</a>
-                            <button class="btn btn-sm btn-primary w-50"
-                                wire:click="openUpload({{ $r['id'] }})">Upload</button>
-                            <button class="btn btn-sm btn-outline-primary w-50"
-                                wire:click="$dispatch('open-recent-uploads', { requirementId: {{ $r['id'] }}, departmentId: {{ $department->id }} })">Recent
-                                Uploads</button>
                         </div>
                     </div>
                 </div>
-            </div>
-        @empty
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-5 text-muted">
-                    <div class="fs-2 mb-2">🔎</div>No assigned requirements match your filters.
+            @empty
+                <div class="py-16 text-center">
+                    <i class="bx bx-search text-4xl text-slate-300"></i>
+                    <p class="text-sm text-slate-400 mt-2">No requirements match your filters.</p>
+                    <button wire:click="$set('search', ''); $set('status', 'all'); $set('onlyUnmet', false)"
+                        class="mt-3 text-xs text-indigo-600 hover:underline">Clear filters</button>
                 </div>
-            </div>
-        @endforelse
+            @endforelse
+        </div>
     </div>
-
-    <livewire:requirements.upload :key="'uploader-' . $department->id" />
-    <livewire:requirements.recent-uploads />
 </div>
-
-@pushOnce('extraCss')
-    <style>
-        .table> :not(caption)>*>* {
-            padding-top: .65rem;
-            padding-bottom: .65rem;
-        }
-
-        .form-control:focus,
-        .form-select:focus,
-        .btn:focus {
-            box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .15);
-        }
-
-        .table-warning-subtle {
-            background-color: rgba(255, 193, 7, .05);
-        }
-
-    </style>
-@endPushOnce
+@push('modals')
+{{-- Sub-components (upload slide-over, recent uploads modal) --}}
+<livewire:requirements.upload :key="'uploader-' . $department->id" />
+<livewire:requirements.recent-uploads />
+@endpush

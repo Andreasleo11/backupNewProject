@@ -1,210 +1,236 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
-@section('content')
-    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+@push('head')
     <style>
         @keyframes rainbow {
-            0% {
-                color: red;
-            }
-
-            14% {
-                color: orange;
-            }
-
-            28% {
-                color: yellow;
-            }
-
-            42% {
-                color: green;
-            }
-
-            57% {
-                color: blue;
-            }
-
-            71% {
-                color: indigo;
-            }
-
-            85% {
-                color: violet;
-            }
-
-            100% {
-                color: red;
-            }
+            0%   { color: #ef4444; }   /* red */
+            16%  { color: #f97316; }   /* orange */
+            32%  { color: #eab308; }   /* yellow */
+            48%  { color: #22c55e; }   /* green */
+            64%  { color: #3b82f6; }   /* blue */
+            80%  { color: #6366f1; }   /* indigo */
+            100% { color: #a855f7; }   /* violet */
         }
 
         .rainbow-text {
             animation: rainbow 3s linear infinite;
-            font-weight: bold;
+            font-weight: 600;
+        }
+
+        .table-forecast th,
+        .table-forecast td {
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .table-forecast thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: #f8f9fa;
+        }
+
+        .table-forecast tbody td {
+            vertical-align: middle;
+        }
+
+        .table-forecast tbody td strong {
+            display: block;
+            font-weight: 600;
+        }
+
+        .sub-row-separator td {
+            border-top: 2px solid #dee2e6;
         }
     </style>
+@endpush
 
-    <h1 class="rainbow-text">
-        Terakhir di update :
-        {{ \Carbon\Carbon::parse($log->updated_at)->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}
-    </h1>
+@section('page-title', 'Forecast Reminder Detail')
 
-    <!-- Main content -->
-    @include('partials.alert-success-error')
-    <form method="GET" action="/foremind-detail/print" target="_blank">
-        @csrf
-        <div class="form-group">
-            <div class="row align-items-center g-3">
-                <div class="col-auto">
-                    <label class="form-label" for="vendor_code_internal">Select Vendor Name (for
-                        Internal)</label>
-                </div>
-                <div class="col">
-                    <select class="form-select" id="vendor_code_internal" name="vendor_code" required>
-                        <option value="" selected disabled>Select Vendor Name</option>
-                        @foreach ($contacts as $contact)
-                            <option value="{{ $contact->vendor_code }}">
-                                {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col">
-                    <button class="btn btn-primary" type="submit">Submit</button>
-                </div>
+@section('content')
+    <div class="max-w-7xl mx-auto space-y-6">
+        {{-- HEADER --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Forecast Reminder Detail</h1>
+                <p class="text-slate-600 mt-1">
+                    Monitoring kebutuhan material per vendor berdasarkan forecast & quantity material.
+                </p>
+            </div>
+            <div class="md:text-right">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-700 border border-slate-200">
+                    Terakhir di update :
+                    <span class="ml-1 font-medium text-slate-900">
+                        -
+                    </span>
+                </span>
             </div>
         </div>
-    </form>
 
-    <!-- Form for Customer Vendor Selection -->
-    <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
-        @csrf
-        <div class="form-group mt-2">
-            <div class="row align-items-center g-3">
-                <div class="col-auto">
-                    <label class="form-label" for="vendor_code_customer">Enter Vendor Code (for
-                        Customer)</label>
-                </div>
-                <div class="col">
-                    <select class="form-select" id="vendor_code_customer" name="vendor_code" required>
-                        <option value="" selected disabled>Select Vendor Name</option>
-                        @foreach ($contacts as $contact)
-                            <option value="{{ $contact->vendor_code }}">
-                                {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col">
-                    <button class="btn btn-primary" type="submit">Submit</button>
-                </div>
-            </div>
-        </div>
-    </form>
-
-    <div class="card mt-3">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table mb-0 table-hover ">
-                    <thead class="fs-5 align-items-center">
-                        <tr>
-                            <th>Material Code</th>
-                            <th>Material Name</th>
-                            <th>Item No</th>
-                            <th>Vendor Code</th>
-                            <th>Unit of Measure</th>
-                            <th>Quantity Material</th>
-
-                            @foreach ($mon as $month)
-                                <th>{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+        {{-- FORM: INTERNAL VENDOR --}}
+        <form method="GET" action="/foremind-detail/print" target="_blank" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            @csrf
+            <div class="p-6">
+                <div class="grid md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="vendor_code_internal">
+                            Vendor (Internal)
+                        </label>
+                        <p class="text-xs text-slate-500">
+                            Pilih vendor untuk cetak form internal.
+                        </p>
+                    </div>
+                    <div class="md:col-span-5">
+                        <select class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" id="vendor_code_internal" name="vendor_code" required>
+                            <option value="" selected disabled>Select Vendor Name</option>
+                            @foreach ($contacts as $contact)
+                                <option value="{{ $contact->vendor_code }}">
+                                    {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                                </option>
                             @endforeach
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
-                            $currentMaterialCode = null;
-                        @endphp
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 md:text-right">
+                        <button class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium" type="submit">
+                            Print Internal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-                        @foreach ($materials as $key => $material)
-                            <tr>
-                                @if ($material->material_code != $currentMaterialCode)
-                                    <!-- Display material code and material name only for the first occurrence -->
-                                    <td class="table-bordered">{{ $material->material_code }}</td>
-                                    <td class="table-bordered">{{ $material->material_name }}</td>
-                                    @php
-                                        $currentMaterialCode = $material->material_code;
-                                    @endphp
-                                @else
-                                    <!-- Display blank columns for subsequent occurrences of the same material code -->
-                                    <td class="table-bordered"></td>
-                                    <td class="table-bordered"></td>
-                                @endif
-                                <td class="table-bordered">{{ $material->item_no }}</td>
-                                <!-- <td>{{ $material->vendor_name }}</td> -->
-                                <td class="table-bordered">{{ $material->vendor_code }}</td>
-                                <td class="table-bordered">{{ $material->unit_of_measure }}</td>
-                                <td class="table-bordered">{{ $material->quantity_material }}</td>
+        {{-- FORM: CUSTOMER VENDOR --}}
+        <form method="GET" action="/foremind-detail/printCustomer" target="_blank" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            @csrf
+            <div class="p-6">
+                <div class="grid md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="vendor_code_customer">
+                            Vendor (Customer)
+                        </label>
+                        <p class="text-xs text-slate-500">
+                            Pilih vendor untuk form ke customer.
+                        </p>
+                    </div>
+                    <div class="md:col-span-5">
+                        <select class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" id="vendor_code_customer" name="vendor_code" required>
+                            <option value="" selected disabled>Select Vendor Name</option>
+                            @foreach ($contacts as $contact)
+                                <option value="{{ $contact->vendor_code }}">
+                                    {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 md:text-right">
+                        <button class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium border border-blue-600" type="submit">
+                            Print Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-                                @php
-                                    $total = 0;
-                                @endphp
+        {{-- TABLE --}}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="p-6">
+                <div class="overflow-x-auto max-h-[70vh]">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
+                            <tr class="border-b border-slate-200">
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Material Code</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Material Name</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Item No</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Vendor Code</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">UoM</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Qty Material</th>
 
-                                @foreach ($qforecast[$loop->index] as $index => $value)
-                                    @php
-                                        $calculation = $value * $material->quantity_material;
-                                        $total += $calculation;
-                                        $monthlyTotals[$index] += $calculation;
-                                    @endphp
-
-                                    <td class="table-bordered">
-                                        <div>{{ $value }}</div>
-                                        <strong>{{ $calculation }}</strong>
-                                    </td>
-                                    <!-- Display the calculated value -->
+                                @foreach ($mon as $month)
+                                    <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
                                 @endforeach
 
-                                <td class="table-bordered"><strong>{{ $total }}</strong></td>
-                                <!-- Add this line for the total -->
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Total</th>
                             </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            @php
+                                $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
+                                $currentMaterialCode = null;
+                            @endphp
 
-                            @if (!$loop->last && $material->material_code != $materials[$loop->index + 1]->material_code)
-                                <!-- Calculate and display the total for each month before the empty line -->
-                                <tr>
-                                    <td class="table-bordered" colspan="5"></td>
-                                    <td class="table-bordered">Monthly Total</td>
-                                    @foreach ($monthlyTotals as $monthlyTotal)
-                                        <td class="table-bordered">
-                                            <strong>{{ $monthlyTotal }}</strong>
+                            @foreach ($materials as $key => $material)
+                                <tr class="hover:bg-slate-50">
+                                    @if ($material->material_code != $currentMaterialCode)
+                                        {{-- First row for material code --}}
+                                        <td class="px-4 py-3 text-sm text-slate-900">{{ $material->material_code }}</td>
+                                        <td class="px-4 py-3 text-sm text-slate-900">{{ $material->material_name }}</td>
+                                        @php $currentMaterialCode = $material->material_code; @endphp
+                                    @else
+                                        {{-- Subsequent rows: empty cells for code & name --}}
+                                        <td class="px-4 py-3"></td>
+                                        <td class="px-4 py-3"></td>
+                                    @endif
+
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->item_no }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->vendor_code }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->unit_of_measure }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->quantity_material }}</td>
+
+                                    @php $total = 0; @endphp
+
+                                    @foreach ($qforecast[$loop->index] as $index => $value)
+                                        @php
+                                            $calculation = $value * $material->quantity_material;
+                                            $total += $calculation;
+                                            $monthlyTotals[$index] += $calculation;
+                                        @endphp
+
+                                        <td class="px-4 py-3 text-sm">
+                                            <div class="text-slate-600">{{ $value }}</div>
+                                            <div class="font-semibold text-slate-900">{{ $calculation }}</div>
                                         </td>
                                     @endforeach
-                                    <td class="table-bordered"><strong>{{ array_sum($monthlyTotals) }}</strong>
-                                    </td> <!-- Add this line for the monthly total -->
+
+                                    <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $total }}</td>
                                 </tr>
 
-                                <!-- Reset monthly totals for the new material code -->
-                                @php
-                                    $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
-                                @endphp
+                                {{-- Ketika material_code berganti, tampilkan subtotal + separator --}}
+                                @if (
+                                    !$loop->last &&
+                                        $material->material_code != $materials[$loop->index + 1]->material_code
+                                )
+                                    <tr class="bg-slate-50 font-semibold border-t-2 border-slate-300">
+                                        <td colspan="5" class="px-4 py-3"></td>
+                                        <td class="px-4 py-3 text-sm text-slate-700">Monthly Total</td>
+                                        @foreach ($monthlyTotals as $monthlyTotal)
+                                            <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ $monthlyTotal }}</td>
+                                        @endforeach
+                                        <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ array_sum($monthlyTotals) }}</td>
+                                    </tr>
 
-                                <!-- Add a break line after the monthly total -->
-                                <tr>
-                                    <td class="table-bordered" colspan="13"></td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    </tbody>
-                </table>
+                                    @php
+                                        $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
+                                    @endphp
+
+                                    <tr>
+                                        <td colspan="{{ 6 + count($qforecast[0]) + 1 }}" class="border-t-2 border-slate-300"></td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-3 text-end ">
-        {{ $materials->links() }}
+        {{-- PAGINATION --}}
+        <div class="mt-6 flex justify-end">
+            {{ $materials->links() }}
+        </div>
     </div>
+@endsection
 
-    <!-- Initialize Tom Select -->
+@push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             new TomSelect("#vendor_code_internal", {
@@ -224,4 +250,4 @@
             });
         });
     </script>
-@endsection
+@endpush

@@ -1,62 +1,55 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
+
+@section('page-title', 'Important Documents')
 
 @section('content')
+    <div class="max-w-7xl mx-auto space-y-6">
+        @if ($importantDocs->isNotEmpty())
+            <div class="grid lg:grid-cols-12 gap-6 items-start">
+                {{-- Pie Chart --}}
+                <div class="lg:col-span-4">
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                        <canvas id="pieChart" class="w-full"></canvas>
+                    </div>
+                </div>
 
-    <section aria-label="header">
-        <h2 class="mb-5">Important Docs</h2>
-    </section>
-    @if ($importantDocs->isNotEmpty())
-        <section aria-label="content">
-            <div class="container">
-
-                <section aria-label="cards">
-                    <div class="row justify-content-center mb-5 align-items-center">
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div>
-                                <canvas id="pieChart"></canvas>
-                            </div>
+                {{-- Expired Documents Table --}}
+                <div class="lg:col-span-8">
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+                        <div class="p-6 pb-0">
+                            <h3 class="text-lg font-semibold text-slate-900 text-center">Expired Documents</h3>
                         </div>
-
-                        <div class="col-xl-8">
-                            <div class="container">
-                                <h3 class="mb-3 text-center">Expired Documents</h3>
-                                <div class="card">
-                                    <div class="card-body p-0">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover table-bordered table-striped mb-0 text-center">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="fs-5 align-middle py-3" scope="col">No</th>
-                                                        <th class="fs-5 align-middle py-3" scope="col">Name</th>
-                                                        <th class="fs-5 align-middle py-3" scope="col">Expired Date</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach ($importantDocs as $importantDoc)
-                                                        <tr>
-                                                            <td class="align-middle">{{ $loop->iteration }}</td>
-                                                            <td class="align-middle">{{ $importantDoc->name }}</td>
-                                                            <td class="align-middle">
-                                                                {{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-center divide-y divide-slate-200">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">No</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Name</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Expired Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    @foreach ($importantDocs as $importantDoc)
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="px-4 py-3 text-slate-900">{{ $loop->iteration }}</td>
+                                            <td class="px-4 py-3 text-slate-900">{{ $importantDoc->name }}</td>
+                                            <td class="px-4 py-3 text-slate-900">
+                                                {{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
-        </section>
-    @else
-        <div class="text-center h4 text-secondary">
-            No data
-        </div>
-    @endif
+        @else
+            <div class="text-center py-12">
+                <p class="text-xl text-slate-500">No data</p>
+            </div>
+        @endif
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endsection

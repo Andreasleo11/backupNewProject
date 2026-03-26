@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Requirements;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\Requirement;
 use App\Models\RequirementAssignment;
 use Illuminate\Database\Eloquent\Collection;
@@ -155,7 +155,7 @@ class Assign extends Component
         /** @var Collection<int,Department> $departments */
         $departments = Department::query()
             ->when($this->deptSearch !== '', function ($q) {
-                $term = '%'.$this->deptSearch.'%';
+                $term = '%' . $this->deptSearch . '%';
                 $q->where(fn ($qq) => $qq->where('name', 'like', $term)->orWhere('code', 'like', $term));
             })
             ->orderBy('name')

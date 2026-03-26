@@ -2,11 +2,15 @@
 
 namespace App\Livewire\DeliveryNote;
 
-use App\Models\DeliveryNote;
-use App\Models\Destination;
+use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\Destination;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
+use App\Domains\Operations\Actions\CreateDeliveryNote;
+use App\Domains\Operations\Actions\UpdateDeliveryNote;
 
+#[Layout('new.layouts.app')]
 class DeliveryNoteForm extends Component
 {
     public ?DeliveryNote $deliveryNote = null;
@@ -111,7 +115,7 @@ class DeliveryNoteForm extends Component
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
         $this->destinationSuggestions = Destination::select('name', 'city')->get()->toArray();
-        $this->vehicleSuggestions = \App\Models\Vehicle::select('id', 'plate_number', 'driver_name')
+        $this->vehicleSuggestions = \App\Infrastructure\Persistence\Eloquent\Models\Vehicle::select('id', 'plate_number', 'driver_name')
             ->get()
             ->toArray();
     }
@@ -157,60 +161,37 @@ class DeliveryNoteForm extends Component
         }
     }
 
-    public function submit()
+    public function getTotalCostProperty()
+    {
+        $total = 0;
+        foreach ($this->destinations as $dest) {
+            $total += (float) ($dest['driver_cost'] ?? 0);
+            $total += (float) ($dest['kenek_cost'] ?? 0);
+            $total += (float) ($dest['balikan_cost'] ?? 0);
+        }
+        return $total;
+    }
+
+    public function submit(CreateDeliveryNote $createAction, UpdateDeliveryNote $updateAction)
     {
         $this->validate();
 
-        $note = DB::transaction(function () {
-            $note = $this->deliveryNote ?? new DeliveryNote;
+        $data = [
+            'branch' => $this->branch,
+            'ritasi' => $this->ritasi,
+            'delivery_note_date' => $this->delivery_note_date,
+            'departure_time' => $this->departure_time,
+            'return_time' => $this->return_time,
+            'vehicle_id' => $this->vehicle_id,
+        ];
 
-            $note
-                ->fill([
-                    'branch' => $this->branch,
-                    'ritasi' => $this->ritasi,
-                    'delivery_note_date' => $this->delivery_note_date,
-                    'departure_time' => $this->departure_time,
-                    'return_time' => $this->return_time,
-                    'vehicle_id' => $this->vehicle_id,
-                    'approval_flow_id' => \App\Models\ApprovalFlow::where('slug', 'creator-hrd')->first()->id ?? 1,
-                    'status' => $this->is_draft ? 'draft' : 'submitted',
-                ])
-                ->save();
+        if ($this->deliveryNote?->exists) {
+            $note = $updateAction->execute($this->deliveryNote, $data, $this->destinations, $this->is_draft);
+        } else {
+            $note = $createAction->execute($data, $this->destinations, $this->is_draft);
+        }
 
-            // Clear old destinations
-            $note->destinations()->each(function ($dest) {
-                $dest->deliveryOrders()->delete(); // clear old DOs
-                $dest->delete();
-            });
-
-            foreach ($this->destinations as $dest) {
-                $destination = $note->destinations()->create([
-                    'destination' => $dest['destination'],
-                    'remarks' => $dest['remarks'],
-                    'driver_cost' => $dest['driver_cost'],
-                    'kenek_cost' => $dest['kenek_cost'],
-                    'balikan_cost' => $dest['balikan_cost'],
-                    'driver_cost_currency' => $dest['driver_cost_currency'],
-                    'kenek_cost_currency' => $dest['kenek_cost_currency'],
-                    'balikan_cost_currency' => $dest['balikan_cost_currency'],
-                ]);
-
-                if (
-                    ! empty($dest['delivery_order_numbers']) &&
-                    is_array($dest['delivery_order_numbers'])
-                ) {
-                    foreach ($dest['delivery_order_numbers'] as $doNumber) {
-                        $destination->deliveryOrders()->create([
-                            'delivery_order_number' => $doNumber,
-                        ]);
-                    }
-                }
-            }
-
-            $this->deliveryNote = null;
-
-            return $note;
-        });
+        $this->deliveryNote = null;
 
         session()->flash(
             'success',
@@ -223,7 +204,7 @@ class DeliveryNoteForm extends Component
     public function render()
     {
         if (! auth()->check()) {
-            return view('livewire.delivery-note.form')->layout('layouts.guest');
+            return view('livewire.delivery-note.form');
         }
 
         return view('livewire.delivery-note.form');

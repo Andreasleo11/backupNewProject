@@ -103,7 +103,7 @@ class PurchaseOrder extends Model
 
     public function getVendorNames()
     {
-        $vendorNames = Vendor::pluck('name')->get();
+        $vendorNames = Vendor::pluck('name');
 
         return response()->json([
             'vendorNames' => $vendorNames,
@@ -157,20 +157,14 @@ class PurchaseOrder extends Model
     private function getNotificationUsers($event)
     {
         if ($event == 'created') {
-            return User::whereHas(
-                'specification',
-                fn ($query) => $query->where('name', 'DIRECTOR'),
-            )->get();
+            return User::role('DIRECTOR')->get();
         } elseif ($event == 'approved') {
             $deptHeadAccounting = User::where('name', 'benny')->first();
             $accountingUser = User::where('name', 'nessa')->first();
 
             return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
         } elseif ($event == 'canceled') {
-            $director = User::whereHas(
-                'specification',
-                fn ($query) => $query->where('name', 'DIRECTOR'),
-            )->first();
+            $director = User::role('DIRECTOR')->first();
 
             return collect([$this->user, $director])->filter();
         } else {

@@ -101,7 +101,7 @@ class StepFirst extends Component
 
     public function mount()
     {
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
         $saved = session("stepDetailSaved.first_inspections.{$this->periodKey}", []);
         $this->sessionSaved = $saved;
         $this->savedAt = session(

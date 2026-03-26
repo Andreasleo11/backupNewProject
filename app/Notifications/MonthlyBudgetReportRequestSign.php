@@ -57,7 +57,7 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'data' => ' Monthly Budget Report of '.$this->report->id.' needs your sign',
+            'data' => ' Monthly Budget Report of ' . $this->report->id . ' needs your sign',
         ];
     }
 }

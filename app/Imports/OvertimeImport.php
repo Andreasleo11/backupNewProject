@@ -2,8 +2,8 @@
 
 namespace App\Imports;
 
-use App\Models\DetailFormOvertime;
-use App\Models\Employee;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -28,7 +28,7 @@ class OvertimeImport implements ToCollection
 
         foreach ($dataRows as $row) {
             $employeeId = $row[0];
-            $employee = Employee::where('NIK', $employeeId)->first();
+            $employee = Employee::where('nik', $employeeId)->first();
 
             if (! $employee) {
                 continue;
@@ -49,7 +49,7 @@ class OvertimeImport implements ToCollection
             }
 
             // ✅ Skip jika kombinasi NIK + overtime_date sudah ada
-            $exists = DetailFormOvertime::where('NIK', $employee->NIK)
+            $exists = OvertimeFormDetail::where('NIK', $employee->nik)
                 ->where('overtime_date', $overtimeDate)
                 ->whereHas('header', function ($query) {
                     $query->where('is_after_hour', $this->isAfterHour);
@@ -60,10 +60,10 @@ class OvertimeImport implements ToCollection
                 continue;
             }
 
-            DetailFormOvertime::create([
+            OvertimeFormDetail::create([
                 'header_id' => $this->headerOvertimeId,
-                'NIK' => $employee->NIK,
-                'name' => $employee->Nama,
+                'NIK' => $employee->nik,
+                'name' => $employee->name,
                 'overtime_date' => $overtimeDate,
                 'job_desc' => $jobDesc,
                 'start_date' => $startDate,
@@ -109,11 +109,12 @@ class OvertimeImport implements ToCollection
                 }
 
                 // If none of the formats match, return null or handle the error as needed
-                return null;
+                return;
             }
         } catch (\Exception $e) {
             // Handle the exception if the format is invalid
-            return null;
+            return;
         }
     }
 }
+

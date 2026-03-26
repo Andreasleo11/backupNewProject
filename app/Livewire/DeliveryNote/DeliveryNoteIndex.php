@@ -2,15 +2,15 @@
 
 namespace App\Livewire\DeliveryNote;
 
-use App\Models\DeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('new.layouts.app')]
 class DeliveryNoteIndex extends Component
 {
     use WithPagination;
-
-    protected $paginationTheme = 'bootstrap';
 
     public $inputStatus = 'all';
 
@@ -99,7 +99,7 @@ class DeliveryNoteIndex extends Component
         }
 
         if ($this->searchAll) {
-            $search = '%'.$this->searchAll.'%';
+            $search = '%' . $this->searchAll . '%';
 
             $query->where(function ($q) use ($search) {
                 $q->where('branch', 'like', $search)
@@ -138,7 +138,7 @@ class DeliveryNoteIndex extends Component
         if (! auth()->check()) {
             return view('livewire.delivery-note.index', [
                 'deliveryNotes' => $deliveryNotes,
-            ])->layout('layouts.guest');
+            ]); // Returns default Layout attribute (new.layouts.app)
         }
 
         return view('livewire.delivery-note.index', [

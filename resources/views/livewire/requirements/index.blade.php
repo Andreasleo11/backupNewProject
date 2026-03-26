@@ -1,189 +1,161 @@
-<div class="container py-4">
-    {{-- Header / Toolbar --}}
-    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center gap-2">
-            <h1 class="h4 mb-0">Requirements</h1>
-            <span class="badge text-bg-light">{{ $items->total() }} total</span>
-        </div>
-        <a href="{{ route('requirements.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> New Requirement
-        </a>
-    </div>
+{{-- Requirements Index — Livewire component view --}}
+{{-- Tailwind, synced with new.layouts.app --}}
 
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body py-3">
-            <div class="row g-2 align-items-center">
-                {{-- Search --}}
-                <div class="col-12 col-md-5">
-                    <div class="position-relative">
-                        <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
-                        <input type="text" class="form-control ps-5" placeholder="Search by code or name…"
-                            wire:model.live.debounce.300ms="search">
-                    </div>
-                </div>
+@section('title', 'Requirements')
+@section('page-title', 'Requirements')
+@section('page-subtitle', 'Manage document compliance requirements catalogue')
 
-                {{-- Frequency filter --}}
-                <div class="col-6 col-md-2">
-                    <select class="form-select" wire:model.live="filterFreq">
-                        <option value="">All frequencies</option>
-                        <option value="once">Once</option>
-                        <option value="yearly">Yearly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="monthly">Monthly</option>
-                    </select>
-                </div>
-
-                {{-- Approval filter --}}
-                <div class="col-6 col-md-2">
-                    <select class="form-select" wire:model.live="filterApproval">
-                        <option value="">Approval: All</option>
-                        <option value="1">Required</option>
-                        <option value="0">Not required</option>
-                    </select>
-                </div>
-
-                {{-- Sort --}}
-                <div class="col-6 col-md-2">
-                    <div class="input-group">
-                        <select class="form-select" wire:model.live="sort">
-                            <option value="name">Sort: Name</option>
-                            <option value="code">Sort: Code</option>
-                            <option value="min_count">Sort: Min</option>
-                            <option value="frequency">Sort: Frequency</option>
-                            <option value="requires_approval">Sort: Approval</option>
-                        </select>
-                        <button class="btn btn-outline-secondary" wire:click="toggleDir" title="Toggle direction">
-                            <i class="bi {{ $dir === 'asc' ? 'bi-arrow-down-up' : 'bi-arrow-up-down' }}"></i>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Per page --}}
-                <div class="col-6 col-md-1">
-                    <select class="form-select" wire:model.live="perPage" title="Per page">
-                        <option>10</option>
-                        <option>25</option>
-                        <option>50</option>
-                    </select>
-                </div>
+<div>
+    {{-- Page header --}}
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-200 shrink-0">
+                <i class="bx bx-clipboard text-white text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800">Requirements</h1>
+                <p class="text-sm text-slate-500 mt-0.5">{{ $items->total() }} requirements in catalogue</p>
             </div>
         </div>
+        <div class="flex gap-2">
+            <a href="{{ route('requirements.assign') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+                <i class="bx bx-link-alt text-base"></i> Assign to Depts
+            </a>
+            <a href="{{ route('requirements.create') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-semibold shadow-sm shadow-indigo-200 transition-all">
+                <i class="bx bx-plus text-base"></i> New Requirement
+            </a>
+        </div>
     </div>
 
-    {{-- Desktop TABLE --}}
-    <div class="table-responsive d-none d-lg-block">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th role="button" wire:click="sortBy('code')">Code @include('partials.sortchev', ['field' => 'code'])</th>
-                    <th role="button" wire:click="sortBy('name')">Name @include('partials.sortchev', ['field' => 'name'])</th>
-                    <th role="button" wire:click="sortBy('min_count')">Min @include('partials.sortchev', ['field' => 'min_count'])</th>
-                    <th role="button" wire:click="sortBy('frequency')">Frequency @include('partials.sortchev', ['field' => 'frequency'])</th>
-                    <th role="button" wire:click="sortBy('requires_approval')">Approval @include('partials.sortchev', ['field' => 'requires_approval'])
-                    </th>
-                    <th class="text-end">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($items as $r)
-                    <tr>
-                        <td class="text-muted fw-semibold">{{ $r->code }}</td>
-                        <td>{{ $r->name }}</td>
-                        <td><span class="badge text-bg-primary-subtle">{{ $r->min_count }}</span></td>
-                        <td>
-                            @php $fc=['once'=>'secondary','yearly'=>'info','quarterly'=>'warning','monthly'=>'success']; @endphp
-                            <span
-                                class="badge text-bg-{{ $fc[$r->frequency] ?? 'secondary' }}">{{ ucfirst($r->frequency) }}</span>
-                        </td>
-                        <td>
-                            @if ($r->requires_approval)
-                                <span class="badge text-bg-info"><i class="bi bi-shield-check me-1"></i>Required</span>
-                            @else
-                                <span class="badge text-bg-light"><i class="bi bi-check2-circle me-1"></i>Not
-                                    required</span>
+    {{-- Toolbar --}}
+    <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
+        {{-- Search --}}
+        <div class="relative flex-1 min-w-[200px]">
+            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <input type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Search by code or name…"
+                class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
+        </div>
+
+        {{-- Frequency filter --}}
+        <select wire:model.live="filterFreq"
+            class="rounded-xl border border-slate-200 text-sm py-2 px-3 focus:ring-2 focus:ring-indigo-400 outline-none">
+            <option value="">All frequencies</option>
+            <option value="once">Once</option>
+            <option value="yearly">Yearly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+
+        {{-- Approval filter --}}
+        <select wire:model.live="filterApproval"
+            class="rounded-xl border border-slate-200 text-sm py-2 px-3 focus:ring-2 focus:ring-indigo-400 outline-none">
+            <option value="">Approval: All</option>
+            <option value="1">Required</option>
+            <option value="0">Not required</option>
+        </select>
+
+        {{-- Sort + direction --}}
+        <div class="flex items-center gap-2">
+            <select wire:model.live="sort"
+                class="rounded-xl border border-slate-200 text-sm py-2 px-3 focus:ring-2 focus:ring-indigo-400 outline-none">
+                <option value="code">Code</option>
+                <option value="name">Name</option>
+                <option value="min_count">Min count</option>
+                <option value="frequency">Frequency</option>
+                <option value="requires_approval">Approval</option>
+            </select>
+            <button wire:click="toggleDir"
+                class="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors">
+                <i class="bx {{ $dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down' }} text-lg"></i>
+            </button>
+        </div>
+
+        {{-- Per page --}}
+        <select wire:model.live="perPage"
+            class="rounded-xl border border-slate-200 text-sm py-2 px-3 focus:ring-2 focus:ring-indigo-400 outline-none">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
+        </select>
+    </div>
+
+    {{-- Requirements list --}}
+    <div class="glass-card overflow-hidden">
+        <div class="divide-y divide-slate-50">
+            @forelse($items as $r)
+                @php
+                    $freqColors = [
+                        'once'      => 'bg-slate-100 text-slate-600',
+                        'yearly'    => 'bg-sky-100 text-sky-700',
+                        'quarterly' => 'bg-amber-100 text-amber-700',
+                        'monthly'   => 'bg-emerald-100 text-emerald-700',
+                    ];
+                    $freqColor = $freqColors[$r->frequency] ?? 'bg-slate-100 text-slate-600';
+                @endphp
+                <div class="px-5 py-4 hover:bg-slate-50/50 transition-colors" wire:key="req-{{ $r->id }}">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        {{-- Info --}}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <span class="text-xs font-mono font-semibold text-slate-400">{{ $r->code }}</span>
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $freqColor }}">
+                                    {{ ucfirst($r->frequency) }}
+                                </span>
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                    Min {{ $r->min_count }}
+                                </span>
+                                @if($r->requires_approval)
+                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-violet-50 text-violet-700 border border-violet-200">
+                                        <i class="bx bx-shield-alt-2 text-xs"></i> Approval
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-sm font-semibold text-slate-800">{{ $r->name }}</p>
+                            @if($r->description)
+                                <p class="text-xs text-slate-400 mt-0.5 truncate">{{ $r->description }}</p>
                             @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group">
-                                <a href="{{ route('requirements.edit', $r) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil-square me-1"></i>Edit
-                                </a>
-                                <a href="{{ route('requirements.departments', $r) }}" class="btn btn-sm btn-outline-primary">Departments</a>
-                                {{-- room for more actions later --}}
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="text-muted">
-                                <div class="fs-2 mb-2">🤷‍♂️</div>
-                                No requirements found{{ $search ? " for “$search”" : '' }}.
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- Mobile CARDS --}}
-    <div class="d-lg-none">
-        @forelse ($items as $r)
-            <div class="card border-0 shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="text-muted small">{{ $r->code }}</div>
-                            <div class="fw-semibold">{{ $r->name }}</div>
                         </div>
-                        <a href="{{ route('requirements.edit', $r) }}" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-pencil"></i>
+
+                        {{-- Actions --}}
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <a href="{{ route('requirements.departments', $r) }}"
+                                class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold transition-all">
+                                <i class="bx bx-buildings text-sm"></i> Departments
+                            </a>
+                            <a href="{{ route('requirements.edit', $r) }}"
+                                class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 text-xs font-semibold transition-all">
+                                <i class="bx bx-pencil text-sm"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="py-16 text-center">
+                    <i class="bx bx-clipboard text-4xl text-slate-300"></i>
+                    <p class="text-sm font-medium text-slate-500 mt-2">No requirements found{{ $search ? " for \"{$search}\"" : '' }}.</p>
+                    @if($search || $filterFreq || $filterApproval !== '')
+                        <button wire:click="$set('search', ''); $set('filterFreq', ''); $set('filterApproval', '')"
+                            class="mt-3 text-xs text-indigo-600 hover:underline">Clear filters</button>
+                    @else
+                        <a href="{{ route('requirements.create') }}"
+                            class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:underline">
+                            <i class="bx bx-plus"></i> Add first requirement
                         </a>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <span class="badge text-bg-primary-subtle">Min {{ $r->min_count }}</span>
-                        @php $fc=['once'=>'secondary','yearly'=>'info','quarterly'=>'warning','monthly'=>'success']; @endphp
-                        <span
-                            class="badge text-bg-{{ $fc[$r->frequency] ?? 'secondary' }}">{{ ucfirst($r->frequency) }}</span>
-                        @if ($r->requires_approval)
-                            <span class="badge text-bg-info">Approval</span>
-                        @else
-                            <span class="badge text-bg-light">No approval</span>
-                        @endif
-                    </div>
+                    @endif
                 </div>
-            </div>
-        @empty
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-5 text-muted">
-                    <div class="fs-2 mb-2">🔎</div>No requirements yet.
-                </div>
-            </div>
-        @endforelse
+            @endforelse
+        </div>
     </div>
 
-    {{-- Footer / Pagination --}}
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="small text-muted">
+    {{-- Pagination --}}
+    <div class="flex items-center justify-between mt-4">
+        <p class="text-xs text-slate-400">
             Showing {{ $items->firstItem() }}–{{ $items->lastItem() }} of {{ $items->total() }}
-        </div>
+        </p>
         {{ $items->onEachSide(1)->links() }}
     </div>
 </div>
-
-@pushOnce('styles')
-    <style>
-        .table> :not(caption)>*>* {
-            padding-top: .65rem;
-            padding-bottom: .65rem;
-        }
-
-        /* if you have a fixed navbar */
-        .form-control:focus,
-        .form-select:focus,
-        .btn:focus {
-            box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .15);
-        }
-    </style>
-@endPushOnce

@@ -11,7 +11,7 @@ final class EvaluationWeeklyRepository
     /**
      * Unique key: (NIK, Month)
      *
-     * @param  array<array<string,mixed>>  $rows
+     * @param array<array<string,mixed>> $rows
      */
     public function upsertWeekly(array $rows): int
     {

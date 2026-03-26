@@ -1,18 +1,17 @@
-import './bootstrap';
+// import './bootstrap';
 import 'laravel-datatables-vite';
-import '/node_modules/select2/dist/css/select2.css';
-import '/node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css';
-import '/node_modules/intro.js/minified/introjs.min.css';
-import '/node_modules/tom-select/dist/css/tom-select.bootstrap5.min.css';
 import TomSelect from 'tom-select';
 import { Fancybox } from '@fancyapps/ui';
-import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import SignaturePad from 'signature_pad';
 import { Chart, registerables } from 'chart.js';
 import '/node_modules/flatpickr/dist/flatpickr.css';
+import '/node_modules/flatpickr/dist/plugins/monthSelect/style.css';
 import flatpickr from 'flatpickr';
+import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect/index.js';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import $ from 'jquery';
+import introJs from 'intro.js';
 
 Chart.register(...registerables);
 
@@ -21,7 +20,20 @@ window.TomSelect = TomSelect;
 window.Fancybox = Fancybox;
 window.SignaturePad = SignaturePad;
 window.flatpickr = flatpickr;
+window.monthSelectPlugin = monthSelectPlugin;
 window.Pusher = Pusher;
+window.$ = $;
+window.introJs = introJs;
+
+/**
+ * We'll load the axios HTTP library which allows us to easily issue requests
+ * to our Laravel back-end. This library automatically handles sending the
+ * CSRF token as a header based on the value of the "XSRF" token cookie.
+ */
+import axios from 'axios';
+window.axios = axios;
+
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 window.Echo = new Echo({
   broadcaster: 'pusher',

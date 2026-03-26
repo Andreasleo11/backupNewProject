@@ -30,7 +30,7 @@ class PurchaseOrderController extends Controller
 
     public function approveSelected(Request $request)
     {
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $ids = $request->input('ids');
             $purchaseOrders = PurchaseOrder::whereIn('id', $ids)->get();
 
@@ -46,7 +46,7 @@ class PurchaseOrderController extends Controller
 
     public function rejectSelected(Request $request)
     {
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $ids = $request->input('ids');
             $reason = $request->input('reason');
 
@@ -92,7 +92,7 @@ class PurchaseOrderController extends Controller
 
         // Store the uploaded PDF with a unique filename
         $file = $validated['pdf_file'];
-        $filename = 'PO_'.$validated['po_number'].'_'.time().'.pdf';
+        $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
         $file->storeAs('public/pdfs', $filename);
 
         // Remove commas from the total and convert it to a float
@@ -137,12 +137,12 @@ class PurchaseOrderController extends Controller
 
         $user = Auth::user();
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
-        $director = $user->specification->name == 'DIRECTOR';
+        $director = $user->hasRole('DIRECTOR');
 
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
-        if (! Storage::exists('public/pdfs/'.$purchaseOrder->filename)) {
-            abort(500, 'PDF file not found.');
+        if (! Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
+            // abort(500, 'PDF file not found.');
         }
 
         return view(
@@ -265,7 +265,7 @@ class PurchaseOrderController extends Controller
             return redirect()->route('po.index')->with('success', 'PO deleted successfully!');
         } catch (\Exception $e) {
             // Log the exception message for debugging
-            Log::error("Error deleting PO with ID {$id}: ".$e->getMessage());
+            Log::error("Error deleting PO with ID {$id}: " . $e->getMessage());
 
             return redirect()
                 ->route('po.index')
@@ -291,15 +291,15 @@ class PurchaseOrderController extends Controller
 
             if ($approvedPOs->isNotEmpty()) {
                 $message .=
-                    'The following PO Numbers are already approved: '.
-                    $approvedPOs->join(', ').
+                    'The following PO Numbers are already approved: ' .
+                    $approvedPOs->join(', ') .
                     '. ';
             }
 
             if ($rejectedPOs->isNotEmpty()) {
                 $message .=
-                    'The following PO Numbers are already rejected: '.
-                    $rejectedPOs->join(', ').
+                    'The following PO Numbers are already rejected: ' .
+                    $rejectedPOs->join(', ') .
                     '.';
             }
 
@@ -322,10 +322,10 @@ class PurchaseOrderController extends Controller
 
         // Apply filters if provided
         if ($request->filled('po_number')) {
-            $query->where('po_number', 'LIKE', '%'.$request->po_number.'%');
+            $query->where('po_number', 'LIKE', '%' . $request->po_number . '%');
         }
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'LIKE', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'LIKE', '%' . $request->vendor_name . '%');
         }
         if ($request->filled('invoice_date')) {
             $query->whereDate('invoice_date', $request->invoice_date);
@@ -376,7 +376,7 @@ class PurchaseOrderController extends Controller
             }
 
             $file = $validatedData['pdf_file'];
-            $filename = 'PO_'.$po->po_number.'_'.time().'.pdf';
+            $filename = 'PO_' . $po->po_number . '_' . time() . '.pdf';
             $file->storeAs('public/pdfs', $filename);
 
             // Store the new file and update the path

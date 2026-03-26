@@ -11,23 +11,47 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
+         |--------------------------------------------------------------
+         | 1. Base System Setup (Identity & Permissions)
+         |--------------------------------------------------------------
+         */
         $this->call([
-            SpecificationSeeder::class,
-            PermissionSeeder::class,
+            RolesAndPermissionsSeeder::class, // Roles and granular PR permissions
+            AdminUserSeeder::class,           // Create super-admin role and admin user
+        ]);
+
+        /*
+         |--------------------------------------------------------------
+         | 2. Master Data
+         |--------------------------------------------------------------
+         */
+        $this->call([
+            // SpecificationSeeder::class,
+            DepartmentSeeder::class,
             StockTypeSeeder::class,
             PurchaseOrderCategorySeeder::class,
         ]);
 
-        /**
-         * If this class has already been used before, comment it out.
-         * These classes are intentionally designed to run only once.
+        /*
+         |--------------------------------------------------------------
+         | 3. Business Rules (Approval Workflows)
+         |--------------------------------------------------------------
          */
         $this->call([
-            // FixPurchaseRequestSeeder::class,
-            // FixMonthlyBudgetReportSeeder::class,
-            // FixMonthlyBudgetSummaryReportSeeder::class,
-            // FixSPKRemarks::class,
-            // FixSPK::class,
+            PrApprovalRulesSeeder::class,      // Purchase Request approval rules
         ]);
+
+        /**
+         * Maintenance and one-off fixes.
+         * Uncomment if needed for specific data correction tasks.
+         */
+        // $this->call([
+        //     FixPurchaseRequestSeeder::class,
+        //     FixMonthlyBudgetReportSeeder::class,
+        //     FixMonthlyBudgetSummaryReportSeeder::class,
+        //     FixSPKRemarks::class,
+        //     FixSPK::class,
+        // ]);
     }
 }

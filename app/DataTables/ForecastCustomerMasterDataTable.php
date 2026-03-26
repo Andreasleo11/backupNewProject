@@ -15,7 +15,7 @@ class ForecastCustomerMasterDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -72,6 +72,6 @@ class ForecastCustomerMasterDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ForecastCustomerMaster_'.date('YmdHis');
+        return 'ForecastCustomerMaster_' . date('YmdHis');
     }
 }

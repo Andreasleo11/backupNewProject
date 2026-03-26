@@ -16,7 +16,7 @@ class VqcReportsDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -143,6 +143,6 @@ class VqcReportsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'VqcReports_'.date('YmdHis');
+        return 'VqcReports_' . date('YmdHis');
     }
 }

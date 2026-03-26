@@ -15,7 +15,7 @@ class ProdplanSndLinecapDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -76,6 +76,6 @@ class ProdplanSndLinecapDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ProdplanSndLinecap_'.date('YmdHis');
+        return 'ProdplanSndLinecap_' . date('YmdHis');
     }
 }

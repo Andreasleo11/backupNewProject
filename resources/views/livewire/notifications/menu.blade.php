@@ -6,7 +6,6 @@
         @click="
       open = !open;
       if (open && !ready) { ready = true; $wire.set('ready', true); }
-      // Optionally move focus to menu for keyboard users:
       $nextTick(() => { if (open) $refs.menu?.focus(); });
     ">
         <i class='bx bx-bell fs-5'></i>
@@ -23,6 +22,7 @@
     <div x-ref="menu" class="dropdown-menu notif-menu shadow-lg p-0" x-cloak x-show="open"
         x-transition.opacity.scale.origin.top.right :class="{ 'show': open }" role="menu" tabindex="-1"
         @keydown.escape.stop="open = false; $nextTick(() => $refs.trigger.focus())">
+
         {{-- Header --}}
         <div class="notif-header d-flex align-items-center justify-content-between px-3 py-2">
             <div class="d-flex align-items-center gap-2">
@@ -35,29 +35,29 @@
                 </button>
                 @if ($unreadCount > 0)
                     <button class="btn btn-sm btn-primary" wire:click="markAllRead">
-                        Mark all
+                        Mark all read
                     </button>
                 @endif
             </div>
         </div>
 
-        @isset($filter)
-            <div class="px-3 pt-2 pb-1">
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="chip {{ $filter === 'all' ? 'chip-active' : '' }}" wire:click="$set('filter','all')">
-                        All
-                    </button>
-                    <button class="chip {{ $filter === 'unread' ? 'chip-active' : '' }}"
-                        wire:click="$set('filter','unread')">
-                        Unread ({{ $unreadCount }})
-                    </button>
-                </div>
+        {{-- Filter chips --}}
+        <div class="px-3 pt-2 pb-1">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="chip {{ $filter === 'all' ? 'chip-active' : '' }}" wire:click="$set('filter','all')">
+                    All
+                </button>
+                <button class="chip {{ $filter === 'unread' ? 'chip-active' : '' }}"
+                    wire:click="$set('filter','unread')">
+                    Unread ({{ $unreadCount }})
+                </button>
             </div>
-        @endisset
+        </div>
 
         {{-- List --}}
         <div class="list-group list-group-flush notif-list">
             @if (!$ready)
+                {{-- Skeleton placeholders before first open --}}
                 @for ($i = 0; $i < 4; $i++)
                     <div class="list-group-item">
                         <div class="d-flex gap-3">
@@ -73,30 +73,15 @@
                 @php $items = $this->items; @endphp
 
                 @forelse ($items as $n)
-                    @php
-                        // Normalize the payload for consistent rendering
-                        $p = $this->present($n);
-                        // Optional: show at most 3 “leftover” meta fields as chips
-                        $metaChips = collect($p['meta'] ?? [])
-                            ->take(3)
-                            ->map(function ($v, $k) {
-                                $label = \Illuminate\Support\Str::headline(str_replace('_', ' ', $k));
-                                if (is_scalar($v)) {
-                                    return "{$label}: {$v}";
-                                }
-                                if (is_array($v) || is_object($v)) {
-                                    return "{$label}: " .
-                                        json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                                }
-                                return $label;
-                            });
-                    @endphp
+                    @php $p = $this->present($n); @endphp
 
                     <a href="#" wire:key="notif-{{ $p['id'] }}"
                         class="list-group-item notif-item {{ $p['is_unread'] ? 'unread' : '' }}"
                         wire:click.prevent="show('{{ $p['id'] }}')" role="menuitem">
                         <div class="d-flex gap-3">
-                            <div class="notif-icon">
+
+                            {{-- Icon circle — color driven by category --}}
+                            <div class="notif-icon notif-icon--{{ $p['category'] }}">
                                 <i class="{{ $p['icon'] }}"></i>
                             </div>
 
@@ -116,15 +101,6 @@
                                     <div class="mt-1 small text-muted">{{ implode(' • ', $p['metaBriefs']) }}</div>
                                 @endif
 
-                                {{-- @if ($metaChips->isNotEmpty())
-                  <div class="mt-1 d-flex flex-wrap gap-1">
-                    @foreach ($metaChips as $chip)
-                      <span
-                        class="badge rounded-pill text-bg-light fw-normal">{{ $chip }}</span>
-                    @endforeach
-                  </div>
-                @endif --}}
-
                                 @if ($p['is_unread'])
                                     <span class="pill-new">NEW</span>
                                 @endif
@@ -140,7 +116,7 @@
                     </div>
                 @endforelse
 
-                @if ($items instanceof \Illuminate\Contracts\Pagination\Paginator && $items->count() >= $perPage)
+                @if ($items instanceof \Illuminate\Contracts\Pagination\Paginator && $items->hasMorePages())
                     <div class="p-2 text-center bg-body-tertiary rounded-bottom">
                         <button class="btn btn-sm btn-outline-secondary" wire:click="loadMore">
                             Load more
@@ -158,32 +134,42 @@
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content border-0 shadow-xl text-black">
                 <div class="modal-header border-0">
-                    <h6 class="modal-title" id="notificationModalLabel">
-                        {{ $selected['title'] ?? 'Notification' }}
-                    </h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    {{-- Icon + title row --}}
+                    <div class="d-flex align-items-center gap-2">
+                        @if ($selected)
+                            <span class="notif-icon notif-icon--{{ $selected['category'] ?? 'info' }} notif-icon--sm">
+                                <i class="{{ $selected['icon'] ?? 'bx bx-bell' }}"></i>
+                            </span>
+                        @endif
+                        <h6 class="modal-title mb-0" id="notificationModalLabel">
+                            {{ $selected['title'] ?? 'Notification' }}
+                        </h6>
+                    </div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"
                         @click="$nextTick(() => $refs.trigger.focus())"></button>
                 </div>
 
                 <div class="modal-body">
                     @if ($selected)
-                        <div class="mb-1">
+                        <div class="mb-2">
                             <small class="text-muted">
                                 {{ \Illuminate\Support\Carbon::parse($selected['created_at'])->diffForHumans() }} •
                                 {{ $selected['type'] }}
                             </small>
                         </div>
                         <hr class="my-2">
-                        <div class="mb-3 fs-6">{!! nl2br(e($selected['body'])) !!}</div>
+
+                        @if (!empty($selected['body']))
+                            <div class="mb-3 fs-6">{!! nl2br(e($selected['body'])) !!}</div>
+                        @else
+                            <p class="text-muted fst-italic mb-3">No additional details provided.</p>
+                        @endif
 
                         @if (!empty($selected['url']))
                             <div class="text-end">
-                                <a href="{{ $selected['url'] }}" class="btn btn-primary btn-sm">Open related
-                                    page</a>
+                                <a href="{{ $selected['url'] }}" class="btn btn-primary btn-sm">View details</a>
                             </div>
                         @endif
-                    @else
-                        <div class="text-muted">No content.</div>
                     @endif
                 </div>
             </div>
@@ -198,16 +184,5 @@
                 bootstrap.Modal.getOrCreateInstance(el).show();
             });
         });
-
-        if (window.Laravel?.userId) {
-            window.Echo.private(`App.Models.User.${window.Laravel.userId}`).notification((n) => {
-                // Fire a browser event Livewire components can listen to
-                const fire = () => window.Livewire?.dispatch("refreshNotifications");
-                if (window.Livewire) fire();
-                else document.addEventListener("livewire:load", fire, {
-                    once: true
-                });
-            });
-        }
     </script>
 </div>
