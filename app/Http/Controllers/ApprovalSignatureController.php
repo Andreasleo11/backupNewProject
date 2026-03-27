@@ -12,8 +12,8 @@ final class ApprovalSignatureController extends Controller
 {
     public function show(ApprovalStep $step): StreamedResponse
     {
-        // Must have snapshot
-        abort_unless($step->user_signature_id, 404);
+        // Must have at least the image path
+        abort_unless($step->signature_image_path, 404);
 
         // Load req + approvable
         $step->loadMissing('request.approvable');

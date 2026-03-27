@@ -41,10 +41,6 @@ class EnsureUserHasSignature
         // 4. Redirect to signature management with a helpful notice
         return redirect()->route('signatures.manage')
             ->with('onboarding_signature', true)
-            ->with('toast', [
-                'type' => 'info',
-                'description' => 'A digital signature is required for your role to approve documents. Let\'s get it set up!',
-                'message' => 'Signature Required'
-            ]);
+            ->with('toast_info', 'Digital Signature Required: Your role requires a verified signature for approvals. Let\'s get it set up!');
     }
 }

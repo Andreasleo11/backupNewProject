@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" wire:ignore.self x-data="{ }">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8" x-data="{ }">
     {{-- Onboarding Banner --}}
     @if (session('onboarding_signature'))
         <div class="mb-8 overflow-hidden rounded-3xl bg-indigo-600 shadow-lg shadow-indigo-200" x-data="{ show: true }" x-show="show" x-transition>
@@ -230,7 +230,7 @@
                             <button type="button"
                                 class="w-full sm:flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 px-5 py-3 text-sm font-bold text-white shadow-xl shadow-rose-200/50 hover:shadow-rose-300/60 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
                                 x-on:click="
-                                        $wire.revoke(revokeTarget);
+                                        @this.revoke(revokeTarget);
                                         revokeOpen = false;
                                     ">
                                 Yes, Revoke it
@@ -242,24 +242,32 @@
         </div>
     @endpush
 
-    {{-- Toast --}}
-    <div x-data="{ show: false, msg: '', timer: null }"
-        x-on:toast.window="
-            msg = $event.detail?.message ?? 'Done';
-            show = true;
-            clearTimeout(timer);
-            timer = setTimeout(() => show = false, 2500);
-         "
-        class="pointer-events-none fixed bottom-4 right-4 z-[60]">
-        <div x-show="show" x-transition x-cloak
-            class="pointer-events-auto flex items-center gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-            <span x-text="msg"></span>
-            <button type="button" class="rounded-lg p-1 text-white/80 hover:bg-white/10 hover:text-white"
-                x-on:click="show = false" aria-label="Close toast">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                </svg>
-            </button>
-        </div>
-    </div>
+
+    @if (session('onboarding_signature'))
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Welcome to the New Approval System! ✍️',
+                        html: '<p class="text-slate-600 leading-relaxed">To ensure your approvals are secure and verified, we need you to set up a <b>digital signature</b>. It only takes a minute!</p>',
+                        icon: 'info',
+                        iconColor: '#6366f1',
+                        confirmButtonText: 'Let\'s get started',
+                        confirmButtonColor: '#4f46e5',
+                        allowOutsideClick: false,
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        },
+                        customClass: {
+                            popup: 'rounded-[2rem]',
+                            confirmButton: 'rounded-xl px-10 py-3 font-bold text-sm tracking-wide uppercase',
+                        }
+                    });
+                });
+            </script>
+        @endpush
+    @endif
 </div>

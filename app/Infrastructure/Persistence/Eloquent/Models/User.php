@@ -71,32 +71,41 @@ class User extends Authenticatable
         return $this->hasMany(UserSignature::class, 'user_id', 'id');
     }
 
-    /**
-     * Determine if the user has a default active signature.
-     */
     public function hasDefaultSignature(): bool
     {
-        return $this->signatures()
+        // First, check for an explicit default active signature
+        $hasDefault = $this->signatures()
             ->where('is_default', true)
+            ->whereNull('revoked_at')
+            ->exists();
+
+        if ($hasDefault) {
+            return true;
+        }
+
+        // Fallback: If they have ANY active signature, consider it "good enough" 
+        // for the transition period to prevent redirect loops.
+        return $this->signatures()
             ->whereNull('revoked_at')
             ->exists();
     }
 
-    /**
-     * Determine if the user belongs to a role that requires a signature for approvals.
-     */
     public function needsSignature(): bool
     {
-        // Approvers, Managers, and Directors must have a signature.
-        // We can check for a specific permission 'approval.approve' 
-        // to make it scalable as new roles are added.
-        return $this->can('approval.approve') || $this->hasAnyRole([
+        // 1. Check for any permissions that MUST have a signature (Approvers/Makers)
+        $signaturePermissions = \App\Infrastructure\Common\PermissionRegistry::getSignatureRequiredPermissions();
+        
+        if ($this->hasAnyPermission($signaturePermissions)) {
+            return true;
+        }
+
+        // 2. Extra safety: Check common approval roles if permissions aren't fully set up
+        return $this->hasAnyRole([
             'department-head',
             'general-manager',
             'director',
             'verificator',
             'purchasing-manager',
-            'supervisor'
         ]);
     }
 }

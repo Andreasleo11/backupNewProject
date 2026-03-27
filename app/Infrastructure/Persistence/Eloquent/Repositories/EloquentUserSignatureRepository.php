@@ -71,10 +71,13 @@ final class EloquentUserSignatureRepository implements UserSignatureRepository
 
     public function revoke(int $signatureId, DateTimeImmutable $revokedAt): void
     {
-        EloquentUserSignature::query()->whereKey($signatureId)->update([
-            'revoked_at' => $revokedAt->format('Y-m-d H:i:s'),
-            'is_default' => false,
-        ]);
+        $m = EloquentUserSignature::query()->find($signatureId);
+        if ($m) {
+            $m->update([
+                'revoked_at' => $revokedAt->format('Y-m-d H:i:s'),
+                'is_default' => false,
+            ]);
+        }
     }
 
     public function recordEvent(

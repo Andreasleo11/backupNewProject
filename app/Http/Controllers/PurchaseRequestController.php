@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Application\PurchaseRequest\DTOs\AddSignatureDTO;
+use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
@@ -19,7 +19,6 @@ use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Requests\ApprovePurchaseRequest;
 use App\Http\Requests\RejectPurchaseRequest;
-use App\Http\Requests\SaveSignatureRequest;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
@@ -161,7 +160,6 @@ class PurchaseRequestController extends Controller
         StorePurchaseRequest $request,
         \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer,
         Approvals $approvals,
-        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
     ) {
         // Always create as draft — workflow is started explicitly via performSignAndSubmit
         $request->merge(['is_draft' => true]);
@@ -169,7 +167,7 @@ class PurchaseRequestController extends Controller
         $pr = app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
 
         if ($request->input('submit_action') === 'sign_and_submit') {
-            $this->performSignAndSubmit($pr, auth()->id(), $approvals, $addSignature);
+            $this->performSignAndSubmit($pr, auth()->id(), $approvals);
 
             return redirect()->route('purchase-requests.show', $pr->id)
                 ->with('success', 'Purchase request submitted and signed successfully.');
@@ -231,23 +229,6 @@ class PurchaseRequestController extends Controller
         ]);
     }
 
-    public function saveSignaturePath(
-        SaveSignatureRequest $request,
-        $prId,
-        int $section,
-        \App\Application\PurchaseRequest\UseCases\AddSignature $useCase
-    ) {
-        $dto = new \App\Application\PurchaseRequest\DTOs\AddSignatureDTO(
-            purchaseRequestId: (int) $prId,
-            signedByUserId: $request->user()->id,
-            section: $section,
-            imagePath: $request->input('imagePath')
-        );
-
-        $useCase->handle($dto);
-
-        return response()->json(['success' => 'Autograph saved successfully!']);
-    }
 
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
@@ -304,8 +285,7 @@ class PurchaseRequestController extends Controller
             $this->performSignAndSubmit(
                 $pr,
                 Auth::id(),
-                app(Approvals::class),
-                app(\App\Application\PurchaseRequest\UseCases\AddSignature::class)
+                app(Approvals::class)
             );
 
             return redirect()->route('purchase-requests.show', $id)
@@ -328,7 +308,6 @@ class PurchaseRequestController extends Controller
         Request $request,
         PurchaseRequest $purchaseRequest,
         Approvals $approvals,
-        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
     ) {
         // Only the creator can sign & submit their own DRAFT
         if ((int) auth()->id() !== (int) $purchaseRequest->user_id_create) {
@@ -339,7 +318,7 @@ class PurchaseRequestController extends Controller
             abort(422, 'Only DRAFT, RETURNED, or REJECTED requests can be submitted.');
         }
 
-        $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals, $addSignature);
+        $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals);
 
         return redirect()->route('purchase-requests.show', $purchaseRequest->id)
             ->with('success', 'Purchase request signed and submitted for approval.');
@@ -352,18 +331,13 @@ class PurchaseRequestController extends Controller
         PurchaseRequest $pr,
         int $userId,
         Approvals $approvals,
-        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
     ): void {
         $defaultSig = $this->getDefaultSignature->execute($userId);
         abort_unless($defaultSig !== null, 422, 'You must set up a signature before submitting.');
 
-        // Save MAKER signature (section 1)
-        $addSignature->handle(new AddSignatureDTO(
-            purchaseRequestId: $pr->id,
-            signedByUserId: $userId,
-            section: 1,
-            imagePath: $defaultSig->filePath,
-        ));
+        // NOTE: We no longer save the MAKER signature to the legacy 'purchase_request_signatures' table 
+        // for new PRs. It is only kept for legacy data compatibility.
+        // The requester is now tracked via $approvals->submit() into 'approval_requests.submitted_by'.
 
         // Build approval context from the PR model (required by the rule resolver to match templates)
         $pr->loadMissing('items');

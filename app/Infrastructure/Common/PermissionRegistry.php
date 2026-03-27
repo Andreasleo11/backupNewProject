@@ -195,4 +195,21 @@ class PermissionRegistry
 
         return $all;
     }
+
+    /**
+     * Get a list of permissions that inherently require a digital signature (approvals/creations).
+     * 
+     * @return array
+     */
+    public static function getSignatureRequiredPermissions(): array
+    {
+        return array_values(array_filter(self::allPermissions(), function ($p) {
+            return str_contains($p, '.approve') ||
+                str_contains($p, '.reject') ||
+                str_contains($p, '.review') ||
+                $p === 'pr.create' ||
+                $p === 'overtime.create' ||
+                str_contains($p, '.approve-items');
+        }));
+    }
 }
