@@ -61,12 +61,7 @@ class OvertimeFormService
             try {
                 app(\App\Application\Approval\Contracts\Approvals::class)->submit($header, Auth::id(), $context);
 
-                // Backward compatibility: maintain legacy 'status' string (e.g. 'waiting-general-manager')
-                $req = $header->approvalRequest()->with('steps')->first();
-                if ($req && $currentStep = $req->steps->where('sequence', $req->current_step)->first()) {
-                    $roleSlug = $currentStep->approver_snapshot_role_slug ?? 'approver';
-                    $header->update(['status' => 'waiting-' . \Illuminate\Support\Str::slug($roleSlug)]);
-                }
+                // Approval submitted to engine
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Overtime Approval Engine Error: ' . $e->getMessage(), ['exception' => $e]);
@@ -89,7 +84,7 @@ class OvertimeFormService
             'is_export' => 0,
             'is_planned' => $isPlanned,
             'is_after_hour' => $data->get('is_after_hour'),
-            'status' => 'waiting-creator',
+            'status' => null, // Legacy field deprecated
         ];
     }
 

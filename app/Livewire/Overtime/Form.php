@@ -58,7 +58,7 @@ class Form extends Component
             $this->form = OvertimeForm::with(['details', 'department'])->findOrFail($id);
             $this->authorize('update', $this->form);
 
-            if (! in_array($this->form->status, ['waiting-creator', 'waiting-dept-head'], true)) {
+            if (! in_array(strtoupper($this->form->workflow_status), ['DRAFT', 'SUBMITTED', 'RETURNED'], true)) {
                 abort(403, 'This form can no longer be edited.');
             }
 

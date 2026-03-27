@@ -167,12 +167,10 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
                 }
 
                 // 5. Update overall status
-                $finalStatus = 'DRAFT';
+                $finalStatus = 'IN_REVIEW'; // Default for legacy in-progress forms
                 if ($allApproved && $templateSteps->isNotEmpty()) {
                     $finalStatus = 'APPROVED';
                     $currentStepSequence = $templateSteps->last()->sequence + 1;
-                } elseif ($anyApproved) {
-                    $finalStatus = 'IN_REVIEW';
                 }
 
                 if ($form->status === 'rejected') {

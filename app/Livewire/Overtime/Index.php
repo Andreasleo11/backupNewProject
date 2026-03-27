@@ -331,7 +331,7 @@ class Index extends Component
                                 optional($fot->department)->name,
                                 $fot->branch,
                                 optional($fot->first_overtime_date)?->format('Y-m-d'),
-                                $fot->status,
+                                $fot->workflow_status,
                                 $fot->is_planned ? 'Planned' : 'Urgent',
                                 $fot->is_after_hour ? 'Yes' : 'No',
                                 $fot->approved_count,
@@ -423,21 +423,23 @@ class Index extends Component
      */
     public static function statusMeta(?string $status): array
     {
+        $status = strtoupper($status ?? 'DRAFT');
+
         return match ($status) {
-            'approved'           => ['label' => 'Fully Approved',        'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
-            'rejected'           => ['label' => 'Rejected',              'classes' => 'bg-rose-100 text-rose-800 border-rose-200',         'icon' => 'bx-x-circle'],
-            'waiting-dept-head'  => ['label' => 'Awaiting Dept Approval','classes' => 'bg-amber-100 text-amber-800 border-amber-200',       'icon' => 'bx-time-five'],
-            'waiting-gm'         => ['label' => 'Awaiting GM Sign-off',  'classes' => 'bg-orange-100 text-orange-800 border-orange-200',    'icon' => 'bx-time-five'],
-            'waiting-director'   => ['label' => 'Awaiting Director',     'classes' => 'bg-purple-100 text-purple-800 border-purple-200',    'icon' => 'bx-time-five'],
-            'waiting-verificator'=> ['label' => 'Awaiting Verificator',  'classes' => 'bg-sky-100 text-sky-800 border-sky-200',             'icon' => 'bx-time-five'],
-            'pending'            => ['label' => 'Pending Submission',    'classes' => 'bg-slate-100 text-slate-700 border-slate-200',       'icon' => 'bx-edit'],
-            default              => ['label' => ucwords(str_replace('-', ' ', $status ?? 'Draft')), 'classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'icon' => 'bx-circle'],
+            'APPROVED'    => ['label' => 'Fully Approved',        'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
+            'REJECTED'    => ['label' => 'Rejected',              'classes' => 'bg-rose-100 text-rose-800 border-rose-200',         'icon' => 'bx-x-circle'],
+            'IN_REVIEW'   => ['label' => 'In Review',             'classes' => 'bg-amber-100 text-amber-800 border-amber-200',       'icon' => 'bx-time-five'],
+            'SUBMITTED'   => ['label' => 'Submitted',            'classes' => 'bg-sky-100 text-sky-800 border-sky-200',             'icon' => 'bx-paper-plane'],
+            'RETURNED'    => ['label' => 'Returned',             'classes' => 'bg-orange-100 text-orange-800 border-orange-200',    'icon' => 'bx-undo'],
+            'DRAFT'       => ['label' => 'Draft',                'classes' => 'bg-slate-100 text-slate-700 border-slate-200',       'icon' => 'bx-edit'],
+            'CANCELED'    => ['label' => 'Canceled',             'classes' => 'bg-slate-200 text-slate-500 border-slate-300',       'icon' => 'bx-comment-minus'],
+            default       => ['label' => ucwords(strtolower(str_replace(['-', '_'], ' ', $status))), 'classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'icon' => 'bx-circle'],
         };
     }
 
     public static function reviewMeta($fot): array
     {
-        $status = strtolower($fot->status ?? '');
+        $status = strtoupper($fot->workflow_status);
 
         if ($fot->is_push == 1) {
             $totalCount = $fot->details()->count();
@@ -488,7 +490,7 @@ class Index extends Component
             ];
         }
 
-        if ($status === 'approved') {
+        if ($status === 'APPROVED') {
             return [
                 'label'   => 'Awaiting Review',
                 'classes' => 'bg-amber-100 text-amber-700 border-amber-200/50',
@@ -547,12 +549,16 @@ class Index extends Component
         }
 
         if (! $excludeInfoStatus && $this->infoStatus) {
-            $status = $this->infoStatus;
-            $query->whereHas('details', function ($q) use ($status) {
-                $status === 'pending'
-                    ? $q->whereNull('status')
-                    : $q->where('status', ucfirst($status)); // Approved/Rejected
-            });
+            $status = strtoupper($this->infoStatus);
+            if ($status === 'PENDING') {
+                $query->whereHas('details', fn($q) => $q->whereNull('status'));
+            } else {
+                // Map legacy filter clicks to unified statuses if needed, 
+                // but usually infoStatus matches the detail-row status
+                $query->whereHas('details', function ($q) use ($status) {
+                    $q->where('status', ucfirst(strtolower($status))); // Approved/Rejected
+                });
+            }
         }
 
         // Smarter search: numeric => exact id; text => prefix for indexes

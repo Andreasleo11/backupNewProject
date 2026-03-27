@@ -108,6 +108,66 @@ class OvertimeForm extends Model implements Approvable
     }
 
     /**
+     * Get workflow status from approval request.
+     * This replaces the legacy status column.
+     */
+    public function getWorkflowStatusAttribute(): string
+    {
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+
+        if (!$approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+
+        $currentStep = $approval->steps()
+            ->where('sequence', $approval->current_step)
+            ->first();
+
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Scope: Filter forms that are in review.
+     */
+    public function scopeInReview($query)
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'IN_REVIEW')
+        );
+    }
+
+    /**
+     * Scope: Filter forms that are approved by workflow.
+     */
+    public function scopeWorkflowApproved($query)
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'APPROVED')
+        );
+    }
+
+    /**
+     * Scope: Filter forms that are rejected by workflow.
+     */
+    public function scopeWorkflowRejected($query)
+    {
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'REJECTED')
+        );
+    }
+
+    /**
      * Centralized query scope for role-based visibility.
      * This logic is shared by the Index component and the Policy.
      */
@@ -124,20 +184,20 @@ class OvertimeForm extends Model implements Approvable
 
             // 3. Verificator sees all submitted/approved forms
             if ($user->can('overtime.review')) {
-                $q->orWhereNotNull('status');
+                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']));
                 return;
             }
 
             // 4. Director sees all submitted/approved forms
             if ($user->hasRole('director')) {
-                $q->orWhereNotNull('status');
+                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']));
                 return;
             }
 
             // 5. General Manager: Sees non-office departments
             if ($user->hasRole('general-manager')) {
                 $q->orWhere(function ($sq) {
-                    $sq->whereNotNull('status')
+                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
                        ->whereHas('department', fn($dq) => $dq->where('is_office', false));
                 });
                 return;
@@ -147,7 +207,7 @@ class OvertimeForm extends Model implements Approvable
             if ($user->hasRole('department-head')) {
                 $deptName = $user->department?->name;
                 $q->orWhere(function ($sq) use ($deptName) {
-                    $sq->whereNotNull('status')
+                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
                        ->whereHas('department', function ($dq) use ($deptName) {
                            $dq->where('name', $deptName);
                            if ($deptName === 'LOGISTIC') {
@@ -164,7 +224,7 @@ class OvertimeForm extends Model implements Approvable
             $deptName = $user->department?->name;
             if ($deptName) {
                 $q->orWhere(function ($sq) use ($deptName) {
-                    $sq->whereNotNull('status')
+                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
                        ->whereHas('department', fn($dq) => $dq->where('name', $deptName));
                 });
             }
