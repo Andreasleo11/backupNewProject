@@ -142,9 +142,27 @@ class PurchaseRequest extends Model implements Approvable
 
     /**
      * Get all workflow steps for visualization, including pending and empty slots.
+     * Prepend the creator's signature manually as requested.
      */
     public function getWorkflowSignaturesAttribute(): array
     {
+        $signatures = [];
+
+        // 1. Manually add Creator (MAKER) at the start
+        $creator = $this->creator;
+        if ($creator) {
+            $signatures[] = [
+                'step_code'  => 'Prepared By',
+                'user'       => $creator,
+                'name'       => $creator->name,
+                'image'      => $this->creator_signature_url,
+                'at'         => $this->created_at,
+                'status'     => 'signed',
+                'is_current' => false,
+                'source'     => 'creator',
+            ];
+        }
+
         if ($this->approvalRequest) {
             $approvalSteps = $this->approvalRequest->steps()
                 ->orderBy('sequence')
@@ -176,12 +194,27 @@ class PurchaseRequest extends Model implements Approvable
                     ];
                 });
 
-            if ($approvalSteps->isNotEmpty()) {
-                return $approvalSteps->toArray();
-            }
+            $signatures = array_merge($signatures, $approvalSteps->toArray());
         }
 
-        return [];
+        return $signatures;
+    }
+
+    /**
+     * Helper to get signature URL for the creator.
+     */
+    public function getCreatorSignatureUrlAttribute(): ?string
+    {
+        $defaultSig = $this->creator?->signatures()
+            ->whereNull('revoked_at')
+            ->orderByDesc('is_default')
+            ->first();
+
+        if ($defaultSig) {
+            return route('signatures.show', ['signature' => $defaultSig->id]);
+        }
+
+        return null;
     }
 
     public function itemDetail()

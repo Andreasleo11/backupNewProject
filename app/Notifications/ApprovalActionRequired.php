@@ -32,7 +32,7 @@ class ApprovalActionRequired extends Notification implements ShouldQueue
             'action_url' => $this->approvable->getApprovableShowUrl(),
             'icon' => 'bx bx-bell-ring',
             'category' => 'info',
-            'approvable_id' => $this->approvable->getKey(),
+            'approvable_id' => $this->approvable instanceof \Illuminate\Database\Eloquent\Model ? $this->approvable->getKey() : null,
             'step_sequence' => $this->step->sequence,
         ];
     }

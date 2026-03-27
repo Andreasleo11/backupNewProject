@@ -31,7 +31,7 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
             'action_url' => $this->approvable->getApprovableShowUrl(),
             'icon' => 'bx bx-check-circle',
             'category' => 'success',
-            'approvable_id' => $this->approvable->getKey(),
+            'approvable_id' => $this->approvable instanceof \Illuminate\Database\Eloquent\Model ? $this->approvable->getKey() : null,
         ];
     }
 }

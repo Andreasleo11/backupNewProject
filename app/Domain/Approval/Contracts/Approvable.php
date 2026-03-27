@@ -10,11 +10,6 @@ interface Approvable
     public function approvalRequest();
 
     /**
-     * Get the primary key of the model.
-     */
-    public function getKey();
-
-    /**
      * The display name of the module/report type (e.g. "Purchase Request").
      */
     public function getApprovableTypeLabel(): string;

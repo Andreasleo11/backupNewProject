@@ -33,7 +33,7 @@ class ReportRejectedNotification extends Notification implements ShouldQueue
             'action_url' => $this->approvable->getApprovableShowUrl(),
             'icon' => 'bx bx-x-circle',
             'category' => 'danger',
-            'approvable_id' => $this->approvable->getKey(),
+            'approvable_id' => $this->approvable instanceof \Illuminate\Database\Eloquent\Model ? $this->approvable->getKey() : null,
         ];
     }
 }
