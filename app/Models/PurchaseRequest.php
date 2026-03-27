@@ -211,7 +211,7 @@ class PurchaseRequest extends Model implements Approvable
             ->first();
 
         if ($defaultSig) {
-            return route('signatures.show', ['signature' => $defaultSig->id]);
+            return route('signatures.show', ['id' => $defaultSig->id]);
         }
 
         return null;
