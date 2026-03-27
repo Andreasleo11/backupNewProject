@@ -24,9 +24,9 @@
                         Approval Status
                     </h1>
                     <span class="rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border 
-                        {{ $form->status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200/50' : 
-                          ($form->status === 'rejected' ? 'bg-rose-100 text-rose-700 border-rose-200/50' : 'bg-amber-100 text-amber-700 border-amber-200/50') }}">
-                        {{ str_replace('-', ' ', $form->status) }}
+                        {{ strtoupper($form->workflow_status) === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 border-emerald-200/50' : 
+                          (strtoupper($form->workflow_status) === 'REJECTED' ? 'bg-rose-100 text-rose-700 border-rose-200/50' : 'bg-amber-100 text-amber-700 border-amber-200/50') }}">
+                        {{ str_replace(['-', '_'], ' ', $form->workflow_status) }}
                     </span>
                 </div>
             </div>
@@ -50,7 +50,7 @@
             </a>
             @endcan
 
-            @if ($form->status === 'approved' && $canPush)
+            @if (strtoupper($form->workflow_status) === 'APPROVED' && $canPush)
             <button type="button" wire:click="pushAll" wire:loading.attr="disabled"
                 wire:confirm="Push all pending details to JPayroll?"
                 class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:shadow-none">
@@ -233,7 +233,7 @@
                                 <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60" colspan="3">Actual Logs (In / Out / Net)</th>
                                 <th class="px-4 py-3 whitespace-nowrap text-center border-l border-slate-200/60">Status</th>
                             @endif
-                            @if ($form->status === 'approved' && $canPush)
+                            @if (strtoupper($form->workflow_status) === 'APPROVED' && $canPush)
                                 <th class="px-4 py-3 whitespace-nowrap text-center text-indigo-600">Payroll Push</th>
                             @endif
                         </tr>
@@ -302,7 +302,7 @@
                             @endif
 
                             {{-- JPayroll actions --}}
-                            @if ($form->status === 'approved' && $canPush)
+                            @if (strtoupper($form->workflow_status) === 'APPROVED' && $canPush)
                             <td class="px-4 py-3 whitespace-nowrap text-center">
                                 @if (is_null($detail->status))
                                 <div class="flex items-center justify-center gap-1.5">

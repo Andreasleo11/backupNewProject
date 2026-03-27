@@ -45,6 +45,22 @@ final class DefaultRuleResolver implements RuleResolver
                     return false;
                 }
             }
+            if (str_ends_with($k, '_in')) {
+                $baseKey = substr($k, 0, -3);
+                if (! in_array($ctx[$baseKey] ?? null, (array) $v)) {
+                    return false;
+                }
+                continue;
+            }
+
+            if (str_ends_with($k, '_not_in')) {
+                $baseKey = substr($k, 0, -7);
+                if (in_array($ctx[$baseKey] ?? null, (array) $v)) {
+                    return false;
+                }
+                continue;
+            }
+
             if (! in_array($k, ['amount_gt', 'amount_gte', 'amount_lte', 'any_tags'])) {
                 if (($ctx[$k] ?? null) != $v) {
                     return false;

@@ -290,8 +290,8 @@
                             <th wire:click="sortBy('first_overtime_date')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
                                 <div class="flex items-center gap-1">OT Date {!! sortIcon('first_overtime_date', $sortField, $sortDirection) !!}</div>
                             </th>
-                            <th wire:click="sortBy('status')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
-                                <div class="flex items-center gap-1">Status {!! sortIcon('status', $sortField, $sortDirection) !!}</div>
+                            <th wire:click="sortBy('workflow_status')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
+                                <div class="flex items-center gap-1">Status {!! sortIcon('workflow_status', $sortField, $sortDirection) !!}</div>
                             </th>
                             <th class="{{ $rowPadding }} whitespace-nowrap">Review Status</th>
                             <th class="{{ $rowPadding }} whitespace-nowrap">Approval</th>
@@ -301,7 +301,7 @@
                     <tbody class="divide-y divide-slate-100/60 bg-white/30 {{ $compact }}">
                         @forelse ($dataheader as $fot)
                             @php
-                                $meta  = OvertimeIndex::statusMeta($fot->status);
+                                $meta  = OvertimeIndex::statusMeta($fot->workflow_status);
                                 $steps = $fot->approvalRequest?->steps ?? collect();
                             @endphp
                             <tr wire:key="row-{{ $fot->id }}" class="group hover:bg-indigo-50/30 transition-colors">

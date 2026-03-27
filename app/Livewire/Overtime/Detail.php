@@ -173,7 +173,6 @@ class Detail extends Component
             };
 
             $isCurrent = $req->current_step === $step->sequence && $req->status === 'IN_REVIEW';
-
             $roleSlug = $step->approver_snapshot_role_slug ?? 'approver';
 
             // signed_at and signature are populated by the engine only when APPROVED/REJECTED

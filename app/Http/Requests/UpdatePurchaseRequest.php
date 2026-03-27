@@ -34,7 +34,7 @@ class UpdatePurchaseRequest extends FormRequest
             'pic' => 'required|string|max:255',
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => ['required', new SanitizedNumeric],
             'items.*.uom' => 'required|string|max:50',
             'items.*.currency' => ['required', 'string', Rule::in(['IDR', 'CNY', 'USD'])],
