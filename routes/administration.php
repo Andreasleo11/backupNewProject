@@ -14,11 +14,11 @@ Route::middleware('auth')->group(function () {
             // Dashboard can be viewable by anyone who has access to role feature
             Route::get('/access-overview', \App\Livewire\Admin\AccessOverviewDashboard::class)->name('access-overview.index');
             
-            Route::view('/users', 'admin.users.index')
+            Route::get('/users', \App\Livewire\Admin\Users\UserIndex::class)
                 ->name('users.index')
                 ->middleware('can:user.view-any');
                 
-            Route::view('/roles', 'admin.roles.index')
+            Route::get('/roles', \App\Livewire\Admin\Roles\RoleIndex::class)
                 ->name('roles.index')
                 ->middleware('can:role.view-any');
 

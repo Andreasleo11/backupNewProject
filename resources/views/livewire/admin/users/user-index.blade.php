@@ -1,3 +1,7 @@
+@section('title', 'Users')
+@section('page-title', 'Users')
+@section('page-subtitle', 'Manage application users, roles, and status.')
+
 <div class="max-w-7xl mx-auto space-y-6 py-6">
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -49,7 +53,7 @@
     {{-- Users Grid --}}
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         @forelse ($users as $user)
-            <div class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+            <div wire:key="user-card-{{ $user->id }}" class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
                 <div class="p-6">
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-4">
@@ -279,26 +283,32 @@
 
                     {{-- Roles Tab --}}
                     <div class="{{ $modalTab === 'roles' ? 'block' : 'hidden' }} p-4">
-                        <p class="text-xs text-slate-500 mb-3">Select one or more roles. Hover over a role for details.</p>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($availableRoles as $role)
-                                <label class="cursor-pointer group/role relative" title="{{ $this->getRoleDescription($role) }}">
-                                    <input type="checkbox" value="{{ $role }}" wire:model.defer="selectedRoles" class="peer sr-only">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 transition-all
-                                        hover:border-blue-300 hover:bg-blue-50
-                                        peer-checked:!border-blue-600 peer-checked:!bg-blue-600 peer-checked:text-white peer-checked:shadow-md select-none">
-                                        <svg class="h-3 w-3 opacity-0 peer-checked/role:opacity-100 transition-opacity hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                        </svg>
-                                        {{ $role }}
-                                    </span>
-                                    {{-- Tooltip --}}
-                                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/role:block
-                                        whitespace-nowrap rounded-lg bg-slate-800 px-3 py-1.5 text-xs text-white shadow-lg z-50 pointer-events-none max-w-xs text-center">
-                                        {{ $this->getRoleDescription($role) }}
-                                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></span>
-                                    </span>
-                                </label>
+                        <div class="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                            @foreach ($this->groupedRoles as $groupName => $roles)
+                                <div class="space-y-2">
+                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">{{ $groupName }}</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach ($roles as $role)
+                                            <label class="cursor-pointer group/role relative" title="{{ $this->getRoleDescription($role) }}">
+                                                <input type="checkbox" value="{{ $role }}" wire:model.defer="selectedRoles" class="peer sr-only">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 transition-all
+                                                    hover:border-blue-300 hover:bg-blue-50
+                                                    peer-checked:!border-blue-600 peer-checked:!bg-blue-600 peer-checked:text-white peer-checked:shadow-md select-none">
+                                                    <svg class="h-3 w-3 opacity-0 peer-checked/role:opacity-100 transition-opacity hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    {{ $role }}
+                                                </span>
+                                                {{-- Tooltip --}}
+                                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/role:block
+                                                    whitespace-nowrap rounded-lg bg-slate-800 px-3 py-1.5 text-xs text-white shadow-lg z-50 pointer-events-none max-w-xs text-center">
+                                                    {{ $this->getRoleDescription($role) }}
+                                                    <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></span>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
                             @endforeach
                         </div>
                     </div>

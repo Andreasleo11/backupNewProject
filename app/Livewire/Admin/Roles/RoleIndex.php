@@ -151,7 +151,7 @@ class RoleIndex extends Component
 
         $this->showModal = false;
 
-        $this->dispatch('flash', type: 'success', message: $this->modalMode === 'create' ? 'Role created successfully.' : 'Role updated successfully.');
+        $this->dispatch('toast', type: 'success', message: $this->modalMode === 'create' ? 'Role created successfully.' : 'Role updated successfully.');
 
         $this->reset(['editingRoleId', 'name', 'selectedPermissions', 'modalMode']);
         $this->modalMode = 'create';
@@ -164,14 +164,14 @@ class RoleIndex extends Component
         $role = Role::findOrFail($roleId);
 
         if ($role->name === 'super-admin') {
-            $this->dispatch('flash', type: 'error', message: 'Super admin role cannot be deleted.');
+            $this->dispatch('toast', type: 'error', message: 'Super admin role cannot be deleted.');
 
             return;
         }
 
         $role->delete();
 
-        $this->dispatch('flash', type: 'success', message: 'Role deleted successfully.');
+        $this->dispatch('toast', type: 'success', message: 'Role deleted successfully.');
     }
 
     public function render()
@@ -180,6 +180,6 @@ class RoleIndex extends Component
             'roles'              => $this->roles,
             'permissions'        => $this->permissions,
             'groupedPermissions' => $this->groupedPermissions,
-        ]);
+        ])->layout('new.layouts.app');
     }
 }

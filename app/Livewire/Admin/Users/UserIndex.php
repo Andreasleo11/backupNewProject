@@ -12,6 +12,7 @@ use App\Application\User\UseCases\ToggleUserStatus;
 use App\Application\User\UseCases\UpdateUser;
 use App\Domain\Employee\Repositories\EmployeeRepository;
 use App\Domain\User\Repositories\UserRepository;
+use App\Infrastructure\Common\PermissionRegistry;
 use App\Infrastructure\Persistence\Eloquent\Models\User as EloquentUser;
 use App\Presentation\Http\Requests\UserRequest;
 use Livewire\Component;
@@ -29,6 +30,13 @@ class UserIndex extends Component
     public bool $onlyActive = false;
 
     public int $perPage = 10;
+
+    protected $queryString = [
+        'page' => ['except' => 1],
+        'search' => ['except' => ''],
+        'onlyActive' => ['except' => false],
+        'perPage' => ['except' => 10],
+    ];
 
     // Modal state
     public bool $showModal = false;
@@ -116,6 +124,34 @@ class UserIndex extends Component
         return $groups;
     }
 
+    /** Grouped roles for the Roles tab in the user modal. */
+    public function getGroupedRolesProperty(): array
+    {
+        $allModules = PermissionRegistry::getModules();
+        $grouped = [];
+        $assignedRoles = [];
+
+        foreach ($allModules as $moduleName => $data) {
+            $moduleRoles = array_keys($data['roles'] ?? []);
+            if (!empty($moduleRoles)) {
+                // Filter to only included roles that actually exist in availableRoles
+                $validRoles = array_intersect($moduleRoles, $this->availableRoles);
+                if (!empty($validRoles)) {
+                    $grouped[$moduleName] = $validRoles;
+                    $assignedRoles = array_merge($assignedRoles, $validRoles);
+                }
+            }
+        }
+
+        // Catch-all for roles not defined in modules
+        $others = array_diff($this->availableRoles, $assignedRoles);
+        if (!empty($others)) {
+            $grouped['Other'] = array_values($others);
+        }
+
+        return $grouped;
+    }
+
     /** Returns the role description tooltip string. */
     public function getRoleDescription(string $role): string
     {
@@ -150,15 +186,15 @@ class UserIndex extends Component
         $this->authorize('user.update');
 
         $toggleUserStatus->execute($userId);
-        $this->dispatch('flash', type: 'success', message: 'User status updated.');
-        $this->resetPage();
+        
+        $this->dispatch('toast', message: 'User status updated.', type: 'success');
     }
 
     private function resetForm(): void
     {
         $this->reset(['name', 'email', 'selectedRoles', 'active', 'password', 'password_confirmation',
             'employeeId', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
-            'selectedDirectPermissions', 'modalTab']);
+            'selectedDirectPermissions', 'modalTab', 'editingId']);
 
         $this->active    = true;
         $this->selectedRoles = [];
@@ -221,7 +257,7 @@ class UserIndex extends Component
         $user = $users->findById($userId);
 
         if (! $user) {
-            $this->dispatch('flash', type: 'error', message: 'User not found.');
+            $this->dispatch('toast', type: 'error', message: 'User not found.');
 
             return;
         }
@@ -268,7 +304,7 @@ class UserIndex extends Component
         if (! $value) {
             $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active',
                 'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
-                'selectedDirectPermissions', 'modalTab');
+                'selectedDirectPermissions', 'modalTab', 'editingId');
             $this->resetValidation();
         }
 
@@ -286,7 +322,9 @@ class UserIndex extends Component
     {
         $this->validate();
 
-        if (is_null($this->editingId)) {
+        $isCreating = is_null($this->editingId);
+
+        if ($isCreating) {
             $this->authorize('user.create');
         } else {
             $this->authorize('user.update');
@@ -296,9 +334,9 @@ class UserIndex extends Component
 
         $dto = new UserData(name: $this->name, email: $this->email, password: $password, roles: $this->selectedRoles, active: $this->active, employeeId: $this->employeeId);
 
-        if (is_null($this->editingId)) {
+        if ($isCreating) {
             $createUser->execute($dto);
-            $this->dispatch('flash', type: 'success', message: 'User created successfully.');
+            $this->resetPage();
         } else {
             $updateUser->execute($this->editingId, $dto);
 
@@ -307,13 +345,15 @@ class UserIndex extends Component
             if ($eloquent) {
                 $eloquent->syncPermissions($this->selectedDirectPermissions);
             }
-
-            $this->dispatch('flash', type: 'success', message: 'User updated successfully.');
         }
 
         $this->showModal = false;
         $this->resetForm();
-        $this->resetPage();
+
+        $this->dispatch('toast', 
+            message: $isCreating ? 'User created successfully.' : 'User updated successfully.', 
+            type: 'success'
+        );
     }
 
     public function savePassword(ChangeUserPassword $changeUserPassword): void
@@ -321,17 +361,14 @@ class UserIndex extends Component
         $this->authorize('user.update');
         
         $this->validate($this->passwordRules());
-        if (! $this->passwordUserId) {
-            $this->dispatch('flash', type: 'error', message: 'User not found.');
-        }
-
         $changeUserPassword->execute($this->passwordUserId, $this->newPassword);
-        $this->dispatch('flash', type: 'success', message: 'User password updated successfully.');
 
         $this->showPasswordModal = false;
         $this->passwordUserId = null;
         $this->newPassword = '';
         $this->newPassword_confirmation = '';
+
+        $this->dispatch('toast', message: 'User password updated successfully.', type: 'success');
     }
 
     public function render(ListUsersWithEmployees $listUsers)

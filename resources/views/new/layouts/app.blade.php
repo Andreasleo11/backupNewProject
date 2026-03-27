@@ -316,10 +316,97 @@
     
     <livewire:ticketing.support-bubble />
     
-    {{-- Toast Notification System --}}
-    <div x-data="toastManager()" 
-         @toast.window="addToast($event.detail)"
-         class="fixed bottom-6 right-6 z-[100] space-y-3 max-w-sm"
+    {{-- ============================================================ --}}
+    {{-- TOAST NOTIFICATION SYSTEM                                    --}}
+    {{-- Handles: Livewire PHP dispatch(), Alpine $dispatch(), JS API --}}
+    {{-- ============================================================ --}}
+    <script>
+        // Global toast queue — collects toasts before Alpine is ready
+        window.__toastQueue = [];
+        window.__toastAdd = function(data) {
+            // Normalize payload: Livewire 3 PHP dispatch() wraps as [{...}], $dispatch sends {...}
+            if (Array.isArray(data)) data = data[0];
+            if (!data || typeof data !== 'object') return;
+            if (window.__toastReady) {
+                window.__toastHandler(data);
+            } else {
+                window.__toastQueue.push(data);
+            }
+        };
+
+        // Register Livewire.on as soon as Livewire is available (may be before alpine:init)
+        document.addEventListener('livewire:init', function() {
+            Livewire.on('toast', function(params) {
+                window.__toastAdd(params);
+            });
+        });
+
+        // Also capture window-level toast events (from Alpine $dispatch or manual JS)
+        window.addEventListener('toast', function(e) {
+            window.__toastAdd(e.detail);
+        });
+
+        // Register the Alpine component
+        document.addEventListener('alpine:init', function() {
+            Alpine.data('toastManager', function() {
+                return {
+                    toasts: [],
+                    nextId: 1,
+
+                    init() {
+                        // Mark as ready and flush queue
+                        window.__toastHandler = (data) => this.addToast(data);
+                        window.__toastReady = true;
+                        window.__toastQueue.forEach(d => this.addToast(d));
+                        window.__toastQueue = [];
+                    },
+
+                    addToast(data) {
+                        const id = this.nextId++;
+                        const duration = data.duration || 5000;
+                        const toast = {
+                            id,
+                            type: data.type || 'info',
+                            message: data.message || data.body || '',
+                            visible: false,
+                            progress: 100
+                        };
+                        this.toasts.push(toast);
+                        this.$nextTick(() => {
+                            toast.visible = true;
+                            const steps = duration / 100;
+                            let step = 0;
+                            toast._timer = setInterval(() => {
+                                step++;
+                                toast.progress = 100 - (step / steps * 100);
+                                if (step >= steps) { clearInterval(toast._timer); this.removeToast(id); }
+                            }, 100);
+                        });
+                    },
+
+                    removeToast(id) {
+                        const t = this.toasts.find(t => t.id === id);
+                        if (!t) return;
+                        if (t._timer) clearInterval(t._timer);
+                        t.visible = false;
+                        setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 400);
+                    },
+
+                    icon(type) {
+                        return {
+                            success: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+                            error:   `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`,
+                            warning: `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`,
+                            info:    `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                        }[type] || `<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+                    }
+                };
+            });
+        });
+    </script>
+
+    <div x-data="toastManager()"
+         class="fixed bottom-6 right-6 z-[9999] space-y-3 max-w-sm pointer-events-none"
          x-cloak>
         <template x-for="toast in toasts" :key="toast.id">
             <div x-show="toast.visible"
@@ -329,26 +416,26 @@
                  x-transition:leave="transform transition ease-in duration-300"
                  x-transition:leave-start="translate-x-0 opacity-100 scale-100"
                  x-transition:leave-end="translate-x-full opacity-0 scale-90"
-                 class="flex items-start gap-4 rounded-2xl px-5 py-4 shadow-2xl backdrop-blur-xl border min-w-[320px] max-w-sm overflow-hidden relative group"
+                 class="pointer-events-auto flex items-start gap-4 rounded-2xl px-5 py-4 shadow-2xl backdrop-blur-xl border min-w-[320px] max-w-sm overflow-hidden relative"
                  :class="{
                      'bg-emerald-600/90 text-white border-emerald-400/30': toast.type === 'success',
                      'bg-rose-600/90 text-white border-rose-400/30': toast.type === 'error',
                      'bg-amber-500/90 text-white border-amber-400/30': toast.type === 'warning',
                      'bg-blue-600/90 text-white border-blue-400/30': toast.type === 'info'
                  }">
-                {{-- Progress Bar (Premium Top line) --}}
+                {{-- Progress Bar --}}
                 <div class="absolute top-0 left-0 h-1 bg-white/20 w-full">
-                    <div class="h-full bg-white/40 transition-all ease-linear" 
+                    <div class="h-full bg-white/40 transition-all ease-linear"
                          :style="`width: ${toast.progress}%; transition-duration: 100ms`"></div>
                 </div>
 
-                <div class="flex-shrink-0 mt-1 scale-110" x-html="getIcon(toast.type)"></div>
-                
+                <div class="flex-shrink-0 mt-1" x-html="getIcon(toast.type)"></div>
+
                 <div class="flex-1 min-w-0 py-0.5">
                     <p class="text-sm font-bold leading-tight tracking-tight" x-text="toast.message"></p>
                 </div>
-                
-                <button @click="removeToast(toast.id)" 
+
+                <button @click="removeToast(toast.id)"
                         class="flex-shrink-0 opacity-70 hover:opacity-100 transition-all hover:scale-110 mt-0.5">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
@@ -358,60 +445,6 @@
         </template>
     </div>
 
-    @push('scripts')
-    <script>
-        function toastManager() {
-            return {
-                toasts: [],
-                nextId: 1,
-                addToast(data) {
-                    const id = this.nextId++;
-                    const duration = data.duration || 5000;
-                    const toast = { id, type: data.type || 'info', message: data.message, visible: false, progress: 100 };
-                    this.toasts.push(toast);
-                    this.$nextTick(() => {
-                        toast.visible = true;
-                        const interval = 100;
-                        const steps = duration / interval;
-                        let currentStep = 0;
-                        toast.intervalId = setInterval(() => {
-                            currentStep++;
-                            toast.progress = 100 - (currentStep / steps * 100);
-                            if (currentStep >= steps) { clearInterval(toast.intervalId); this.removeToast(id); }
-                        }, interval);
-                    });
-                },
-                removeToast(id) {
-                    const toast = this.toasts.find(t => t.id === id);
-                    if (toast) {
-                        if (toast.intervalId) clearInterval(toast.intervalId);
-                        toast.visible = false;
-                        setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 500);
-                    }
-                },
-                getIcon(type) {
-                    const icons = {
-                        success: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>',
-                        error: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>',
-                        warning: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>',
-                        info: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
-                    };
-                    return icons[type] || icons.info;
-                }
-            }
-        }
-
-        // Handle initial session toasts
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                @if(session()->has('toast_success')) window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: @json(session('toast_success')) } })); @endif
-                @if(session()->has('toast_error')) window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', message: @json(session('toast_error')) } })); @endif
-                @if(session()->has('toast_warning')) window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'warning', message: @json(session('toast_warning')) } })); @endif
-                @if(session()->has('toast_info')) window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'info', message: @json(session('toast_info')) } })); @endif
-            }, 500);
-        });
-    </script>
-    @endpush
     
     {{-- SweetAlert2 JS --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>

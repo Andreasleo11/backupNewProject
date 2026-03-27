@@ -1,3 +1,7 @@
+@section('title', 'Roles & Permissions')
+@section('page-title', 'Roles & Permissions')
+@section('page-subtitle', 'Define system roles and their associated permission matrices.')
+
 <div class="max-w-7xl mx-auto space-y-6 py-6">
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
