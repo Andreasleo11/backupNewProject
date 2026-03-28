@@ -35,7 +35,7 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
         }
 
         $contextBuilder = new OvertimeApprovalContextBuilder();
-        $resolver = new DefaultRuleResolver();
+        $resolver = app(\App\Domain\Approval\Contracts\RuleResolver::class);
 
         // Legacy role_slug to Modern role mapping
         $legacyToModernRole = [

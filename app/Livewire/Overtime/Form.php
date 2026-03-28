@@ -371,7 +371,7 @@ class Form extends Component
 
     public function canOverrideDept(): bool
     {
-        return auth()->user()->hasRole('super-admin') || auth()->user()->hasRole('HR');
+        return auth()->user()->hasRole('super-admin') || auth()->user()->hasRole('verificator');
     }
 
     public function render(): mixed
