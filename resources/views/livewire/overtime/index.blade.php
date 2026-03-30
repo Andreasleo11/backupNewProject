@@ -348,10 +348,29 @@
                                 @php $review = OvertimeIndex::reviewMeta($fot); @endphp
                                 <td class="{{ $rowPadding }} whitespace-nowrap">
                                     <div class="flex flex-col">
-                                        <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $review['classes'] }}"
-                                            @if(isset($review['reason'])) title="{{ $review['reason'] }}" @endif>
-                                            <i class="bx {{ $review['icon'] }}"></i>{{ $review['label'] }}
-                                        </span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {{ $review['classes'] }}"
+                                                @if(isset($review['reason'])) title="{{ $review['reason'] }}" @endif>
+                                                <i class="bx {{ $review['icon'] }}"></i>{{ $review['label'] }}
+                                            </span>
+                                        </div>
+                                        
+                                        {{-- Detail Counts Summary --}}
+                                        <div class="mt-1 flex items-center gap-1.5 px-1">
+                                            <div class="text-[9px] font-black uppercase tracking-wider text-slate-400 whitespace-nowrap">
+                                                <span class="{{ $fot->approved_count > 0 ? 'text-emerald-600' : '' }}">{{ $fot->approved_count }}</span>
+                                                <span class="mx-0.5 text-slate-300">/</span>
+                                                <span class="text-slate-700">{{ $fot->details_count }}</span>
+                                                <span class="ml-1 opacity-60">Rows</span>
+                                            </div>
+                                            @if($fot->rejected_count > 0)
+                                                <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                                <div class="text-[9px] font-black uppercase tracking-wider text-rose-500">
+                                                    {{ $fot->rejected_count }} Rejected
+                                                </div>
+                                            @endif
+                                        </div>
+
                                         @if(isset($review['reason']))
                                             <div class="mt-1 text-[9px] text-slate-400 max-w-[150px] truncate font-medium italic" title="{{ $review['reason'] }}">
                                                 {{ $review['reason'] }}
