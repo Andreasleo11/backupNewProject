@@ -2,20 +2,11 @@
 
 namespace App\Domain\Overtime\Observers;
 
-use App\Events\OvertimeStatusChanged;
 use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Support\Facades\Cache;
 
 class OvertimeFormObserver
 {
-    public function updating(OvertimeForm $model): void
-    {
-        if ($model->isDirty('status')) {
-            // Dispatch event asynchronously — listener handles email queuing.
-            OvertimeStatusChanged::dispatch($model);
-        }
-    }
-
     /**
      * Handle the OvertimeForm "created" event.
      */

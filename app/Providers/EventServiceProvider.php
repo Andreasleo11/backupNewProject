@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Events\OvertimeStatusChanged;
 use App\Listeners\BroadcastNotificationPushed;
-use App\Listeners\SendOvertimeStatusNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -21,7 +19,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class        => [SendEmailVerificationNotification::class],
         NotificationSent::class  => [BroadcastNotificationPushed::class],
-        OvertimeStatusChanged::class => [SendOvertimeStatusNotification::class],
     ];
 
     /**
