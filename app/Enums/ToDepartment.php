@@ -19,6 +19,19 @@ enum ToDepartment: string
         };
     }
 
+    public static function tryFromSlug(string $slug): ?self
+    {
+        $normalized = strtolower(trim($slug));
+
+        foreach (self::cases() as $case) {
+            if (strtolower(\Illuminate\Support\Str::slug($case->label())) === $normalized) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public static function values(): array
     {
         return array_map(fn ($c) => $c->value, self::cases());

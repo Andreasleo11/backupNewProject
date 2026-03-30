@@ -21,82 +21,105 @@ final class PurchaseRequestQueryScoper
             return $query;
         }
 
-        // 2. View All Permission (Director, GM, etc if configured)
-        // Check specific permission first?
-        // Actually, user said Purchasers have 'view-all' but need filtering.
-        // So we must check specific roles/logic first before generic 'view-all'.
+        return $query->where(function ($groupedQuery) use ($user) {
+            // 2. Multi-Role Scoping (A user sees anything that matches ANY of these criteria)
 
-        // 3. Finance & Accounting: View All Approved PRs
-        // We check for roles AND strictly for the 'ACCOUNTING' department as requested
-        $isAccounting = $user->department && strtoupper($user->department->name) === 'ACCOUNTING';
+            // A. Owner: Always sees their own
+            $groupedQuery->orWhere('user_id_create', $user->id);
 
-        if ($user->hasAnyRole(['finance', 'accounting']) || $isAccounting) {
-            return $query->where(function ($q) {
-                $q->whereHas('approvalRequest', function ($sub) {
-                    $sub->where('status', 'APPROVED');
-                });
+            // B. Historical Approver: Sees anything they signed
+            $groupedQuery->orWhereHas('approvalRequest.steps', function ($sq) use ($user) {
+                $sq->where('acted_by', $user->id);
             });
-        }
 
-        // 4. Purchaser: Filter by Target Department
-        if ($user->hasAnyRole(['purchaser'])) {
-            return $this->scopeForPurchaser($user, $query);
-        }
+            // C. Director: Sees their turn OR any closed PRs (Approved/Rejected)
+            if ($user->hasRole('director')) {
+                $groupedQuery->orWhere(function ($dq) use ($user) {
+                    $dq->whereHas('approvalRequest', function ($aq) {
+                        $aq->whereIn('status', ['APPROVED', 'REJECTED']);
+                    });
+                    $dq->orWhere($this->buildActiveTurnFilter($user));
+                });
+            }
 
-        // 5. View All (Global access for Director/GM who are NOT purchasers)
-        if ($user->can('pr.view-all')) {
-            return $query;
-        }
+            // D. Verificator: ONLY sees their turn
+            if ($user->hasRole('verificator')) {
+                $groupedQuery->orWhere($this->buildActiveTurnFilter($user));
+            }
 
-        // 6. Dept Head: View Department's Requests
-        if ($user->hasAnyRole(['department-head'])) {
-            return $this->scopeForHead($user, $query);
-        }
+            // E. GM: Sees their turn (scoped by branch)
+            if ($user->hasRole('general-manager')) {
+                $groupedQuery->orWhere(function ($gq) use ($user) {
+                    $gq->where($this->buildActiveTurnFilter($user));
+                    
+                    $branch = (string)($user->employee->branch ?? '');
+                    if ($branch) {
+                        $gq->where('branch', strtoupper(trim($branch)));
+                    }
+                });
+            }
 
-        // 7. Regular User: View Own
-        return $this->scopeForOwner($user, $query);
+            // F. Purchaser: Sees all PRs for their specialized departments (Regardless of turn)
+            if ($user->hasRole('purchaser')) {
+                $targetDepartments = $this->getPurchaserSpecializedDepartments($user);
+                if (! empty($targetDepartments)) {
+                    $groupedQuery->orWhereIn('to_department', $targetDepartments);
+                }
+            }
+
+            // G. Dept Head: Sees their department's originations
+            if ($user->hasRole('department-head')) {
+                $deptName = $user->department->name ?? '';
+                if ($deptName) {
+                    $groupedQuery->orWhere('from_department', $deptName);
+                }
+            }
+        });
     }
 
-    private function scopeForPurchaser(User $user, Builder $query): Builder
+    /**
+     * Build an OR condition that catches if it is currently the user's turn
+     * (either by specific User ID or by a Role they possess).
+     */
+    private function buildActiveTurnFilter(User $user): \Closure
     {
-        $deptName = strtoupper($user->department->name ?? '');
-
-        // Map User Department to PR 'to_department' Enum/Value
-        // PR `to_department` columns store: Purchasing, Maintenance, Computer, Personnel.
-        // Or sometimes numeric/enum. Based on ToDepartment enum:
-        // Case handling based on common enum values
-        $target = match ($deptName) {
-            'PURCHASING' => \App\Enums\ToDepartment::PURCHASING->value,
-            'MAINTENANCE' => \App\Enums\ToDepartment::MAINTENANCE->value,
-            'COMPUTER', 'IT' => \App\Enums\ToDepartment::COMPUTER->value,
-            'PERSONNEL', 'HRD', 'PERSONALIA' => \App\Enums\ToDepartment::PERSONALIA->value,
-            default => null
+        return function ($q) use ($user) {
+            $q->whereHas('approvalRequest', function ($aq) use ($user) {
+                $aq->where('status', 'IN_REVIEW')
+                   ->whereHas('steps', function ($sq) use ($user) {
+                       $sq->whereColumn('sequence', 'approval_requests.current_step')
+                          ->where(function ($match) use ($user) {
+                              $match->where(function ($uMatch) use ($user) {
+                                  $uMatch->where('approver_type', 'user')
+                                         ->where('approver_id', $user->id);
+                              })
+                              ->orWhere(function ($rMatch) use ($user) {
+                                  $roleIds = $user->roles->pluck('id')->toArray();
+                                  $rMatch->where('approver_type', 'role')
+                                         ->whereIn('approver_id', $roleIds);
+                              });
+                          });
+                   });
+            });
         };
-
-        if ($target) {
-            return $query->where('to_department', $target);
-        }
-
-        // Fallback: If no matching target dept, maybe they can view all?
-        // Or view nothing?
-        // User said: "each to department is handled by different user"
-        // If we can't map it, safer to show nothing or just their own.
-        // Let's default to showing their own creation just in case
-        return $query->where('user_id_create', $user->id);
     }
 
-    private function scopeForHead(User $user, Builder $query): Builder
+    private function getPurchaserSpecializedDepartments(User $user): array
     {
-        // View requests originating FROM their department
-        if ($user->department_id) {
-            // If we have ID relationship
-            return $query->where('from_department_id', $user->department_id);
+        $targetDepartments = [];
+        $roles = $user->getRoleNames();
+
+        foreach ($roles as $role) {
+            if (str_starts_with($role, 'purchaser-')) {
+                $slug = str_replace('purchaser-', '', $role);
+                $dept = \App\Enums\ToDepartment::tryFromSlug($slug);
+                if ($dept) {
+                    $targetDepartments[] = $dept->value;
+                }
+            }
         }
 
-        // Fallback to name match if ID not set (legacy)
-        $deptName = $user->department->name ?? '';
-
-        return $query->where('from_department', $deptName);
+        return $targetDepartments;
     }
 
     private function scopeForOwner(User $user, Builder $query): Builder
