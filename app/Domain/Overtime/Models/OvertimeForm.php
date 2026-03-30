@@ -184,7 +184,7 @@ class OvertimeForm extends Model implements Approvable
 
             // 3. Verificator sees all submitted/approved forms
             if ($user->can('overtime.review')) {
-                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']));
+                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['APPROVED']));
                 return;
             }
 
