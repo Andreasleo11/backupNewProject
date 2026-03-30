@@ -18,7 +18,26 @@ class ReportRejectedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
+    {
+        $type = $this->approvable->getApprovableTypeLabel();
+        $id = $this->approvable->getApprovableIdentifier();
+        $url = $this->approvable->getApprovableShowUrl();
+
+        $message = (new \Illuminate\Notifications\Messages\MailMessage)
+            ->error()
+            ->subject("{$type} Rejected: #{$id}")
+            ->greeting("Hello, {$notifiable->name}")
+            ->line("Your {$type} request (#{$id}) has been rejected.");
+
+        if ($this->remarks) {
+            $message->line("Reason: {$this->remarks}");
+        }
+
+        return $message->action('View Details', $url);
     }
 
     public function toArray(object $notifiable): array

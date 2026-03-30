@@ -304,7 +304,8 @@ final class ApprovalEngine implements Approvals
                 } elseif (in_array($roleSlug, ['general-manager']) && $branchValue) {
                     $roleUsers->load('employee');
                     $usersToNotify = $roleUsers->filter(function ($u) use ($branchValue) {
-                        return $u->employee && (string)$u->employee->branch === (string)$branchValue;
+                        if (!$u->employee || !$u->employee->branch) return false;
+                        return strtolower(trim((string)$u->employee->branch)) === strtolower(trim((string)$branchValue));
                     });
                 } elseif (in_array($roleSlug, ['purchaser']) && $approvable instanceof \App\Models\PurchaseRequest && $approvable->to_department) {
                     $roleUsers->load('roles');

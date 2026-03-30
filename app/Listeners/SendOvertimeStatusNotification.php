@@ -84,10 +84,10 @@ class SendOvertimeStatusNotification implements ShouldQueue
                 "- Department : {$form->department?->name}",
                 "- Create Date: {$formattedDate}",
                 "- Created By : {$form->user?->name}",
-                "- Status     : {$status}",
+            "- Status     : {$status}",
             ]),
             'actionText' => 'View Detail',
-            'actionURL'  => "{$appUrl}/formovertime/{$form->id}",
+            'actionURL'  => route('overtime.detail', $form->id),
         ];
     }
 }
