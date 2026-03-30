@@ -114,12 +114,13 @@ class Index extends Component
         $this->scopeByRole($h);
         $this->scopeFilters($h, true);
 
-        // Use a subquery for header ids to get correct matches
-        $idsSub = $h->select('id');
-
-        // Aggregate on details
+        // Aggregate on details using a JOIN for efficiency
         $row = DB::table('detail_form_overtime as d')
-            ->whereIn('d.header_id', $idsSub)
+            ->join('header_form_overtime as h', 'd.header_id', '=', 'h.id')
+            ->whereIn('h.id', function($query) use ($h) {
+                $query->select('id')->fromSub($h->select('id'), 'sub');
+            })
+            ->whereNull('d.deleted_at') // important if soft deletes are used
             ->selectRaw("
                 SUM(CASE WHEN d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
@@ -369,6 +370,7 @@ class Index extends Component
             ->with([
                 'user:id,name',
                 'department:id,name',
+                'failedDetails', // fix N+1 in reviewMeta
                 // Eager-load approval steps for the inline stepper
                 'approvalRequest.steps' => fn ($q) => $q
                     ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label'])
@@ -451,7 +453,7 @@ class Index extends Component
 
             if ($failedSyncCount > 0) {
                 // Get unique failed reasons (specifically JPAYROLL errors)
-                $reasons = $fot->failedDetails()
+                $reasons = $fot->failedDetails
                     ->pluck('reason')
                     ->unique()
                     ->filter()
