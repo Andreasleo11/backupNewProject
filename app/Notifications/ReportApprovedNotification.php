@@ -17,7 +17,20 @@ class ReportApprovedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
+    {
+        $type = $this->approvable->getApprovableTypeLabel();
+        $id = $this->approvable->getApprovableIdentifier();
+        $url = $this->approvable->getApprovableShowUrl();
+
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject("{$type} Approved: #{$id}")
+            ->greeting("Hello, {$notifiable->name}")
+            ->line("Your {$type} request (#{$id}) has been fully approved.")
+            ->action('View Details', $url);
     }
 
     public function toArray(object $notifiable): array

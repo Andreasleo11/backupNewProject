@@ -18,7 +18,22 @@ class ApprovalActionRequired extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
+    {
+        $type = $this->approvable->getApprovableTypeLabel();
+        $id = $this->approvable->getApprovableIdentifier();
+        $url = $this->approvable->getApprovableShowUrl();
+
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject("Action Required: {$type} #{$id}")
+            ->greeting("Hello, {$notifiable->name}")
+            ->line("A {$type} (#{$id}) is awaiting your approval.")
+            ->line("Current Step: Step {$this->step->sequence} ({$this->step->approver_snapshot_label})")
+            ->action('View Request', $url)
+            ->line('Thank you for using our application!');
     }
 
     public function toArray(object $notifiable): array

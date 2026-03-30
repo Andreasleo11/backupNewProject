@@ -169,65 +169,23 @@ class OvertimeForm extends Model implements Approvable
 
     /**
      * Centralized query scope for role-based visibility.
-     * This logic is shared by the Index component and the Policy.
+     * Delegates to the unified Approval Request scoper.
      */
     public function scopeByRole($query, $user)
     {
         return $query->where(function ($q) use ($user) {
-            // 1. Super-admin sees everything (including drafts/null status)
+            // 1. Super-admin sees everything
             if ($user->hasRole('super-admin')) {
                 return;
             }
 
-            // 2. Creator always sees their own (including drafts)
+            // 2. Creator always sees their own
             $q->where('user_id', $user->id);
 
-            // 3. Verificator sees all submitted/approved forms
-            if ($user->can('overtime.review')) {
-                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['APPROVED']));
-                return;
-            }
-
-            // 4. Director sees all submitted/approved forms
-            if ($user->hasRole('director')) {
-                $q->orWhereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']));
-                return;
-            }
-
-            // 5. General Manager: Sees non-office departments
-            if ($user->hasRole('general-manager')) {
-                $q->orWhere(function ($sq) {
-                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
-                       ->whereHas('department', fn($dq) => $dq->where('is_office', false));
-                });
-                return;
-            }
-
-            // 6. Department Head: Sees their own department (plus linked depts like Logistic/Store)
-            if ($user->hasRole('department-head')) {
-                $deptName = $user->department?->name;
-                $q->orWhere(function ($sq) use ($deptName) {
-                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
-                       ->whereHas('department', function ($dq) use ($deptName) {
-                           $dq->where('name', $deptName);
-                           if ($deptName === 'LOGISTIC') {
-                               $dq->orWhere('name', 'STORE');
-                           } elseif ($deptName === 'QC') {
-                               $dq->orWhere('name', 'QA');
-                           }
-                       });
-                });
-                return;
-            }
-
-            // 7. Regular staff: sees forms for their own department (submitted only)
-            $deptName = $user->department?->name;
-            if ($deptName) {
-                $q->orWhere(function ($sq) use ($deptName) {
-                    $sq->whereHas('approvalRequest', fn($aq) => $aq->whereIn('status', ['SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED']))
-                       ->whereHas('department', fn($dq) => $dq->where('name', $deptName));
-                });
-            }
+            // 3. Everything else: Use Centralized Approval Scoper 
+            $q->orWhereHas('approvalRequest', function ($aq) use ($user) {
+                $aq->forUser($user);
+            });
         });
     }
 }

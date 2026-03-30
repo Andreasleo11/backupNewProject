@@ -50,4 +50,12 @@ class ApprovalRequest extends Model
     {
         return $this->hasMany(ApprovalAction::class)->latest();
     }
+
+    /**
+     * Centralized visibility scope for any user.
+     */
+    public function scopeForUser($query, User $user): void
+    {
+        (new \App\Infrastructure\Approval\Services\ApprovalVisibilityScoper)->apply($query, $user);
+    }
 }

@@ -11,7 +11,7 @@ use App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestNumberGenerator;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestStatusCalculator;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestTypeResolver;
-use App\Events\PurchaseRequestCreated;
+
 use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -65,9 +65,6 @@ final class CreatePurchaseRequest
 
                 $this->approvals->submit($pr, $dto->requestedByUserId, $ctx);
             }
-
-            // Dispatch Event
-            PurchaseRequestCreated::dispatch($pr);
 
             return $pr;
         });
