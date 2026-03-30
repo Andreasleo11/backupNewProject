@@ -91,7 +91,7 @@ final class OvertimeJPayrollService
             } else {
                 $failed[] = [
                     'detail_id' => $detail->id,
-                    'NIK' => $detail->nik,
+                    'NIK' => $detail->NIK,
                     'reason' => $result['reason'],
                 ];
             }
@@ -164,7 +164,7 @@ final class OvertimeJPayrollService
             ])->post(self::JPAYROLL_URL, $payload);
 
             $responseData = [
-                'NIK' => $detail->nik,
+                'NIK' => $detail->NIK,
                 'status' => $response->status(),
                 'body' => $response->body(),
             ];
@@ -233,7 +233,7 @@ final class OvertimeJPayrollService
 
             $responseJson = $response->json();
             $responseData = [
-                'NIK' => $detail->nik,
+                'NIK' => $detail->NIK,
                 'status' => $response->status(),
                 'body' => $response->body(),
             ];
@@ -298,13 +298,13 @@ final class OvertimeJPayrollService
             'EndTime' => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime' => $detail->break,
             'Remark' => Str::limit(
-                "({$detail->nik}) Reference from LINE {$detail->id} ID {$header->id}",
+                "({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}",
                 250
             ),
             'Choice' => '1',
             'CompanyArea' => '10000',
             'EmpList' => [
-                'NIK1' => $detail->nik,
+                'NIK1' => $detail->NIK,
             ],
         ];
     }
