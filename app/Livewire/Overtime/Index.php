@@ -376,9 +376,12 @@ class Index extends Component
             ])
             // counts for the Info column (fast subselects)
             ->withCount([
+                'details',
                 'details as approved_count' => fn ($q) => $q->where('status', 'Approved'),
                 'details as rejected_count' => fn ($q) => $q->where('status', 'Rejected'),
                 'details as pending_count' => fn ($q) => $q->whereNull('status'),
+                'details as processed_count' => fn ($q) => $q->where('status', 'Approved')->where('is_processed', 1),
+                'details as failed_count' => fn ($q) => $q->where('status', 'Rejected')->where('reason', 'like', '%JPAYROLL%'),
             ]);
 
         // precompute one consistent earliest date for sort & display
@@ -442,9 +445,9 @@ class Index extends Component
         $status = strtoupper($fot->workflow_status);
 
         if ($fot->is_push == 1) {
-            $totalCount = $fot->details()->count();
-            $processedCount = $fot->processedDetails()->count();
-            $failedSyncCount = $fot->failedDetails()->count();
+            $totalCount = (int) ($fot->details_count ?? 0);
+            $processedCount = (int) ($fot->processed_count ?? 0);
+            $failedSyncCount = (int) ($fot->failed_count ?? 0);
 
             if ($failedSyncCount > 0) {
                 // Get unique failed reasons (specifically JPAYROLL errors)
