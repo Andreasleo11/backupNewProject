@@ -7,9 +7,12 @@ use App\Application\Approval\DTOs\ApprovalInfo;
 use App\Application\Auth\UserRoles;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Domain\Approval\Contracts\RuleResolver;
-use App\Domain\Signature\Repositories\UserSignatureRepository;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalAction;
+use App\Infrastructure\Approval\Services\ApprovalScopingManager;
+use App\Domain\Signature\Repositories\UserSignatureRepository;
 use App\Notifications\ApprovalActionRequired;
 use App\Notifications\ReportApprovedNotification;
 use App\Notifications\ReportRejectedNotification;
@@ -18,7 +21,15 @@ use Illuminate\Support\Facades\DB;
 
 final class ApprovalEngine implements Approvals
 {
-    public function __construct(private RuleResolver $resolver, private UserRoles $userRoles, private UserSignatureRepository $userSignatures) {}
+    private $scopingManager;
+
+    public function __construct(
+        private RuleResolver $resolver,
+        private UserRoles $userRoles,
+        private UserSignatureRepository $userSignatures
+    ) {
+        $this->scopingManager = new ApprovalScopingManager();
+    }
 
     private function toInfo(?ApprovalRequest $req): ?ApprovalInfo
     {
@@ -295,32 +306,10 @@ final class ApprovalEngine implements Approvals
                 $roleUsers = $this->userRoles->getUsersWithRole((int) $step->approver_id);
                 $roleSlug = $step->approver_snapshot_role_slug;
 
-                // Scoping Logic
-                if (in_array($roleSlug, ['department-head', 'supervisor']) && $deptName) {
-                    $roleUsers->load('department');
-                    $usersToNotify = $roleUsers->filter(function ($u) use ($deptName) {
-                        return $u->department && ($u->department->name === $deptName || $this->isLinkedDepartment($u->department->name, $deptName));
-                    });
-                } elseif (in_array($roleSlug, ['general-manager']) && $branchValue) {
-                    $roleUsers->load('employee');
-                    $usersToNotify = $roleUsers->filter(function ($u) use ($branchValue) {
-                        if (!$u->employee || !$u->employee->branch) return false;
-                        return strtolower(trim((string)$u->employee->branch)) === strtolower(trim((string)$branchValue));
-                    });
-                } elseif (in_array($roleSlug, ['purchaser']) && $approvable instanceof \App\Models\PurchaseRequest && $approvable->to_department) {
-                    $roleUsers->load('roles');
-                    // Check for specific sub-role capability: purchaser-{dept_slug}
-                    $targetRole = 'purchaser-' . \Illuminate\Support\Str::slug($approvable->to_department->label());
-
-                    $usersToNotify = $roleUsers->filter(function ($u) use ($targetRole, $roleSlug) {
-                        // Fallback to legacy pr-purchaser-{dept} if new one not found? 
-                        // Actually better to just check both or assume migration
-                        return $u->hasRole($targetRole) || $u->hasRole('purchaser-' . str_replace('purchaser-', '', $targetRole));
-                    });
-                } else {
-                    // Global roles (Director, Verificator) or fallback - Notify all
-                    $usersToNotify = $roleUsers;
-                }
+                // Scoping Logic via Unified Manager
+                $usersToNotify = $roleUsers->filter(function ($u) use ($roleSlug, $approvable) {
+                    return $this->scopingManager->isUserEligible($u, $roleSlug, $approvable);
+                });
             }
 
             if ($usersToNotify->isNotEmpty()) {
@@ -332,22 +321,6 @@ final class ApprovalEngine implements Approvals
         }
     }
 
-    /**
-     * Helper to handle linked departments (e.g. LOGISTIC scopes STORE).
-     */
-    private function isLinkedDepartment(string $approverDept, string $formDept): bool
-    {
-        if ($approverDept === $formDept) {
-            return true;
-        }
-
-        $links = [
-            'LOGISTIC' => ['STORE'],
-            'QC'       => ['QA'],
-        ];
-
-        return in_array($formDept, $links[$approverDept] ?? []);
-    }
 
     private function notifyFinalApproval(ApprovalRequest $req): void
     {
