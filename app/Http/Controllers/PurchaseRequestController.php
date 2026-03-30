@@ -127,21 +127,8 @@ class PurchaseRequestController extends Controller
     {
         $purchaseRequest = PurchaseRequest::with(['itemDetail', 'approvalRequest.steps.actedUser'])->findOrFail($id);
 
-        // Only the creator can edit
-        if (auth()->id() !== (int) $purchaseRequest->user_id_create) {
-            abort(403, 'You are not authorized to edit this request.');
-        }
-
-        // Determine editable states using workflow_status (modern)
-        $workflowStatus = $purchaseRequest->workflow_status; // computed attribute
-
-        $editableWorkflowStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-
-        $isEditable = in_array($workflowStatus, $editableWorkflowStatuses);
-
-        if (! $isEditable) {
-            abort(403, 'This request cannot be edited in its current state (' . $workflowStatus . ').');
-        }
+        // Authorize using PurchaseRequestPolicy@update
+        $this->authorize('update', $purchaseRequest);
 
         $items = MasterDataPr::get();
         $departments = Department::all();
@@ -253,6 +240,9 @@ class PurchaseRequestController extends Controller
         $id,
         \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
     ) {
+        $purchaseRequest = PurchaseRequest::findOrFail((int) $id);
+        $this->authorize('update', $purchaseRequest);
+
         $validated = $request->validated();
 
         // Build DTO

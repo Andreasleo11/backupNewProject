@@ -60,26 +60,37 @@ class PurchaseRequestPolicy
      */
     public function update(User $user, PurchaseRequest $pr): bool
     {
-        if ($user->can('pr.edit')) {
-            // Standard edit rule: DRAFT, RETURNED, or REJECTED
-            // We check workflow_status for modern flow, fall back to status for legacy if needed
-            $allowed = ['DRAFT', 'RETURNED', 'REJECTED'];
-            $status = $pr->workflow_status ?? 'DRAFT';
+        // 1. Basic Permission Check: Users must have the permission to edit PRs
+        if (!$user->can('pr.edit')) {
+            return false;
+        }
 
-            if (in_array($status, $allowed)) {
-                // Must be creator
-                return $user->id === $pr->user_id_create;
+        $status = $pr->workflow_status ?? 'DRAFT';
+
+        // 2. Creator Logic: Creator can edit in specific states
+        if ($user->id === (int) $pr->user_id_create) {
+            $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED'];
+            if (in_array($status, $allowedForCreator)) {
+                return true;
             }
 
-            // Legacy fallback (status 1 = draft)
-            if ($pr->status === 1) {
-                return $user->id === $pr->user_id_create;
+            // Legacy fallback for draft status
+            if ($pr->status === 1 && !$pr->workflow_status) {
+                return true;
             }
         }
 
-        // Purchasers might edit at later stages
-        if ($user->hasAnyRole(['purchaser']) && in_array($pr->status, [1, 6])) {
-            return true;
+        // 3. Purchaser Logic: Can edit in most states (including IN_REVIEW and APPROVED)
+        if ($user->hasAnyRole(['purchaser', 'Purchaser', 'PURCHASER'])) {
+            $allowedForPurchaser = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
+            if (in_array($status, $allowedForPurchaser)) {
+                return true;
+            }
+
+            // Legacy fallback (1 = Draft, 6 = Pending Purchaser)
+            if (in_array((int) $pr->status, [1, 6])) {
+                return true;
+            }
         }
 
         return false;
