@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+
+class SendDailyApprovalSummary extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:send-approval-summary';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        // 1. Fetch all users who could potentially need a daily summary
+        // (Either global daily mode or has any module overrides)
+        $users = \App\Infrastructure\Persistence\Eloquent\Models\User::where('email_notification_mode', 'daily_summary')
+            ->orWhereNotNull('notification_preferences')
+            ->get();
+
+        $this->info("Scanning " . $users->count() . " potential users for daily summaries.");
+
+        foreach ($users as $user) {
+            // 2. Fetch all requests where it is currently this user's turn to take action
+            $allActionable = \App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::forUser($user)
+                ->where('status', 'IN_REVIEW')
+                ->whereHas('steps', function ($sq) use ($user) {
+                    $sq->whereColumn('sequence', 'approval_requests.current_step')
+                       ->where(function ($match) use ($user) {
+                           $match->where(function ($uMatch) use ($user) {
+                               $uMatch->where('approver_type', 'user')
+                                      ->where('approver_id', $user->id);
+                           })->orWhere(function ($rMatch) use ($user) {
+                               $rMatch->where('approver_type', 'role')
+                                      ->whereIn('approver_id', $user->roles->pluck('id')->toArray());
+                           });
+                       });
+                })
+                ->get();
+
+            // 3. Filter these requests by the resolved notification preference for their specific module
+            $summaryRequests = $allActionable->filter(function ($request) use ($user) {
+                if (!$request->approvable) return false;
+                
+                $moduleClass = get_class($request->approvable);
+                $preferences = $user->notification_preferences ?? [];
+                $mode = $preferences[$moduleClass] ?? null;
+
+                // Fallback to global default
+                if (empty($mode)) {
+                    $mode = $user->email_notification_mode ?? 'immediate';
+                }
+
+                return $mode === 'daily_summary';
+            });
+
+            if ($summaryRequests->isNotEmpty()) {
+                $user->notify(new \App\Notifications\ApprovalSummaryNotification($summaryRequests));
+                $this->info("Sent summary to {$user->name} ({$summaryRequests->count()} modules).");
+            }
+        }
+
+        $this->info("Daily approval summary process completed.");
+    }
+}

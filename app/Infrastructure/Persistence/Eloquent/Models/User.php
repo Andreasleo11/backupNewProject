@@ -35,6 +35,8 @@ class User extends Authenticatable
         'email',
         'password',
         'employee_id',
+        'email_notification_mode',
+        'notification_preferences',
     ];
 
     protected $casts = [
@@ -42,6 +44,7 @@ class User extends Authenticatable
         'employee_id' => 'integer',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'notification_preferences' => 'array',
     ];
 
     protected $hidden = ['password', 'remember_token'];
