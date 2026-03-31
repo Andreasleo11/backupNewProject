@@ -58,7 +58,26 @@ class PurchaseRequestsDataTable extends DataTable
 
                 // Add current approver if in review
                 if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {
-                    return $badge . '<div class="text-[10px] text-slate-500 mt-1">' . $pr->workflow_step . '</div>';
+                    return $badge . '<div class="text-[10px] text-slate-500 mt-1 text-center truncate max-w-[150px]" title="' . htmlentities($pr->workflow_step) . '">' . e($pr->workflow_step) . '</div>';
+                }
+
+                // Add actionable feedback strings directly to the datatable view for terminal states
+                if (in_array($pr->workflow_status, ['REJECTED', 'RETURNED', 'CANCELED']) || $pr->is_cancel) {
+                    $approval = method_exists($pr, 'approvalRequest') ? $pr->approvalRequest : null;
+                    $actionStep = $approval && isset($approval->steps) ? $approval->steps->firstWhere('sequence', $approval->current_step) : null;
+                    $reason = '';
+                    
+                    if ($pr->workflow_status === 'RETURNED') {
+                        $reason = $actionStep->return_reason ?? 'Revision required';
+                    } elseif ($pr->workflow_status === 'REJECTED') {
+                        $reason = $actionStep->remarks ?? ($pr->description ?? '');
+                    } elseif ($pr->workflow_status === 'CANCELED' || $pr->is_cancel) {
+                        $reason = $pr->cancellation_reason ?? ($pr->cancel_reason ?? ($pr->description ?? ($actionStep->remarks ?? '')));
+                    }
+
+                    if ($reason) {
+                        return $badge . '<div class="text-[10px] text-slate-500 mt-1 italic text-center truncate max-w-[150px]" title="' . htmlentities('Reason: ' . $reason) . '">' . e('Reason: ' . $reason) . '</div>';
+                    }
                 }
 
                 return $badge;
@@ -90,7 +109,7 @@ class PurchaseRequestsDataTable extends DataTable
             'files',
             'createdBy',
             'approvalRequest' => function ($q) {
-                $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step');
+                $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step')->with('steps');
             },
         ]);
 

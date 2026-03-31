@@ -12,6 +12,10 @@
     if ($model && !empty($model->workflow_status)) {
         $workflowStatus = strtoupper($model->workflow_status);
         
+        // Unified Engine Lookup: Available for all status blocks below
+        $approval = method_exists($model, 'approvalRequest') ? $model->approvalRequest : null;
+        $actionStep = $approval && isset($approval->steps) ? $approval->steps->firstWhere('sequence', $approval->current_step) : null;
+        
         if ($workflowStatus === 'IN_REVIEW') {
             $cls = 'bg-blue-50 text-blue-700 border-blue-200';
             $icon = 'bx-time-five';
@@ -41,13 +45,18 @@
             } else {
                 $label = 'IN REVIEW';
             }
+
         } elseif ($workflowStatus === 'RETURNED') {
             $label = 'RETURNED';
             $cls = 'bg-orange-50 text-orange-700 border-orange-200';
             $icon = 'bx-revision';
-            $tooltip = isset($model->approvalRequest->steps) 
-                ? 'Returned by: ' . ($model->approvalRequest->steps->where('status', 'RETURNED')->last()?->actedUser?->name ?? 'Approver')
-                : 'Returned for Revision';
+            
+            $by = $actionStep->approver_snapshot_name ?? ($actionStep->approver_name ?? 'System');
+            $at = $actionStep->acted_at ? \Carbon\Carbon::parse($actionStep->acted_at)->format('d M Y, H:i') : null;
+            $reason = $actionStep->return_reason ?? 'Revision required';
+            
+            $tooltip = "Returned by {$by}" . ($at ? " on {$at}" : "") . ". Reason: \"{$reason}\"";
+
         } elseif ($workflowStatus === 'APPROVED') {
             $label = 'APPROVED';
             $cls = 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -59,14 +68,23 @@
             $label = 'REJECTED';
             $cls = 'bg-rose-50 text-rose-700 border-rose-200';
             $icon = 'bx-x';
-            $tooltip = 'Reject Reason: ' . ($model->description ?? '-');
+
+            $by = $actionStep->approver_snapshot_name ?? ($actionStep->approver_name ?? 'System');
+            $at = $actionStep->acted_at ? \Carbon\Carbon::parse($actionStep->acted_at)->format('d M Y, H:i') : null;
+            $reason = $actionStep->remarks ?? ($model->description ?? '-');
+
+            $tooltip = "Rejected by {$by}" . ($at ? " on {$at}" : "") . ". Reason: \"{$reason}\"";
+
         } elseif ($workflowStatus === 'CANCELED') {
             $label = 'CANCELED';
             $cls = 'bg-rose-50 text-rose-700 border-rose-200';
             $icon = 'bx-x-circle';
-            // Use unified cancellation_reason if available, or fallback
-            $labelReason = $model->cancellation_reason ?? $model->cancel_reason ?? $model->description ?? '-';
-            $tooltip = 'Cancel Reason: ' . $labelReason;
+            
+            // PRIORITY: 1. Engine Remark, 2. Unified Cancellation Column, 3. Legacy Fallbacks
+            $reason = $actionStep->remarks ?? ($model->cancellation_reason ?? ($model->cancel_reason ?? ($model->description ?? 'No reason provided.')));
+            
+            $tooltip = "Document Canceled. Reason: \"{$reason}\"";
+
         } elseif ($workflowStatus === 'DRAFT') {
             $label = 'DRAFT';
             $cls = 'bg-slate-50 text-slate-600 border-slate-200';
