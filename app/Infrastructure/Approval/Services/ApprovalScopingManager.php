@@ -119,7 +119,6 @@ class ApprovalScopingManager
                 $eligibleDeptIds = \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $eligibleDepts)
                     ->pluck('id')
                     ->toArray();
-                    dd($eligibleDeptIds);
 
                 $q->orWhereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $eligibleDeptIds) {
                     $aq->where(function ($sq) use ($type, $eligibleDepts, $eligibleDeptIds) {
