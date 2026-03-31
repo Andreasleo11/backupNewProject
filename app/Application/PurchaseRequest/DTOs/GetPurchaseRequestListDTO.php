@@ -11,5 +11,6 @@ class GetPurchaseRequestListDTO
         public readonly ?string $status = null,
         public readonly ?string $branch = null,
         public readonly int $perPage = 10,
+        public readonly bool $wideView = false,
     ) {}
 }

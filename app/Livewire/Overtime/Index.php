@@ -40,6 +40,9 @@ class Index extends Component
     #[Url(as: 'hide_signed')]
     public bool $hideSigned = true; // Default hide items I already signed
 
+    #[Url(as: 'is_wide')]
+    public bool $isWideView = false; // focused vs wide view
+
     // UI state
     #[Url(as: 'q')]
     public string $search = '';
@@ -175,6 +178,7 @@ class Index extends Component
                 'sortField',
                 'sortDirection',
                 'hideSigned',
+                'isWideView',
             ])
         ) {
             $this->resetPage();
@@ -202,9 +206,11 @@ class Index extends Component
     public function mount(): void
     {
         $this->authorize('viewAny', OvertimeForm::class);
-        // ⚠️ Move heavy cleanup out of request cycle:
-        // OvertimeForm::doesntHave('details')->delete();
-        // Put it in a nightly job/queue instead.
+        
+        // Super-admin defaults to Wide View, others default to Focused View
+        if (Auth::user()->hasRole('super-admin')) {
+            $this->isWideView = true;
+        }
 
         $this->departments = Department::select('id', 'name')->orderBy('name')->get()->toArray();
     }
@@ -219,6 +225,7 @@ class Index extends Component
         $this->search = '';
         $this->range = null;
         $this->hideSigned = true; // reset to default
+        $this->isWideView = Auth::user()->hasRole('super-admin'); 
         $this->resetPage();
     }
 
@@ -407,7 +414,10 @@ class Index extends Component
      */
     public function isPrivilegedUser(): bool
     {
-        return Auth::user()->can('overtime.view-all');
+        $user = Auth::user();
+        return $user->hasAnyRole(['super-admin', 'director', 'general-manager']) || 
+               $user->can('overtime.view-all') || 
+               $user->can('approval.view-all');
     }
 
     /**
@@ -517,7 +527,7 @@ class Index extends Component
 
     private function scopeByRole($query)
     {
-        return $query->byRole(Auth::user());
+        return $query->byRole(Auth::user(), $this->isWideView);
     }
 
     public function clearFilter(string $key): void

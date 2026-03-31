@@ -111,6 +111,18 @@
                 </div>
 
                 <div class="relative z-10 flex flex-wrap items-center gap-3">
+                    {{-- Wide View Toggle: only for privileged --}}
+                    @if ($isPrivileged)
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-100 shadow-sm mr-2">
+                            <span class="text-[9px] font-black uppercase tracking-widest {{ $isWideView ? 'text-slate-400' : 'text-indigo-600' }}">Action Only</span>
+                            <a href="{{ request()->fullUrlWithQuery(['is_wide' => $isWideView ? 0 : 1]) }}"
+                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $isWideView ? 'bg-indigo-600' : 'bg-slate-200' }}">
+                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $isWideView ? 'translate-x-4' : 'translate-x-0' }}"></span>
+                            </a>
+                            <span class="text-[9px] font-black uppercase tracking-widest {{ $isWideView ? 'text-indigo-600' : 'text-slate-400' }}">Wide View</span>
+                        </div>
+                    @endif
+
                     {{-- Export button --}}
                     <a href="{{ route('purchase-requests.export-excel') }}"
                     class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5">
