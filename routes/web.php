@@ -28,6 +28,7 @@ Auth::routes();
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
+    Route::get('/account/notifications', \App\Livewire\Auth\NotificationSettingsPage::class)->name('account.notifications');
 
     // Quick Access Pin/Unpin API
     Route::prefix('nav')->name('nav.')->group(function () {

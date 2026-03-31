@@ -260,6 +260,12 @@
                                 </div>
                                 
                                 <div class="space-y-0.5">
+                                    <a href="{{ route('account.notifications') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all group">
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
+                                            @include('new.layouts.partials.nav-icon', ['name' => 'bell'])
+                                        </div>
+                                        Notification Settings
+                                    </a>
                                     <a href="{{ route('account.security') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all group">
                                         <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
                                             @include('new.layouts.partials.nav-icon', ['name' => 'shield'])

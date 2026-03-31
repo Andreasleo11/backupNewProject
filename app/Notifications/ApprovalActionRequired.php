@@ -18,7 +18,26 @@ class ApprovalActionRequired extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        // Get the specific model class (e.g. App\Models\PurchaseRequest)
+        $moduleClass = get_class($this->approvable);
+
+        // Check for an override in the user's notification preferences
+        $preferences = $notifiable->notification_preferences ?? [];
+        $mode = $preferences[$moduleClass] ?? null;
+
+        // Fallback to the global default if no specific override is set
+        if (empty($mode)) {
+            $mode = $notifiable->email_notification_mode ?? 'immediate';
+        }
+
+        // Only include 'mail' if the resolved preference is 'immediate'
+        if ($mode === 'immediate') {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
