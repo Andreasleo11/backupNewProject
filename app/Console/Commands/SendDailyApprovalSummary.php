@@ -26,8 +26,8 @@ class SendDailyApprovalSummary extends Command
     public function handle()
     {
         // 1. Fetch all users who could potentially need a daily summary
-        // (Either global daily mode or has any module overrides)
-        $users = \App\Infrastructure\Persistence\Eloquent\Models\User::where('email_notification_mode', 'daily_summary')
+        // (Either global daily mode/both or has any module overrides)
+        $users = \App\Infrastructure\Persistence\Eloquent\Models\User::whereIn('email_notification_mode', ['daily_summary', 'both'])
             ->orWhereNotNull('notification_preferences')
             ->get();
 
@@ -64,7 +64,7 @@ class SendDailyApprovalSummary extends Command
                     $mode = $user->email_notification_mode ?? 'immediate';
                 }
 
-                return $mode === 'daily_summary';
+                return in_array($mode, ['daily_summary', 'both']);
             });
 
             if ($summaryRequests->isNotEmpty()) {

@@ -32,8 +32,8 @@ class ApprovalActionRequired extends Notification implements ShouldQueue
             $mode = $notifiable->email_notification_mode ?? 'immediate';
         }
 
-        // Only include 'mail' if the resolved preference is 'immediate'
-        if ($mode === 'immediate') {
+        // Only include 'mail' if the resolved preference is 'immediate' or 'both'
+        if (in_array($mode, ['immediate', 'both'])) {
             $channels[] = 'mail';
         }
 

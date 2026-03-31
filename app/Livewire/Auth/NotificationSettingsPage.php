@@ -15,7 +15,7 @@ class NotificationSettingsPage extends Component
     public function mount(ApprovableModuleScanner $scanner)
     {
         $user = Auth::user();
-        $this->global_mode = $user->email_notification_mode ?? 'immediate';
+        $this->global_mode = $user->email_notification_mode ?? 'both';
         $this->module_preferences = $user->notification_preferences ?? [];
         $this->available_modules = $scanner->scan();
     }
