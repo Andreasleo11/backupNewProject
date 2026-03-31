@@ -565,7 +565,7 @@
                         if (!item.item_name) errors.push(`Item #${num} name is missing`);
                         if (!item.quantity || item.quantity <= 0) errors.push(`Item #${num} quantity invalid`);
                         if (!item.uom) errors.push(`Item #${num} UOM is missing`);
-                        if (!item.price || item.price <= 0) errors.push(`Item #${num} price invalid`);
+                        if (!item.price || item.price < 0) errors.push(`Item #${num} price invalid`);
                         if (!item.purpose) errors.push(`Item #${num} purpose is missing`);
                     });
 
