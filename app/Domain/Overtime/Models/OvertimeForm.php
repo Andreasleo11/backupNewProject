@@ -174,8 +174,8 @@ class OvertimeForm extends Model implements Approvable
     public function scopeByRole($query, $user)
     {
         return $query->where(function ($q) use ($user) {
-            // 1. Super-admin sees everything
-            if ($user->hasRole('super-admin')) {
+            // 1. Super-admin or specialized view-all sees everything
+            if ($user->hasRole('super-admin') || $user->can('overtime.view-all')) {
                 return;
             }
 

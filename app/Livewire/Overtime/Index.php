@@ -37,6 +37,9 @@ class Index extends Component
     #[Url(as: 'is_push')]
     public ?string $isPush = null; // "1" | "0" | null
 
+    #[Url(as: 'hide_signed')]
+    public bool $hideSigned = true; // Default hide items I already signed
+
     // UI state
     #[Url(as: 'q')]
     public string $search = '';
@@ -171,6 +174,7 @@ class Index extends Component
                 'perPage',
                 'sortField',
                 'sortDirection',
+                'hideSigned',
             ])
         ) {
             $this->resetPage();
@@ -214,6 +218,7 @@ class Index extends Component
         $this->isPush = null;
         $this->search = '';
         $this->range = null;
+        $this->hideSigned = true; // reset to default
         $this->resetPage();
     }
 
@@ -542,7 +547,7 @@ class Index extends Component
             );
         }
 
-        if ($this->dept) {
+        if ($this->dept && $this->isPrivilegedUser()) {
             $query->where('dept_id', $this->dept);
         }
 
@@ -577,6 +582,17 @@ class Index extends Component
                     'user',
                     fn ($u) => $u->where('name', 'like', $s . '%'),
                 );
+            });
+        }
+
+        // "Clean View" Hardening: Hide IN_REVIEW items already signed by current user
+        if ($this->hideSigned && !Auth::user()->hasRole('super-admin')) {
+            $query->where(function ($q) {
+                // We only hide IN_REVIEW records. APPROVED/REJECTED stay visible in their tabs.
+                $q->where('status', '!=', 'IN_REVIEW')
+                  ->orWhereDoesntHave('approvalRequest.steps', function ($stepQuery) {
+                      $stepQuery->where('acted_by', Auth::id());
+                  });
             });
         }
 

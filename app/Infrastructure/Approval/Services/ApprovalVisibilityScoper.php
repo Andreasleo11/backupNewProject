@@ -33,16 +33,41 @@ class ApprovalVisibilityScoper
                 $sq->where('acted_by', $user->id);
             });
 
-            // B. Active Turn: specifically for this user (User ID match)
-            // Note: Role-based turns are handled by the Oversight/Jurisdiction block below
-            // to ensure specialized roles (Dept Head/GM/Purchaser) always match their scope.
-            $groupedQuery->orWhere(function ($activeTurnQuery) use ($user) {
+            // B. Active Turn: Specifically for this user (User or Role match)
+            $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
+                // If the user has a department-scoped role, we must enforce jurisdiction 
+                // throughout the 'In Review' process (active turn).
+                $isDeptScoped = $user->hasAnyRole(['department-head', 'supervisor']) && 
+                                !$user->hasAnyRole(['director', 'general-manager', 'super-admin']);
+
+                $roleIds = $user->roles->pluck('id')->toArray();
+                $roleNames = $user->getRoleNames()->toArray();
+                
                 $activeTurnQuery->where('status', 'IN_REVIEW')
-                    ->whereHas('steps', function ($sq) use ($user) {
+                    ->whereHas('steps', function ($sq) use ($user, $roleIds, $roleNames) {
                         $sq->whereColumn('sequence', 'approval_requests.current_step')
-                           ->where('approver_type', 'user')
-                           ->where('approver_id', $user->id);
+                           ->where(function ($matchQuery) use ($user, $roleIds, $roleNames) {
+                               // Match by User ID
+                               $matchQuery->where('approver_type', 'user')
+                                          ->where('approver_id', $user->id);
+                               
+                               // OR Match by Role (Numeric ID or Name)
+                               if (!empty($roleIds)) {
+                                   $matchQuery->orWhere(function($rq) use ($roleIds, $roleNames) {
+                                       $rq->where('approver_type', 'role')
+                                          ->where(function($q) use ($roleIds, $roleNames) {
+                                              $q->whereIn('approver_id', $roleIds)
+                                                ->orWhereIn('approver_id', $roleNames);
+                                          });
+                                   });
+                               }
+                           });
                     });
+
+                // Jurisdiction check for departmental roles (Intersection)
+                if ($isDeptScoped) {
+                    $manager->applyVisibilityScope($activeTurnQuery, $user, ['IN_REVIEW']);
+                }
             });
 
             // C. Role-Based Oversight (Jurisdiction)
