@@ -112,36 +112,8 @@
         </div>
 
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            
-            {{-- LEFT COLUMN: CONTENT --}}
             <div class="space-y-8 lg:col-span-2">
-                @if($purchaseRequest->workflow_status === 'REJECTED' && $purchaseRequest->approvalRequest)
-                    @php
-                        $approval = $purchaseRequest->approvalRequest;
-                        $rejectedStep = $approval->steps->firstWhere('sequence', $approval->current_step);
-                    @endphp
-                    @if($rejectedStep && $rejectedStep->remarks)
-                        <div class="glass-card border-l-4 border-rose-500 overflow-hidden bg-rose-50/30 shadow-sm">
-                            <div class="px-6 py-5 flex items-start gap-4">
-                                <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm">
-                                    <i class="bi bi-x-octagon-fill text-xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-sm font-bold text-rose-800">Request Rejected by {{ $rejectedStep->approver_name ?? 'System' }}</h3>
-                                    <p class="mt-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-rose-500">
-                                        <i class="bi bi-clock-history"></i> {{ $rejectedStep->acted_at ? \Carbon\Carbon::parse($rejectedStep->acted_at)->format('d M Y, H:i') : 'Unknown Date' }}
-                                        <span class="opacity-50">•</span>
-                                        {{ $rejectedStep->approver_label ?? 'Approver' }}
-                                    </p>
-                                    <div class="mt-4 rounded-xl border border-rose-100 bg-white p-4 shadow-sm relative">
-                                        <div class="absolute -left-2 top-4 h-4 w-4 rotate-45 border-b border-l border-rose-100 bg-white"></div>
-                                        <p class="text-sm text-slate-700 italic relative z-10">"{!! nl2br(e($rejectedStep->remarks)) !!}"</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                @endif
+                <x-approval-status-banner :model="$purchaseRequest" />
                 
                 {{-- 1. General Info Card --}}
                 <div class="glass-card overflow-hidden">
