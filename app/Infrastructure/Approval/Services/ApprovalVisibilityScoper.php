@@ -81,10 +81,22 @@ class ApprovalVisibilityScoper
                         $deptId = $user->department_id;
 
                         if (!empty($eligibleDepts) || $deptId) {
-                            $strictQuery->orWhereHasMorph('approvable', '*', function ($aq) use ($eligibleDepts, $deptId) {
-                                $aq->where(function ($sq) use ($eligibleDepts, $deptId) {
-                                    if (!empty($eligibleDepts)) $sq->orWhereIn('from_department', $eligibleDepts);
-                                    if ($deptId) $sq->orWhere('dept_id', $deptId); // for OT which uses FK
+                            $strictQuery->orWhereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $deptId) {
+                                $aq->where(function ($sq) use ($type, $eligibleDepts, $deptId) {
+                                    if (in_array($type, [
+                                        \App\Models\PurchaseRequest::class,
+                                        \App\Models\SuratPerintahKerja::class,
+                                    ])) {
+                                        if (!empty($eligibleDepts)) {
+                                            $sq->whereIn('from_department', $eligibleDepts);
+                                        }
+                                    } elseif ($type === \App\Domain\Overtime\Models\OvertimeForm::class) {
+                                        if ($deptId) {
+                                            $sq->where('dept_id', $deptId); // for OT which uses FK
+                                        }
+                                    } else {
+                                        $sq->whereRaw('1 = 0'); // Fallback for unanticipated types
+                                    }
                                 });
                             });
                         }
