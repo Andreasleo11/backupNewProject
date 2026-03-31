@@ -717,7 +717,8 @@
                 'route' => 'purchase-requests.reject',
                 'title' => 'Reject Purchase Request',
                 'entityName' => 'Purchase Request',
-                'buttonLabel' => 'Confirm Rejection'
+                'buttonLabel' => 'Confirm Rejection',
+                'method' => 'POST'
             ])
             @include('partials.return-modal', [
                 'id' => $purchaseRequest->id,
