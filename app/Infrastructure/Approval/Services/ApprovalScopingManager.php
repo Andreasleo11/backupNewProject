@@ -83,4 +83,68 @@ class ApprovalScopingManager
         }
         return $targetDepartments;
     }
+
+    /**
+     * Apply jurisdiction-based query scoping for a user.
+     * Centralized here to ensure consistency with isUserEligible().
+     */
+    public function applyVisibilityScope(\Illuminate\Database\Eloquent\Builder $query, User $user): void
+    {
+        $query->where(function ($q) use ($user) {
+            // 1. Purchaser (Target Dept Match for Purchase Requests)
+            if ($user->hasRole('purchaser')) {
+                $depts = $this->getPurchaserSpecializedDepartments($user);
+                if (!empty($depts)) {
+                    $q->orWhereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
+                        $aq->whereIn('to_department', $depts);
+                    });
+                }
+            }
+
+            // 2. General Manager (Branch Match)
+            if ($user->hasRole('general-manager')) {
+                $branch = strtoupper(trim((string)($user->employee->branch ?? '')));
+                if ($branch) {
+                    $q->orWhereHasMorph('approvable', '*', function ($aq) use ($branch) {
+                        $aq->where('branch', $branch);
+                    });
+                }
+            }
+
+            // 3. Dept Head / Supervisor (Origination Match with Linked Departments)
+            if ($user->hasRole('department-head') || $user->hasRole('supervisor')) {
+                $eligibleDepts = $this->getEligibleDepartments($user);
+                
+                // OvertimeForm uses FK(id) instead of string name, so we must resolve IDs
+                $eligibleDeptIds = \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $eligibleDepts)
+                    ->pluck('id')
+                    ->toArray();
+                    dd($eligibleDeptIds);
+
+                $q->orWhereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $eligibleDeptIds) {
+                    $aq->where(function ($sq) use ($type, $eligibleDepts, $eligibleDeptIds) {
+                        if (in_array($type, [
+                            \App\Models\PurchaseRequest::class,
+                            \App\Models\SuratPerintahKerja::class,
+                        ])) {
+                            $sq->whereIn('from_department', $eligibleDepts);
+                        } elseif ($type === \App\Domain\Overtime\Models\OvertimeForm::class) {
+                            if (!empty($eligibleDeptIds)) {
+                                $sq->whereIn('dept_id', $eligibleDeptIds);
+                            } else {
+                                $sq->whereRaw('1 = 0');
+                            }
+                        } else {
+                            $sq->whereRaw('1 = 0');
+                        }
+                    });
+                });
+            }
+
+            // 4. Global Oversight Roles (Director, Verificator)
+            if ($user->hasRole('director') || $user->hasRole('verificator')) {
+                $q->orWhereRaw('1=1');
+            }
+        });
+    }
 }

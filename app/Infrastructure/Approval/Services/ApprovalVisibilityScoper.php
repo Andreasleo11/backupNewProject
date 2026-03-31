@@ -19,108 +19,36 @@ class ApprovalVisibilityScoper
     {
         $manager = new ApprovalScopingManager;
 
-        // 1. Super Admin OR Global View Permission: View All
+        // 1. super-admin OR specialized view-all permission
         if ($user->hasRole('super-admin') || $user->can('approval.view-all')) {
             return;
         }
 
         $query->where(function ($groupedQuery) use ($user, $manager) {
-            // 2. Multi-Criteria Visibility (User sees anything matching ANY of these)
-
             // A. Historical: User signed it
             $groupedQuery->orWhereHas('steps', function ($sq) use ($user) {
                 $sq->where('acted_by', $user->id);
             });
 
-            // B. Active Turn: specifically for this user
-            $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
+            // B. Active Turn: specifically for this user (User ID match)
+            // Note: Role-based turns are handled by the Oversight/Jurisdiction block below
+            // to ensure specialized roles (Dept Head/GM/Purchaser) always match their scope.
+            $groupedQuery->orWhere(function ($activeTurnQuery) use ($user) {
                 $activeTurnQuery->where('status', 'IN_REVIEW')
                     ->whereHas('steps', function ($sq) use ($user) {
                         $sq->whereColumn('sequence', 'approval_requests.current_step')
-                           ->where(function ($match) use ($user) {
-                               // Specific User ID
-                               $match->where(function ($uMatch) use ($user) {
-                                   $uMatch->where('approver_type', 'user')
-                                          ->where('approver_id', $user->id);
-                               })
-                               // Or Role (subject to specialized scoping)
-                               ->orWhere(function ($rMatch) use ($user) {
-                                   $rMatch->where('approver_type', 'role')
-                                          ->whereIn('approver_id', $user->roles->pluck('id')->toArray());
-                               });
-                           });
+                           ->where('approver_type', 'user')
+                           ->where('approver_id', $user->id);
                     });
-
-                // C. ADAPTIVE SCOPING FOR ROLES (The Decision Tree)
-                // Even if it matches the Role ID, we further restrict by Dept/Branch for specific key roles.
-                // This logic mirrors ApprovalEngine::notifyCurrentApprover via ApprovalScopingManager
-                $activeTurnQuery->where(function ($strictQuery) use ($user, $manager) {
-                    // Check specialized Purchaser role
-                    if ($user->hasRole('purchaser')) {
-                        $depts = $manager->getPurchaserSpecializedDepartments($user);
-                        if (!empty($depts)) {
-                            $strictQuery->orWhereHasMorph('approvable', '*', function ($aq) use ($depts) {
-                                $aq->whereIn('to_department', $depts);
-                            });
-                        }
-                    }
-
-                    // Check GM (Branch Match)
-                    if ($user->hasRole('general-manager')) {
-                        $branch = strtoupper(trim((string)($user->employee->branch ?? '')));
-                        if ($branch) {
-                            $strictQuery->orWhereHasMorph('approvable', '*', function ($aq) use ($branch) {
-                                $aq->where('branch', $branch);
-                            });
-                        }
-                    }
-
-                    // Check Dept Head (Origination Match with Linkages from Manager)
-                    if ($user->hasRole('department-head')) {
-                        $eligibleDepts = $manager->getEligibleDepartments($user);
-                        $deptId = $user->employee->department->id;
-
-                        if (!empty($eligibleDepts) || $deptId) {
-                            $strictQuery->orWhereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $deptId) {
-                                $aq->where(function ($sq) use ($type, $eligibleDepts, $deptId) {
-                                    if (in_array($type, [
-                                        \App\Models\PurchaseRequest::class,
-                                        \App\Models\SuratPerintahKerja::class,
-                                    ])) {
-                                        if (!empty($eligibleDepts)) {
-                                            $sq->whereIn('from_department', $eligibleDepts);
-                                        }
-                                    } elseif ($type === \App\Domain\Overtime\Models\OvertimeForm::class) {
-                                        if ($deptId) {
-                                            $sq->where('dept_id', $deptId); // for OT which uses FK
-                                        }
-                                    } else {
-                                        $sq->whereRaw('1 = 0'); // Fallback for unanticipated types
-                                    }
-                                });
-                            });
-                        }
-                    }
-
-                    // Global Oversight (Director sees Active tasks globally)
-                    if ($user->hasRole('director')) {
-                         $strictQuery->orWhereRaw('1=1');
-                    }
-                });
             });
 
-            // D. Finalized Visibility (Director sees all closed)
-            if ($user->hasRole('director')) {
-                $groupedQuery->orWhereIn('status', ['APPROVED', 'REJECTED']);
-            }
+            // C. Role-Based Oversight (Jurisdiction)
+            // Delegates to ApprovalScopingManager to ensure linked depts and 
+            // branch scopes are respected. Covers IN_REVIEW, APPROVED, REJECTED.
+            $groupedQuery->orWhere(function ($oversightQuery) use ($user, $manager) {
+                $oversightQuery->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']);
+                $manager->applyVisibilityScope($oversightQuery, $user);
+            });
         });
-    }
-
-    /**
-     * For backward compatibility if needed, but logic is now in ScopingManager.
-     */
-    private function getPurchaserSpecializedDepartments(User $user): array
-    {
-        return (new ApprovalScopingManager)->getPurchaserSpecializedDepartments($user);
     }
 }
