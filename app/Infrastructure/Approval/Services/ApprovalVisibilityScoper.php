@@ -25,6 +25,9 @@ class ApprovalVisibilityScoper
         }
 
         $query->where(function ($groupedQuery) use ($user, $manager) {
+            // Seed with false to ensure the group evaluates to false if no criteria match
+            $groupedQuery->whereRaw('1 = 0');
+
             // A. Historical: User signed it
             $groupedQuery->orWhereHas('steps', function ($sq) use ($user) {
                 $sq->where('acted_by', $user->id);

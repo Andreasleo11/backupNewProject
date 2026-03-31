@@ -125,7 +125,9 @@ class PurchaseRequestController extends Controller
 
     public function edit(int $id)
     {
-        $purchaseRequest = PurchaseRequest::with(['itemDetail', 'approvalRequest.steps.actedUser'])->findOrFail($id);
+        $purchaseRequest = PurchaseRequest::byRole(auth()->user())
+            ->with(['itemDetail', 'approvalRequest.steps.actedUser'])
+            ->findOrFail($id);
 
         // Authorize using PurchaseRequestPolicy@update
         $this->authorize('update', $purchaseRequest);
@@ -240,7 +242,7 @@ class PurchaseRequestController extends Controller
         $id,
         \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
     ) {
-        $purchaseRequest = PurchaseRequest::findOrFail((int) $id);
+        $purchaseRequest = PurchaseRequest::byRole(auth()->user())->findOrFail((int) $id);
         $this->authorize('update', $purchaseRequest);
 
         $validated = $request->validated();

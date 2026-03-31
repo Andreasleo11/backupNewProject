@@ -91,17 +91,23 @@ class ApprovalScopingManager
     public function applyVisibilityScope(\Illuminate\Database\Eloquent\Builder $query, User $user): void
     {
         $query->where(function ($q) use ($user) {
-            // 1. Purchaser (Target Dept Match for Purchase Requests)
+            // Seed with false to ensure 'orWhere' criteria are strictly additive
+            $q->whereRaw('1 = 0');
+
+            // 1. Purchaser (Target Dept Match for Purchase Requests ONLY)
             if ($user->hasRole('purchaser')) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
                 if (!empty($depts)) {
-                    $q->orWhereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
-                        $aq->whereIn('to_department', $depts);
+                    $q->orWhere(function ($sub) use ($depts) {
+                        $sub->where('approvable_type', \App\Models\PurchaseRequest::class)
+                            ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
+                                $aq->whereIn('to_department', $depts);
+                            });
                     });
                 }
             }
 
-            // 2. General Manager (Branch Match)
+            // 2. General Manager (Branch Match for All Modules)
             if ($user->hasRole('general-manager')) {
                 $branch = strtoupper(trim((string)($user->employee->branch ?? '')));
                 if ($branch) {
@@ -142,7 +148,7 @@ class ApprovalScopingManager
 
             // 4. Global Oversight Roles (Director, Verificator)
             if ($user->hasRole('director') || $user->hasRole('verificator')) {
-                $q->orWhereRaw('1=1');
+                $q->orWhereRaw('1 = 1');
             }
         });
     }
