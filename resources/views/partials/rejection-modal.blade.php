@@ -3,6 +3,7 @@
     $entityName = $entityName ?? 'Request';
     $buttonLabel = $buttonLabel ?? 'Reject Request';
     $openEvent = $openEvent ?? 'open-reject-modal';
+    $method = $method ?? 'PUT';
 @endphp
 
 <div x-data="{ open: false }" 
@@ -47,7 +48,9 @@
                     {{-- Body --}}
                     <form method="POST" action="{{ route($route, $id) }}" class="p-6">
                         @csrf
-                        @method('PUT')
+                        @if($method && strtoupper($method) !== 'POST')
+                            @method($method)
+                        @endif
                         
                         <div class="mb-6">
                             <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4 border border-rose-100">

@@ -282,13 +282,17 @@ class PurchaseRequestController extends Controller
                 ->with('success', 'Purchase request updated, signed, and submitted.');
         }
 
+        $msg = ($purchaseRequest->workflow_status === 'DRAFT') 
+            ? 'Purchase request saved as draft.' 
+            : 'Purchase request changes saved successfully.';
+
         if ($request->input('submit_action') === 'save_and_setup_signature') {
             return redirect()->route('signatures.manage', ['return_to' => route('purchase-requests.edit', $id)])
-                ->with('success', 'Purchase request saved as draft. Please set up your signature before submitting.');
+                ->with('success', $msg . ' Please set up your signature before submitting.');
         }
 
         return redirect()->route('purchase-requests.show', $id)
-            ->with('success', 'Purchase request saved as draft.');
+            ->with('success', $msg);
     }
 
     /**

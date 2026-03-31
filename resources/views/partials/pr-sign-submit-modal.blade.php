@@ -9,18 +9,21 @@
     - $submitUrl (string|null) — POST URL for show page action (null = submit form)
 --}}
 <div x-data="{ open: false }"
-     x-show="open" x-cloak
      @open-sign-submit-modal.window="open = true"
-     x-init="$watch('open', v => document.body.classList.toggle('overflow-hidden', v))"
-     class="fixed inset-0 z-[100] overflow-y-auto"
-     role="dialog" aria-modal="true">
+     x-init="$watch('open', v => document.body.style.overflow = v ? 'hidden' : '')">
+    
+    <template x-teleport="body">
+        <div x-show="open" x-cloak
+             class="fixed inset-0 z-[100] overflow-y-auto"
+             role="dialog" aria-modal="true">
 
-    {{-- Backdrop --}}
-    <div class="fixed inset-0 bg-slate-900/75" @click="open = false"></div>
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-slate-900/75" x-show="open" x-transition.opacity @click="open = false"></div>
 
-    {{-- Panel --}}
-    <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
+            {{-- Panel --}}
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" 
+                     x-show="open" x-transition.scale.origin.bottom @click.stop>
 
             {{-- Header --}}
             <div class="bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-4 flex items-center justify-between">
@@ -105,10 +108,11 @@
                                 Save & Set Up Signature
                             </button>
                         @endif
-                        <p class="text-xs text-slate-400">You can still <button type="button" @click="open = false" class="text-indigo-600 hover:underline">save as draft</button> without a signature.</p>
+                        <p class="text-xs text-slate-400">You can still <button type="button" @click="open = false" class="text-indigo-600 hover:underline">save your progress</button> without a signature.</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
+    </template>
 </div>
