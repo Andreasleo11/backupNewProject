@@ -25,7 +25,7 @@ class ApprovalScopingManager
      */
     public function getEligibleDepartments(User $user): array
     {
-        $baseDeptName = $user->department->name ?? '';
+        $baseDeptName = $user->employee->department->name ?? '';
         $linkedDepts = self::DEPARTMENT_LINKS[$baseDeptName] ?? [];
         
         return array_filter(array_merge([$baseDeptName], $linkedDepts));

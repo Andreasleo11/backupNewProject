@@ -78,7 +78,7 @@ class ApprovalVisibilityScoper
                     // Check Dept Head (Origination Match with Linkages from Manager)
                     if ($user->hasRole('department-head')) {
                         $eligibleDepts = $manager->getEligibleDepartments($user);
-                        $deptId = $user->department_id;
+                        $deptId = $user->employee->department->id;
 
                         if (!empty($eligibleDepts) || $deptId) {
                             $strictQuery->orWhereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $deptId) {
