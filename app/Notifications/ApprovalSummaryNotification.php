@@ -46,7 +46,7 @@ class ApprovalSummaryNotification extends Notification implements ShouldQueue
         }
 
         return $message
-            ->action('View All Approvals', route('home'))
+            ->action('View All Approvals', route('approvals'))
             ->line('Thank you for your prompt attention to these requests.');
     }
 }

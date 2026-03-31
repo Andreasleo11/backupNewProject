@@ -14,7 +14,7 @@
                     {{ $greeting }}, <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600">{{ auth()->user()->name }}</span>!
                 </h1>
                 <p class="mt-2 text-slate-500 font-medium max-w-lg">
-                    Welcome back to the system. You have <span class="text-blue-600 font-bold underline decoration-blue-200 underline-offset-4">{{ $kpis['pending_approvals'] }}</span> pending approvals and <span class="text-violet-600 font-bold underline decoration-violet-200 underline-offset-4">{{ $kpis['unread_notifications'] }}</span> unread notifications.
+                    Welcome back to the system. You have <span class="text-blue-600 font-bold underline decoration-blue-200 underline-offset-4">{{ $kpis['pending_approvals'] }}</span> pending tasks in your inbox.
                 </p>
             </div>
             
@@ -41,19 +41,19 @@
         {{-- Quick Stats (Siderbar style widgets) --}}
         <div class="col-span-12 lg:col-span-4 space-y-6">
             @livewire('dashboard.widgets.kpi-card', [
-                'label' => 'Total Submissions',
-                'value' => '1.2k',
-                'trend' => '+12%',
-                'icon' => 'file',
-                'color' => 'blue'
+                'label' => 'Unified Approval Inbox',
+                'value' => $kpis['pending_approvals'],
+                'icon' => 'shield-check',
+                'color' => 'blue',
+                'url' => route('approvals')
             ])
             
             @livewire('dashboard.widgets.kpi-card', [
-                'label' => 'Active Contracts',
-                'value' => '42',
-                'trend' => '-3%',
-                'icon' => 'shield',
-                'color' => 'emerald'
+                'label' => 'My Task Status',
+                'value' => 'Overview',
+                'icon' => 'layout',
+                'color' => 'emerald',
+                'url' => route('approvals')
             ])
         </div>
 
@@ -78,9 +78,9 @@
                         </p>
                     </div>
                     <div>
-                        <button class="px-6 py-3 rounded-xl bg-white text-slate-900 font-bold text-sm shadow-lg hover:bg-slate-50 transition-all active:scale-95">
+                        <a href="{{ route('purchase-requests.index') }}" class="inline-block px-6 py-3 rounded-xl bg-white text-slate-900 font-bold text-sm shadow-lg hover:bg-slate-50 transition-all active:scale-95">
                             View Department Portal
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

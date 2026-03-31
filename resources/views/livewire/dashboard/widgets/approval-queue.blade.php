@@ -80,7 +80,7 @@
     </div>
     
     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 mt-auto">
-        <a href="#" class="text-[11px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2 group/all">
+        <a href="{{ route('approvals') }}" class="text-[11px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2 group/all">
             View All Requests
             <svg class="h-3 w-3 group-hover/all:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />

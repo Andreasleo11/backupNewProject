@@ -27,6 +27,7 @@ Auth::routes();
 // Core Application Routes
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/approvals', \App\Livewire\Approval\ApprovalsPage::class)->name('approvals');
     Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
     Route::get('/account/notifications', \App\Livewire\Auth\NotificationSettingsPage::class)->name('account.notifications');
 
