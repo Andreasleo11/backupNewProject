@@ -11,14 +11,14 @@
 
 @section('content')
 
-    <div class="mx-auto max-w-5xl px-4 py-8 lg:py-10" x-data="purchaseRequestForm(
+    <div x-data="purchaseRequestForm(
         @js(old('items', $isEdit ? $purchaseRequest->itemDetail : [])),
         '{{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) }}',
         '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}'
     )" x-init="init()">
         
         {{-- TOP BAR --}}
-        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="space-y-1">
                 <a href="{{ $isEdit ? route('purchase-requests.show', $purchaseRequest->id) : route('purchase-requests.index') }}"
                     class="group inline-flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
@@ -120,10 +120,10 @@
             @endif
 
             {{-- MAIN FORM CONTAINER --}}
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 
                 {{-- LEFT COLUMN: GENERAL INFO --}}
-                <div class="space-y-6 lg:col-span-1">
+                <div class="space-y-6 xl:col-span-1">
                     {{-- General Card --}}
                     <div class="glass-card p-6">
                         <h3 class="flex items-center gap-2 text-sm font-bold text-slate-800 uppercase tracking-widest mb-6">
@@ -137,7 +137,7 @@
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Branch</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="cursor-pointer relative">
-                                        <input type="radio" name="branch" value="JAKARTA" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : 'JAKARTA') === 'JAKARTA' ? 'checked' : '' }}>
+                                        <input type="radio" name="branch" value="JAKARTA" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch?->value : 'JAKARTA') === 'JAKARTA' ? 'checked' : '' }}>
                                         <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30 @error('branch') border-rose-300 @enderror">
                                             <div class="text-2xl mb-1">🏢</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Jakarta</span>
@@ -147,7 +147,7 @@
                                         </div>
                                     </label>
                                     <label class="cursor-pointer relative">
-                                        <input type="radio" name="branch" value="KARAWANG" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : '') === 'KARAWANG' ? 'checked' : '' }}>
+                                        <input type="radio" name="branch" value="KARAWANG" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch?->value : '') === 'KARAWANG' ? 'checked' : '' }}>
                                         <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30 @error('branch') border-rose-300 @enderror">
                                             <div class="text-2xl mb-1">🏭</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Karawang</span>
@@ -227,7 +227,7 @@
                 </div>
 
                 {{-- RIGHT COLUMN: DATES, SUPPLIER, ITEMS --}}
-                <div class="space-y-6 lg:col-span-2">
+                <div class="space-y-6 xl:col-span-2">
                     
                     {{-- Logistics Card --}}
                     <div class="glass-card p-6">
@@ -396,28 +396,30 @@
             </div>
 
             {{-- ACTION BAR --}}
-            <div class="sticky bottom-4 z-30 mx-auto max-w-5xl">
-                <div class="glass-card flex items-center justify-between p-4 shadow-2xl shadow-indigo-900/10 border-indigo-100">
+            <div class="sticky bottom-4 z-30 w-full mt-6">
+                <div class="glass-card flex flex-col-reverse sm:flex-row sm:items-center justify-between p-4 gap-4 shadow-2xl shadow-indigo-900/10 border-indigo-100">
                     <button type="button" @click="window.history.back()"
-                            class="rounded-xl px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+                            class="w-full sm:w-auto rounded-xl px-4 py-2.5 sm:py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
                         Cancel
                     </button>
 
-                    <div class="flex items-center gap-3">
-                        {{-- Save as Draft: just submit the form normally (submit_action stays empty = draft) --}}
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                        {{-- Partial Save: just submit the form normally (submit_action stays empty) --}}
                         <button type="submit"
-                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300">
+                                class="inline-flex justify-center items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 w-full sm:w-auto">
                             <i class="bi bi-floppy"></i>
-                            Save as Draft
+                            {{ $isEdit ? 'Save Changes' : 'Save as Draft' }}
                         </button>
 
-                        {{-- Sign & Submit: opens confirmation modal --}}
-                        <button type="button"
-                                @click="$dispatch('open-sign-submit-modal')"
-                                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5">
-                            <i class="bi bi-pen"></i>
-                            Sign & Submit
-                        </button>
+                        @if(!$isEdit || in_array($purchaseRequest->workflow_status ?? 'DRAFT', ['DRAFT', 'RETURNED', 'REJECTED']))
+                            {{-- Sign & Submit: opens confirmation modal --}}
+                            <button type="button"
+                                    @click="$dispatch('open-sign-submit-modal')"
+                                    class="inline-flex justify-center items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5 w-full sm:w-auto">
+                                <i class="bi bi-pen"></i>
+                                {{ ($isEdit && in_array($purchaseRequest->workflow_status ?? '', ['RETURNED', 'REJECTED'])) ? 'Sign & Resubmit' : 'Sign & Submit' }}
+                            </button>
+                        @endif
                     </div>
 
                     {{-- Hidden: set to 'sign_and_submit' by the modal before form submit --}}
