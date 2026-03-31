@@ -11,6 +11,7 @@ class KpiCard extends Component
     public string $trend = '';
     public string $icon = 'bar-chart';
     public string $color = 'blue';
+    public ?string $url = null;
 
     public function render()
     {
