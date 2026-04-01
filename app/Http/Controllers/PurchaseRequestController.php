@@ -498,27 +498,54 @@ class PurchaseRequestController extends Controller
 
     public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
     {
+        $isAjax = $request->ajax() || $request->wantsJson();
+
+        // AJAX quick-view sends `auto_approve_items: true` explicitly.
+        // Regular form submissions rely on the DTO default (true).
+        $autoApproveItems = $request->boolean('auto_approve_items', true);
+
         try {
             $useCase->handle(new ApprovalActionDTO(
                 purchaseRequestId: (int) $purchaseRequest->id,
                 actorUserId: (int) auth()->id(),
-                remarks: $request->input('remarks')
+                remarks: $request->input('remarks'),
+                autoApproveItems: $autoApproveItems,
             ));
+
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Purchase Request approved successfully! All pending items have been auto-approved.',
+                ]);
+            }
 
             return back()->with('toast_success', 'Purchase Request approved successfully!');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 403);
+            }
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException|\RuntimeException $e) {
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => 'Failed to approve purchase request'], 500);
+            }
 
             return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
         }
     }
 
+
     public function reject(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
+        $isAjax = $request->ajax() || $request->wantsJson();
+
         try {
             $useCase->handle(new ApprovalActionDTO(
                 purchaseRequestId: (int) $purchaseRequest->id,
@@ -526,13 +553,30 @@ class PurchaseRequestController extends Controller
                 remarks: $request->input('remarks')
             ));
 
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Purchase Request rejected successfully.',
+                ]);
+            }
+
             return back()->with('toast_success', 'Purchase Request rejected.');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 403);
+            }
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException|\RuntimeException $e) {
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => 'Failed to reject purchase request'], 500);
+            }
 
             return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
         }
