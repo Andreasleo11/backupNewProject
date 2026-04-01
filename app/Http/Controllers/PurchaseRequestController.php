@@ -546,17 +546,22 @@ class PurchaseRequestController extends Controller
     {
         $isAjax = $request->ajax() || $request->wantsJson();
 
+        // AJAX quick-view sends `auto_approve_items: true` — reuse the same flag to also
+        // auto-reject any pending item-level approvals before rejecting the workflow step.
+        $autoApproveItems = $request->boolean('auto_approve_items', true);
+
         try {
             $useCase->handle(new ApprovalActionDTO(
                 purchaseRequestId: (int) $purchaseRequest->id,
                 actorUserId: (int) auth()->id(),
-                remarks: $request->input('remarks')
+                remarks: $request->input('remarks'),
+                autoApproveItems: $autoApproveItems,
             ));
 
             if ($isAjax) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Purchase Request rejected successfully.',
+                    'message' => 'Purchase Request rejected. All pending items have been marked as rejected.',
                 ]);
             }
 
@@ -580,6 +585,7 @@ class PurchaseRequestController extends Controller
 
             return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
         }
+
     }
 
     public function returnForRevision(Request $request, PurchaseRequest $purchaseRequest)
