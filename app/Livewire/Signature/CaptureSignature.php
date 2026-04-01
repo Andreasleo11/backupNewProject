@@ -9,49 +9,80 @@ use App\Application\Signature\UseCases\CreateSignature;
 use App\Domain\Signature\ValueObjects\SignatureKind;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\WithFileUploads;
 use Livewire\Component;
 use Livewire\Attributes\Url;
 
 final class CaptureSignature extends Component
 {
+    use WithFileUploads;
+
     #[Url]
     public ?string $return_to = null;
 
     public string $label = 'Primary';
 
+    public string $mode = 'draw'; // 'draw' or 'upload'
+
     public ?string $pngDataUrl = null; // data:image/png;base64,...
 
     public ?string $svgText = null; // <svg ...>...</svg>
 
-    protected $rules = [
-        'label' => 'nullable|string|max:100',
-        'pngDataUrl' => 'required|string',
-        'svgText' => 'nullable|string',
-    ];
+    public $signatureImage; // for uploaded file
+
+    protected function rules()
+    {
+        return [
+            'label' => 'nullable|string|max:100',
+            'mode' => 'required|in:draw,upload',
+            'pngDataUrl' => 'required_if:mode,draw|nullable|string',
+            'svgText' => 'nullable|string',
+            'signatureImage' => 'required_if:mode,upload|nullable|image|max:2048', // 2MB max
+        ];
+    }
 
     public function save(CreateSignature $useCase)
     {
         $this->validate();
 
-        // decode PNG
-        [$meta, $base64] = explode(',', $this->pngDataUrl, 2);
-        $bytes = base64_decode($base64, true);
-        abort_unless($bytes !== false, 422, 'Invalid PNG payload');
-
         $dir = 'signatures/' . auth()->id();
-        $pngPath = $dir . '/' . Str::uuid() . '.png';
-        Storage::disk('private')->put($pngPath, $bytes);
-
+        $pngPath = null;
         $svgPath = null;
-        if ($this->svgText) {
-            $svgPath = $dir . '/' . Str::uuid() . '.svg';
-            Storage::disk('private')->put($svgPath, $this->svgText);
+        $bytes = null;
+        $meta = null;
+        $kind = SignatureKind::DRAWN;
+
+        if ($this->mode === 'draw') {
+            // decode PNG from canvas
+            [$meta, $base64] = explode(',', $this->pngDataUrl, 2);
+            $bytes = base64_decode($base64, true);
+            abort_unless($bytes !== false, 422, 'Invalid PNG payload');
+
+            $pngPath = $dir . '/' . Str::uuid() . '.png';
+            Storage::disk('private')->put($pngPath, $bytes);
+
+            if ($this->svgText) {
+                $kind = SignatureKind::SVG;
+                $svgPath = $dir . '/' . Str::uuid() . '.svg';
+                Storage::disk('private')->put($svgPath, $this->svgText);
+            }
+        } else {
+            // handle uploaded image
+            $kind = SignatureKind::UPLOADED;
+            $extension = $this->signatureImage->getClientOriginalExtension();
+            $pngPath = $dir . '/' . Str::uuid() . '.' . $extension;
+            
+            // Store the file directly to private disk
+            $this->signatureImage->storeAs(path: $dir, name: basename($pngPath), options: 'private');
+            
+            // Get raw bytes for hashing
+            $bytes = file_get_contents($this->signatureImage->getRealPath());
         }
 
         $dto = new CreateSignatureDTO(
             userId: auth()->id(),
             label: $this->label ?: null,
-            kind: $this->svgText ? SignatureKind::SVG : SignatureKind::DRAWN,
+            kind: $kind,
             filePath: $pngPath,
             svgPath: $svgPath,
             rawBytesForHash: $bytes,
@@ -59,6 +90,7 @@ final class CaptureSignature extends Component
                 'ip' => request()->ip(),
                 'ua' => request()->userAgent(),
                 'canvas_meta' => $meta ?? null,
+                'mode' => $this->mode,
             ],
             setAsDefault: true,
         );
