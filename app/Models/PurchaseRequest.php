@@ -367,11 +367,11 @@ class PurchaseRequest extends Model implements Approvable
      * Centralized query scope for role-based visibility.
      * Delegates to the unified Approval Request scoper.
      */
-    public function scopeByRole($query, $user)
+    public function scopeByRole($query, $user, bool $wideView = false)
     {
-        return $query->where(function ($q) use ($user) {
-            // 1. Super-admin sees everything
-            if ($user->hasRole('super-admin')) {
+        return $query->where(function ($q) use ($user, $wideView) {
+            // 1. Super-admin or specialized view-all (if toggled) sees everything
+            if ($user->hasRole('super-admin') || ($wideView && ($user->can('approval.view-all') || $user->can('purchase-request.view-all')))) {
                 return;
             }
 
@@ -379,8 +379,8 @@ class PurchaseRequest extends Model implements Approvable
             $q->where('user_id_create', $user->id);
 
             // 3. Everything else: Use Centralized Approval Scoper 
-            $q->orWhereHas('approvalRequest', function ($aq) use ($user) {
-                $aq->forUser($user);
+            $q->orWhereHas('approvalRequest', function ($aq) use ($user, $wideView) {
+                $aq->forUser($user, $wideView);
             });
         });
     }

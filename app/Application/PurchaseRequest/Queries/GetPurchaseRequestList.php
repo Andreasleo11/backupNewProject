@@ -22,7 +22,7 @@ final class GetPurchaseRequestList
             ->with(['files', 'createdBy']);
 
         // Apply User Scoping
-        $query = $this->queryScoper->scopeForUser($user, $query);
+        $query = $this->queryScoper->scopeForUser($user, $query, $dto->wideView);
 
         // Apply Date Filter
         if ($dto->startDate && $dto->endDate) {

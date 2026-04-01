@@ -21,7 +21,7 @@ final class GetPurchaseRequestDetail
     public function handle(int $prId, User $actor): PurchaseRequestDetailVM
     {
         /** @var PurchaseRequest $pr */
-        $pr = PurchaseRequest::query()
+        $pr = PurchaseRequest::byRole($actor)
             ->with([
                 'itemDetail.master',
                 'createdBy',

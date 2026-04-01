@@ -40,7 +40,9 @@ class FormOvertimeController extends Controller
 
     public function detail($id)
     {
-        $header = OvertimeForm::with('user', 'department', 'approvals', 'approvals.step')->find($id);
+        $header = OvertimeForm::byRole(auth()->user())
+            ->with('user', 'department', 'approvals', 'approvals.step')
+            ->findOrFail($id);
         $datas = OvertimeFormDetail::with('actualOvertimeDetail')->where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
@@ -77,7 +79,9 @@ class FormOvertimeController extends Controller
 
     public function edit($id)
     {
-        $header = OvertimeForm::with('user', 'department')->find($id);
+        $header = OvertimeForm::byRole(auth()->user())
+            ->with('user', 'department')
+            ->findOrFail($id);
         $datas = OvertimeFormDetail::where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
@@ -113,7 +117,7 @@ class FormOvertimeController extends Controller
 
     public function destroy($id)
     {
-        OvertimeForm::find($id)->delete();
+        OvertimeForm::byRole(auth()->user())->findOrFail($id)->delete();
         OvertimeFormDetail::where('header_id', $id)->delete();
 
         return redirect()->back()->with('success', 'Form Overtime deleted successfully!');
@@ -198,7 +202,7 @@ class FormOvertimeController extends Controller
 
     public function reapprove($id)
     {
-        $header = OvertimeForm::findOrFail($id);
+        $header = OvertimeForm::byRole(auth()->user())->findOrFail($id);
         $header->is_push = 0;
         $header->save();
 

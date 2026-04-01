@@ -356,14 +356,14 @@ class NavigationService
                         'route' => 'overtime.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('overtime.index') || request()->routeIs('overtime.detail'),
-                        'permission' => 'overtime.view',
+                        'permission' => ['overtime.view-all', 'overtime.view'],
                     ],
                     [
                         'label' => 'Overtime Summary',
                         'route' => 'overtime.summary',
                         'icon' => 'chart-bar',
                         'active' => request()->routeIs('overtime.summary'),
-                        'permission' => 'overtime.view-all',
+                        'permission' => ['overtime.view-all'],
                     ],
                     [
                         'label' => 'Import Actual',
