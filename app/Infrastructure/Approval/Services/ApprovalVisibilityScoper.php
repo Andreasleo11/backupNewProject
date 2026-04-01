@@ -19,21 +19,28 @@ class ApprovalVisibilityScoper
     {
         $manager = new ApprovalScopingManager;
 
-        // 1. Super-admin always sees everything (Wide View by default)
+        // --- LAYER 1: GLOBAL OVERRIDES (No Scoping) ---
+        
+        // 1. Super-Admin always sees everything
         if ($user->hasRole('super-admin')) {
             return;
         }
 
-        // 2. Specialized view-all permission ONLY if Wide View is toggled ON
-        if ($wideView && ($user->can('approval.view-all') || $user->can('overtime.view-all'))) {
+        // 2. Specialized 'View-All' Permissions (If Wide View is ON)
+        $canGlobalView = $user->can('approval.view-all') || 
+                        $user->can('overtime.view-all') || 
+                        $user->can('purchase-request.view-all');
+
+        if ($wideView && $canGlobalView) {
+            // Note: If a GM has view-all, they override their branch restriction in Wide View.
             return;
         }
 
-        // Determine if this is a privileged user currently in "Focused Mode"
-        $isPrivileged = $user->hasAnyRole(['super-admin', 'director', 'general-manager']) || 
-                        $user->can('approval.view-all') || 
-                        $user->can('overtime.view-all') ||
-                        $user->can('purchase-request.view-all');
+        // --- LAYER 2: SCOPED VISIBILITY (Jurisdictional) ---
+
+        // Determine if this is a privileged user (Director, GM, or has view-all) 
+        // to handle the Action-Only vs Wide View UI logic.
+        $isPrivileged = $user->hasAnyRole(['director', 'general-manager']) || $canGlobalView;
         $isFocusedMode = !$wideView && $isPrivileged;
 
         $query->where(function ($groupedQuery) use ($user, $manager, $wideView, $isFocusedMode) {
@@ -51,10 +58,10 @@ class ApprovalVisibilityScoper
             // B. Active Turn: Specifically for this user (User or Role match)
             // Always enabled in all modes.
             $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
-                // If the user has a department-scoped role, we must enforce jurisdiction 
-                // throughout the 'In Review' process (active turn).
-                $isDeptScoped = $user->hasAnyRole(['department-head', 'supervisor']) && 
-                                !$user->hasAnyRole(['director', 'general-manager', 'super-admin']);
+                // Determine if this user's turn matches must be restricted by jurisdiction (Branch/Dept)
+                // General Managers and Dept Heads are strictly local to their branches.
+                $isBranchScoped = $user->hasAnyRole(['department-head', 'supervisor', 'general-manager']) && 
+                                  !$user->hasRole('super-admin');
 
                 $roleIds = $user->roles->pluck('id')->toArray();
                 $roleNames = $user->getRoleNames()->toArray();
@@ -80,8 +87,8 @@ class ApprovalVisibilityScoper
                            });
                     });
 
-                // Jurisdiction check for departmental roles (Intersection)
-                if ($isDeptScoped) {
+                // Jurisdiction check for branch-restricted roles (Intersection)
+                if ($isBranchScoped) {
                     $manager->applyVisibilityScope($activeTurnQuery, $user, ['IN_REVIEW']);
                 }
             });
