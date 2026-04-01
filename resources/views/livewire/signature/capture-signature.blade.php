@@ -14,6 +14,26 @@
         </a>
     </div>
 
+    {{-- Mode Toggle --}}
+    <div class="mb-5 flex items-center justify-center">
+        <div class="inline-flex rounded-xl bg-slate-100 p-1">
+            <button type="button" wire:click="$set('mode', 'draw')"
+                class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition {{ $mode === 'draw' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Draw
+            </button>
+            <button type="button" wire:click="$set('mode', 'upload')"
+                class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition {{ $mode === 'upload' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900' }}">
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Upload
+            </button>
+        </div>
+    </div>
+
     {{-- Card --}}
     <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
         {{-- Label --}}
@@ -27,37 +47,83 @@
                 <p class="mt-2 text-sm font-semibold text-rose-600">{{ $message }}</p>
             @enderror
 
-            {{-- If validation fails on save, pngDataUrl will be required --}}
             @error('pngDataUrl')
+                <p class="mt-2 text-sm font-semibold text-rose-600">{{ $message }}</p>
+            @enderror
+
+            @error('signatureImage')
                 <p class="mt-2 text-sm font-semibold text-rose-600">{{ $message }}</p>
             @enderror
         </div>
 
-        {{-- Canvas Area --}}
-        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div class="text-sm font-semibold text-slate-900">Signature Pad</div>
-                <div class="text-xs text-slate-500">Tip: use finger / mouse</div>
-            </div>
+        @if($mode === 'draw')
+            {{-- Canvas Area --}}
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4" wire:key="draw-mode">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="text-sm font-semibold text-slate-900">Signature Pad</div>
+                    <div class="text-xs text-slate-500">Tip: use finger / mouse</div>
+                </div>
 
-            <div class="mt-3 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white">
-                {{-- Important: keep width/height attributes for consistent export --}}
-                <canvas id="sig-canvas" width="600" height="200" class="block h-[220px] w-full touch-none">
-                </canvas>
-            </div>
+                <div class="mt-3 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white">
+                    <canvas id="sig-canvas" width="600" height="200" class="block h-[220px] w-full touch-none">
+                    </canvas>
+                </div>
 
-            <div class="mt-3 flex flex-wrap items-center gap-2">
-                <button type="button" id="sig-clear"
-                    class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                    Clear
-                </button>
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <button type="button" id="sig-clear"
+                        class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Clear
+                    </button>
 
-                <button type="button" id="sig-invert"
-                    class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                    Invert
-                </button>
+                    <button type="button" id="sig-invert"
+                        class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                        Invert
+                    </button>
+                </div>
             </div>
-        </div>
+        @else
+            {{-- Upload Area --}}
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4" wire:key="upload-mode">
+                <div class="text-sm font-semibold text-slate-900">Upload Signature Image</div>
+                <p class="mt-1 text-xs text-slate-500">Recommended: PNG with transparent background</p>
+
+                <div class="mt-4">
+                    <div class="relative flex min-h-[220px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-6 transition hover:border-indigo-400">
+                        @if ($signatureImage)
+                            <div class="mb-4 overflow-hidden rounded-xl border border-slate-200">
+                                <img src="{{ $signatureImage->temporaryUrl() }}" class="max-h-[160px] object-contain">
+                            </div>
+                            <button type="button" wire:click="$set('signatureImage', null)"
+                                class="text-xs font-semibold text-rose-600 hover:underline">
+                                Remove and try another
+                            </button>
+                        @else
+                            <input type="file" wire:model="signatureImage" class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" accept="image/*">
+                            <div class="flex flex-col items-center">
+                                <div class="mb-3 rounded-full bg-indigo-50 p-3 text-indigo-600">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-semibold text-slate-900">Click to upload or drag and drop</span>
+                                <span class="mt-1 text-xs text-slate-500">PNG, JPG, JPEG up to 2MB</span>
+                            </div>
+                        @endif
+
+                        {{-- Loading Indicator --}}
+                        <div wire:loading wire:target="signatureImage" class="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/80 backdrop-blur-sm">
+                            <div class="flex flex-col items-center">
+                                <svg class="h-8 w-8 animate-spin text-indigo-600" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="mt-2 text-xs font-semibold text-slate-600">Uploading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- Actions --}}
         <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -66,10 +132,18 @@
                 Cancel
             </a>
 
-            <button type="button" id="save-btn"
-                class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                Save Signature
-            </button>
+            @if($mode === 'draw')
+                <button type="button" id="save-btn"
+                    class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Save Signature
+                </button>
+            @else
+                <button type="button" wire:click="save" wire:loading.attr="disabled"
+                    class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
+                    <span wire:loading.remove wire:target="save">Save Signature</span>
+                    <span wire:loading wire:target="save">Saving...</span>
+                </button>
+            @endif
         </div>
     </div>
 
