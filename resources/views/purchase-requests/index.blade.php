@@ -342,10 +342,24 @@
                             this.htmlContent = `<div class='p-6 text-center text-rose-500'><i class='bi bi-exclamation-triangle text-3xl mb-2 block'></i><p>Could not load the purchase request details.</p></div>`;
                             this.isLoading = false;
                         });
+                    },
+                    closeModal() {
+                        this.show = false;
+                    },
+                    reloadAfterAction() {
+                        this.show = false;
+                        this.$nextTick(() => {
+                            const tableId = 'purchaserequests-table';
+                            if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                                window.LaravelDataTables[tableId].ajax.reload(null, false);
+                            }
+                        });
                     }
                 }" 
                 x-effect="document.body.style.overflow = show ? 'hidden' : ''"
                 @open-quick-view-modal.window="open($event)"
+                @qv-close.window="closeModal()"
+                @qv-action-success.window="reloadAfterAction()"
                 @keydown.escape.window="show = false"
                 x-show="show" 
                 class="relative z-[100]" 
@@ -672,5 +686,121 @@
                 }
             }));
         });
+    </script>
+
+    {{-- Quick-View Action Helpers --}}
+    {{-- These MUST be in a plain <script> block (not inside alpine:init) so they are --}}
+    {{-- available immediately — onclick="window.qv*" calls happen before Alpine fires. --}}
+    <script>
+        window.qvPost = function(url, body, csrfToken) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(body),
+            }).then(function(res) {
+                return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+            });
+        };
+
+        window.qvOnSuccess = function(message) {
+            window.dispatchEvent(new CustomEvent('qv-action-success'));
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Done!',
+                    text: message,
+                    toast: true,
+                    position: 'top-end',
+                    timer: 3500,
+                    showConfirmButton: false,
+                });
+            }
+        };
+
+        window.qvOnError = function(message) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Action Failed',
+                    text: message || 'An unexpected error occurred.',
+                    customClass: { popup: 'rounded-2xl' },
+                });
+            } else {
+                alert(message || 'An unexpected error occurred.');
+            }
+        };
+
+        window.qvPromptApprove = function(approveUrl, csrfToken) {
+            if (typeof Swal === 'undefined') { return; }
+            Swal.fire({
+                title: 'Approve Request?',
+                html: '<p class="text-sm text-slate-600">This will <strong>auto-approve all pending items</strong> for the current step and advance the workflow.</p>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Approve',
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                    cancelButton: 'rounded-xl px-4 py-2 font-bold',
+                },
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+                window.qvPost(approveUrl, { auto_approve_items: true }, csrfToken)
+                    .then(function(res) {
+                        if (res.data && res.data.success) {
+                            window.qvOnSuccess(res.data.message);
+                        } else {
+                            window.qvOnError(res.data ? res.data.message : null);
+                        }
+                    })
+                    .catch(function() { window.qvOnError('Connection error. Please try again.'); });
+            });
+        };
+
+        window.qvPromptReject = function(rejectUrl, csrfToken) {
+            if (typeof Swal === 'undefined') { return; }
+            Swal.fire({
+                title: 'Reject Request',
+                input: 'textarea',
+                inputLabel: 'Rejection Reason (Required)',
+                inputPlaceholder: 'Provide clear remarks detailing why this is rejected...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Submit Rejection',
+                customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                    cancelButton: 'rounded-xl px-4 py-2 font-bold',
+                    input: 'rounded-xl border-slate-300',
+                },
+                inputValidator: function(value) {
+                    if (!value || value.trim().length < 5) {
+                        return 'A valid reason (min 5 characters) is mandatory.';
+                    }
+                },
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+                window.qvPost(rejectUrl, { remarks: result.value }, csrfToken)
+                    .then(function(res) {
+                        if (res.data && res.data.success) {
+                            window.qvOnSuccess(res.data.message);
+                        } else {
+                            window.qvOnError(res.data ? res.data.message : null);
+                        }
+                    })
+                    .catch(function() { window.qvOnError('Connection error. Please try again.'); });
+            });
+        };
     </script>
 @endpush
