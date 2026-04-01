@@ -174,15 +174,11 @@ class OvertimeForm extends Model implements Approvable
     public function scopeByRole($query, $user, bool $wideView = false)
     {
         return $query->where(function ($q) use ($user, $wideView) {
-            // 1. Super-admin or specialized view-all (if toggled) sees everything
-            if ($user->hasRole('super-admin') || ($wideView && $user->can('overtime.view-all'))) {
-                return;
-            }
-
-            // 2. Creator always sees their own
+            // 1. Identity: Creator always sees their own
             $q->where('user_id', $user->id);
 
-            // 3. Everything else: Use Centralized Approval Scoper 
+            // 2. Everything else: Use Centralized Approval Scoping Decision
+            // Handles Super-Admin, Global permissions, Active Turns, and Regional Oversights.
             $q->orWhereHas('approvalRequest', function ($aq) use ($user, $wideView) {
                 $aq->forUser($user, $wideView);
             });

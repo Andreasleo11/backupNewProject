@@ -134,9 +134,30 @@ class ApprovalScopingManager
                 $q->orWhereIn('status', $targetStatuses);
             }
 
-            // Note: Director and GM no longer have broad "Oversight". 
+            // 4. General Manager (Oversight: Branch-specific)
+            if ($user->hasRole('general-manager')) {
+                $userBranch = $user->employee->branch ?? '';
+                if ($userBranch) {
+                    $q->orWhere(function ($sub) use ($userBranch, $statuses) {
+                        $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                        $sub->whereIn('status', $targetStatuses)
+                            ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class, \App\Domain\Overtime\Models\OvertimeForm::class], function ($aq, $type) use ($userBranch) {
+                                if ($type === \App\Models\PurchaseRequest::class) {
+                                    // Item branch is an Enum (Branch::JAKARTA or Branch::KARAWANG)
+                                    $aq->where('branch', strtoupper($userBranch));
+                                } else {
+                                    // Item branch is a String (may be 'Jakarta' or 'Karawang')
+                                    $aq->whereRaw('LOWER(branch) = ?', [strtolower($userBranch)]);
+                                }
+                            });
+                    });
+                }
+            }
+
+            // Note: Director remains globally focused. 
             // They rely on Section (A) Historical and (B) Active Turn 
-            // in ApprovalVisibilityScoper for their visibility.
+            // in ApprovalVisibilityScoper for their visibility in focused mode,
+            // and the early-return View-All in wide mode.
         });
     }
 }
