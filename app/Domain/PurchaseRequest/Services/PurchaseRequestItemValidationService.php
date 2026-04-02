@@ -95,6 +95,27 @@ class PurchaseRequestItemValidationService
     }
 
     /**
+     * Automatically reject all pending items for the specified approver type.
+     * Used when the entire PR is rejected so item-level records stay consistent.
+     */
+    public function autoRejectPendingItems(PurchaseRequest $pr, string $approverType): void
+    {
+        $items = $pr->itemDetail;
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $column = $this->getApprovalColumn($approverType);
+
+        foreach ($items as $item) {
+            if (is_null($item->$column)) {
+                $item->update([$column => false]);
+            }
+        }
+    }
+
+    /**
      * Check if the user can review items at the current workflow step.
      */
     public function canReviewItems(User $user, PurchaseRequest $pr): bool

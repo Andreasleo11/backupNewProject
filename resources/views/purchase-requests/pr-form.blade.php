@@ -522,14 +522,6 @@
                                 .then(data => callback(data))
                                 .catch(() => callback());
                         },
-                        render: {
-                            option: (item, escape) => {
-                                return `<div class="px-3 py-2 flex justify-between items-center hover:bg-indigo-50">
-                                    <span class="font-medium text-slate-700">${escape(item.name)}</span>
-                                    ${item.price ? `<span class="text-xs text-slate-400 ml-2">est. ${Math.round(item.price).toLocaleString()}</span>` : ''}
-                                </div>`;
-                            },
-                        },
                     };
 
                     const ts = new TomSelect(el, tsOptions);
@@ -537,15 +529,19 @@
 
                     ts.on('change', (value) => {
                         if (!this.items[index]) return;
-                        this.items[index].item_name = value;
+                        this.items[index].item_name = value || '';
 
                         const opt = ts.options[value];
                         if (opt) {
-                            if (opt.currency && this.items[index].currency === 'IDR') {
+                            // Update currency if it's still default IDR
+                            if (opt.currency && (this.items[index].currency === 'IDR' || !this.items[index].currency)) {
                                 this.items[index].currency = opt.currency;
                             }
-                            if (opt.latest_price || opt.price) {
-                                this.items[index].price = (opt.latest_price ?? opt.price).toString();
+                            
+                            // Update price with latest available
+                            const price = opt.latest_price || opt.price;
+                            if (price) {
+                                this.items[index].price = price.toString();
                             }
                         }
                     });

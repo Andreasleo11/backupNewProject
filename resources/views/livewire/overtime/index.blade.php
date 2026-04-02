@@ -154,17 +154,6 @@
                 {{-- Right controls --}}
                 <div class="ml-auto flex items-center gap-3">
                     
-                    {{-- Wide View Toggle: only for privileged --}}
-                    @if ($isPrivileged)
-                        <div class="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/60 shadow-sm">
-                            <span class="text-[9px] font-black uppercase tracking-widest {{ $isWideView ? 'text-slate-400' : 'text-indigo-600' }}">Action Only</span>
-                            <button type="button" wire:click="$set('isWideView', {{ $isWideView ? 'false' : 'true' }})"
-                                class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $isWideView ? 'bg-indigo-600' : 'bg-slate-200' }}">
-                                <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $isWideView ? 'translate-x-4' : 'translate-x-0' }}"></span>
-                            </button>
-                            <span class="text-[9px] font-black uppercase tracking-widest {{ $isWideView ? 'text-indigo-600' : 'text-slate-400' }}">Wide View</span>
-                        </div>
-                    @endif
 
                     <select class="rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-7 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-indigo-500" wire:model.live="perPage">
                         <option value="10">10</option>

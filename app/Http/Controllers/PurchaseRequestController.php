@@ -67,18 +67,6 @@ class PurchaseRequestController extends Controller
         $status = $request->status ?: $request->session()->get('status');
         $branch = $request->branch ?: $request->session()->get('branch');
         
-        // Capture Wide View preference (default based on role or session)
-        $isWideRequested = $request->has('is_wide') ? $request->boolean('is_wide') : null;
-        if ($isWideRequested !== null) {
-            $request->session()->put('pr_is_wide', $isWideRequested);
-        }
-        
-        $isWideView = $request->session()->get('pr_is_wide');
-        if ($isWideView === null) {
-            $isWideView = Auth::user()->hasRole('super-admin');
-            $request->session()->put('pr_is_wide', $isWideView);
-        }
-
         if ($startDate && $endDate) {
             $request->session()->put('start_date', $startDate);
             $request->session()->put('end_date', $endDate);
@@ -98,8 +86,7 @@ class PurchaseRequestController extends Controller
             endDate: $endDate,
             status: $status,
             branch: $branch,
-            perPage: 10,
-            wideView: $isWideView
+            perPage: 10
         );
 
         // Fetch purchase requests using the Query class
@@ -111,7 +98,6 @@ class PurchaseRequestController extends Controller
             'start_date' => $startDate,
             'end_date' => $endDate,
             'branch' => $branch,
-            'is_wide' => $isWideView ? 1 : 0,
         ]);
 
         // Get stats for dashboard
@@ -120,11 +106,7 @@ class PurchaseRequestController extends Controller
         // Determine if the user can batch-approve/reject PRs (separate from individual pr.approve)
         $canBatchApprove = Auth::user()->can('pr.batch-approve');
 
-        $isPrivileged = Auth::user()->hasAnyRole(['super-admin', 'director', 'general-manager']) || 
-                        Auth::user()->can('purchase-request.view-all') || 
-                        Auth::user()->can('approval.view-all');
-
-        return $dataTable->render('purchase-requests.index', compact('stats', 'canBatchApprove', 'isPrivileged', 'isWideView'));
+        return $dataTable->render('purchase-requests.index', compact('stats', 'canBatchApprove'));
     }
 
     public function create()
@@ -546,17 +528,22 @@ class PurchaseRequestController extends Controller
     {
         $isAjax = $request->ajax() || $request->wantsJson();
 
+        // AJAX quick-view sends `auto_approve_items: true` — reuse the same flag to also
+        // auto-reject any pending item-level approvals before rejecting the workflow step.
+        $autoApproveItems = $request->boolean('auto_approve_items', true);
+
         try {
             $useCase->handle(new ApprovalActionDTO(
                 purchaseRequestId: (int) $purchaseRequest->id,
                 actorUserId: (int) auth()->id(),
-                remarks: $request->input('remarks')
+                remarks: $request->input('remarks'),
+                autoApproveItems: $autoApproveItems,
             ));
 
             if ($isAjax) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Purchase Request rejected successfully.',
+                    'message' => 'Purchase Request rejected. All pending items have been marked as rejected.',
                 ]);
             }
 
@@ -580,6 +567,7 @@ class PurchaseRequestController extends Controller
 
             return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
         }
+
     }
 
     public function returnForRevision(Request $request, PurchaseRequest $purchaseRequest)
