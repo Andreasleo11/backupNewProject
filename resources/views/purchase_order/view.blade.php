@@ -233,7 +233,7 @@
         {{-- Upload section (non-director) --}}
         @if (!$director)
             <div class="container mb-4 space-y-4" x-data="{ openUploadFiles: false }">
-                @if ($user->id == $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER' || $user->is_head === 1)
+                @if ($user->id == $purchaseOrder->creator_id || $user->specification?->name === 'PURCHASER' || $user->is_head === 1)
                     <div class="flex justify-end">
                         <button type="button" @click="openUploadFiles = true"
                             class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
@@ -250,8 +250,8 @@
                 <section aria-label="Related Documents">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                         @include('partials.file-attachments', [
-                            'files' => $purchaseOrder->files,
-                            'showDelete' => $user->id === $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER',
+                            'files' => $files,
+                            'showDelete' => $user->id === $purchaseOrder->creator_id || $user->specification?->name === 'PURCHASER',
                             'title' => 'Related Documents'
                         ])
                     </div>

@@ -78,7 +78,7 @@ class ApprovalVisibilityScoper
 
             // C. Role-Based Oversight (Jurisdiction)
             $groupedQuery->orWhere(function ($oversightQuery) use ($user, $manager) {
-                $oversightQuery->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']);
+                $oversightQuery->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED']);
                 $manager->applyVisibilityScope($oversightQuery, $user);
             });
         });

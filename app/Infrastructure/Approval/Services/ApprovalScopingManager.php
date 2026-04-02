@@ -98,7 +98,7 @@ class ApprovalScopingManager
             if ($user->hasRole('purchaser')) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
                 $q->orWhere(function ($sub) use ($depts, $statuses) {
-                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
                     $sub->whereIn('status', $targetStatuses)
                         ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
                             // If specialized sub-roles are defined, restrict scope to them. 
