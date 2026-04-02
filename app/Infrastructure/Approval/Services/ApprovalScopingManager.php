@@ -97,15 +97,17 @@ class ApprovalScopingManager
             // 1. Purchaser (Oversight: IN_REVIEW, APPROVED, REJECTED for PRs ONLY)
             if ($user->hasRole('purchaser')) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
-                if (!empty($depts)) {
-                    $q->orWhere(function ($sub) use ($depts, $statuses) {
-                        $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
-                        $sub->whereIn('status', $targetStatuses)
-                            ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
+                $q->orWhere(function ($sub) use ($depts, $statuses) {
+                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                    $sub->whereIn('status', $targetStatuses)
+                        ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
+                            // If specialized sub-roles are defined, restrict scope to them. 
+                            // Otherwise (Base Purchaser only), allow global PR access.
+                            if (!empty($depts)) {
                                 $aq->whereIn('to_department', $depts);
-                            });
-                    });
-                }
+                            }
+                        });
+                });
             }
 
             // 2. Dept Head / Supervisor (Oversight: Historical APPROVED/REJECTED ONLY)
@@ -154,10 +156,24 @@ class ApprovalScopingManager
                 }
             }
 
-            // Note: Director remains globally focused. 
-            // They rely on Section (A) Historical and (B) Active Turn 
-            // in ApprovalVisibilityScoper for their visibility in focused mode,
-            // and the early-return View-All in wide mode.
+            // 5. Global View-All Permissions (Permission-Based Oversight)
+            // This replaces the previous 'early return' in the Visibility Scoper 
+            // for non-SuperAdmins, allowing for state-restricted oversight.
+            $canGlobalView = $user->can('approval.view-all') || 
+                            $user->can('overtime.view-all') || 
+                            $user->can('purchase-request.view-all');
+
+            if ($canGlobalView) {
+                if ($user->hasRole('director')) {
+                    // Directors see everything globally in index views
+                    $q->orWhereIn('status', $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED']);
+                } else {
+                    // Non-Director Global Viewers (e.g. Verificator with view-all perms)
+                    // only see finalized results (APPROVED/REJECTED) globally.
+                    // Pending records remain restricted to their own jurisdiction above.
+                    $q->orWhereIn('status', $statuses ?? ['APPROVED', 'REJECTED']);
+                }
+            }
         });
     }
 }

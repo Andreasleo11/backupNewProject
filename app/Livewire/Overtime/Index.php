@@ -40,8 +40,6 @@ class Index extends Component
     #[Url(as: 'hide_signed')]
     public bool $hideSigned = true; // Default hide items I already signed
 
-    #[Url(as: 'is_wide')]
-    public bool $isWideView = false; // focused vs wide view
 
     // UI state
     #[Url(as: 'q')]
@@ -178,7 +176,6 @@ class Index extends Component
                 'sortField',
                 'sortDirection',
                 'hideSigned',
-                'isWideView',
             ])
         ) {
             $this->resetPage();
@@ -207,10 +204,6 @@ class Index extends Component
     {
         $this->authorize('viewAny', OvertimeForm::class);
         
-        // Super-admin defaults to Wide View, others default to Focused View
-        if (Auth::user()->hasRole('super-admin')) {
-            $this->isWideView = true;
-        }
 
         $this->departments = Department::select('id', 'name')->orderBy('name')->get()->toArray();
     }
@@ -225,7 +218,6 @@ class Index extends Component
         $this->search = '';
         $this->range = null;
         $this->hideSigned = true; // reset to default
-        $this->isWideView = Auth::user()->hasRole('super-admin'); 
         $this->resetPage();
     }
 
@@ -527,7 +519,7 @@ class Index extends Component
 
     private function scopeByRole($query)
     {
-        return $query->byRole(Auth::user(), $this->isWideView);
+        return $query->byRole(Auth::user());
     }
 
     public function clearFilter(string $key): void

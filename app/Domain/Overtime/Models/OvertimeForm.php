@@ -171,16 +171,16 @@ class OvertimeForm extends Model implements Approvable
      * Centralized query scope for role-based visibility.
      * Delegates to the unified Approval Request scoper.
      */
-    public function scopeByRole($query, $user, bool $wideView = false)
+    public function scopeByRole($query, $user)
     {
-        return $query->where(function ($q) use ($user, $wideView) {
+        return $query->where(function ($q) use ($user) {
             // 1. Identity: Creator always sees their own
             $q->where('user_id', $user->id);
 
             // 2. Everything else: Use Centralized Approval Scoping Decision
             // Handles Super-Admin, Global permissions, Active Turns, and Regional Oversights.
-            $q->orWhereHas('approvalRequest', function ($aq) use ($user, $wideView) {
-                $aq->forUser($user, $wideView);
+            $q->orWhereHas('approvalRequest', function ($aq) use ($user) {
+                $aq->forUser($user);
             });
         });
     }

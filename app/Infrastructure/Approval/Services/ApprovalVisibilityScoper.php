@@ -15,7 +15,7 @@ class ApprovalVisibilityScoper
     /**
      * Apply strict visibility rules to an ApprovalRequest query.
      */
-    public function apply(Builder $query, User $user, bool $wideView = false): void
+    public function apply(Builder $query, User $user): void
     {
         $manager = new ApprovalScopingManager;
 
@@ -26,37 +26,20 @@ class ApprovalVisibilityScoper
             return;
         }
 
-        // 2. Specialized 'View-All' Permissions (If Wide View is ON)
-        $canGlobalView = $user->can('approval.view-all') || 
-                        $user->can('overtime.view-all') || 
-                        $user->can('purchase-request.view-all');
+        // 2. Specialized 'View-All' Permissions
+        // Note: Non-SuperAdmin View-All permissions are now handled 
+        // inside the ApprovalScopingManager to allow for state-restricted oversight.
 
-        if ($wideView && $canGlobalView) {
-            // Note: If a GM has view-all, they override their branch restriction in Wide View.
-            return;
-        }
-
-        // --- LAYER 2: SCOPED VISIBILITY (Jurisdictional) ---
-
-        // Determine if this is a privileged user (Director, GM, or has view-all) 
-        // to handle the Action-Only vs Wide View UI logic.
-        $isPrivileged = $user->hasAnyRole(['director', 'general-manager']) || $canGlobalView;
-        $isFocusedMode = !$wideView && $isPrivileged;
-
-        $query->where(function ($groupedQuery) use ($user, $manager, $wideView, $isFocusedMode) {
+        $query->where(function ($groupedQuery) use ($user, $manager) {
             // Seed with false to ensure the group evaluates to false if no criteria match
             $groupedQuery->whereRaw('1 = 0');
 
             // A. Historical: User signed it
-            // Enabled if: Wide View OR not in Focused Mode (General users see their own)
-            if (!$isFocusedMode) {
-                $groupedQuery->orWhereHas('steps', function ($sq) use ($user) {
-                    $sq->where('acted_by', $user->id);
-                });
-            }
+            $groupedQuery->orWhereHas('steps', function ($sq) use ($user) {
+                $sq->where('acted_by', $user->id);
+            });
 
             // B. Active Turn: Specifically for this user (User or Role match)
-            // Always enabled in all modes.
             $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
                 // Determine if this user's turn matches must be restricted by jurisdiction (Branch/Dept)
                 // General Managers and Dept Heads are strictly local to their branches.
@@ -94,13 +77,10 @@ class ApprovalVisibilityScoper
             });
 
             // C. Role-Based Oversight (Jurisdiction)
-            // Enabled ONLY in Wide View for privileged users.
-            if (!$isFocusedMode) {
-                $groupedQuery->orWhere(function ($oversightQuery) use ($user, $manager) {
-                    $oversightQuery->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']);
-                    $manager->applyVisibilityScope($oversightQuery, $user);
-                });
-            }
+            $groupedQuery->orWhere(function ($oversightQuery) use ($user, $manager) {
+                $oversightQuery->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']);
+                $manager->applyVisibilityScope($oversightQuery, $user);
+            });
         });
     }
 }
