@@ -21,13 +21,13 @@ class ApprovalVisibilityScoper
 
         // --- LAYER 1: GLOBAL OVERRIDES (No Scoping) ---
         
-        // 1. Super-Admin always sees everything
-        if ($user->hasRole('super-admin')) {
+        // 1. Admins with global bypass always see everything
+        if ($user->can('system.admin') || $user->can('pr.admin')) {
             return;
         }
 
         // 2. Specialized 'View-All' Permissions
-        // Note: Non-SuperAdmin View-All permissions are now handled 
+        // Note: Non-Admin View-All permissions are handled 
         // inside the ApprovalScopingManager to allow for state-restricted oversight.
 
         $query->where(function ($groupedQuery) use ($user, $manager) {
@@ -43,7 +43,9 @@ class ApprovalVisibilityScoper
             $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
                 // Determine if this user's turn matches must be restricted by jurisdiction (Branch/Dept)
                 // General Managers and Dept Heads are strictly local to their branches.
-                $isBranchScoped = $user->hasAnyRole(config('approvals.jurisdiction_scoped_roles', ['department-head', 'supervisor', 'general-manager'])) && !$user->hasRole('super-admin');
+                $isBranchScoped = $user->hasAnyRole(config('approvals.jurisdiction_scoped_roles', ['department-head', 'supervisor', 'general-manager'])) 
+                                  && !$user->can('system.admin') 
+                                  && !$user->can('pr.admin');
 
                 $roleIds = $user->roles->pluck('id')->toArray();
                 $roleNames = $user->getRoleNames()->toArray();

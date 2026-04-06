@@ -61,7 +61,7 @@ class PurchaseRequestController extends Controller
             return redirect()->route('purchase-requests.index');
         }
 
-        // Auto-activate my_approval filter for general-manager
+        // Auto-activate my_approval filter for users who have approval permissions
         // Case: No explicit filters in URL and no explicit reset action
         if (!$request->filled('filter') && 
             !$request->filled('status') && 
@@ -70,7 +70,7 @@ class PurchaseRequestController extends Controller
             !$request->filled('custom_status') &&
             !$request->filled('custom_department') &&
             !$request->filled('custom_date') &&
-            auth()->user()->hasRole('general-manager')
+            auth()->user()->can('pr.approve')
         ) {
             return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
         }

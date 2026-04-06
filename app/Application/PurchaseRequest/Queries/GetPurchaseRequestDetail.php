@@ -2,9 +2,10 @@
 
 namespace App\Application\PurchaseRequest\Queries;
 
+use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\Services\PurchaseRequestDetailCalculator;
-use App\Application\PurchaseRequest\Services\PurchaseRequestPermissions;
 use App\Application\PurchaseRequest\ViewModels\PurchaseRequestDetailVM;
+use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\File;
@@ -15,7 +16,8 @@ final class GetPurchaseRequestDetail
 {
     public function __construct(
         private readonly PurchaseRequestDetailCalculator $calc,
-        private readonly PurchaseRequestPermissions $perms,
+        private readonly Approvals $approvals,
+        private readonly GetDefaultActiveUserSignature $getDefaultSignature,
     ) {}
 
     public function handle(int $prId, User $actor): PurchaseRequestDetailVM
@@ -48,7 +50,6 @@ final class GetPurchaseRequestDetail
 
         // optional: legacy master item update when APPROVED (same as old show)
         if ($pr->workflow_status === 'APPROVED') {
-            // (You can move this later into a Domain service; keep for now)
             foreach ($filtered as $d) {
                 $existing = MasterDataPr::where('name', $d->item_name)->first();
                 if (! $existing) {
@@ -67,7 +68,9 @@ final class GetPurchaseRequestDetail
         }
 
         $totals = $this->calc->totals($pr, $filtered);
-        $flags = $this->perms->flags($actor, $pr);
+        
+        // Authorization & UI Flags (Refactored from PurchaseRequestPermissions)
+        $flags = $this->buildFlags($actor, $pr);
 
         // files (you used doc_num before)
         $files = File::query()->where('doc_id', $pr->doc_num)->get();
@@ -85,5 +88,40 @@ final class GetPurchaseRequestDetail
                 'userCreatedBy' => $pr->createdBy,
             ],
         );
+    }
+
+    /**
+     * Build UI capability flags using Laravel Policies (Infrastructure) 
+     * and specialized services.
+     */
+    private function buildFlags(User $user, PurchaseRequest $pr): array
+    {
+        // 1. Approve: Workflow Engine Check + Policy Check
+        $canApprove = false;
+        if ($pr->approvalRequest) {
+            $canApprove = $this->approvals->canAct($pr, (int) $user->id)
+                          && $user->can('approve', $pr);
+        }
+
+        // 2. Sign & Submit: Creator logic (This is an action, checked against Policy if needed)
+        // For simplicity, we keep the creator logic here or move to a separate 'sign' policy method.
+        $isCreator = (int) $user->id === (int) $pr->user_id_create;
+        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
+        $canSignAndSubmit = $isCreator && in_array($pr->workflow_status, $allowedStatuses);
+
+        // 3. Signature Metadata
+        $defaultSig = $canSignAndSubmit
+            ? $this->getDefaultSignature->execute((int) $user->id)
+            : null;
+
+        return [
+            'canApprove' => $canApprove,
+            'canUpload' => $user->can('uploadFiles', $pr),
+            'canEdit' => $user->can('update', $pr),
+            'canAutoApprove' => $user->can('autoApprove', $pr),
+            'canSignAndSubmit' => $canSignAndSubmit,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'defaultSignaturePath' => $defaultSig?->filePath,
+        ];
     }
 }

@@ -52,7 +52,7 @@ class NavigationService
                 'route' => 'home',
                 'icon' => 'home',
                 'active' => request()->routeIs('home'),
-                'roles' => ['all'], // Available to all roles
+                'permission' => 'dashboard.view', // Available to all users with basic access
                 'priority' => 100,
             ],
 
@@ -378,7 +378,7 @@ class NavigationService
                 'type' => 'group',
                 'label' => 'Personnel Forms',
                 'icon' => 'clipboard-document',
-                'roles' => ['all'],
+                'permission' => 'dashboard.view', // Everyone can see basic forms
                 'priority' => 64,
                 'children' => [
                     [
@@ -425,7 +425,7 @@ class NavigationService
                 'type' => 'group',
                 'label' => 'Performance & Evaluation',
                 'icon' => 'chart-bar',
-                'roles' => ['admin', 'super-admin', 'hr', 'manager'],
+                'permission' => ['evaluation.view-any', 'evaluation.view-department'],
                 'priority' => 70,
                 'children' => [
                     [

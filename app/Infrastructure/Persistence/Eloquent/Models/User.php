@@ -95,20 +95,9 @@ class User extends Authenticatable
 
     public function needsSignature(): bool
     {
-        // 1. Check for any permissions that MUST have a signature (Approvers/Makers)
+        // Check for any permissions that MUST have a signature (Approvers/Makers/Admins)
         $signaturePermissions = \App\Infrastructure\Common\PermissionRegistry::getSignatureRequiredPermissions();
         
-        if ($this->hasAnyPermission($signaturePermissions)) {
-            return true;
-        }
-
-        // 2. Extra safety: Check common approval roles if permissions aren't fully set up
-        return $this->hasAnyRole([
-            'department-head',
-            'general-manager',
-            'director',
-            'verificator',
-            'purchasing-manager',
-        ]);
+        return $this->hasAnyPermission($signaturePermissions);
     }
 }

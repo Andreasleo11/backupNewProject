@@ -37,9 +37,9 @@ final class PurchaseRequestQueryBuilder
      *   - their own created PRs (identity)
      *   - PRs visible via the centralised ApprovalRequest visibility scope
      */
-    public function forUser(User $user): Builder
+    public function forUser(User $user, ?Builder $query = null): Builder
     {
-        $query = PurchaseRequest::query()
+        $query = ($query ?? PurchaseRequest::query())
             ->with([
                 'files',
                 'createdBy',
