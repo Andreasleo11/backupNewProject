@@ -24,8 +24,12 @@ final class CancelPurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Authorization: Only creator can cancel
-            if ($pr->user_id_create !== (int) $dto->cancelledByUserId) {
+            // Authorization: Only creator or super-admin can cancel
+            $user = \App\Models\User::find($dto->cancelledByUserId);
+            $isCreator = $pr->user_id_create === (int) $dto->cancelledByUserId;
+            $isSuperAdmin = $user && $user->hasRole('super-admin');
+
+            if (! $isCreator && ! $isSuperAdmin) {
                 throw new \Illuminate\Auth\Access\AuthorizationException('You are not authorized to cancel this purchase request');
             }
 
