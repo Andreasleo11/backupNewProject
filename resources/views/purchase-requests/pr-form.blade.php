@@ -14,7 +14,8 @@
     <div x-data="purchaseRequestForm(
         @js(old('items', $isEdit ? $purchaseRequest->itemDetail : [])),
         '{{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) }}',
-        '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}'
+        '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}',
+        @js($flags ?? [])
     )" x-init="init()">
         
         {{-- TOP BAR --}}
@@ -448,9 +449,10 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('purchaseRequestForm', (oldItems = [], initialFromDept = '', initialToDept = '') => ({
+            Alpine.data('purchaseRequestForm', (oldItems = [], initialFromDept = '', initialToDept = '', flags = {}) => ({
                 from_department: initialFromDept || '',
                 to_department: initialToDept || '',
+                flags: flags,
                 items: [],
                 currencies: ['IDR', 'CNY', 'USD'],
                 is_draft: '0', // Default
@@ -548,7 +550,8 @@
                 },
 
                 get showLocalImport() {
-                    return this.from_department === 'MOULDING' && this.to_department === 'Purchasing';
+                    return this.flags.userCanEverSelectImport && 
+                           (this.to_department === this.flags.targetDepartmentPurchasing);
                 },
 
                 validateBeforeSubmit() {

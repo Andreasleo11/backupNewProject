@@ -51,30 +51,31 @@ class ApprovalVisibilityScoper
                 $roleNames = $user->getRoleNames()->toArray();
                 
                 $activeTurnQuery->where('status', 'IN_REVIEW')
-                    ->whereHas('steps', function ($sq) use ($user, $roleIds, $roleNames) {
-                        $sq->whereColumn('sequence', 'approval_requests.current_step')
-                           ->where(function ($matchQuery) use ($user, $roleIds, $roleNames) {
-                               // Match by User ID
-                               $matchQuery->where('approver_type', 'user')
-                                          ->where('approver_id', $user->id);
-                               
-                               // OR Match by Role (Numeric ID or Name)
-                               if (!empty($roleIds)) {
-                                   $matchQuery->orWhere(function($rq) use ($roleIds, $roleNames) {
-                                       $rq->where('approver_type', 'role')
-                                          ->where(function($q) use ($roleIds, $roleNames) {
-                                              $q->whereIn('approver_id', $roleIds)
-                                                ->orWhereIn('approver_id', $roleNames);
-                                          });
-                                   });
-                               }
-                           });
-                    });
+                    ->where(function ($matchGroup) use ($user, $roleIds, $roleNames, $isBranchScoped, $manager) {
+                        // 1. Must match the User, or one of their Roles
+                        $matchGroup->whereHas('steps', function ($sq) use ($user, $roleIds, $roleNames) {
+                            $sq->whereColumn('sequence', 'approval_requests.current_step')
+                               ->where(function ($matchQuery) use ($user, $roleIds, $roleNames) {
+                                   $matchQuery->where('approver_type', 'user')
+                                              ->where('approver_id', $user->id);
+                                   
+                                   if (!empty($roleIds)) {
+                                       $matchQuery->orWhere(function($rq) use ($roleIds, $roleNames) {
+                                           $rq->where('approver_type', 'role')
+                                              ->where(function($q) use ($roleIds, $roleNames) {
+                                                  $q->whereIn('approver_id', $roleIds)
+                                                    ->orWhereIn('approver_id', $roleNames);
+                                              });
+                                       });
+                                   }
+                               });
+                        });
 
-                // Jurisdiction check for branch-restricted roles (Intersection)
-                if ($isBranchScoped) {
-                    $manager->applyVisibilityScope($activeTurnQuery, $user, ['IN_REVIEW']);
-                }
+                        // 2. AND if branch-scoped, MUST also match the jurisdiction
+                        if ($isBranchScoped) {
+                            $manager->applyVisibilityScope($matchGroup, $user, ['IN_REVIEW']);
+                        }
+                    });
             });
 
             // C. Role-Based Oversight (Jurisdiction)

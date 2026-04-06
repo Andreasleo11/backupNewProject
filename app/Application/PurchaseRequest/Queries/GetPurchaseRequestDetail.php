@@ -18,6 +18,7 @@ final class GetPurchaseRequestDetail
         private readonly PurchaseRequestDetailCalculator $calc,
         private readonly Approvals $approvals,
         private readonly GetDefaultActiveUserSignature $getDefaultSignature,
+        private readonly \App\Domain\PurchaseRequest\Services\PurchaseRequestSecurityService $security,
     ) {}
 
     public function handle(int $prId, User $actor): PurchaseRequestDetailVM
@@ -48,6 +49,17 @@ final class GetPurchaseRequestDetail
         // filter itemDetail based on roles/status
         $filtered = $this->calc->filteredItemDetail($actor, $pr);
 
+        // Authorization & UI Flags (Refactored from PurchaseRequestPermissions)
+        $flags = $this->buildFlags($actor, $pr);
+
+        // Security: Sensitive Data (Prices)
+        $canSeePrices = $this->security->canViewSensitiveData($actor, $pr);
+        if (!$canSeePrices) {
+            foreach ($filtered as $d) {
+                $d->price = 0;
+            }
+        }
+
         // optional: legacy master item update when APPROVED (same as old show)
         if ($pr->workflow_status === 'APPROVED') {
             foreach ($filtered as $d) {
@@ -68,9 +80,10 @@ final class GetPurchaseRequestDetail
         }
 
         $totals = $this->calc->totals($pr, $filtered);
-        
-        // Authorization & UI Flags (Refactored from PurchaseRequestPermissions)
-        $flags = $this->buildFlags($actor, $pr);
+        if (!$canSeePrices) {
+            $totals['total'] = 0;
+            $totals['currency'] = null;
+        }
 
         // files (you used doc_num before)
         $files = File::query()->where('doc_id', $pr->doc_num)->get();
@@ -103,11 +116,8 @@ final class GetPurchaseRequestDetail
                           && $user->can('approve', $pr);
         }
 
-        // 2. Sign & Submit: Creator logic (This is an action, checked against Policy if needed)
-        // For simplicity, we keep the creator logic here or move to a separate 'sign' policy method.
-        $isCreator = (int) $user->id === (int) $pr->user_id_create;
-        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-        $canSignAndSubmit = $isCreator && in_array($pr->workflow_status, $allowedStatuses);
+        // 2. Sign & Submit: Delegate to Security Service
+        $canSignAndSubmit = $this->security->canSubmit($pr, $user);
 
         // 3. Signature Metadata
         $defaultSig = $canSignAndSubmit
@@ -116,10 +126,13 @@ final class GetPurchaseRequestDetail
 
         return [
             'canApprove' => $canApprove,
-            'canUpload' => $user->can('uploadFiles', $pr),
             'canEdit' => $user->can('update', $pr),
             'canAutoApprove' => $user->can('autoApprove', $pr),
             'canSignAndSubmit' => $canSignAndSubmit,
+            'isOwner' => $this->security->isOwner($pr, $user),
+            'canViewAuditLog' => $user->can('approval.view-log'),
+            'showImportToggle' => $this->security->canSelectImportPath($pr->from_department, $pr->to_department?->value),
+            'isImportType' => $this->security->canSelectImportPath($pr->from_department, $pr->to_department?->value),
             'hasDefaultSignature' => $defaultSig !== null,
             'defaultSignaturePath' => $defaultSig?->filePath,
         ];

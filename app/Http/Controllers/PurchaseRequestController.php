@@ -41,12 +41,12 @@ class PurchaseRequestController extends Controller
         private BatchApprovePurchaseRequests $batchApproveUseCase,
         private BatchRejectPurchaseRequests $batchRejectUseCase,
         private \App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder $contextBuilder,
+        private \App\Domain\PurchaseRequest\Services\PurchaseRequestSecurityService $securityService,
     ) {}
 
     public function index(
         Request $request,
         PurchaseRequestsDataTable $dataTable,
-        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query,
         \App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery
     ) {
         // Check if reset is requested
@@ -94,26 +94,6 @@ class PurchaseRequestController extends Controller
             $request->session()->put('branch', $branch);
         }
 
-        $dto = new \App\Application\PurchaseRequest\DTOs\GetPurchaseRequestListDTO(
-            userId: Auth::id(),
-            startDate: $startDate,
-            endDate: $endDate,
-            status: $status,
-            branch: $branch,
-            perPage: 10
-        );
-
-        // Fetch purchase requests using the Query class
-        $purchaseRequests = $query->handle($dto);
-
-        // Append the filter parameters to the pagination links
-        $purchaseRequests->appends([
-            'status' => $status,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'branch' => $branch,
-        ]);
-
         // Get stats for dashboard
         $stats = $statsQuery->execute();
 
@@ -128,18 +108,25 @@ class PurchaseRequestController extends Controller
         $items = MasterDataPr::get();
         $departments = Department::all();
         $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
+        $user = auth()->user();
 
         return view('purchase-requests.pr-form', [
             'items' => $items,
             'departments' => $departments,
             'hasDefaultSignature' => $defaultSig !== null,
             'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'flags' => [
+                'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
+                'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
+                'isOwner' => true,
+            ]
         ]);
     }
 
     public function edit(int $id)
     {
-        $purchaseRequest = PurchaseRequest::byRole(auth()->user())
+        $user = auth()->user();
+        $purchaseRequest = PurchaseRequest::byRole($user)
             ->with(['itemDetail', 'approvalRequest.steps.actedUser'])
             ->findOrFail($id);
 
@@ -156,6 +143,11 @@ class PurchaseRequestController extends Controller
             'departments' => $departments,
             'hasDefaultSignature' => $defaultSig !== null,
             'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'flags' => [
+                'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
+                'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
+                'isOwner' => (int) $user->id === (int) $purchaseRequest->user_id_create,
+            ]
         ]);
     }
 

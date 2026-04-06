@@ -29,25 +29,25 @@
             <i class='bx bx-info-circle text-lg'></i>
         </a>
 
-        {{-- Delete Feature (Super Admin) --}}
-        @if (auth()->user()->hasRole('super-admin'))
+        {{-- Delete Feature --}}
+        @can('delete', $pr)
             <button type="button" 
                     title="Delete PR"
                     @click="$dispatch('open-delete-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' })"
                     class="group flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:border-rose-600 hover:text-white transition-all shadow-sm">
                 <i class='bx bx-trash-alt text-lg'></i>
             </button>
-        @endif
+        @endcan
 
         {{-- Cancel Feature --}}
-        @if (auth()->user()->id === $pr->user_id_create || auth()->user()->hasRole('super-admin'))
+        @can('cancel', $pr)
             <button type="button" 
                     title="Cancel PR"
                     @click="$dispatch('open-cancel-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' })"
                     class="group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm">
                 <i class='bx bx-x-circle text-lg'></i>
             </button>
-        @endif
+        @endcan
 
         {{-- More Actions Dropdown (Alpine Headless - Fixed Position) --}}
         <div x-data="{ open: false, x: 0, y: 0 }">
@@ -79,7 +79,7 @@
                                 <i class='bx bxs-file-pdf text-lg'></i> Export to PDF
                             </a>
                         </li>
-                        @if ($pr->workflow_status === 'APPROVED' && auth()->user()->hasRole('PURCHASER') || auth()->user()->hasRole('super-admin'))
+                        @can('update', $pr)
                             <li class="my-1 border-t border-slate-100"></li>
                             <li>
                                 <button type="button" 
@@ -88,7 +88,7 @@
                                     <i class='bx bx-edit text-lg'></i> Edit PO Number
                                 </button>
                             </li>
-                        @endif
+                        @endcan
                     </ul>
                 </div>
             </template>

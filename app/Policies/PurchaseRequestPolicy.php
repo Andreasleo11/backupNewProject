@@ -16,34 +16,37 @@ class PurchaseRequestPolicy
     ) {}
 
     /**
-     * Determine whether the user can view any models.
+     * Global Admin Bypass
      */
-    public function viewAny(User $user): bool
+    public function before(User $user, string $ability): ?bool
     {
-        return $user->can('pr.view-all') || $user->can('pr.view') || $user->can('pr.admin');
-    }
-
-    /**
-     * Determine whether the user can view the model (CRUD-level).
-     */
-    public function view(User $user, PurchaseRequest $pr): bool
-    {
-        if ($user->can('pr.admin') || $user->can('pr.view-all')) {
+        if ($user->can('system.admin') || $user->can('pr.admin')) {
             return true;
         }
 
-        if ($user->can('pr.view')) {
-            // Can view if created by self
-            if ($user->id === $pr->user_id_create) {
-                return true;
-            }
-            // Can view if in same department
-            if ($user->department_id === $pr->from_department_id) {
-                return true;
-            }
+        return null;
+    }
+
+    /**
+     * Determine whether the user can view any models (Index view).
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->can('pr.view');
+    }
+
+    /**
+     * Determine whether the user can view a specific model.
+     */
+    public function view(User $user, PurchaseRequest $pr): bool
+    {
+        if (!$user->can('pr.view')) {
+            return false;
         }
 
-        return false;
+        // View logic: Creator OR same department
+        return $user->id === (int) $pr->user_id_create || 
+               $user->department_id === $pr->from_department_id;
     }
 
     /**
@@ -51,39 +54,19 @@ class PurchaseRequestPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('pr.create') || $user->can('pr.admin');
+        return $user->can('pr.create');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine whether the user can update the model (Data Edit).
      */
     public function update(User $user, PurchaseRequest $pr): bool
     {
-        // 1. Basic Permission Check
-        if (!$user->can('pr.edit') && !$user->can('pr.admin')) {
+        if (!$user->can('pr.edit')) {
             return false;
         }
 
-        $status = $pr->workflow_status ?? 'DRAFT';
-
-        // 2. Creator Logic: Creator can edit in specific states
-        if ($user->id === (int) $pr->user_id_create) {
-            $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED'];
-            if (in_array($status, $allowedForCreator)) {
-                return true;
-            }
-        }
-
-        // 3. Sensitive Oversight Logic (e.g., Purchasers/GMs)
-        // Can edit in most states (including IN_REVIEW and APPROVED)
-        if ($user->can('pr.view-sensitive') || $user->can('pr.admin')) {
-            $allowedForOversight = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
-            if (in_array($status, $allowedForOversight)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->security->canUpdate($pr, $user);
     }
 
     /**
@@ -91,12 +74,13 @@ class PurchaseRequestPolicy
      */
     public function delete(User $user, PurchaseRequest $pr): bool
     {
-        if ($user->can('pr.delete') || $user->can('pr.admin')) {
-            // Only draft
-            return $pr->status === 1 && $user->id === $pr->user_id_create;
+        if (!$user->can('pr.delete')) {
+            return false;
         }
 
-        return false;
+        // Only creators can delete, and only in DRAFT mode
+        return $user->id === (int) $pr->user_id_create && 
+               strtoupper($pr->workflow_status ?? 'DRAFT') === 'DRAFT';
     }
 
     /**
@@ -104,11 +88,11 @@ class PurchaseRequestPolicy
      */
     public function cancel(User $user, PurchaseRequest $pr): bool
     {
-        if ($user->can('pr.cancel') || $user->can('pr.admin')) {
-            return $user->id === (int) $pr->user_id_create || $user->can('pr.view-sensitive');
+        if (!$user->can('pr.cancel')) {
+            return false;
         }
 
-        return false;
+        return $this->security->canCancel($pr, $user);
     }
 
     /**
@@ -116,33 +100,31 @@ class PurchaseRequestPolicy
      */
     public function approve(User $user, PurchaseRequest $pr): bool
     {
-        return $user->can('pr.approve') || $user->can('pr.admin');
+        return $user->can('pr.approve');
     }
 
     /**
      * Determine if the user is eligible for auto-approval.
-     * Delegates to the Domain Service (DDD).
      */
     public function autoApprove(User $user, PurchaseRequest $pr): bool
     {
-        return $user->can('pr.auto-approve') 
-               || $this->security->canAutoApprove($pr, $user)
-               || $user->can('pr.admin');
+        return $user->can('pr.auto-approve') || 
+               $this->security->canAutoApprove($pr, $user);
     }
 
     /**
-     * Determine if user can upload files.
+     * Determine if user can upload files (Merged with Edit permission).
      */
     public function uploadFiles(User $user, PurchaseRequest $pr): bool
     {
-        return $user->can('pr.upload-files') || $user->can('pr.admin');
+        return $this->update($user, $pr);
     }
 
     /**
-     * Determine if user can perform batch approval/rejection.
+     * Determine if user can perform batch actions.
      */
     public function batchApprove(User $user): bool
     {
-        return $user->can('pr.batch-approve') || $user->can('pr.admin');
+        return $user->can('pr.batch-approve');
     }
 }

@@ -224,7 +224,7 @@ class NavigationService
                         'route' => 'purchase-requests.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('purchase-requests.*'),
-                        'permission' => 'pr.view-any',
+                        'permission' => 'pr.view',
                     ],
                     [
                         'label' => 'Purchase Orders',

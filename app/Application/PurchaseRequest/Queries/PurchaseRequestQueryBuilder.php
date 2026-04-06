@@ -25,7 +25,6 @@ use Illuminate\Http\Request;
  * Used by:
  *   - PurchaseRequestsDataTable  (AJAX list)
  *   - GetPurchaseRequestStats    (dashboard counters)
- *   - GetPurchaseRequestList     (paginated list, if still needed)
  */
 final class PurchaseRequestQueryBuilder
 {

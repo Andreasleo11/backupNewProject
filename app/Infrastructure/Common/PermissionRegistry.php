@@ -34,20 +34,19 @@ class PermissionRegistry
             ],
             'Purchase Request' => [
                 'permissions' => [
-                    'pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject', 'pr.approve-items',
+                    'pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject',
                     'pr.auto-approve', // Replacement for GM/Moulding logic
-                    'pr.view-sensitive', // Replacement for Computer/Personnel logic
                     'pr.admin', // Full bypass for PR logic
                 ],
                 'roles' => [
-                    'staff'              => ['pr.view', 'pr.view-any', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'],
-                    'department-head'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'verificator'        => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'general-manager'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.auto-approve'],
-                    'director'           => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.batch-approve', 'pr.auto-approve'],
-                    'purchaser'          => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.auto-approve', 'pr.view-sensitive'],
-                    'purchasing-manager' => ['pr.view-any', 'pr.view-all', 'pr.batch-approve', 'approval.view-log', 'pr.admin'],
-                    'accounting-officer' => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print'],
+                    'staff'              => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print'],
+                    'department-head'    => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.reject'],
+                    'verificator'        => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject'],
+                    'general-manager'    => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.auto-approve'],
+                    'director'           => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve'],
+                    'purchaser'          => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve'],
+                    'purchasing-manager' => ['pr.view', 'pr.batch-approve', 'approval.view-log', 'pr.admin'],
+                    'accounting-officer' => ['pr.view', 'pr.print'],
                 ],
             ],
             'Approval Engine' => [

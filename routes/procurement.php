@@ -38,21 +38,21 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     // Purchase Requests
     Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames'])->name('purchase-requests.get-item-names');
-    Route::get('purchase-requests', [PurchaseRequestController::class, 'index'])->name('purchase-requests.index');
-    Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
-    Route::post('purchase-requests', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
-    Route::get('purchase-requests/{id}/edit', [PurchaseRequestController::class, 'edit'])->name('purchase-requests.edit');
-    Route::put('purchase-requests/{id}', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
-    Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchase-requests.cancel');
-    Route::post('/purchaseRequestsInsert', [PurchaseRequestController::class, 'store'])->name('purchaserequest.insert');
-    Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
-    Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
-    Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
-    Route::get('/purchase-requests/{id}/quick-view', [PurchaseRequestController::class, 'quickView'])->name('purchase-requests.quick-view');
-    Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
-    Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
-    Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->name('purchase-requests.return');
-    Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
+    Route::get('purchase-requests', [PurchaseRequestController::class, 'index'])->middleware('permission:pr.view')->name('purchase-requests.index');
+    Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->middleware('permission:pr.create')->name('purchase-requests.create');
+    Route::post('purchase-requests', [PurchaseRequestController::class, 'store'])->middleware('permission:pr.create')->name('purchase-requests.store');
+    Route::get('purchase-requests/{id}/edit', [PurchaseRequestController::class, 'edit'])->middleware('permission:pr.edit')->name('purchase-requests.edit');
+    Route::put('purchase-requests/{id}', [PurchaseRequestController::class, 'update'])->middleware('permission:pr.edit')->name('purchase-requests.update');
+    Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->middleware('permission:pr.cancel')->name('purchase-requests.cancel');
+    Route::post('/purchaseRequestsInsert', [PurchaseRequestController::class, 'store'])->middleware('permission:pr.create')->name('purchaserequest.insert');
+    Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->middleware('permission:pr.delete')->name('purchase-requests.destroy');
+    Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->middleware('permission:pr.view')->name('purchase-requests.export-excel');
+    Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->middleware('permission:pr.view')->name('purchase-requests.show');
+    Route::get('/purchase-requests/{id}/quick-view', [PurchaseRequestController::class, 'quickView'])->middleware('permission:pr.view')->name('purchase-requests.quick-view');
+    Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->middleware('permission:pr.approve')->name('purchase-requests.approve');
+    Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->middleware('permission:pr.reject')->name('purchase-requests.reject');
+    Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->middleware('permission:pr.approve')->name('purchase-requests.return');
+    Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->middleware('permission:pr.create')->name('purchase-requests.sign-and-submit');
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->middleware('can:approve,item')->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->middleware('can:reject,item')->name('purchase-requests.items.reject');
 

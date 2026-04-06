@@ -79,7 +79,8 @@ class ApprovalScopingManager
 
     /**
      * Apply jurisdiction-based query scoping for a user.
-     * Centralized here to ensure consistency with isUserEligible().
+     * 
+     * Refactored: Dispatch to module-specific scoping methods for better context isolation.
      */
     public function applyVisibilityScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
     {
@@ -87,15 +88,33 @@ class ApprovalScopingManager
             // Seed with false to ensure 'orWhere' criteria are strictly additive
             $q->whereRaw('1 = 0');
 
-            // 1. Purchaser (Oversight: IN_REVIEW, APPROVED, REJECTED for PRs ONLY)
+            // 1. Purchase Request Module Scoping
+            $this->applyPurchaseRequestScope($q, $user, $statuses);
+
+            // 2. Overtime Module Scoping
+            $this->applyOvertimeScope($q, $user, $statuses);
+
+            // 3. Global Oversight Permissions (Directors/Admins)
+            $this->applyGlobalOversightScope($q, $user, $statuses);
+        });
+    }
+
+    /**
+     * Context: Purchase Request (PR) Visibility Rules
+     */
+    private function applyPurchaseRequestScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
+    {
+        $query->orWhere(function ($q) use ($user, $statuses) {
+            $q->whereRaw('1 = 0'); // Isolated sub-group inner seed
+
+            // A. Purchaser Role (Category Isolation)
             if ($user->hasRole('purchaser')) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
-                $q->orWhere(function ($sub) use ($depts, $statuses) {
-                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
+                $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
+                
+                $q->orWhere(function ($sub) use ($depts, $targetStatuses) {
                     $sub->whereIn('status', $targetStatuses)
                         ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
-                            // If specialized sub-roles are defined, restrict scope to them. 
-                            // Otherwise (Base Purchaser only), allow global PR access.
                             if (!empty($depts)) {
                                 $aq->whereIn('to_department', $depts);
                             }
@@ -103,70 +122,96 @@ class ApprovalScopingManager
                 });
             }
 
-            // 2. Dept Head / Supervisor (Oversight: Historical APPROVED/REJECTED ONLY)
+            // B. Dept Head / Supervisor (Internal PR Isolation)
+            if ($user->hasRole('department-head') || $user->hasRole('supervisor')) {
+                $eligibleDepts = $this->getEligibleDepartments($user);
+                $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
+
+                $q->orWhere(function ($sub) use ($eligibleDepts, $targetStatuses) {
+                    $sub->whereIn('status', $targetStatuses)
+                        ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($eligibleDepts) {
+                            $lowerDepts = array_map('strtolower', array_map('trim', $eligibleDepts));
+                            $aq->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(from_department)'), $lowerDepts);
+                        });
+                });
+            }
+
+            // C. General Manager (Branch Isolation)
+            if ($user->hasRole('general-manager')) {
+                $userBranch = $user->employee?->branch ?? '';
+                if ($userBranch) {
+                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                    $q->orWhere(function ($sub) use ($userBranch, $targetStatuses) {
+                        $sub->whereIn('status', $targetStatuses)
+                            ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($userBranch) {
+                                $aq->whereRaw('LOWER(branch) = ?', [strtolower($userBranch)]);
+                            });
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Context: Overtime Visibility Rules
+     */
+    private function applyOvertimeScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
+    {
+        $query->orWhere(function ($q) use ($user, $statuses) {
+            $q->whereRaw('1 = 0');
+
+            // A. Dept Head / Supervisor (Department ID Isolation)
             if ($user->hasRole('department-head') || $user->hasRole('supervisor')) {
                 $eligibleDepts = $this->getEligibleDepartments($user);
                 $eligibleDeptIds = \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $eligibleDepts)
                     ->pluck('id')
                     ->toArray();
-
-                $q->orWhere(function ($sub) use ($eligibleDepts, $eligibleDeptIds, $statuses) {
-                    $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
+                
+                $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
+                $q->orWhere(function ($sub) use ($eligibleDeptIds, $targetStatuses) {
                     $sub->whereIn('status', $targetStatuses)
-                        ->whereHasMorph('approvable', '*', function ($aq, $type) use ($eligibleDepts, $eligibleDeptIds) {
-                            if (in_array($type, [\App\Models\PurchaseRequest::class, \App\Models\SuratPerintahKerja::class])) {
-                                $aq->whereIn('from_department', $eligibleDepts);
-                            } elseif ($type === \App\Domain\Overtime\Models\OvertimeForm::class) {
-                                $aq->whereIn('dept_id', $eligibleDeptIds ?: [0]);
-                            }
+                        ->whereHasMorph('approvable', [\App\Domain\Overtime\Models\OvertimeForm::class], function ($aq) use ($eligibleDeptIds) {
+                            $aq->whereIn('dept_id', $eligibleDeptIds ?: [0]);
                         });
                 });
             }
 
-            // 3. Verificator (Oversight: APPROVED ONLY)
-            if ($user->hasRole('verificator')) {
-                $targetStatuses = $statuses ?? ['APPROVED'];
-                $q->orWhereIn('status', $targetStatuses);
-            }
-
-            // 4. General Manager (Oversight: Branch-specific)
+            // B. General Manager (Branch Name Matching)
             if ($user->hasRole('general-manager')) {
-                $userBranch = $user->employee->branch ?? '';
+                $userBranch = $user->employee?->branch ?? '';
                 if ($userBranch) {
-                    $q->orWhere(function ($sub) use ($userBranch, $statuses) {
-                        $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                    $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
+                    $q->orWhere(function ($sub) use ($userBranch, $targetStatuses) {
                         $sub->whereIn('status', $targetStatuses)
-                            ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class, \App\Domain\Overtime\Models\OvertimeForm::class], function ($aq, $type) use ($userBranch) {
-                                if ($type === \App\Models\PurchaseRequest::class) {
-                                    // Item branch is an Enum (Branch::JAKARTA or Branch::KARAWANG)
-                                    $aq->where('branch', strtoupper($userBranch));
-                                } else {
-                                    // Item branch is a String (may be 'Jakarta' or 'Karawang')
-                                    $aq->whereRaw('LOWER(branch) = ?', [strtolower($userBranch)]);
-                                }
+                            ->whereHasMorph('approvable', [\App\Domain\Overtime\Models\OvertimeForm::class], function ($aq) use ($userBranch) {
+                                $aq->whereRaw('LOWER(branch) = ?', [strtolower($userBranch)]);
                             });
                     });
                 }
             }
+        });
+    }
 
-            // 5. Global View-All Permissions (Permission-Based Oversight)
-            // This replaces the previous 'early return' in the Visibility Scoper 
-            // for non-SuperAdmins, allowing for state-restricted oversight.
-            $canGlobalView = $user->can('approval.view-all') || 
-                            $user->can('overtime.view-all') || 
-                            $user->can('purchase-request.view-all');
+    /**
+     * Context: Global Oversight (Directors, Verificators, Specialized Admins)
+     */
+    private function applyGlobalOversightScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
+    {
+        $canGlobalView = $user->can('approval.view-all') || 
+                         $user->can('overtime.view-all') || 
+                         $user->can('purchase-request.view-all');
 
-            if ($canGlobalView) {
+        if ($canGlobalView || $user->hasRole('verificator')) {
+            $query->orWhere(function ($q) use ($user, $statuses) {
+                // Director sees everything in index views
                 if ($user->hasRole('director')) {
-                    // Directors see everything globally in index views
                     $q->orWhereIn('status', $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED']);
-                } else {
-                    // Non-Director Global Viewers (e.g. Verificator with view-all perms)
-                    // only see finalized results (APPROVED/REJECTED) globally.
-                    // Pending records remain restricted to their own jurisdiction above.
+                } 
+                // Verificator and other non-director global viewers only see finalized results
+                else {
                     $q->orWhereIn('status', $statuses ?? ['APPROVED', 'REJECTED']);
                 }
-            }
-        });
+            });
+        }
     }
 }
