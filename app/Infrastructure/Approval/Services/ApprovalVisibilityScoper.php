@@ -43,8 +43,7 @@ class ApprovalVisibilityScoper
             $groupedQuery->orWhere(function ($activeTurnQuery) use ($user, $manager) {
                 // Determine if this user's turn matches must be restricted by jurisdiction (Branch/Dept)
                 // General Managers and Dept Heads are strictly local to their branches.
-                $isBranchScoped = $user->hasAnyRole(['department-head', 'supervisor', 'general-manager']) && 
-                                  !$user->hasRole('super-admin');
+                $isBranchScoped = $user->hasAnyRole(config('approvals.jurisdiction_scoped_roles', ['department-head', 'supervisor', 'general-manager'])) && !$user->hasRole('super-admin');
 
                 $roleIds = $user->roles->pluck('id')->toArray();
                 $roleNames = $user->getRoleNames()->toArray();

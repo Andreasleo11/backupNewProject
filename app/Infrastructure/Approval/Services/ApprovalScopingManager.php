@@ -13,21 +13,14 @@ use Illuminate\Support\Str;
 class ApprovalScopingManager
 {
     /**
-     * Centralized mapping for linked departments to ensure modularity.
-     */
-    private const DEPARTMENT_LINKS = [
-        'LOGISTIC' => ['STORE'],
-        'QC'       => ['QA'],
-    ];
-
-    /**
      * Get all departments (primary + linked) that a user is responsible for.
+     * Reads from config/approvals.php → department_links.
      */
     public function getEligibleDepartments(User $user): array
     {
-        $baseDeptName = $user->employee->department->name ?? '';
-        $linkedDepts = self::DEPARTMENT_LINKS[$baseDeptName] ?? [];
-        
+        $baseDeptName = $user->employee?->department?->name ?? '';
+        $linkedDepts  = config('approvals.department_links.' . $baseDeptName, []);
+
         return array_filter(array_merge([$baseDeptName], $linkedDepts));
     }
 

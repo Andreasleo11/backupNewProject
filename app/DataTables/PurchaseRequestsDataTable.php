@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Application\PurchaseRequest\Services\PurchaseRequestQueryScoper;
+use App\Application\PurchaseRequest\Queries\PurchaseRequestQueryBuilder;
 use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -15,7 +15,7 @@ use Yajra\DataTables\Services\DataTable;
 class PurchaseRequestsDataTable extends DataTable
 {
     public function __construct(
-        private readonly PurchaseRequestQueryScoper $queryScoper
+        private readonly PurchaseRequestQueryBuilder $queryBuilder
     ) {}
 
     /**
@@ -102,91 +102,11 @@ class PurchaseRequestsDataTable extends DataTable
 
     /**
      * Get query source of dataTable.
+     * Delegates all scoping and filter logic to PurchaseRequestQueryBuilder.
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        $query = $model->newQuery()->with([
-            'files',
-            'createdBy',
-            'approvalRequest' => function ($q) {
-                $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step')->with('steps');
-            },
-        ]);
-
-        // Apply Custom UI Filters from the Dropdowns
-        if (request()->filled('custom_status')) {
-            $statusString = request('custom_status');
-
-            $query->where(function ($q) use ($statusString) {
-                if ($statusString === 'DRAFT') {
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'DRAFT'))
-                      ->orWhereDoesntHave('approvalRequest');
-                } elseif ($statusString === 'CANCELED') {
-                    $q->where('purchase_requests.is_cancel', 1);
-                } elseif ($statusString === 'IN_REVIEW') {
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'IN_REVIEW'));
-                } elseif ($statusString === 'APPROVED') {
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'APPROVED'));
-                } elseif ($statusString === 'REJECTED') {
-                    $q->whereHas('approvalRequest', fn ($sub) => $sub->where('approval_requests.status', 'REJECTED'));
-                }
-            });
-
-            // If it's not canceled search, make sure we only grab non-canceled PRs
-            if ($statusString !== 'CANCELED') {
-                $query->where(function ($q) {
-                    $q->whereNull('purchase_requests.is_cancel')->orWhere('purchase_requests.is_cancel', 0);
-                });
-            }
-        }
-
-        if (request()->filled('custom_department')) {
-            $dept = request('custom_department');
-            // Based on our routing, we usually filter by target department representing where it's going
-            $query->where('to_department', $dept);
-        }
-
-        if (request()->filled('custom_date')) {
-            $dates = explode(' to ', request('custom_date'));
-            if (count($dates) === 2) {
-                $query->whereBetween('date_pr', [trim($dates[0]), trim($dates[1])]);
-            } elseif (count($dates) === 1) {
-                $query->whereDate('date_pr', trim($dates[0]));
-            }
-        }
-
-        // Apply URL Top-Card Filters
-        if (request()->filled('filter')) {
-            $filter = request('filter');
-
-            if ($filter === 'my_approval') {
-                $userId = auth()->id();
-                $roleIds = auth()->user()->roles->pluck('id')->toArray();
-
-                $query->inReview()
-                    ->whereHas('approvalRequest.steps', function ($q) use ($userId, $roleIds) {
-                        $q->where('sequence', \Illuminate\Support\Facades\DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
-                            ->whereNull('acted_at')
-                            ->where(function ($q2) use ($userId, $roleIds) {
-                                $q2->where(function ($u) use ($userId) {
-                                    $u->where('approver_type', 'user')
-                                        ->where('approver_id', $userId);
-                                })->orWhere(function ($r) use ($roleIds) {
-                                    $r->where('approver_type', 'role')
-                                        ->whereIn('approver_id', $roleIds);
-                                });
-                            });
-                    });
-            } elseif ($filter === 'in_review') {
-                $query->inReview();
-            } elseif ($filter === 'approved_month') {
-                $query->workflowApproved()
-                    ->whereYear('purchase_requests.updated_at', now()->year)
-                    ->whereMonth('purchase_requests.updated_at', now()->month);
-            }
-        }
-
-        return $this->queryScoper->scopeForUser(auth()->user(), $query);
+        return $this->queryBuilder->fromRequest(auth()->user(), request());
     }
 
     /**
