@@ -127,15 +127,10 @@ class ReportWizardPreview extends Component
         $report = Report::with('details')->find($id);
         $user = Auth::user();
         foreach ($report->details as $detail) {
-            $data1 = json_decode($detail->daijo_defect_detail);
-            $data2 = json_decode($detail->customer_defect_detail);
-            $data3 = json_decode($detail->supplier_defect_detail);
-            $data4 = json_decode($detail->remark);
-
-            $detail->daijo_defect_detail = $data1;
-            $detail->customer_defect_detail = $data2;
-            $detail->supplier_defect_detail = $data3;
-            $detail->remark = $data4;
+            $detail->daijo_defect_detail = $detail->daijo_defect_detail ? json_decode($detail->daijo_defect_detail) : null;
+            $detail->customer_defect_detail = $detail->customer_defect_detail ? json_decode($detail->customer_defect_detail) : null;
+            $detail->supplier_defect_detail = $detail->supplier_defect_detail ? json_decode($detail->supplier_defect_detail) : null;
+            $detail->remark = $detail->remark ? json_decode($detail->remark) : null;
         }
 
         $autographNames = [

@@ -103,10 +103,10 @@ final class QaqcExportService
         $user = Auth::user();
 
         foreach ($report->details as $pd) {
-            $pd->daijo_defect_detail = json_decode($pd->daijo_defect_detail);
-            $pd->customer_defect_detail = json_decode($pd->customer_defect_detail);
-            $pd->supplier_defect_detail = json_decode($pd->supplier_defect_detail);
-            $pd->remark = json_decode($pd->remark);
+            $pd->daijo_defect_detail = $pd->daijo_defect_detail ? json_decode($pd->daijo_defect_detail) : null;
+            $pd->customer_defect_detail = $pd->customer_defect_detail ? json_decode($pd->customer_defect_detail) : null;
+            $pd->supplier_defect_detail = $pd->supplier_defect_detail ? json_decode($pd->supplier_defect_detail) : null;
+            $pd->remark = $pd->remark ? json_decode($pd->remark) : null;
         }
 
         $autographNames = [
