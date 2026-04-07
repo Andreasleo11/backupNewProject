@@ -52,13 +52,19 @@ class PurchaseRequestController extends Controller
         // Check if reset is requested
         if ($request->has('reset')) {
             // Clear session filters
-            $request->session()->forget('start_date');
-            $request->session()->forget('end_date');
-            $request->session()->forget('status');
-            $request->session()->forget('branch');
+            $request->session()->forget(['start_date', 'end_date', 'status', 'branch']);
 
             // Redirect with 'all' filter to avoid auto-redirect back to my_approval
-            return redirect()->route('purchase-requests.index');
+            return redirect()->route('purchase-requests.index', ['filter' => 'all']);
+        }
+
+        // Automate 'My Approval' filter for high-level oversight roles (GM, Verificator, Director)
+        // Only trigger if no explicit filter or custom status is provided.
+        if (!$request->has('filter') && !$request->has('custom_status')) {
+            $user = auth()->user();
+            if ($user && $user->hasAnyRole(['general-manager', 'verificator', 'director'])) {
+                return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
+            }
         }
 
         // Apply filters from request or session

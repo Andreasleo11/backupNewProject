@@ -96,7 +96,13 @@ class PurchaseRequestsDataTable extends DataTable
 
                 return "<div class='text-sm'><span class='text-slate-600'>{$from}</span> <i class='bi bi-arrow-right text-indigo-400 mx-1'></i> <span class='text-slate-800 font-medium'>{$to}</span></div>";
             })
-            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'routing'])
+            ->editColumn('supplier', function ($pr) {
+                if (!$pr->supplier) {
+                    return '<span class="text-slate-400 italic text-xs">Not Specified</span>';
+                }
+                return '<div class="truncate max-w-[200px] text-sm text-slate-700" title="' . e($pr->supplier) . '">' . e($pr->supplier) . '</div>';
+            })
+            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'routing', 'supplier'])
             ->setRowId('id');
     }
 
@@ -153,7 +159,10 @@ class PurchaseRequestsDataTable extends DataTable
                 ->title('Routing')
                 ->exportable(false)
                 ->printable(false),
-            Column::make('supplier')->title('Supplier'),
+            Column::make('supplier')
+                ->title('Supplier')
+                ->width('200px')
+                ->addClass('align-middle'),
             Column::computed('workflow_status')
                 ->title('Status')
                 ->exportable(false)

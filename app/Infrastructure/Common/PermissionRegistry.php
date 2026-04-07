@@ -70,7 +70,7 @@ class PermissionRegistry
                 ],
                 'roles' => [
                     'verificator'     => ['overtime.view-all', 'overtime.review', 'overtime.approve', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
-                    'director'        => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
+                    'director'        => ['overtime.view', 'overtime.approve', 'overtime.export'],
                     'general-manager' => ['overtime.view', 'overtime.approve', 'overtime.export'],
                     'department-head' => ['overtime.view', 'overtime.approve'],
                     'staff'           => ['overtime.view', 'overtime.create'],

@@ -91,7 +91,7 @@
     </style>
 @endpush
 
-    <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
+    <div class="sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
         {{-- HEADER CARD --}}
         <div class="glass-card mb-6 overflow-hidden pt-8 pb-6 px-6 relative">
             <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 pointer-events-none"></div>
@@ -240,7 +240,7 @@
                                 </span>
                             </div>
                         </div>
-                        <a href="{{ route('purchase-requests.index') }}" class="group inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl border border-indigo-200 transition-all hover:shadow-md shadow-sm">
+                        <a href="{{ route('purchase-requests.index', ['filter' => 'all']) }}" class="group inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl border border-indigo-200 transition-all hover:shadow-md shadow-sm">
                             <i class="bx bx-x text-sm group-hover:rotate-90 transition-transform"></i> Clear Filter
                         </a>
                     </div>
