@@ -19,12 +19,9 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <div class="px-5 py-3 rounded-2xl bg-white/80 border border-slate-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Company Status</p>
-                    <div class="flex items-center gap-2">
-                        <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span class="text-sm font-bold text-slate-700">Operational</span>
-                    </div>
+                {{-- Quick contextual hint without fake data --}}
+                <div class="px-5 py-3 rounded-2xl bg-white/50 border border-slate-100/50 shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ \Carbon\Carbon::now()->format('l, j F Y') }}</p>
                 </div>
             </div>
         </div>
@@ -38,52 +35,52 @@
             @livewire('dashboard.widgets.approval-queue')
         </div>
 
-        {{-- Quick Stats (Siderbar style widgets) --}}
+        {{-- Quick Actions (Sidebar style) --}}
         <div class="col-span-12 lg:col-span-4 space-y-6">
-            @livewire('dashboard.widgets.kpi-card', [
-                'label' => 'Unified Approval Inbox',
-                'value' => $kpis['pending_approvals'],
-                'icon' => 'shield-check',
-                'color' => 'blue',
-                'url' => route('approvals')
-            ])
-            
-            @livewire('dashboard.widgets.kpi-card', [
-                'label' => 'My Task Status',
-                'value' => 'Overview',
-                'icon' => 'layout',
-                'color' => 'emerald',
-                'url' => route('approvals')
-            ])
-        </div>
-
-        {{-- Activity Timeline (Medium Widget) --}}
-        <div class="col-span-12 lg:col-span-7">
-            @livewire('dashboard.widgets.activity-timeline')
-        </div>
-
-        {{-- Department Spotlight (Small Widget) --}}
-        <div class="col-span-12 lg:col-span-5">
-            <div class="h-full rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-white shadow-2xl relative overflow-hidden group">
-                <div class="absolute right-0 bottom-0 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                    <svg class="h-64 w-64 text-slate-400/20 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                    </svg>
-                </div>
-                <div class="relative z-10 flex flex-col h-full justify-between">
-                    <div>
-                        <h3 class="text-xl font-bold mb-4">Departmental Insights</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
-                            Explore specific metrics and documentation for the **{{ auth()->user()->department->name ?? 'Global' }}** department.
-                        </p>
+            <div class="h-full rounded-3xl bg-white border border-slate-200 shadow-sm p-6 overflow-hidden relative group hover:border-indigo-100 transition-all">
+                <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-50 blur-3xl group-hover:bg-indigo-100 transition-colors duration-700"></div>
+                <div class="relative z-10 flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                            <i class="bi bi-lightning-charge-fill text-lg"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 tracking-tight">Quick Actions</h3>
                     </div>
-                    <div>
-                        <a href="{{ route('purchase-requests.index') }}" class="inline-block px-6 py-3 rounded-xl bg-white text-slate-900 font-bold text-sm shadow-lg hover:bg-slate-50 transition-all active:scale-95">
-                            View Department Portal
+                    
+                    <div class="space-y-4 flex-1">
+                        <a href="{{ route('purchase-requests.create') }}" class="flex items-center justify-between p-4 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all group/btn">
+                            <div class="flex text-left items-center gap-4">
+                                <div class="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                    <i class="bi bi-cart-plus text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold">New Purchase</p>
+                                    <p class="text-[10px] text-indigo-100 uppercase tracking-widest font-bold mt-0.5">Request Items</p>
+                                </div>
+                            </div>
+                            <i class="bi bi-arrow-right text-xl opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
+                        </a>
+
+                        <a href="{{ route('overtime.create') }}" class="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm hover:border-amber-200 hover:bg-amber-50 hover:-translate-y-1 transition-all group/btn">
+                            <div class="flex text-left items-center gap-4">
+                                <div class="h-10 w-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                                    <i class="bi bi-clock-history text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-900">File Overtime</p>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">Request hours</p>
+                                </div>
+                            </div>
+                            <i class="bi bi-arrow-right text-xl text-slate-400 group-hover/btn:text-amber-600 group-hover/btn:translate-x-1 transition-all"></i>
                         </a>
                     </div>
                 </div>
             </div>
+        </div>
+
+        {{-- Activity Timeline --}}
+        <div class="col-span-12">
+            @livewire('dashboard.widgets.activity-timeline')
         </div>
 
     </div>

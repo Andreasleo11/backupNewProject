@@ -83,7 +83,7 @@
                 <h2 class="text-sm font-extrabold text-slate-800 tracking-tight">General Information</h2>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     @php
                         $metas = [
                             ['label' => 'Department',   'value' => $form->department?->name ?? '-'],

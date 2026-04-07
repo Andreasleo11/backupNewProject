@@ -369,15 +369,7 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function scopeByRole($query, $user)
     {
-        return $query->where(function ($q) use ($user) {
-            // 1. Identity: Creator always sees their own
-            $q->where('user_id_create', $user->id);
-
-            // 2. Everything else: Use Centralized Approval Scoping Decision
-            // Handles Super-Admin, Global permissions, Active Turns, and Branch-level Oversights.
-            $q->orWhereHas('approvalRequest', function ($aq) use ($user) {
-                $aq->forUser($user);
-            });
-        });
+        return app(\App\Application\PurchaseRequest\Queries\PurchaseRequestQueryBuilder::class)
+            ->forUser($user, $query);
     }
 }

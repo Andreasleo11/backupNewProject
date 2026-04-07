@@ -64,14 +64,14 @@
 
             {{-- Top Actions --}}
             <div class="flex flex-wrap items-center gap-3">
-                @if(auth()->user()->hasRole('super-admin'))
+                @can('approval.view-log')
                     <button type="button" @click="$dispatch('open-audit-drawer')"
                             class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600"
                             title="View Audit Log">
                         <i class="bi bi-clock-history text-lg text-slate-400 group-hover:text-indigo-500"></i>
                         <span class="hidden sm:inline">History</span>
                     </button>
-                @endif
+                @endcan
 
                 @if ($canUpload)
                     <button type="button" @click="$dispatch('open-upload-modal')"
@@ -153,11 +153,11 @@
                                 <div>
                                     <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Type</p>
                                     <div class="mt-1">
-                                        @if($purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department->value === 'PURCHASING')
-                                            @if($purchaseRequest->is_import === true || $purchaseRequest->is_import === 1)
-                                                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-2.5 py-1.5 text-xs font-bold text-amber-800">
+                                        @if($flags['isImportType'])
+                                            @if($flags['showImportToggle'] && $purchaseRequest->is_import)
+                                                <div class="flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-600 uppercase border border-amber-200">
                                                     <i class="bi bi-globe-americas"></i> Import
-                                                </span>
+                                                </div>
                                             @elseif($purchaseRequest->is_import === false || $purchaseRequest->is_import === 0)
                                                  <span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2.5 py-1.5 text-xs font-bold text-emerald-800">
                                                     <i class="bi bi-house-door"></i> Local
@@ -232,8 +232,8 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto custom-scrollbar-thin pb-4">
+                        <table class="w-full text-sm text-left min-w-[800px] lg:min-w-max">
                             <thead>
                                 <tr class="border-b border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                                     <th class="px-4 py-3 text-center w-10">No</th>
@@ -259,17 +259,6 @@
                                         
                                         // Calc subtotal
                                         $subtotal = $detail->quantity * $detail->price;
-                                        
-                                        // Logic for 'Dept Head Item Approve'
-                                        $showDeptHeadItemApprove = auth()->user()->department?->name === $purchaseRequest->from_department && auth()->user()->hasRole('HEAD');
-                                        if (auth()->user()->hasRole('HEAD') && $purchaseRequest->from_department === 'STORE') {
-                                            $showDeptHeadItemApprove = true;
-                                        } elseif (
-                                            $purchaseRequest->from_department === 'PERSONALIA' &&
-                                            (auth()->user()->department?->name === 'PERSONALIA' && auth()->user()->hasRole('HEAD'))
-                                        ) {
-                                            $showDeptHeadItemApprove = true;
-                                        }
                                     @endphp
 
                                     <tr class="{{ $rowClass }}">
@@ -441,7 +430,7 @@
                                         </td>
 
                                         {{-- Received Column --}}
-                                        @if ($purchaseRequest->workflow_status === 'APPROVED' && auth()->user()->id === $purchaseRequest->createdBy->id)
+                                        @if ($purchaseRequest->workflow_status === 'APPROVED' && $flags['isOwner'])
                                              <td class="px-4 py-4 text-center">
                                                 {{ $detail->received_quantity }} / {{ $detail->quantity }}
                                              </td>
@@ -605,7 +594,7 @@
     </div>
 
     {{-- AUDIT LOG DRAWER --}}
-    @if(auth()->user()->hasRole('super-admin'))
+    @can('approval.view-log')
         @push('modals')
             <div x-data="{ open: false }" 
                  @open-audit-drawer.window="open = true"

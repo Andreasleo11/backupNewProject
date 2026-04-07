@@ -14,7 +14,8 @@
     <div x-data="purchaseRequestForm(
         @js(old('items', $isEdit ? $purchaseRequest->itemDetail : [])),
         '{{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) }}',
-        '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}'
+        '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}',
+        @js($flags ?? [])
     )" x-init="init()">
         
         {{-- TOP BAR --}}
@@ -211,14 +212,19 @@
                                     <label class="text-xs font-bold text-slate-700">Import Purchase?</label>
                                     <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Moulding Only</span>
                                 </div>
-                                <div class="flex gap-2 p-1 bg-slate-100/50 rounded-lg">
-                                    <label class="flex-1 cursor-pointer text-center">
-                                        <input type="radio" name="is_import" value="false" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 0 ? 'false' : 'true') : 'false') !== 'true')>
-                                        <span class="block rounded-md py-1.5 text-xs font-bold text-slate-500 peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm transition-all">Local</span>
+                                <div class="flex flex-wrap gap-4 items-center">
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="is_import" value="0" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 0 ? '0' : '1') : '0') !== '1')>
+                                        <div class="px-5 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 bg-slate-50 peer-checked:bg-white peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:ring-2 peer-checked:ring-indigo-600/10 peer-disabled:opacity-40 peer-disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                                            <i class="bi bi-geo-alt"></i> Local
+                                        </div>
                                     </label>
-                                    <label class="flex-1 cursor-pointer text-center">
-                                        <input type="radio" name="is_import" value="true" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 1 ? 'true' : 'false') : 'false') === 'true')>
-                                        <span class="block rounded-md py-1.5 text-xs font-bold text-slate-500 peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm transition-all">Import</span>
+
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="is_import" value="1" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 1 ? '1' : '0') : '0') === '1')>
+                                        <div class="px-5 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 bg-slate-50 peer-checked:bg-white peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:ring-2 peer-checked:ring-indigo-600/10 peer-disabled:opacity-40 peer-disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                                            <i class="bi bi-ship-generic"></i> Import
+                                        </div>
                                     </label>
                                 </div>
                             </div>
@@ -448,9 +454,10 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('purchaseRequestForm', (oldItems = [], initialFromDept = '', initialToDept = '') => ({
+            Alpine.data('purchaseRequestForm', (oldItems = [], initialFromDept = '', initialToDept = '', flags = {}) => ({
                 from_department: initialFromDept || '',
                 to_department: initialToDept || '',
+                flags: flags,
                 items: [],
                 currencies: ['IDR', 'CNY', 'USD'],
                 is_draft: '0', // Default
@@ -548,7 +555,8 @@
                 },
 
                 get showLocalImport() {
-                    return this.from_department === 'MOULDING' && this.to_department === 'Purchasing';
+                    return this.flags.userCanEverSelectImport && 
+                           (this.to_department === this.flags.targetDepartmentPurchasing);
                 },
 
                 validateBeforeSubmit() {

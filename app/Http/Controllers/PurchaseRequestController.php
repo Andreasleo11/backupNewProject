@@ -41,38 +41,30 @@ class PurchaseRequestController extends Controller
         private BatchApprovePurchaseRequests $batchApproveUseCase,
         private BatchRejectPurchaseRequests $batchRejectUseCase,
         private \App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder $contextBuilder,
+        private \App\Domain\PurchaseRequest\Services\PurchaseRequestSecurityService $securityService,
     ) {}
 
     public function index(
         Request $request,
         PurchaseRequestsDataTable $dataTable,
-        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query,
         \App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery
     ) {
         // Check if reset is requested
         if ($request->has('reset')) {
             // Clear session filters
-            $request->session()->forget('start_date');
-            $request->session()->forget('end_date');
-            $request->session()->forget('status');
-            $request->session()->forget('branch');
+            $request->session()->forget(['start_date', 'end_date', 'status', 'branch']);
 
-            // Redirect without any filters
-            return redirect()->route('purchase-requests.index');
+            // Redirect with 'all' filter to avoid auto-redirect back to my_approval
+            return redirect()->route('purchase-requests.index', ['filter' => 'all']);
         }
 
-        // Auto-activate my_approval filter for general-manager
-        // Case: No explicit filters in URL and no explicit reset action
-        if (!$request->filled('filter') && 
-            !$request->filled('status') && 
-            !$request->filled('branch') && 
-            !$request->filled('start_date') &&
-            !$request->filled('custom_status') &&
-            !$request->filled('custom_department') &&
-            !$request->filled('custom_date') &&
-            auth()->user()->hasRole('general-manager')
-        ) {
-            return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
+        // Automate 'My Approval' filter for high-level oversight roles (GM, Verificator, Director)
+        // Only trigger if no explicit filter or custom status is provided.
+        if (!$request->has('filter') && !$request->has('custom_status')) {
+            $user = auth()->user();
+            if ($user && $user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
+                return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
+            }
         }
 
         // Apply filters from request or session
@@ -94,26 +86,6 @@ class PurchaseRequestController extends Controller
             $request->session()->put('branch', $branch);
         }
 
-        $dto = new \App\Application\PurchaseRequest\DTOs\GetPurchaseRequestListDTO(
-            userId: Auth::id(),
-            startDate: $startDate,
-            endDate: $endDate,
-            status: $status,
-            branch: $branch,
-            perPage: 10
-        );
-
-        // Fetch purchase requests using the Query class
-        $purchaseRequests = $query->handle($dto);
-
-        // Append the filter parameters to the pagination links
-        $purchaseRequests->appends([
-            'status' => $status,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'branch' => $branch,
-        ]);
-
         // Get stats for dashboard
         $stats = $statsQuery->execute();
 
@@ -128,18 +100,25 @@ class PurchaseRequestController extends Controller
         $items = MasterDataPr::get();
         $departments = Department::all();
         $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
+        $user = auth()->user();
 
         return view('purchase-requests.pr-form', [
             'items' => $items,
             'departments' => $departments,
             'hasDefaultSignature' => $defaultSig !== null,
             'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'flags' => [
+                'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
+                'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
+                'isOwner' => true,
+            ]
         ]);
     }
 
     public function edit(int $id)
     {
-        $purchaseRequest = PurchaseRequest::byRole(auth()->user())
+        $user = auth()->user();
+        $purchaseRequest = PurchaseRequest::byRole($user)
             ->with(['itemDetail', 'approvalRequest.steps.actedUser'])
             ->findOrFail($id);
 
@@ -156,6 +135,11 @@ class PurchaseRequestController extends Controller
             'departments' => $departments,
             'hasDefaultSignature' => $defaultSig !== null,
             'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'flags' => [
+                'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
+                'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
+                'isOwner' => (int) $user->id === (int) $purchaseRequest->user_id_create,
+            ]
         ]);
     }
 
@@ -189,8 +173,10 @@ class PurchaseRequestController extends Controller
     {
         /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
         $user = auth()->user();
-
         $vm = $query->handle($id, $user);
+
+        // Explicit Policy Check
+        $this->authorize('view', $vm->purchaseRequest);
 
         // Pass signature preview URL for the Sign & Submit modal on show page
         $canSignAndSubmit = $vm->flags['canSignAndSubmit'] ?? false;
@@ -223,6 +209,9 @@ class PurchaseRequestController extends Controller
         /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
         $user = auth()->user();
         $vm = $query->handle($id, $user);
+
+        // Explicit Policy Check
+        $this->authorize('view', $vm->purchaseRequest);
 
         return view('purchase-requests.partials.quick-view-content', [
             'pr' => $vm->purchaseRequest,
@@ -280,7 +269,7 @@ class PurchaseRequestController extends Controller
                 currency: $item['currency'] ?? 'IDR',
                 purpose: $item['purpose'] ?? ''
             ), $validated['items']),
-            isImport: $request->is_import === 'true',
+            isImport: $request->has('is_import') ? filter_var($request->is_import, FILTER_VALIDATE_BOOLEAN) : null,
         );
 
         // Execute UseCase

@@ -24,24 +24,29 @@ class PermissionRegistry
                     'role.view-any', 'role.create', 'role.update', 'role.delete', 'permission.view-any',
                     'department.view-any', 'department.create', 'department.update', 'department.delete',
                     'employee.view-any', 'employee.view', 'employee.update',
+                    'system.admin', // Global bypass
+                    'dashboard.view', // Basic access to dashboard
                 ],
                 'roles' => [
                     'super-admin' => ['*'],
+                    'staff' => ['dashboard.view'],
                 ],
             ],
             'Purchase Request' => [
                 'permissions' => [
-                    'pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject', 'pr.approve-items',
+                    'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject',
+                    'pr.auto-approve', // Replacement for GM/Moulding logic
+                    'pr.admin', // Full bypass for PR logic
                 ],
                 'roles' => [
-                    'staff'              => ['pr.view', 'pr.view-any', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'],
-                    'department-head'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'verificator'        => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'general-manager'    => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items'],
-                    'director'           => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print', 'pr.approve', 'pr.reject', 'pr.approve-items', 'pr.batch-approve'],
-                    'purchaser'          => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print', 'pr.approve'],
-                    'purchasing-manager' => ['pr.view-any', 'pr.view-all', 'pr.batch-approve', 'approval.view-log'],
-                    'accounting-officer' => ['pr.view', 'pr.view-any', 'pr.view-all', 'pr.print'],
+                    'staff'              => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print'],
+                    'department-head'    => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.reject'],
+                    'verificator'        => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject'],
+                    'general-manager'    => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.auto-approve'],
+                    'director'           => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve'],
+                    'purchaser'          => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve'],
+                    'purchasing-manager' => ['pr.view', 'pr.batch-approve', 'approval.view-log', 'pr.admin'],
+                    'accounting-officer' => ['pr.view', 'pr.print'],
                 ],
             ],
             'Approval Engine' => [
@@ -65,20 +70,20 @@ class PermissionRegistry
                 ],
                 'roles' => [
                     'verificator'     => ['overtime.view-all', 'overtime.review', 'overtime.approve', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
-                    'director'        => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
-                    'general-manager' => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
-                    'department-head' => ['overtime.view-all', 'overtime.approve'],
+                    'director'        => ['overtime.view', 'overtime.approve', 'overtime.export'],
+                    'general-manager' => ['overtime.view', 'overtime.approve', 'overtime.export'],
+                    'department-head' => ['overtime.view', 'overtime.approve'],
                     'staff'           => ['overtime.view', 'overtime.create'],
                 ],
             ],
             'Inventory & Assets' => [
                 'permissions' => [
-                    'inventory.view', 'inventory.manage',
+                    'inventory.view', 'inventory.manage', 'inventory.view-maintenance',
                 ],
                 'roles' => [
-                    'inventory' => ['inventory.view', 'inventory.manage'],
+                    'inventory' => ['inventory.view', 'inventory.manage', 'inventory.view-maintenance'],
                     'operations' => ['inventory.view'],
-                    'manager' => ['inventory.view'],
+                    'manager' => ['inventory.view', 'inventory.view-maintenance'],
                 ],
             ],
             'Quality Control' => [

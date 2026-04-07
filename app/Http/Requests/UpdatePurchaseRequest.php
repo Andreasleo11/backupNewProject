@@ -17,6 +17,18 @@ class UpdatePurchaseRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('is_import')) {
+            $this->merge([
+                'is_import' => filter_var($this->is_import, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -39,6 +51,7 @@ class UpdatePurchaseRequest extends FormRequest
             'items.*.uom' => 'required|string|max:50',
             'items.*.currency' => ['required', 'string', Rule::in(['IDR', 'CNY', 'USD'])],
             'items.*.purpose' => 'required|string|max:255',
+            'is_import' => 'nullable|boolean',
         ];
     }
 
@@ -77,6 +90,7 @@ class UpdatePurchaseRequest extends FormRequest
             'items.*.purpose.required' => 'Each item purpose is required.',
             'items.*.purpose.string' => 'Each item purpose must be a string.',
             'items.*.purpose.max' => 'Each item purpose may not be greater than 255 characters.',
+            'is_import.boolean' => 'The import field must be true or false.',
         ];
     }
 }

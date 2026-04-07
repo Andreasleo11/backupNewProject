@@ -18,6 +18,18 @@ class StorePurchaseRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('is_import')) {
+            $this->merge([
+                'is_import' => filter_var($this->is_import, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -68,7 +80,7 @@ class StorePurchaseRequest extends FormRequest
             'supplier.required' => 'The supplier field is required.',
             'pic.required' => 'The PIC field is required.',
             'type.in' => 'The type field must be factory or office.',
-            'is_import.boolean' => 'The is import field must be boolean.',
+            'is_import.boolean' => 'The import field must be true or false.',
             'is_draft.required' => 'The draft field is required.',
             'is_draft.boolean' => 'The draft should be boolean.',
             'items.required' => 'At least one item is required.',
