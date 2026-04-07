@@ -435,7 +435,7 @@
                          :style="`width: ${toast.progress}%; transition-duration: 100ms`"></div>
                 </div>
 
-                <div class="flex-shrink-0 mt-1" x-html="getIcon(toast.type)"></div>
+                <div class="flex-shrink-0 mt-1" x-html="icon(toast.type)"></div>
 
                 <div class="flex-1 min-w-0 py-0.5">
                     <p class="text-sm font-bold leading-tight tracking-tight" x-text="toast.message"></p>

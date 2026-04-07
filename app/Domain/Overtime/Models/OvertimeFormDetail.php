@@ -27,7 +27,8 @@ class OvertimeFormDetail extends Model
         'break',
         'remarks',
         'status',
-        'reason', // Added reason field
+        'reason',
+        'payroll_voucher_id',
     ];
 
     public function header()

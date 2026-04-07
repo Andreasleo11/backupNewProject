@@ -63,17 +63,6 @@
 
     <div class="space-y-6">
 
-        {{-- ======================================================== PUSH FEEDBACK --}}
-        @if ($pushMessage)
-        <div class="glass-card flex items-start gap-3 rounded-xl border {{ $pushSuccess ? 'border-emerald-200 bg-emerald-50/80 text-emerald-800' : 'border-rose-200 bg-rose-50/80 text-rose-800' }} p-4 shadow-sm">
-            <div class="mt-0.5 flex-shrink-0 text-xl text-{{ $pushSuccess ? 'emerald' : 'rose' }}-500">
-                <i class='bx {{ $pushSuccess ? 'bx-check-circle' : 'bx-error-circle' }}'></i>
-            </div>
-            <p class="flex-1 text-sm font-bold">{{ $pushMessage }}</p>
-            <button wire:click="clearPushMessage" class="text-slate-400 hover:text-slate-600 focus:outline-none"><i class='bx bx-x text-lg'></i></button>
-        </div>
-        @endif
-
         {{-- ======================================================== META INFO GRID --}}
         <div class="glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
             <div class="px-6 py-4 border-b border-slate-100/60 bg-white/50 flex items-center gap-3">
@@ -304,23 +293,34 @@
                             {{-- JPayroll actions --}}
                             @if (strtoupper($form->workflow_status) === 'APPROVED' && $canPush)
                             <td class="px-4 py-3 whitespace-nowrap text-center">
-                                @if (is_null($detail->status))
+                                @if ($detail->is_processed == 0 && $detail->status !== 'Rejected')
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <button type="button" wire:click="pushDetail({{ $detail->id }}, 'approve')"
+                                    <button type="button" wire:click="pushDetail({{ $detail->id }})"
                                         wire:loading.attr="disabled"
-                                        title="Approve & Push"
+                                        title="Approve & Push to JPayroll"
                                         class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition disabled:opacity-50">
-                                        <i class='bx bx-check'></i>
+                                        <i class='bx bx-cloud-upload'></i>
                                     </button>
-                                    <button type="button" wire:click="pushDetail({{ $detail->id }}, 'reject')"
+                                    <button type="button" wire:click="rejectDetail({{ $detail->id }})"
                                         wire:loading.attr="disabled"
-                                        title="Reject"
+                                        title="Reject Manual"
                                         class="flex h-7 w-7 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600 shadow-sm hover:bg-rose-100 transition disabled:opacity-50">
                                         <i class='bx bx-x'></i>
                                     </button>
                                 </div>
+                                @elseif ($detail->is_processed == 1)
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-tighter">Synced</span>
+                                    <button type="button" wire:click="unpushDetail({{ $detail->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:confirm="Remove this record from JPayroll? This will use Choice 3 (Delete)."
+                                        title="Un-push / Delete from JPayroll"
+                                        class="flex h-6 w-6 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition shadow-sm">
+                                        <i class='bx bx-trash-alt'></i>
+                                    </button>
+                                </div>
                                 @else
-                                    <span class="text-xs font-bold text-slate-300">—</span>
+                                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Ignored</span>
                                 @endif
                             </td>
                             @endif
