@@ -13,6 +13,7 @@ class PurchaseRequestPolicy
 
     public function __construct(
         private readonly PurchaseRequestSecurityService $security,
+        private readonly \App\Infrastructure\Approval\Services\ApprovalScopingManager $scoper,
     ) {}
 
     /**
@@ -36,17 +37,43 @@ class PurchaseRequestPolicy
     }
 
     /**
-     * Determine whether the user can view a specific model.
+     * Determine whether the user can view a specific purchase request.
      */
     public function view(User $user, PurchaseRequest $pr): bool
     {
-        if (!$user->can('pr.view')) {
-            return false;
+        // 1. Ownership: Always allowed
+        if ($this->security->isOwner($pr, $user)) {
+            return true;
         }
 
-        // View logic: Creator OR same department
-        return $user->id === (int) $pr->user_id_create || 
-               $user->department_id === $pr->from_department_id;
+        // 2. Jurisdictional Oversight (Unified Brain): GMs, Dept Heads, Purchasers, etc.
+        // This engine ensures the Policy matches the DataTable (Scoper) perfectly.
+        if ($this->scoper->hasJurisdiction($user, $pr)) {
+            return true;
+        }
+
+        // 3. Workflow Involvement: Anyone who has acted or is currently assigned to this PR.
+        // This acts as a fallback for users without the broad 'pr.view' permission.
+        if ($pr->approvalRequest) {
+            $isApprover = $pr->approvalRequest->steps()
+                ->where(function ($q) use ($user) {
+                    $q->where('acted_by', $user->id)
+                      ->orWhere(function ($aq) use ($user) {
+                          $aq->where('approver_type', 'user')->where('approver_id', $user->id);
+                      })
+                      ->orWhere(function ($aq) use ($user) {
+                          $roleNames = $user->getRoleNames()->toArray();
+                          $aq->where('approver_type', 'role')->whereIn('approver_id', $roleNames);
+                      });
+                })
+                ->exists();
+
+            if ($isApprover) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

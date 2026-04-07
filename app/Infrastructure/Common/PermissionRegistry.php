@@ -34,7 +34,7 @@ class PermissionRegistry
             ],
             'Purchase Request' => [
                 'permissions' => [
-                    'pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject',
+                    'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject',
                     'pr.auto-approve', // Replacement for GM/Moulding logic
                     'pr.admin', // Full bypass for PR logic
                 ],
@@ -71,8 +71,8 @@ class PermissionRegistry
                 'roles' => [
                     'verificator'     => ['overtime.view-all', 'overtime.review', 'overtime.approve', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
                     'director'        => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
-                    'general-manager' => ['overtime.view-all', 'overtime.approve', 'overtime.export'],
-                    'department-head' => ['overtime.view-all', 'overtime.approve'],
+                    'general-manager' => ['overtime.view', 'overtime.approve', 'overtime.export'],
+                    'department-head' => ['overtime.view', 'overtime.approve'],
                     'staff'           => ['overtime.view', 'overtime.create'],
                 ],
             ],

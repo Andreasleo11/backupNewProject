@@ -57,22 +57,8 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('status');
             $request->session()->forget('branch');
 
-            // Redirect without any filters
+            // Redirect with 'all' filter to avoid auto-redirect back to my_approval
             return redirect()->route('purchase-requests.index');
-        }
-
-        // Auto-activate my_approval filter for users who have approval permissions
-        // Case: No explicit filters in URL and no explicit reset action
-        if (!$request->filled('filter') && 
-            !$request->filled('status') && 
-            !$request->filled('branch') && 
-            !$request->filled('start_date') &&
-            !$request->filled('custom_status') &&
-            !$request->filled('custom_department') &&
-            !$request->filled('custom_date') &&
-            auth()->user()->can('pr.approve')
-        ) {
-            return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
         }
 
         // Apply filters from request or session
@@ -181,8 +167,10 @@ class PurchaseRequestController extends Controller
     {
         /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
         $user = auth()->user();
-
         $vm = $query->handle($id, $user);
+
+        // Explicit Policy Check
+        $this->authorize('view', $vm->purchaseRequest);
 
         // Pass signature preview URL for the Sign & Submit modal on show page
         $canSignAndSubmit = $vm->flags['canSignAndSubmit'] ?? false;
@@ -215,6 +203,9 @@ class PurchaseRequestController extends Controller
         /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
         $user = auth()->user();
         $vm = $query->handle($id, $user);
+
+        // Explicit Policy Check
+        $this->authorize('view', $vm->purchaseRequest);
 
         return view('purchase-requests.partials.quick-view-content', [
             'pr' => $vm->purchaseRequest,

@@ -12,18 +12,26 @@ use App\Models\PurchaseRequest;
  */
 final class PurchaseRequestSecurityService
 {
+    public function __construct(
+        private readonly \App\Infrastructure\Approval\Services\ApprovalScopingManager $scoper
+    ) {}
+
     /**
      * Determine if a PR is eligible for auto-approval (using a digital autograph).
      */
     public function canAutoApprove(PurchaseRequest $pr, User $user): bool
     {
-        // 1. GM logic (Moved from service)
-        if ($user->hasRole('general-manager')) {
+        // 1. Module-wide Permissions
+        if ($user->can('pr.auto-approve')) {
             return true;
         }
 
-        // 2. Special Department Rules (e.g., Moulding)
-        // This is a PURE domain rule based on department identification
+        // 2. GM logic (Delegated to jurisdiction engine)
+        if ($user->hasRole('general-manager') && $this->scoper->hasJurisdiction($user, $pr)) {
+            return true;
+        }
+
+        // 3. Special Department Rules (e.g., Moulding)
         if ($pr->from_department === 'MOULDING') {
             return true;
         }
@@ -33,27 +41,23 @@ final class PurchaseRequestSecurityService
 
     /**
      * Determine if a user can update the model based on business status.
-     * This separates the "Permission to Edit" from the "Ability to Edit".
      */
     public function canUpdate(PurchaseRequest $pr, User $user): bool
     {
         $status = strtoupper($pr->workflow_status ?? 'DRAFT');
 
         // A. Creator: Can edit only in draft-like or rejected states
-        if ($user->id === (int) $pr->user_id_create) {
+        if ($this->isOwner($pr, $user)) {
             $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED'];
             if (in_array($status, $allowedForCreator)) {
                 return true;
             }
         }
 
-        // B. Oversight (Purchasers/GMs/Admins): Can edit even in workflow states
-        // This is usually to fix master data (price, supplier) during review.
-        if ($user->hasAnyRole(['purchaser', 'general-manager'])) {
+        // B. Jurisdictional Oversight (Purchasers/GMs/Admins/DeptHeads)
+        if ($this->scoper->hasJurisdiction($user, $pr)) {
             $allowedForOversight = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
-            if (in_array($status, $allowedForOversight)) {
-                return true;
-            }
+            return in_array($status, $allowedForOversight);
         }
 
         return false;
@@ -71,13 +75,13 @@ final class PurchaseRequestSecurityService
             return false;
         }
 
-        // Creator can cancel their own at any other time
-        if ($user->id === (int) $pr->user_id_create) {
+        // 1. Creator can cancel their own
+        if ($this->isOwner($pr, $user)) {
             return true;
         }
 
-        // Oversight can cancel at any time
-        if ($user->hasAnyRole(['purchaser', 'general-manager'])) {
+        // 2. Jurisdictional Oversight
+        if ($this->scoper->hasJurisdiction($user, $pr)) {
             return true;
         }
 
@@ -90,7 +94,7 @@ final class PurchaseRequestSecurityService
     public function canSubmit(PurchaseRequest $pr, User $user): bool
     {
         // Only the creator can submit the initial draft
-        if ($user->id !== (int) $pr->user_id_create) {
+        if (! $this->isOwner($pr, $user)) {
             return false;
         }
 
@@ -102,12 +106,11 @@ final class PurchaseRequestSecurityService
 
     /**
      * Determine if a user's role/attributes allow viewing sensitive data (like prices/master data).
-     * This is a domain-level "Visibility Context" rule.
      */
     public function canViewSensitiveData(User $user, PurchaseRequest $pr): bool
     {
-        // 1. Purchasers and Admins always see all data
-        if ($user->can('pr.admin') || $user->hasRole('purchaser')) {
+        // 1. Jurisdictional Oversight (Admin, GM, Dept Head over this PR)
+        if ($this->scoper->hasJurisdiction($user, $pr)) {
             return true;
         }
 
@@ -121,16 +124,17 @@ final class PurchaseRequestSecurityService
 
     /**
      * Determine if the "Import vs Local" selection should be visible.
-     * Currently restricted to Moulding to Purchasing requisitions.
      */
     public function canSelectImportPath(?string $fromDept, ?string $toDept): bool
     {
-        if (!$fromDept || !$toDept) return false;
+        if (! $fromDept || ! $toDept) {
+            return false;
+        }
 
         $from = strtoupper(trim($fromDept));
         $to = strtoupper(trim($toDept));
 
-        return ($from === 'MOULDING' || $from === 'MOLDING') 
+        return ($from === 'MOULDING' || $from === 'MOLDING')
             && ($to === strtoupper(\App\Enums\ToDepartment::PURCHASING->value));
     }
 
@@ -139,7 +143,9 @@ final class PurchaseRequestSecurityService
      */
     public function isOwner(PurchaseRequest $pr, User $user): bool
     {
-        return (int) $user->id === (int) ($pr->user_id_create ?? $pr->created_by);
+        $creatorId = (int) ($pr->user_id_create ?? $pr->created_by);
+
+        return (int) $user->id === $creatorId;
     }
 
     /**

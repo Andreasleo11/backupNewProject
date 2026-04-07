@@ -48,13 +48,23 @@ class ApprovalScopingManager
             return strtolower(trim((string)$userBranch)) === strtolower(trim((string)$formBranch));
         }
 
-        // 3. Purchaser (Specialized Department Role Match)
+        // 3. Purchaser (Specialized Department Role Match or Global Fallback)
         if ($roleSlug === 'purchaser' && $approvable instanceof \App\Models\PurchaseRequest) {
-            if (!$approvable->to_department) return false;
-            
+            if (! $approvable->to_department) {
+                return false;
+            }
+
+            // 3a. Specialized sub-role check
             $targetRole = 'purchaser-' . Str::slug($approvable->to_department->label());
-            // Support both new slug and legacy prefix if needed
-            return $user->hasRole($targetRole) || $user->hasRole('purchaser-' . str_replace('purchaser-', '', $targetRole));
+            $hasSpecializedRole = $user->hasRole($targetRole) || $user->hasRole('purchaser-' . str_replace('purchaser-', '', $targetRole));
+            
+            if ($hasSpecializedRole) {
+                return true;
+            }
+
+            // 3b. Global fallback: Only if they have 'purchaser' role but NO other specialized 'purchaser-*' roles
+            $specializedDepts = $this->getPurchaserSpecializedDepartments($user);
+            return empty($specializedDepts) && $user->hasRole('purchaser');
         }
 
         // 4. Global Roles (Director, Verificator, etc.) - Global Match
@@ -108,7 +118,10 @@ class ApprovalScopingManager
             $q->whereRaw('1 = 0'); // Isolated sub-group inner seed
 
             // A. Purchaser Role (Category Isolation)
-            if ($user->hasRole('purchaser')) {
+            // Skip role-scoping if they already have global module access
+            $hasWidePrAccess = $user->can('pr.admin') || $user->can('pr.view-all') || $user->can('system.admin');
+            
+            if ($user->can('pr.view') && $user->hasRole('purchaser') && !$hasWidePrAccess) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
                 $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
                 
@@ -123,7 +136,7 @@ class ApprovalScopingManager
             }
 
             // B. Dept Head / Supervisor (Internal PR Isolation)
-            if ($user->hasRole('department-head') || $user->hasRole('supervisor')) {
+            if ($user->can('pr.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && !$hasWidePrAccess) {
                 $eligibleDepts = $this->getEligibleDepartments($user);
                 $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
 
@@ -137,7 +150,7 @@ class ApprovalScopingManager
             }
 
             // C. General Manager (Branch Isolation)
-            if ($user->hasRole('general-manager')) {
+            if ($user->can('pr.view') && $user->hasRole('general-manager') && !$hasWidePrAccess) {
                 $userBranch = $user->employee?->branch ?? '';
                 if ($userBranch) {
                     $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
@@ -160,8 +173,10 @@ class ApprovalScopingManager
         $query->orWhere(function ($q) use ($user, $statuses) {
             $q->whereRaw('1 = 0');
 
+            $hasWideOvertimeAccess = $user->can('overtime.view-all') || $user->can('system.admin');
+
             // A. Dept Head / Supervisor (Department ID Isolation)
-            if ($user->hasRole('department-head') || $user->hasRole('supervisor')) {
+            if ($user->can('overtime.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && !$hasWideOvertimeAccess) {
                 $eligibleDepts = $this->getEligibleDepartments($user);
                 $eligibleDeptIds = \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $eligibleDepts)
                     ->pluck('id')
@@ -177,7 +192,7 @@ class ApprovalScopingManager
             }
 
             // B. General Manager (Branch Name Matching)
-            if ($user->hasRole('general-manager')) {
+            if ($user->can('overtime.view') && $user->hasRole('general-manager') && !$hasWideOvertimeAccess) {
                 $userBranch = $user->employee?->branch ?? '';
                 if ($userBranch) {
                     $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
@@ -199,7 +214,7 @@ class ApprovalScopingManager
     {
         $canGlobalView = $user->can('approval.view-all') || 
                          $user->can('overtime.view-all') || 
-                         $user->can('purchase-request.view-all');
+                         $user->can('pr.view-all');
 
         if ($canGlobalView || $user->hasRole('verificator')) {
             $query->orWhere(function ($q) use ($user, $statuses) {
@@ -213,5 +228,102 @@ class ApprovalScopingManager
                 }
             });
         }
+    }
+    
+    /**
+     * Determine if a user has jurisdictional authority over a specific approvable entity.
+     * This is the "Single Source of Truth" for detail-view access and action-level oversight.
+     *
+     * Rules:
+     * - Admins/Directors: Global match.
+     * - Dept Heads: Match by User Departments (including linked ones).
+     * - GMs: Match by Branch.
+     * - Purchasers: Match by Specialized Category (PR-specific).
+     */
+    public function hasJurisdiction(User $user, Approvable $approvable): bool
+    {
+        // 1. Global Bypass (Admin)
+        if ($user->can('system.admin')) {
+            return true;
+        }
+
+        // 2. Module Identity & Modular Permissions
+        $isPr = ($approvable instanceof \App\Models\PurchaseRequest);
+        $isOvertime = ($approvable instanceof \App\Domain\Overtime\Models\OvertimeForm);
+
+        if ($isPr) {
+            // PR Admin bypass
+            if ($user->can('pr.admin') || $user->can('pr.view-all')) {
+                return true;
+            }
+            // Base PR view permission required for any oversight
+            if (! $user->can('pr.view')) {
+                return false;
+            }
+        }
+
+        if ($isOvertime) {
+            // Overtime Admin bypass
+            if ($user->can('overtime.view-all')) {
+                return true;
+            }
+            // Base Overtime view permission required for any oversight
+            if (! $user->can('overtime.view')) {
+                return false;
+            }
+        }
+
+        // 3. Role-Based Jurisdiction Logic
+        $userRoles = $user->getRoleNames();
+
+        // A. General Manager (Branch Isolation)
+        if ($userRoles->contains('general-manager')) {
+            $formBranch = $approvable->getApprovableBranchValue();
+            $userBranch = $user->employee->branch ?? '';
+            if ($formBranch && $userBranch) {
+                if (strtolower(trim((string) $formBranch)) === strtolower(trim((string) $userBranch))) {
+                    return true;
+                }
+            }
+        }
+
+        // B. Dept Head / Supervisor / Verificator (Department Isolation)
+        $oversightRoles = ['department-head', 'supervisor', 'verificator', 'purchasing-manager'];
+        if ($userRoles->intersect($oversightRoles)->isNotEmpty()) {
+            $formDept = $approvable->getApprovableDepartmentName();
+            if ($formDept) {
+                $eligibleDepts = $this->getEligibleDepartments($user);
+                $match = in_array(
+                    strtoupper(trim($formDept)),
+                    array_map('strtoupper', array_map('trim', $eligibleDepts))
+                );
+                if ($match) {
+                    return true;
+                }
+            }
+        }
+
+        // C. Specialized Module Hooks (Purchaser Categories)
+        if ($isPr && $userRoles->contains('purchaser')) {
+            $targetDepts = $this->getPurchaserSpecializedDepartments($user);
+
+            // Global Fallback: Base 'purchaser' role grants global access if no sub-roles are present
+            if (empty($targetDepts)) {
+                return true;
+            }
+
+            // Specialized Restriction: Must match one of the sub-roles if they exist
+            /** @var \App\Models\PurchaseRequest $approvable */
+            if ($approvable->to_department && in_array($approvable->to_department->value, $targetDepts)) {
+                return true;
+            }
+        }
+
+        // D. Director (Top-Level Oversight)
+        if ($userRoles->contains('director')) {
+            return true;
+        }
+
+        return false;
     }
 }
