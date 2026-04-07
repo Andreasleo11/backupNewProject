@@ -232,8 +232,8 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
+                    <div class="overflow-x-auto custom-scrollbar-thin pb-4">
+                        <table class="w-full text-sm text-left min-w-[800px] lg:min-w-max">
                             <thead>
                                 <tr class="border-b border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
                                     <th class="px-4 py-3 text-center w-10">No</th>

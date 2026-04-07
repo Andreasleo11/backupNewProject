@@ -94,6 +94,7 @@
     </div>
 
     {{-- QUICK VIEW MODAL --}}
+    @teleport('body')
     <div x-data="{ open: false }" 
          @open-quick-view-modal.window="open = true"
          @close-quick-view-modal.window="open = false"
@@ -140,16 +141,12 @@
 
                 <div class="p-4 bg-slate-50 min-h-[500px] max-h-[70vh] overflow-y-auto custom-scrollbar-thin">
                     @if($selectedId && $selectedType)
-                        @php
-                            $qUrl = match($selectedType) {
-                                'App\Models\PurchaseRequest' => route('purchase-requests.quick-view', $selectedId),
-                                'App\Domain\Overtime\Models\OvertimeForm' => route('overtime.detail', $selectedId),
-                                default => null
-                            };
-                        @endphp
-                        
-                        @if($qUrl)
-                            <iframe src="{{ $qUrl }}" class="w-full h-[600px] border-none rounded-2xl bg-white shadow-sm"></iframe>
+                        @if($selectedType === 'App\Models\PurchaseRequest')
+                            @livewire('purchase-request.quick-view', ['prId' => $selectedId], key('pr-'.$selectedId))
+                        @elseif($selectedType === 'App\Domain\Overtime\Models\OvertimeForm')
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                                @livewire('overtime.detail', ['id' => $selectedId], key('ot-'.$selectedId))
+                            </div>
                         @else
                             <div class="flex flex-col items-center justify-center h-full py-20 text-center">
                                 <div class="h-16 w-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-4">
@@ -157,7 +154,6 @@
                                 </div>
                                 <h4 class="text-lg font-bold text-slate-800">No Preview Available</h4>
                                 <p class="text-slate-400 max-w-xs mx-auto mt-2 text-sm italic">Detailed preview for this module is still in development. Please use the full review page.</p>
-                                <a href="{{ $selectedId ? '#' : '' }}" class="mt-8 px-8 py-4 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">Go to Detail Page</a>
                             </div>
                         @endif
                     @else
@@ -177,4 +173,5 @@
             </div>
         </div>
     </div>
+    @endteleport
 </div>
