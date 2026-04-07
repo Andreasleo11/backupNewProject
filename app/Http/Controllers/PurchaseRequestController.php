@@ -269,7 +269,7 @@ class PurchaseRequestController extends Controller
                 currency: $item['currency'] ?? 'IDR',
                 purpose: $item['purpose'] ?? ''
             ), $validated['items']),
-            isImport: $request->is_import === 'true',
+            isImport: $request->has('is_import') ? filter_var($request->is_import, FILTER_VALIDATE_BOOLEAN) : null,
         );
 
         // Execute UseCase
