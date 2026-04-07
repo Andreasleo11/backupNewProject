@@ -22,13 +22,10 @@ class ReportController extends Controller
         $files = File::where('doc_id', $report->doc_num)->get();
         $user = Auth::user();
         foreach ($report->details as $pd) {
-            $data1 = json_decode($pd->daijo_defect_detail);
-            $data2 = json_decode($pd->customer_defect_detail);
-            $data3 = json_decode($pd->remark);
-
-            $pd->daijo_defect_detail = $data1;
-            $pd->customer_defect_detail = $data2;
-            $pd->remark = $data3;
+            $pd->daijo_defect_detail = $pd->daijo_defect_detail ? json_decode($pd->daijo_defect_detail) : null;
+            $pd->customer_defect_detail = $pd->customer_defect_detail ? json_decode($pd->customer_defect_detail) : null;
+            $pd->supplier_defect_detail = $pd->supplier_defect_detail ? json_decode($pd->supplier_defect_detail) : null;
+            $pd->remark = $pd->remark ? json_decode($pd->remark) : null;
         }
 
         $autographNames = [
