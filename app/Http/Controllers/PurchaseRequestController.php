@@ -62,7 +62,7 @@ class PurchaseRequestController extends Controller
         // Only trigger if no explicit filter or custom status is provided.
         if (!$request->has('filter') && !$request->has('custom_status')) {
             $user = auth()->user();
-            if ($user && $user->hasAnyRole(['general-manager', 'verificator', 'director'])) {
+            if ($user && $user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
                 return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
             }
         }

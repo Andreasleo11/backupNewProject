@@ -4,91 +4,95 @@ declare(strict_types=1);
 
 namespace App\Application\PurchaseRequest\Queries;
 
+use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
+use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class GetPurchaseRequestStats
 {
+    public function __construct(
+        private readonly PurchaseRequestQueryBuilder $queryBuilder
+    ) {}
+
     /**
      * Get PR statistics for the current user
      */
     public function execute(): array
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+        if (! $user) {
+            return [];
+        }
+
+        $userId = $user->id;
         $cacheKey = "pr_stats_user_{$userId}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () {
+        // Lower cache duration to 2 minutes for better responsiveness while protecting DB
+        return Cache::remember($cacheKey, now()->addMinutes(2), function () use ($user) {
             return [
-                'pending_my_approval' => $this->getPendingMyApproval(),
-                'in_review' => $this->getInReview(),
-                'approved_this_month' => $this->getApprovedThisMonth(),
-                'total_value_pending' => $this->getTotalValuePending(),
+                'pending_my_approval' => $this->getPendingMyApproval($user),
+                'in_review' => $this->getInReview($user),
+                'approved_this_month' => $this->getApprovedThisMonth($user),
+                'total_value_pending' => $this->getTotalValuePending($user),
             ];
         });
     }
 
     /**
-     * Get count of PRs pending current user's approval (checking both User ID and Role IDs)
+     * Get count of PRs pending current user's approval
      */
-    private function getPendingMyApproval(): int
+    private function getPendingMyApproval(User $user): int
     {
-        $userId = auth()->id();
-        $roleIds = auth()->user()->roles->pluck('id')->toArray();
+        $query = $this->queryBuilder->forUser($user);
+        
+        // Use the canonical MyApprovalFilter
+        (new MyApprovalFilter($user))->apply($query);
 
-        return PurchaseRequest::query()
-            ->inReview()  // Use new query scope
-            ->whereHas('approvalRequest.steps', function ($q) use ($userId, $roleIds) {
-                // Match the current step sequence
-                $q->where('sequence', DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
-                    ->whereNull('acted_at')
-                    ->where(function ($query) use ($userId, $roleIds) {
-                        // Check if assigned strictly to the User
-                        $query->where(function ($u) use ($userId) {
-                            $u->where('approver_type', 'user')
-                                ->where('approver_id', $userId);
-                        })
-                        // Or assigned to a Role the User currently has
-                            ->orWhere(function ($r) use ($roleIds) {
-                                $r->where('approver_type', 'role')
-                                    ->whereIn('approver_id', $roleIds);
-                            });
-                    });
-            })
-            ->count();
+        return $query->count();
     }
 
     /**
-     * Get count of all PRs in review
+     * Get count of all PRs in review visible to this user
      */
-    private function getInReview(): int
+    private function getInReview(User $user): int
     {
-        return PurchaseRequest::inReview()->count();  // Use query scope
+        $query = $this->queryBuilder->forUser($user);
+        
+        // Use the canonical InReviewFilter
+        (new InReviewFilter())->apply($query);
+
+        return $query->count();
     }
 
     /**
-     * Get count of PRs approved this month
+     * Get count of PRs approved this month visible to this user
      */
-    private function getApprovedThisMonth(): int
+    private function getApprovedThisMonth(User $user): int
     {
-        return PurchaseRequest::query()
-            ->workflowApproved()  // Use query scope
-            ->whereYear('updated_at', now()->year)
-            ->whereMonth('updated_at', now()->month)
-            ->count();
+        $query = $this->queryBuilder->forUser($user);
+        
+        // Use the canonical ApprovedThisMonthFilter
+        (new ApprovedThisMonthFilter())->apply($query);
+
+        return $query->count();
     }
 
     /**
-     * Get total value of pending PRs grouped by currency
+     * Get total value of pending PRs grouped by currency visible to this user
      */
-    private function getTotalValuePending(): array
+    private function getTotalValuePending(User $user): array
     {
         $totals = [];
 
-        $prs = PurchaseRequest::query()
-            ->inReview()  // Use query scope
-            ->with('items')
-            ->get();
+        $query = $this->queryBuilder->forUser($user);
+        
+        // Only count In-Review PRs for value pending
+        (new InReviewFilter())->apply($query);
+
+        $prs = $query->with('items')->get();
 
         foreach ($prs as $pr) {
             foreach ($pr->items as $item) {
@@ -102,7 +106,7 @@ class GetPurchaseRequestStats
             }
         }
 
-        // Ensure 0 is returned if nothing exists
+        // Ensure IDR: 0 is returned if nothing exists
         if (empty($totals)) {
             return ['IDR' => 0];
         }
@@ -115,7 +119,9 @@ class GetPurchaseRequestStats
      */
     public static function clearCache(?int $userId = null): void
     {
-        $userId = $userId ?? auth()->id();
-        Cache::forget("pr_stats_user_{$userId}");
+        $userId = $userId ?? (int) auth()->id();
+        if ($userId) {
+            Cache::forget("pr_stats_user_{$userId}");
+        }
     }
 }

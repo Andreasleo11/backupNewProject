@@ -298,7 +298,9 @@ final class ApprovalEngine implements Approvals
 
             if ($step->approver_type === 'user') {
                 $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($step->approver_id);
-                if ($user) {
+                
+                // Even if directly assigned, respect their opt-out preferences
+                if ($user && $this->scopingManager->wantsNotification($user, get_class($approvable), 'immediate')) {
                     $usersToNotify->push($user);
                 }
             } else {
@@ -306,9 +308,15 @@ final class ApprovalEngine implements Approvals
                 $roleUsers = $this->userRoles->getUsersWithRole((int) $step->approver_id);
                 $roleSlug = $step->approver_snapshot_role_slug;
 
-                // Scoping Logic via Unified Manager
+                // Combined Scoping & Preference Logic via Unified Manager
                 $usersToNotify = $roleUsers->filter(function ($u) use ($roleSlug, $approvable) {
-                    return $this->scopingManager->isUserEligible($u, $roleSlug, $approvable);
+                    // 1. Jurisdictional Eligibility (Branch/Dept isolation)
+                    if (! $this->scopingManager->isUserEligible($u, $roleSlug, $approvable)) {
+                        return false;
+                    }
+
+                    // 2. Personal Notification Preferences (Check Opt-out / Global Mode)
+                    return $this->scopingManager->wantsNotification($u, get_class($approvable), 'immediate');
                 });
             }
 

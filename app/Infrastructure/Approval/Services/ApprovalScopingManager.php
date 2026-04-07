@@ -26,49 +26,92 @@ class ApprovalScopingManager
 
     /**
      * Determine if a specific user matches the required scope for a given role/approvable.
-     * Used by the Notification Engine.
+     * Used by the Notification Engine and Action Authorization.
      */
     public function isUserEligible(User $user, string $roleSlug, Approvable $approvable): bool
     {
-        // 1. Department Head / Supervisor (Origination Match)
-        if (in_array($roleSlug, ['department-head', 'supervisor'])) {
+        // 1. Department-Scoped Roles (Origination Match)
+        $deptScopedRoles = ['department-head', 'supervisor', 'verificator', 'purchasing-manager'];
+        if (in_array($roleSlug, $deptScopedRoles)) {
             $formDept = $approvable->getApprovableDepartmentName();
-            if (!$formDept) return false;
+            if (! $formDept) {
+                return false;
+            }
 
             $eligibleDepts = $this->getEligibleDepartments($user);
-            return in_array($formDept, $eligibleDepts);
+
+            return in_array(
+                strtoupper(trim($formDept)),
+                array_map('strtoupper', array_map('trim', $eligibleDepts))
+            );
         }
 
-        // 2. General Manager (Branch Match)
+        // 2. Branch-Scoped Roles (Branch Match)
         if ($roleSlug === 'general-manager') {
             $formBranch = $approvable->getApprovableBranchValue();
-            if (!$formBranch) return false;
-
             $userBranch = $user->employee->branch ?? '';
-            return strtolower(trim((string)$userBranch)) === strtolower(trim((string)$formBranch));
+
+            if (! $formBranch || ! $userBranch) {
+                return false;
+            }
+
+            return strtolower(trim((string) $userBranch)) === strtolower(trim((string) $formBranch));
         }
 
-        // 3. Purchaser (Specialized Department Role Match or Global Fallback)
+        // 3. Specialized PR Purchaser (Category Match or Global Fallback)
         if ($roleSlug === 'purchaser' && $approvable instanceof \App\Models\PurchaseRequest) {
             if (! $approvable->to_department) {
                 return false;
             }
 
-            // 3a. Specialized sub-role check
-            $targetRole = 'purchaser-' . Str::slug($approvable->to_department->label());
-            $hasSpecializedRole = $user->hasRole($targetRole) || $user->hasRole('purchaser-' . str_replace('purchaser-', '', $targetRole));
-            
+            // check for specialized sub-roles (e.g. purchaser-moulding)
+            $targetRole = 'purchaser-'.Str::slug($approvable->to_department->label());
+            $hasSpecializedRole = $user->hasRole($targetRole) || $user->hasRole(str_replace('purchaser-', '', $targetRole));
+
             if ($hasSpecializedRole) {
                 return true;
             }
 
-            // 3b. Global fallback: Only if they have 'purchaser' role but NO other specialized 'purchaser-*' roles
+            // Global fallback: Only if they have 'purchaser' but NO other specialized sub-roles
             $specializedDepts = $this->getPurchaserSpecializedDepartments($user);
+
             return empty($specializedDepts) && $user->hasRole('purchaser');
         }
 
-        // 4. Global Roles (Director, Verificator, etc.) - Global Match
+        // 4. Global Oversight Roles (Director, etc.)
         return true;
+    }
+
+    /**
+     * Determine if a user wants to receive a notification for a specific module
+     * based on their global and module-specific preferences.
+     */
+    public function wantsNotification(User $user, string $moduleClass, string $requestedMode = 'immediate'): bool
+    {
+        // 1. Check for module-specific override in user preferences
+        $preferences = $user->notification_preferences ?? [];
+        $mode = $preferences[$moduleClass] ?? null;
+
+        // 2. Fallback to global notification mode
+        if (empty($mode)) {
+            $mode = $user->email_notification_mode ?? 'immediate';
+        }
+
+        // 3. Check for global opt-out
+        if ($mode === 'none') {
+            return false;
+        }
+
+        // 4. Match the requested notification delivery mode
+        if ($requestedMode === 'immediate') {
+            return in_array($mode, ['immediate', 'both']);
+        }
+
+        if ($requestedMode === 'daily_summary') {
+            return in_array($mode, ['daily_summary', 'both']);
+        }
+
+        return false;
     }
 
     /**

@@ -52,19 +52,15 @@ class SendDailyApprovalSummary extends Command
                 ->get();
 
             // 3. Filter these requests by the resolved notification preference for their specific module
-            $summaryRequests = $allActionable->filter(function ($request) use ($user) {
+            $scopingManager = app(\App\Infrastructure\Approval\Services\ApprovalScopingManager::class);
+
+            $summaryRequests = $allActionable->filter(function ($request) use ($user, $scopingManager) {
                 if (!$request->approvable) return false;
                 
                 $moduleClass = get_class($request->approvable);
-                $preferences = $user->notification_preferences ?? [];
-                $mode = $preferences[$moduleClass] ?? null;
-
-                // Fallback to global default
-                if (empty($mode)) {
-                    $mode = $user->email_notification_mode ?? 'immediate';
-                }
-
-                return in_array($mode, ['daily_summary', 'both']);
+                
+                // Use the centralized helper for preference matching
+                return $scopingManager->wantsNotification($user, $moduleClass, 'daily_summary');
             });
 
             if ($summaryRequests->isNotEmpty()) {
