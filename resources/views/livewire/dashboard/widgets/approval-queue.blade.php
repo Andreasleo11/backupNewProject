@@ -53,18 +53,23 @@
                         </div>
                     </div>
 
+                    @if($approvable)
                     <div class="flex items-center gap-2">
-                        <a href="{{ $request->url ?? '#' }}" 
-                           class="flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm">
+                        <a href="{{ $approvable->getApprovableShowUrl() }}" 
+                           class="flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+                           title="Open Full Detail">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </a>
-                        <button class="h-10 px-4 rounded-xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all">
-                            Sign off
+                        <button wire:click="openQuickView({{ $approvable->id }}, '{{ addslashes(get_class($approvable)) }}')" 
+                                class="h-10 px-4 rounded-xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all">
+                            Review
                         </button>
                     </div>
+                    @endif
+
                 </div>
             </div>
         @empty
@@ -86,5 +91,90 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
         </a>
+    </div>
+
+    {{-- QUICK VIEW MODAL --}}
+    <div x-data="{ open: false }" 
+         @open-quick-view-modal.window="open = true"
+         @close-quick-view-modal.window="open = false"
+         x-show="open"
+         class="fixed inset-0 z-[100] overflow-y-auto"
+         style="display: none;">
+        
+        <div class="flex min-h-screen items-center justify-center p-4">
+            {{-- Backdrop --}}
+            <div x-show="open" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="open = false; $wire.closeQuickView()"
+                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+
+            {{-- Modal Content --}}
+            <div x-show="open"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative w-full max-w-4xl transform rounded-[2rem] bg-white shadow-2xl transition-all border border-white/20">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 px-8 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                            <i class="bi bi-eye text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-900">Quick Preview</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Reference ID: {{ $selectedId }}</p>
+                        </div>
+                    </div>
+                    <button @click="open = false; $wire.closeQuickView()" class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-400 transition-colors">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="p-4 bg-slate-50 min-h-[500px] max-h-[70vh] overflow-y-auto custom-scrollbar-thin">
+                    @if($selectedId && $selectedType)
+                        @php
+                            $qUrl = match($selectedType) {
+                                'App\Models\PurchaseRequest' => route('purchase-requests.quick-view', $selectedId),
+                                'App\Domain\Overtime\Models\OvertimeForm' => route('overtime.detail', $selectedId),
+                                default => null
+                            };
+                        @endphp
+                        
+                        @if($qUrl)
+                            <iframe src="{{ $qUrl }}" class="w-full h-[600px] border-none rounded-2xl bg-white shadow-sm"></iframe>
+                        @else
+                            <div class="flex flex-col items-center justify-center h-full py-20 text-center">
+                                <div class="h-16 w-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-4">
+                                    <i class="bi bi-exclamation-triangle text-3xl"></i>
+                                </div>
+                                <h4 class="text-lg font-bold text-slate-800">No Preview Available</h4>
+                                <p class="text-slate-400 max-w-xs mx-auto mt-2 text-sm italic">Detailed preview for this module is still in development. Please use the full review page.</p>
+                                <a href="{{ $selectedId ? '#' : '' }}" class="mt-8 px-8 py-4 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">Go to Detail Page</a>
+                            </div>
+                        @endif
+                    @else
+                        <div class="flex items-center justify-center h-full py-32">
+                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="px-8 py-6 bg-white rounded-b-[2rem] flex items-center justify-between border-t border-slate-100">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Best practice: Always verify line items before signing off.</p>
+                    <div class="flex items-center gap-3">
+                        <button @click="open = false; $wire.closeQuickView()" class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all">Close</button>
+                        <a href="{{ $selectedId ? '#' : '' }}" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">Open Full Detail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
