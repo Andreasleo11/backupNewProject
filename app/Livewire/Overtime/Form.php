@@ -51,6 +51,7 @@ class Form extends Component
     public array $employees = [];
     public array $recentJobs = [];
     public array $validationErrors = [];
+    public bool $isCheckingPayroll = false;
 
     public function mount(?int $id = null): void
     {
@@ -90,6 +91,7 @@ class Form extends Component
                 'end_time'      => $d->end_time ? substr($d->end_time, 0, 5) : '',
                 'break'         => $d->break ?? '',
                 'remarks'       => $d->remarks ?? '',
+                'payroll_status' => 'pending', // pending, safe, exists
             ])->toArray();
 
             // Populate globals from the first item if exists
@@ -147,6 +149,35 @@ class Form extends Component
     }
     public function updatedGlobalJobDesc($value) {
         foreach($this->items as $i => $item) { $this->items[$i]['job_desc'] = $value; }
+    }
+
+    public function checkPayrollStatus(): void
+    {
+        $this->isCheckingPayroll = true;
+        $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
+        
+        foreach ($this->items as $index => &$item) {
+            if (empty($item['nik']) || empty($item['overtime_date'])) {
+                continue;
+            }
+            
+            $result = $service->checkDetailExists([
+                'nik' => $item['nik'],
+                'overtime_date' => $item['overtime_date']
+            ]);
+            
+            $item['payroll_status'] = $result['exists'] ? 'exists' : 'safe';
+            $item['payroll_msg'] = $result['message'] ?? '';
+        }
+        
+        $this->isCheckingPayroll = false;
+        
+        $hasDuplicates = collect($this->items)->contains('payroll_status', 'exists');
+        if ($hasDuplicates) {
+            $this->dispatch('flash', type: 'warning', message: 'Terdapat data yang sudah ada di JPayroll.');
+        } else {
+            $this->dispatch('flash', type: 'success', message: 'Seluruh data aman (tidak ada duplikat di Payroll).');
+        }
     }
     public function updatedGlobalRemarks($value) {
         foreach($this->items as $i => $item) { $this->items[$i]['remarks'] = $value; }
@@ -241,6 +272,7 @@ class Form extends Component
             'end_time'      => $this->global_end_time,
             'break'         => $this->global_break,
             'remarks'       => $this->global_remarks,
+            'payroll_status' => 'pending',
         ];
     }
 
@@ -264,6 +296,13 @@ class Form extends Component
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->validationErrors = $this->getErrorBag()->toArray();
             $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted errors before submitting.');
+            return null;
+        }
+
+        // Safety check for payroll duplicates
+        $hasDuplicates = collect($this->items)->contains('payroll_status', 'exists');
+        if ($hasDuplicates) {
+            $this->dispatch('flash', type: 'error', message: 'Tidak dapat mengirim! Terdapat baris yang sudah ada di JPayroll.');
             return null;
         }
 

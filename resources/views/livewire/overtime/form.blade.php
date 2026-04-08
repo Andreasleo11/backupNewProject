@@ -234,9 +234,18 @@
                             </div>
                             <h2 class="text-sm font-extrabold text-slate-800 tracking-tight">Employee Roster</h2>
                         </div>
-                        <button type="button" @click="addRow()" class="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-[11px] font-black text-white shadow-md hover:bg-slate-700 transition-all focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
-                            <i class='bx bx-plus text-sm'></i> ADD EMPLOYEE
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" wire:click="checkPayrollStatus" 
+                                wire:loading.attr="disabled"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[11px] font-black text-slate-700 shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50">
+                                <i class='bx bx-search-alt-2' wire:loading.remove wire:target="checkPayrollStatus"></i>
+                                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="checkPayrollStatus"></i>
+                                CHECK PAYROLL CONSISTENCY
+                            </button>
+                            <button type="button" @click="addRow()" class="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-[11px] font-black text-white shadow-md hover:bg-slate-700 transition-all focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
+                                <i class='bx bx-plus text-sm'></i> ADD EMPLOYEE
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -247,6 +256,7 @@
                                     <th class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 min-w-[200px]">Employee details <span class="text-rose-500">*</span></th>
                                     <th class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 min-w-[200px]">Custom Job Desc <span class="text-rose-500">*</span></th>
                                     <th class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 w-[120px] text-center">Overrides Time/Date <span class="text-rose-500">*</span></th>
+                                    <th class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 w-20 text-center">Payroll Status</th>
                                     <th class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 w-24 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -286,6 +296,12 @@
                                             </ul>
                                             <p x-show="hasError(index,'nik')" x-text="getError(index,'nik')" class="mt-1 flex items-center gap-1 text-[9px] font-bold text-rose-500"></p>
                                             <p x-show="hasError(index,'name')" x-text="getError(index,'name')" class="mt-1 flex items-center gap-1 text-[9px] font-bold text-rose-500"></p>
+                                            
+                                            <template x-if="row.payroll_status === 'exists'">
+                                                <p class="mt-1 flex items-center gap-1 text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                                                    <i class='bx bxs-error'></i> ALREADY IN J-PAYROLL
+                                                </p>
+                                            </template>
                                         </td>
                                         
                                         {{-- Job Desc Override --}}
@@ -343,7 +359,20 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        
+
+                                        {{-- Payroll Status --}}
+                                        <td class="px-4 py-4 text-center">
+                                            <template x-if="row.payroll_status === 'pending'">
+                                                <i class='bx bx-timer text-slate-300 text-lg' title="Not checked yet"></i>
+                                            </template>
+                                            <template x-if="row.payroll_status === 'safe'">
+                                                <i class='bx bxs-check-circle text-emerald-500 text-lg' title="Clean (Not found in Payroll)"></i>
+                                            </template>
+                                            <template x-if="row.payroll_status === 'exists'">
+                                                <i class='bx bxs-error-circle text-rose-500 text-lg' title="Warning: Duplicate found in JPayroll"></i>
+                                            </template>
+                                        </td>
+
                                         {{-- Remove Action --}}
                                         <td class="px-6 py-4 text-right">
                                             <button type="button" @click="removeRow(index)" x-show="items.length > 1"

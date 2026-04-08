@@ -38,6 +38,47 @@ final class OvertimeJPayrollService
     }
 
     /**
+     * Check if a detail exists in J-Payroll (using API_View_Overtime).
+     */
+    public function checkDetailExists(array $data): array
+    {
+        $url = config('services.jpayroll.base_url') . 'API_View_Overtime.php';
+        $auth = config('services.jpayroll.auth');
+
+        $payload = [
+            'CompanyArea' => config('services.jpayroll.company_area'),
+            'NIK'         => $data['nik'],
+            'Date1'       => Carbon::parse($data['overtime_date'])->format('d/m/Y'),
+            'Date2'       => Carbon::parse($data['overtime_date'])->format('d/m/Y'),
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => $auth,
+                'Content-Type' => 'application/json',
+            ])->timeout(15)->post($url, $payload);
+
+            $resJson = $response->json();
+            
+            // If status is 200 and msg is not "Data Not Found" (or similar), it exists
+            if ($response->successful() && isset($resJson['status']) && $resJson['status'] == '200') {
+                // If it's found, it usually returns the transaction ID in 'msg' or 'transactionid'
+                return [
+                    'exists' => true, 
+                    'message' => $resJson['msg'] ?? 'Record found',
+                    'transaction_id' => $resJson['transactionid'] ?? null
+                ];
+            }
+
+            return ['exists' => false, 'message' => $resJson['msg'] ?? 'Not found'];
+
+        } catch (\Exception $e) {
+            Log::error("❌ JPayroll Check Exception", ['error' => $e->getMessage()]);
+            return ['exists' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Push all pending overtime details for a header to J-Payroll.
      */
     public function pushAllDetails(int $headerId): array
