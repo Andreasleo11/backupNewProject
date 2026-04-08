@@ -39,10 +39,10 @@ class ImportantDocumentDataTable extends DataTable
             ->editColumn(
                 'action',
                 '<div class="flex items-center justify-center gap-1.5">
-                    <a href="{{ route(\'hrd.importantDocs.detail\', $id) }}"
-                        class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Detail">
+                    <button type="button" @click="$store.docLibrary.openDetail({{ $id }})"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
                         <i class="bx bx-show text-lg"></i>
-                    </a>
+                    </button>
                     <a href="{{ route(\'hrd.importantDocs.edit\', $id) }}"
                         class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
                         <i class="bx bx-edit text-lg"></i>
@@ -85,6 +85,14 @@ class ImportantDocumentDataTable extends DataTable
                 $query->whereHas('type', function($q) use ($keyword) {
                     $q->where('name', $keyword);
                 });
+            })
+            ->addColumn('status_type', function($row) {
+                $today = $this->today ? $this->today->startOfDay() : now()->startOfDay();
+                $diffDays = $today->diffInDays($row->expired_date, false);
+
+                if ($diffDays < 0) return 'expired';
+                if ($diffDays <= ($this->thresholdDays ?? 60)) return 'expiring';
+                return 'active';
             })
             ->rawColumns(['action', 'expired_date', 'document'])
             ->setRowId('id');
@@ -178,7 +186,8 @@ class ImportantDocumentDataTable extends DataTable
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
+                ->addClass('text-center align-middle'),
+            Column::make('status_type')->title('Status Type')->visible(false)->searchable(true)
         ];
     }
 

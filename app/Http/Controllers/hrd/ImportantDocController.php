@@ -95,6 +95,10 @@ class ImportantDocController extends Controller
         $warningDate = now()->addMonths($threshold)->endOfDay();
         $thresholdDays = $today->diffInDays($warningDate);
 
+        if (request()->ajax()) {
+            return view('hrd.importantDocs.partials.detail_content', compact('importantDoc', 'thresholdDays', 'today'));
+        }
+
         return view('hrd.importantDocs.detail', compact('importantDoc', 'thresholdDays', 'today'));
     }
 
