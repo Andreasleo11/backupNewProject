@@ -7,16 +7,36 @@ use App\Http\Controllers\Controller;
 use App\Models\hrd\ImportantDoc;
 use App\Models\hrd\ImportantDocFile;
 use App\Models\hrd\ImportantDocType;
-use Dompdf\Dompdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ImportantDocController extends Controller
 {
-    public function index(ImportantDocumentDataTable $dataTable)
+    public function index(ImportantDocumentDataTable $dataTable, Request $request)
     {
-        $importantDocs = ImportantDoc::with('type', 'files')->orderBy('expired_date')->get();
+        $threshold = $request->get('threshold', 2);
+        $tab = $request->get('tab', 'all'); // New tab parameter
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return $dataTable->render('hrd.importantDocs.index', compact('importantDocs'));
+        $stats = [
+            'total'         => ImportantDoc::count(),
+            'active'        => ImportantDoc::where('expired_date', '>', $warningDate)->count(),
+            'expiring_soon' => ImportantDoc::whereBetween('expired_date', [$today, $warningDate])->count(),
+            'expired'       => ImportantDoc::where('expired_date', '<', $today)->count(),
+            'archived'      => ImportantDoc::onlyTrashed()->count(),
+            'action_needed' => ImportantDoc::where('expired_date', '<=', $warningDate)->count(),
+        ];
+
+        $types = ImportantDocType::all();
+
+        $dataTable->thresholdDays = $thresholdDays;
+        $dataTable->threshold = $threshold;
+        $dataTable->today = $today;
+        $dataTable->tab = $tab; // Pass tab to DataTable
+
+        return $dataTable->render('hrd.importantDocs.index', compact('stats', 'threshold', 'types', 'thresholdDays', 'tab'));
     }
 
     /**
@@ -34,42 +54,34 @@ class ImportantDocController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate form
         $request->validate([
-            'name' => 'required|max:255',
-            'type_id' => 'required',
-            'expired_date' => 'required',
-            'files.*' => 'file|max:2048|nullable',
+            'name'        => 'required|max:255',
+            'type_id'     => 'required',
+            'expired_date'=> 'required',
+            'files.*'     => 'file|max:2048|nullable',
             'document_id' => 'string|max:255|nullable',
             'description' => 'string|max:255|nullable',
         ]);
 
-        // Create a new ImportantDoc instance with additional data
         $importantDoc = ImportantDoc::create([
-            'name' => $request->name,
-            'type_id' => $request->type_id,
+            'name'         => $request->name,
+            'type_id'      => $request->type_id,
             'expired_date' => $request->expired_date,
-            'document_id' => $request->document_id,
-            'description' => $request->description,
+            'document_id'  => $request->document_id,
+            'description'  => $request->description,
         ]);
 
         if ($request->hasFile('files')) {
-            // dd($request->file('files'));
             foreach ($request->file('files') as $file) {
-                // Generate a unique filename
                 $fileName = time() . '-' . $file->getClientOriginalName();
-
-                // Read file content
                 $fileData = file_get_contents($file->getRealPath());
 
-                // Store the file in the filesystem
                 $file->storeAs('public/importantDocuments', $fileName);
 
-                // Store file data in the database
                 $importantDoc->files()->create([
-                    'name' => $fileName,
+                    'name'      => $fileName,
                     'mime_type' => $file->getClientMimeType(),
-                    'data' => $fileData,
+                    'data'      => $fileData,
                 ]);
             }
         }
@@ -81,74 +93,129 @@ class ImportantDocController extends Controller
 
     public function detail($id)
     {
-        $importantDoc = ImportantDoc::find($id);
+        $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
+        $threshold = 2; // Default for context
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return view('hrd.importantDocs.detail', compact('importantDoc'));
+        if (request()->ajax()) {
+            return view('hrd.importantDocs.partials.detail_content', compact('importantDoc', 'thresholdDays', 'today'));
+        }
+
+        return view('hrd.importantDocs.detail', compact('importantDoc', 'thresholdDays', 'today'));
     }
 
     public function edit($id)
     {
-        $types = ImportantDocType::all()->reverse();
-        $importantDoc = ImportantDoc::with('type')->find($id);
+        $types        = ImportantDocType::all()->reverse();
+        $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
+        $threshold = 2; // Default for context
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return view('hrd.importantDocs.edit', compact('importantDoc', 'types'));
+        return view('hrd.importantDocs.edit', compact('importantDoc', 'types', 'thresholdDays', 'today'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|max:255',
-            'type_id' => 'required|max:255',
+            'name'         => 'required|max:255',
+            'type_id'      => 'required',
             'expired_date' => 'required',
+            'document_id'  => 'nullable|string|max:255',
+            'description'  => 'nullable|string|max:255',
+            'files.*'      => 'nullable|file|max:2048',
         ]);
 
-        $importantDoc = ImportantDoc::find($id);
+        $importantDoc = ImportantDoc::findOrFail($id);
 
-        if ($importantDoc) {
-            $importantDoc->update($request->all());
+        $importantDoc->update([
+            'name'         => $request->name,
+            'type_id'      => $request->type_id,
+            'expired_date' => $request->expired_date,
+            'document_id'  => $request->document_id,
+            'description'  => $request->description,
+        ]);
 
-            return redirect()
-                ->route('hrd.importantDocs.index')
-                ->with('success', 'Data berhasil diupdate!');
-        } else {
-            return redirect()->route('hrd.importantDocs.index')->with('error', 'Data not found!');
+        // Append any newly uploaded files
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '-' . $file->getClientOriginalName();
+                $fileData = file_get_contents($file->getRealPath());
+
+                $file->storeAs('public/importantDocuments', $fileName);
+
+                $importantDoc->files()->create([
+                    'name'      => $fileName,
+                    'mime_type' => $file->getClientMimeType(),
+                    'data'      => $fileData,
+                ]);
+            }
         }
+
+        return redirect()
+            ->route('hrd.importantDocs.detail', $importantDoc->id)
+            ->with('success', 'Data berhasil diupdate!');
     }
 
     public function destroy($id)
     {
-        ImportantDoc::find($id)->delete();
+        $importantDoc = ImportantDoc::findOrFail($id);
+        $importantDoc->delete();
 
         return redirect()
             ->route('hrd.importantDocs.index')
             ->with('success', 'Data berhasil dihapus!');
     }
 
-    public function downloadFile(ImportantDocFile $file)
+    /**
+     * Delete a single file attachment from a document.
+     */
+    public function destroyFile($fileId)
     {
-        return response()->streamDownload(function () use ($file) {
-            echo $file->data;
-        }, $file->name);
+        $file = ImportantDocFile::findOrFail($fileId);
+        $file->delete();
+
+        return back()->with('success', 'File berhasil dihapus!');
     }
 
-    public function previewPdf($file)
+    /**
+     * Restore a soft-deleted document.
+     */
+    public function restore($id)
     {
-        // Retrieve the document from the database
-        $document = $file;
+        $doc = ImportantDoc::withTrashed()->findOrFail($id);
+        $doc->restore();
 
-        // Initialize Dompdf
-        $dompdf = new Dompdf;
+        // Also restore associated files
+        ImportantDocFile::onlyTrashed()->where('important_doc_id', $id)->restore();
 
-        // Load the PDF content
-        $dompdf->loadHtml($document->content);
+        return redirect()
+            ->route('hrd.importantDocs.index', ['tab' => 'archived'])
+            ->with('success', 'Dokumen berhasil dipulihkan!');
+    }
 
-        // (Optional) Set paper size and orientation
-        $dompdf->setPaper('A4', 'portrait');
+    /**
+     * Permanently delete a document and its physical files.
+     */
+    public function forceDelete($id)
+    {
+        $doc = ImportantDoc::withTrashed()->with(['files' => function($q) {
+            $q->withTrashed();
+        }])->findOrFail($id);
 
-        // Render the PDF
-        $dompdf->render();
+        // Physical deletion
+        foreach ($doc->files as $file) {
+            Storage::delete('public/importantDocuments/' . $file->name);
+            $file->forceDelete();
+        }
 
-        // Output the PDF content to the browser
-        return $dompdf->stream($document->name);
+        $doc->forceDelete();
+
+        return redirect()
+            ->route('hrd.importantDocs.index', ['tab' => 'archived'])
+            ->with('success', 'Dokumen dihapus secara permanen!');
     }
 }

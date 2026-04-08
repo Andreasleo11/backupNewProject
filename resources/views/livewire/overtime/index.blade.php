@@ -293,7 +293,9 @@
                             <th wire:click="sortBy('workflow_status')" class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100/70 transition-colors">
                                 <div class="flex items-center gap-1">Status {!! sortIcon('workflow_status', $sortField, $sortDirection) !!}</div>
                             </th>
-                            <th class="{{ $rowPadding }} whitespace-nowrap">Review Status</th>
+                            @if ($isDetailReviewer)
+                                <th class="{{ $rowPadding }} whitespace-nowrap">Review Status</th>
+                            @endif
                             <th class="{{ $rowPadding }} whitespace-nowrap">Approval</th>
                             <th class="{{ $rowPadding }} whitespace-nowrap text-right">Action</th>
                         </tr>
@@ -345,6 +347,7 @@
                                 </td>
 
                                 {{-- Review Status Badge --}}
+                                @if ($isDetailReviewer)
                                 @php $review = OvertimeIndex::reviewMeta($fot); @endphp
                                 <td class="{{ $rowPadding }} whitespace-nowrap">
                                     <div class="flex flex-col">
@@ -378,6 +381,7 @@
                                         @endif
                                     </div>
                                 </td>
+                                @endif
 
                                 {{-- Inline Approval Stepper --}}
                                 <td class="{{ $rowPadding }} whitespace-nowrap">
@@ -445,9 +449,8 @@
                                 </td>
                             </tr>
                         @empty
-                            {{-- Filtered-empty state (filters active, 0 results) --}}
                             <tr>
-                                <td colspan="{{ $isPrivileged ? 7 : 6 }}" class="px-6 py-16 text-center">
+                                <td colspan="{{ 4 + ($isPrivileged ? 1 : 0) + ($isDetailReviewer ? 1 : 0) }}" class="px-6 py-16 text-center">
                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
                                         <i class='bx bx-filter-alt text-3xl'></i>
                                     </div>
@@ -463,7 +466,7 @@
                 </table>
 
                 {{-- Skeleton Loader --}}
-                @php $cols = $isPrivileged ? 7 : 6; @endphp
+                @php $cols = 4 + ($isPrivileged ? 1 : 0) + ($isDetailReviewer ? 1 : 0); @endphp
                 <table class="min-w-full" wire:loading wire:key="tbl-skeleton" wire:target="resetFilters,setRange,sortBy,perPage,search,dept,startDate,endDate,infoStatus,isPush">
                     <tbody class="divide-y divide-slate-100/60">
                         @for ($i = 0; $i < min(8, $perPage); $i++)

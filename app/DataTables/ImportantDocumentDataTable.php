@@ -13,6 +13,16 @@ use Yajra\DataTables\Services\DataTable;
 class ImportantDocumentDataTable extends DataTable
 {
     /**
+     * The warning threshold in months.
+     *
+     * @var int
+     */
+    public $thresholdDays = 60;
+    public $threshold = 2;
+    public $today;
+    public $tab = 'all';
+
+    /**
      * Build DataTable class.
      *
      * @param QueryBuilder $query Results from query() method.
@@ -20,47 +30,130 @@ class ImportantDocumentDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn(
+            ->addColumn('document', function($doc) {
+                $idLine = $doc->document_id ? '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">' . e($doc->document_id) . '</div>' : '';
+                return '<div>' . 
+                            '<div class="font-bold text-slate-900 text-sm">' . e($doc->name) . '</div>' . 
+                            $idLine . 
+                       '</div>';
+            })
+            ->editColumn(
                 'action',
-                '
-            <a href="{{ route("hrd.importantDocs.detail", $id) }}"
-                class="btn btn-secondary me-1">
-                <div class="col d-flex align-middle">
-                    <box-icon name="info-circle" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Detail</span>
-                </div>
-            </a>
-            <a href="{{ route("hrd.importantDocs.edit", $id) }}"
-                class="btn btn-primary me-1">
-                <div class="col d-flex">
-                    <box-icon name="edit" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Edit</span>
-                </div>
-            </a>
+                function($row) {
+                    if ($row->trashed()) {
+                        return '<div class="flex items-center justify-center gap-1.5">
+                                    <form method="POST" action="'.route('hrd.importantDocs.restore', $row->id).'" onsubmit="return confirm(\'Restore this document?\')">
+                                        '.csrf_field().'
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Restore">
+                                            <i class="bx bx-undo text-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="'.route('hrd.importantDocs.forceDelete', $row->id).'" onsubmit="return confirm(\'Permanently delete this? This cannot be undone.\')">
+                                        '.csrf_field().' '.method_field('DELETE').'
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Permanent Delete">
+                                            <i class="bx bx-trash-alt text-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>';
+                    }
 
-            <button data-bs-toggle="modal"
-                data-bs-target="#delete-confirmation-modal-{{ $id }}"
-                class="btn btn-danger"
-                onclick="event.preventDefault(); document.getElementById("delete-form").submit()">
-                <div class="col d-flex">
-                    <box-icon name="trash" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Delete</span>
-                </div>
-            </button>
-            ',
+                    return '<div class="flex items-center justify-center gap-1.5">
+                        <button type="button" @click="$store.docLibrary.openDetail('.$row->id.')"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
+                            <i class="bx bx-show text-lg"></i>
+                        </button>
+                        <a href="'.route('hrd.importantDocs.edit', $row->id).'"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
+                            <i class="bx bx-edit text-lg"></i>
+                        </a>
+                        <div x-data="{ open: false }" class="inline-block">
+                            <button type="button" @click="open = true"
+                                class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                                <i class="bx bx-trash text-lg"></i>
+                            </button>
+                            <template x-teleport="body">
+                                <div>
+                                    <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false" x-cloak></div>
+                                    <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" x-cloak>
+                                        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+                                            <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
+                                                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                    <i class="bx bx-error-circle text-rose-500"></i> Delete Confirmation
+                                                </h2>
+                                                <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="bx bx-x text-xl"></i></button>
+                                            </div>
+                                            <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action can be undone by an administrator.</div>
+                                            <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
+                                                <button type="button" @click="open = false" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+                                                <form method="POST" action="'.route('hrd.importantDocs.delete', $row->id).'">
+                                                    '.csrf_field().' '.method_field('DELETE').'
+                                                    <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
+                                                        <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>';
+                }
             )
-            // ->editColumn('expired_date', '{{ \Carbon\Carbon::parse($expired_date)->format(\'d-m-Y\') }}')
+            ->filterColumn('document', function($query, $keyword) {
+                $query->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('document_id', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('type', function($query, $keyword) {
+                if (empty($keyword)) return;
+                $query->whereHas('type', function($q) use ($keyword) {
+                    $q->where('name', $keyword);
+                });
+            })
+            ->addColumn('status_type', function($row) {
+                if ($row->trashed()) return 'archived';
+                $today = $this->today ? $this->today->startOfDay() : now()->startOfDay();
+                $diffDays = $today->diffInDays($row->expired_date, false);
+
+                if ($diffDays < 0) return 'expired';
+                if ($diffDays <= ($this->thresholdDays ?? 60)) return 'expiring';
+                return 'active';
+            })
+            ->filterColumn('status_type', function($query, $keyword) {
+                $today = now()->startOfDay();
+                $threshold = $this->threshold ?? 2;
+                $warningDate = now()->addMonths($threshold)->endOfDay();
+
+                if ($keyword === 'expired') {
+                    $query->where('expired_date', '<', $today);
+                } elseif ($keyword === 'expiring') {
+                    $query->whereBetween('expired_date', [$today, $warningDate]);
+                } elseif ($keyword === 'active') {
+                    $query->where('expired_date', '>', $warningDate);
+                }
+            })
+            ->rawColumns(['action', 'expired_date', 'document'])
             ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\ImportantDocument $model
+     * @param ImportantDoc $model
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
-        return $model::with('type')->newQuery();
+        $query = $model::with('type');
+
+        if ($this->tab === 'archived') {
+            $query->onlyTrashed();
+        } elseif ($this->tab === 'required') {
+            $threshold = $this->threshold ?? 2;
+            $warningDate = now()->addMonths($threshold)->endOfDay();
+            $query->where('expired_date', '<=', $warningDate);
+        }
+
+        return $query->newQuery();
     }
 
     /**
@@ -72,15 +165,12 @@ class ImportantDocumentDataTable extends DataTable
             ->setTableId('importantdocument-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(5, 'asc')
-            // ->dom('Bfrtip')
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                // Button::make('pdf'),
-                Button::make('print'),
-                Button::make('reset'),
-                Button::make('reload'),
+            ->dom('frtip')
+            ->orderBy(2, 'asc')
+            ->buttons([])
+            ->language([
+                'searchPlaceholder' => 'Search name, ID or notes...',
+                'search' => '',
             ]);
     }
 
@@ -90,47 +180,61 @@ class ImportantDocumentDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')->addClass('text-center align-middle'),
-            Column::make('document_id')->addClass('text-center align-middle'),
-            Column::make('name')->addClass('text-center align-middle'),
+            Column::make('document')
+                ->title('Document Info')
+                ->addClass('align-middle'),
             Column::make('type')
+                ->title('Category')
                 ->data('type.name')
-                ->searchable(false)
+                ->searchable(true)
                 ->orderable(false)
                 ->addClass('text-center align-middle'),
-            Column::make('description')->addClass('text-center align-middle'),
             Column::make('expired_date')
                 ->data('expired_date')
-                ->title('Expired Date')
+                ->title('Expiry')
                 ->addClass('text-center align-middle')->renderRaw('
                 function(data, type, row, meta){
                     if (type === \'display\') {
-                        // Example date string from the database
-                        let dateString = data;
+                        let dbDate = new Date(data);
+                        let now = new Date(\'' . ($this->today ? $this->today->toDateString() : now()->toDateString()) . '\');
+                        now.setHours(0,0,0,0);
+                        dbDate.setHours(0,0,0,0);
 
-                        // Parse the date string into a JavaScript Date object
-                        let dbDate = new Date(dateString);
+                        let diffTime = dbDate - now;
+                        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        let thresholdDays = ' . ($this->thresholdDays ?? 60) . ';
 
-                        // Get the current date
-                        let currentDate = new Date();
+                        let options = { day: \'2-digit\', month: \'2-digit\', year: \'numeric\' };
+                        let displayDate = new Date(data).toLocaleDateString(\'id-ID\', options);
 
-                        // Calculate a date that is 2 months from now
-                        let twoMonthsFromNow = new Date();
-                        twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
-                        console.log(twoMonthsFromNow);
-
-                        // Compare the parsed database date with the calculated date
-                        if (dbDate.getTime() < twoMonthsFromNow.getTime()) {
-                            return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">\' + dateString + \'</span>\';
+                        if (diffDays < 0) {
+                            return \'<div class=\"flex flex-col items-center gap-1\">\' +
+                                        \'<span class=\"inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-700\">\' +
+                                            \'Expired \' + Math.abs(diffDays) + \'d ago\' +
+                                        \'</span>\' +
+                                        \'<span class=\"text-[10px] font-medium text-slate-400\">\' + displayDate + \'</span>\' +
+                                    \'</div>\';
+                        } else if (diffDays <= thresholdDays) {
+                            let label = (diffDays === 0) ? \'Expires Today\' : \'Expiring in \' + diffDays + \'d\';
+                            return \'<div class=\"flex flex-col items-center gap-1\">\' +
+                                        \'<span class=\"inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700\">\' +
+                                            label +
+                                        \'</span>\' +
+                                        \'<span class=\"text-[10px] font-medium text-slate-400\">\' + displayDate + \'</span>\' +
+                                    \'</div>\';
+                        } else {
+                            return \'<span class=\"text-sm font-medium text-slate-600\">\' + displayDate + \'</span>\';
                         }
                     }
-                    return data; // Return the original data for other types
+                    return data;
                 }
             '),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
+                ->addClass('text-center align-middle'),
+            Column::make('status_type')->title('Status Type')->visible(false)->searchable(true),
+            Column::make('description')->title('Description')->visible(false)->searchable(true),
         ];
     }
 

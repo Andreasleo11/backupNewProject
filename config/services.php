@@ -33,5 +33,6 @@ return [
     'jpayroll' => [
         'base_url' => env('JPAYROLL_API_BASE'),
         'auth' => env('JPAYROLL_AUTH_HEADER'),
+        'company_area' => env('JPAYROLL_COMPANY_AREA'),
     ],
 ];

@@ -17,8 +17,24 @@ use App\Infrastructure\Persistence\Eloquent\Models\User;
 class OvertimePolicy
 {
     /**
-     * Any authenticated user can view the overtime index.
-     * Visibility is further scoped by scopeByRole() in the Livewire component.
+     * Intercept all checks. Super-Admins can bypass permissions, BUT
+     * we must still enforce business workflow locks (like not deleting APPROVED forms).
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->hasRole('super-admin')) {
+            // Do not bypass these methods so their workflow status locks still run.
+            if (in_array($ability, ['update', 'delete'])) {
+                return null; 
+            }
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine whether the user can view any overtime forms in the index.
      */
     public function viewAny(User $user): bool
     {
@@ -30,42 +46,43 @@ class OvertimePolicy
      */
     public function view(User $user, OvertimeForm $form): bool
     {
-        // We use the centralized query scope from the model to check visibility.
-        // This ensures perfect synchronization between the Index list and Detail access.
         return OvertimeForm::where('id', $form->id)->byRole($user)->exists();
     }
 
     /**
-     * MANAGEMENT department members cannot create overtime forms.
-     * Everyone else can.
+     * Determine whether the user can create overtime forms.
      */
     public function create(User $user): bool
     {
-        return $user->can('overtime.create') && $user->department?->name !== 'MANAGEMENT';
+        return $user->can('overtime.create');
     }
 
     /**
-     * Only the form creator or super-admin can delete a form.
-     */
-    public function delete(User $user, OvertimeForm $form): bool
-    {
-        return $user->id === $form->user_id || $user->can('overtime.delete');
-    }
-
-    /**
-     * A form can be edited by its creator (or super-admin) while it is
-     * still in a waiting-creator or waiting-dept-head status.
+     * Determine whether the user can update the specific form.
      */
     public function update(User $user, OvertimeForm $form): bool
     {
-        $editableStatuses = ['waiting-creator', 'waiting-dept-head'];
+        if (! in_array(strtoupper($form->workflow_status), ['DRAFT', 'SUBMITTED', 'RETURNED'], true)) {
+            return false;
+        }
 
-        return in_array($form->status, $editableStatuses, true)
-            && ($user->id === $form->user_id || $user->can('overtime.delete'));
+        return $user->id === $form->user_id || $user->can('overtime.update') || $user->hasRole('super-admin');
     }
 
     /**
-     * Determine whether the user can approve (sign) the current step.
+     * Determine whether the user can delete the specific form.
+     */
+    public function delete(User $user, OvertimeForm $form): bool
+    {
+        if (in_array(strtoupper($form->workflow_status), ['APPROVED', 'REJECTED'], true)) {
+            return false;
+        }
+
+        return $user->id === $form->user_id || $user->can('overtime.delete') || $user->hasRole('super-admin');
+    }
+
+    /**
+     * Determine whether the user can approve (sign) the current pending step.
      */
     public function approve(User $user, OvertimeForm $form): bool
     {
@@ -73,7 +90,28 @@ class OvertimePolicy
             return false;
         }
 
-        return $this->sign($user, $form);
+        $approval = $form->approvalRequest;
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
+            return false;
+        }
+
+        $step = $approval->steps->where('sequence', $approval->current_step)->first();
+
+        if (! $step) {
+            return false;
+        }
+
+        $roleSlug = $step->approver_snapshot_role_slug ?? $step->role_slug ?? '';
+        return $user->hasRole($roleSlug) || $user->can('overtime.approve-all');
+    }
+
+    /**
+     * Determine whether the user can reject the form.
+     */
+    public function reject(User $user, OvertimeForm $form): bool
+    {
+        return $this->approve($user, $form);
     }
 
     /**
@@ -85,38 +123,9 @@ class OvertimePolicy
     }
 
     /**
-     * A user can sign (approve) a step if they hold the role_slug
-     * defined on that step, or they are super-admin.
+     * Determine whether the user can export overtime data.
      */
-    public function sign(User $user, OvertimeForm $form, $step = null): bool
-    {
-        if (! $step) {
-            $req = $form->approvalRequest;
-            if ($req && $req->status === 'IN_REVIEW') {
-                $step = $req->steps->where('sequence', $req->current_step)->first();
-            }
-        }
-
-        if (! $step) {
-            return false;
-        }
-
-        $roleSlug = $step->approver_snapshot_role_slug ?? $step->role_slug ?? '';
-        return $user->hasRole($roleSlug) || $user->hasRole('super-admin');
-    }
-
-    /**
-     * A user can reject the form if they can sign the current pending step.
-     */
-    public function reject(User $user, OvertimeForm $form): bool
-    {
-        return $this->approve($user, $form);
-    }
-
-    /**
-     * Exports are limited to VERIFICATOR and above.
-     */
-    public function export(User $user): bool
+    public function export(User $user, OvertimeForm $form): bool
     {
         return $user->can('overtime.export');
     }
@@ -130,9 +139,9 @@ class OvertimePolicy
     }
 
     /**
-     * JPayroll push is limited to super-admin and VERIFICATOR.
+     * Determine whether the user can push data to JPayroll.
      */
-    public function pushToPayroll(User $user): bool
+    public function pushToPayroll(User $user, OvertimeForm $form): bool
     {
         return $user->can('overtime.push-to-payroll');
     }

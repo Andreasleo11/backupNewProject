@@ -21,10 +21,6 @@ class Detail extends Component
     public string $rejectReason = '';
     public ?int $rejectApprovalId = null;
 
-    // JPayroll push feedback
-    public ?string $pushMessage = null;
-    public bool $pushSuccess = false;
-
     protected OvertimeApprovalService $approvalService;
 
     public function boot(OvertimeApprovalService $approvalService): void
@@ -61,9 +57,9 @@ class Detail extends Component
 
         if ($result['success']) {
             $this->loadForm();
-            $this->dispatch('toast', message: $result['message'], type: 'success');
+            $this->dispatch('flash', type: 'success', message: $result['message']);
         } else {
-            $this->dispatch('toast', message: $result['message'], type: 'error');
+            $this->dispatch('flash', type: 'error', message: $result['message']);
         }
     }
 
@@ -90,25 +86,56 @@ class Detail extends Component
 
         if ($result['success']) {
             $this->loadForm();
-            $this->dispatch('toast', message: $result['message'], type: 'success');
+            $this->dispatch('flash', type: 'success', message: $result['message']);
         } else {
-            $this->dispatch('toast', message: $result['message'], type: 'error');
+            $this->dispatch('flash', type: 'error', message: $result['message']);
         }
     }
 
-    // ── JPayroll push actions ─────────────────────────────────────────────────
-
-    public function pushDetail(int $detailId, string $action): void
+    public function pushDetail(int $detailId): void
     {
         $this->authorize('pushToPayroll', $this->form);
 
-        $detail = OvertimeFormDetail::with('employee', 'header')->findOrFail($detailId);
+        $detail = OvertimeFormDetail::findOrFail($detailId);
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
-        $result = $service->pushSingleDetail($detail, $action);
+        $result = $service->pushSingleDetail($detail);
 
-        $this->pushSuccess = $result['success'];
-        $this->pushMessage = $result['message'];
         $this->loadForm();
+        $this->dispatch('flash', 
+            type: $result['success'] ? 'success' : 'error', 
+            message: $result['message']
+        );
+    }
+
+    public function unpushDetail(int $detailId): void
+    {
+        $this->authorize('pushToPayroll', $this->form);
+
+        $detail = OvertimeFormDetail::findOrFail($detailId);
+        $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
+        $result = $service->removeSingleDetail($detail);
+
+        $this->loadForm();
+        $this->dispatch('flash', 
+            type: $result['success'] ? 'success' : 'error', 
+            message: $result['message']
+        );
+    }
+
+    public function rejectDetail(int $detailId): void
+    {
+        $this->authorize('pushToPayroll', $this->form);
+
+        $detail = OvertimeFormDetail::findOrFail($detailId);
+        $detail->status = 'Rejected';
+        $detail->reason = 'Manual rejection by HR/Verificator';
+        $detail->save();
+
+        $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
+        $service->checkAndUpdateHeaderPushStatus($this->formId);
+
+        $this->loadForm();
+        $this->dispatch('flash', type: 'success', message: 'Detail berhasil direject secara manual.');
     }
 
     public function pushAll(): void
@@ -118,15 +145,14 @@ class Detail extends Component
         $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
         $result = $service->pushAllDetails($this->formId);
 
-        $this->pushSuccess = $result['success'];
-        $this->pushMessage = $result['message'] . " ({$result['total_success']} ok, {$result['total_failed']} failed)";
         $this->loadForm();
+        $this->dispatch('flash', 
+            type: $result['success'] ? 'success' : 'error', 
+            message: $result['message'] . " ({$result['total_success']} ok, {$result['total_failed']} failed)"
+        );
     }
 
-    public function clearPushMessage(): void
-    {
-        $this->pushMessage = null;
-    }
+
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 

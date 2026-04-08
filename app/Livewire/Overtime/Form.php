@@ -15,12 +15,6 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Throwable;
 
-/**
- * Unified Livewire component for Creating and Editing Overtime Forms.
- * 
- * Create Mode (when $formId is null)
- * Edit Mode (when $formId is present)
- */
 #[Layout('new.layouts.app')]
 class Form extends Component
 {
@@ -40,6 +34,15 @@ class Form extends Component
     public $excel_file = null;
     public bool $isExcelMode = false;
 
+    // Shared Default Fields (The UX Overhaul)
+    public string $global_overtime_date = '';
+    public string $global_job_desc = '';
+    public string $global_start_time = '';
+    public string $global_end_date = '';
+    public string $global_end_time = '';
+    public string $global_break = '0';
+    public string $global_remarks = '';
+
     // Detail rows
     public array $items = [];
     public array $removedDetailIds = [];
@@ -48,13 +51,21 @@ class Form extends Component
     public array $employees = [];
     public array $recentJobs = [];
     public array $validationErrors = [];
+    public bool $isCheckingPayroll = false;
 
     public function mount(?int $id = null): void
     {
         $this->formId = $id;
 
+        $this->employees = $this->fetchEmployees();
+        $this->recentJobs = OvertimeFormDetail::select('job_desc')
+            ->whereNotNull('job_desc')
+            ->distinct()
+            ->limit(15)
+            ->pluck('job_desc')
+            ->toArray();
+
         if ($this->formId) {
-            // -- Edit Mode Setup --
             $this->form = OvertimeForm::with(['details', 'department'])->findOrFail($id);
             $this->authorize('update', $this->form);
 
@@ -68,7 +79,6 @@ class Form extends Component
             $this->is_after_hour = (int) $this->form->is_after_hour;
             $this->description  = $this->form->description ?? '';
 
-            // Populate existing detail rows
             $this->items = $this->form->details->map(fn ($d) => [
                 'id'            => $d->id,
                 'nik'           => $d->NIK ?? '',
@@ -81,24 +91,30 @@ class Form extends Component
                 'end_time'      => $d->end_time ? substr($d->end_time, 0, 5) : '',
                 'break'         => $d->break ?? '',
                 'remarks'       => $d->remarks ?? '',
+                'payroll_status' => 'pending', // pending, safe, exists
             ])->toArray();
+
+            // Populate globals from the first item if exists
+            if (count($this->items) > 0) {
+                $first = $this->items[0];
+                $this->global_overtime_date = $first['overtime_date'];
+                $this->global_job_desc      = $first['job_desc'];
+                $this->global_start_time    = $first['start_time'];
+                $this->global_end_date      = $first['end_date'];
+                $this->global_end_time      = $first['end_time'];
+                $this->global_break         = $first['break'];
+                $this->global_remarks       = $first['remarks'];
+            }
         } else {
-            // -- Create Mode Setup --
             $this->authorize('create', OvertimeForm::class);
-            
             $user = auth()->user();
             $this->dept_id = $user->department_id;
             
+            $this->global_overtime_date = now()->format('Y-m-d');
+            $this->global_end_date = now()->format('Y-m-d');
+
             $this->addEmptyRow();
         }
-
-        $this->employees = $this->fetchEmployees();
-        $this->recentJobs = OvertimeFormDetail::select('job_desc')
-            ->whereNotNull('job_desc')
-            ->distinct()
-            ->limit(15)
-            ->pluck('job_desc')
-            ->toArray();
     }
 
     public function downloadTemplate()
@@ -106,14 +122,65 @@ class Form extends Component
         $this->authorize('create', OvertimeForm::class);
         return \Maatwebsite\Excel\Facades\Excel::download(new class implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
             public function array(): array {
-                return [
-                    ['12345', 'John Doe', '2026-10-01', 'Monthly Stock Opname', '2026-10-01', '17:00', '2026-10-01', '20:00', '30', 'Urgent target output'],
-                ];
+                return [['12345', 'John Doe', '2026-10-01', 'Stock Opname', '2026-10-01', '17:00', '2026-10-01', '20:00', '30', 'Urgent target output']];
             }
             public function headings(): array {
                 return ['NIK', 'Nama', 'Tanggal Lembur', 'Pekerjaan', 'Mulai Tanggal', 'Mulai Jam', 'Selesai Tanggal', 'Selesai Jam', 'Istirahat (Menit)', 'Keterangan'];
             }
         }, 'Overtime_Template.xlsx');
+    }
+
+    // ── Observers to apply globals to rows ────────────────────────────────
+
+    public function updatedGlobalOvertimeDate($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['overtime_date'] = $value; $this->items[$i]['start_date'] = $value; }
+    }
+    public function updatedGlobalEndDate($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['end_date'] = $value; }
+    }
+    public function updatedGlobalStartTime($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['start_time'] = $value; }
+    }
+    public function updatedGlobalEndTime($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['end_time'] = $value; }
+    }
+    public function updatedGlobalBreak($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['break'] = $value; }
+    }
+    public function updatedGlobalJobDesc($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['job_desc'] = $value; }
+    }
+
+    public function checkPayrollStatus(): void
+    {
+        $this->isCheckingPayroll = true;
+        $service = app(\App\Domain\Overtime\Services\OvertimeJPayrollService::class);
+        
+        foreach ($this->items as $index => &$item) {
+            if (empty($item['nik']) || empty($item['overtime_date'])) {
+                continue;
+            }
+            
+            $result = $service->checkDetailExists([
+                'nik' => $item['nik'],
+                'overtime_date' => $item['overtime_date']
+            ]);
+            
+            $item['payroll_status'] = $result['exists'] ? 'exists' : 'safe';
+            $item['payroll_msg'] = $result['message'] ?? '';
+        }
+        
+        $this->isCheckingPayroll = false;
+        
+        $hasDuplicates = collect($this->items)->contains('payroll_status', 'exists');
+        if ($hasDuplicates) {
+            $this->dispatch('flash', type: 'warning', message: 'Terdapat data yang sudah ada di JPayroll.');
+        } else {
+            $this->dispatch('flash', type: 'success', message: 'Seluruh data aman (tidak ada duplikat di Payroll).');
+        }
+    }
+    public function updatedGlobalRemarks($value) {
+        foreach($this->items as $i => $item) { $this->items[$i]['remarks'] = $value; }
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
@@ -127,16 +194,13 @@ class Form extends Component
             'description'   => 'nullable|string|max:500',
         ];
 
-        // Dept ID is required in create mode, readonly in edit mode
         if (! $this->formId) {
             $rules['dept_id'] = 'required|exists:departments,id';
         }
 
         if (! $this->formId && $this->isExcelMode) {
-            // Create via Excel mode
             $rules['excel_file'] = 'required|file|mimes:xlsx,xls|max:5120';
         } else {
-            // Manual entries (both Create and Edit)
             $rules['items'] = 'required|array|min:1';
             foreach ($this->items as $i => $item) {
                 $rules["items.$i.nik"]           = ['required', 'string', Rule::exists('employees', 'nik')];
@@ -148,7 +212,7 @@ class Form extends Component
                 $rules["items.$i.end_date"]      = 'required|date|after_or_equal:items.'.$i.'.start_date';
                 $rules["items.$i.end_time"]      = 'required';
                 $rules["items.$i.break"]         = 'required|numeric|min:0|max:180';
-                $rules["items.$i.remarks"]       = 'required|string|max:250';
+                $rules["items.$i.remarks"]       = 'nullable|string|max:250';
             }
         }
 
@@ -159,48 +223,32 @@ class Form extends Component
     {
         $messages = [
             'dept_id.required'       => 'Department is required.',
-            'dept_id.exists'         => 'Selected department is invalid.',
             'branch.required'        => 'Branch is required.',
-            'branch.in'              => 'Branch must be Jakarta or Karawang.',
-            'is_after_hour.required' => 'After hour field is required.',
             'excel_file.required'    => 'Please upload an Excel file.',
-            'excel_file.mimes'       => 'File must be .xlsx or .xls format.',
-            'excel_file.max'         => 'File must not exceed 5 MB.',
         ];
 
         if (! $this->isExcelMode || $this->formId) {
             foreach ($this->items as $i => $item) {
                 $n = $i + 1;
-                $messages["items.$i.nik.required"]            = "Row $n: NIK is required.";
-                $messages["items.$i.nik.exists"]              = "Row $n: NIK not found in employee records.";
-                $messages["items.$i.name.required"]           = "Row $n: Name is required.";
-                $messages["items.$i.overtime_date.required"]  = "Row $n: OT date is required.";
-                $messages["items.$i.overtime_date.date"]      = "Row $n: OT date must be a valid date.";
-                $messages["items.$i.job_desc.required"]       = "Row $n: Job description is required.";
-                $messages["items.$i.start_date.required"]     = "Row $n: Start date is required.";
-                $messages["items.$i.start_time.required"]     = "Row $n: Start time is required.";
-                $messages["items.$i.end_date.required"]       = "Row $n: End date is required.";
-                $messages["items.$i.end_date.after_or_equal"] = "Row $n: End date must be on or after Start date.";
-                $messages["items.$i.end_time.required"]       = "Row $n: End time is required.";
-                $messages["items.$i.break.required"]          = "Row $n: Break is required.";
-                $messages["items.$i.break.numeric"]           = "Row $n: Break must be a number (minutes).";
-                $messages["items.$i.remarks.required"]        = "Row $n: Remarks are required.";
+                $messages["items.$i.nik.required"]            = "Row $n: NIK missing.";
+                $messages["items.$i.nik.exists"]              = "Row $n: NIK invalid.";
+                $messages["items.$i.start_time.required"]     = "Row $n: Start time missing.";
+                $messages["items.$i.end_time.required"]       = "Row $n: End time missing.";
+                $messages["items.$i.end_date.after_or_equal"] = "Row $n: End date invalid.";
             }
         }
 
         return $messages;
     }
 
-    // ── Lifecycle hooks ───────────────────────────────────────────────────────
-
-    public function updated(string $field): void
+    public function updated($field): void
     {
         $this->resetErrorBag($field);
     }
 
     public function updatedDeptId(): void
     {
-        if ($this->formId) return; // Cannot change dept if editing
+        if ($this->formId) return;
 
         $this->design = null;
         foreach ($this->items as $i => $item) {
@@ -210,35 +258,27 @@ class Form extends Component
         $this->employees = $this->fetchEmployees();
     }
 
-    public function updatedExcelFile(): void
-    {
-        $this->validateOnly('excel_file');
-    }
-
-    // ── Row helpers ───────────────────────────────────────────────────────────
-
     public function addEmptyRow(): void
     {
         $this->items[] = [
             'id'            => null,
             'nik'           => '',
             'name'          => '',
-            'overtime_date' => '',
-            'job_desc'      => '',
-            'start_date'    => '',
-            'start_time'    => '',
-            'end_date'      => '',
-            'end_time'      => '',
-            'break'         => '',
-            'remarks'       => '',
+            'overtime_date' => $this->global_overtime_date,
+            'job_desc'      => $this->global_job_desc,
+            'start_date'    => $this->global_overtime_date,
+            'start_time'    => $this->global_start_time,
+            'end_date'      => $this->global_end_date,
+            'end_time'      => $this->global_end_time,
+            'break'         => $this->global_break,
+            'remarks'       => $this->global_remarks,
+            'payroll_status' => 'pending',
         ];
     }
 
     public function removeRow(int $index): void
     {
-        if (count($this->items) <= 1) {
-            return;
-        }
+        if (count($this->items) <= 1) return;
 
         $row = $this->items[$index];
         if (! empty($row['id'])) {
@@ -249,30 +289,27 @@ class Form extends Component
         $this->items = array_values($this->items);
     }
 
-    // ── Submission ────────────────────────────────────────────────────────────
-
     public function submit(): mixed
     {
         try {
             $validated = $this->validate();
         } catch (\Illuminate\Validation\ValidationException $e) {
-            foreach ($e->errors() as $key => $messages) {
-                foreach ($messages as $msg) {
-                    $this->addError($key, $msg);
-                }
-            }
             $this->validationErrors = $this->getErrorBag()->toArray();
             $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted errors before submitting.');
             return null;
         }
 
+        // Safety check for payroll duplicates
+        $hasDuplicates = collect($this->items)->contains('payroll_status', 'exists');
+        if ($hasDuplicates) {
+            $this->dispatch('flash', type: 'error', message: 'Tidak dapat mengirim! Terdapat baris yang sudah ada di JPayroll.');
+            return null;
+        }
+
         try {
             if ($this->formId) {
-                // -- Edit Mode Update --
                 $this->authorize('update', $this->form);
-                
                 DB::transaction(function () {
-                    // Update header
                     $this->form->update([
                         'branch'        => $this->branch,
                         'is_design'     => $this->design,
@@ -280,14 +317,10 @@ class Form extends Component
                         'description'   => $this->description ?: null,
                     ]);
 
-                    // Delete removed rows
                     if ($this->removedDetailIds) {
-                        OvertimeFormDetail::whereIn('id', $this->removedDetailIds)
-                            ->where('header_id', $this->form->id)
-                            ->delete();
+                        OvertimeFormDetail::whereIn('id', $this->removedDetailIds)->where('header_id', $this->form->id)->delete();
                     }
 
-                    // Upsert items
                     foreach ($this->items as $item) {
                         $detailData = [
                             'header_id'     => $this->form->id,
@@ -300,13 +333,11 @@ class Form extends Component
                             'end_date'      => $item['end_date'],
                             'end_time'      => $item['end_time'],
                             'break'         => $item['break'],
-                            'remarks'       => $item['remarks'],
+                            'remarks'       => $item['remarks'] ?? '',
                         ];
 
                         if (! empty($item['id'])) {
-                            OvertimeFormDetail::where('id', $item['id'])
-                                ->where('header_id', $this->form->id)
-                                ->update($detailData);
+                            OvertimeFormDetail::where('id', $item['id'])->where('header_id', $this->form->id)->update($detailData);
                         } else {
                             OvertimeFormDetail::create($detailData);
                         }
@@ -315,42 +346,17 @@ class Form extends Component
 
                 session()->flash('success', 'Overtime form updated successfully.');
                 return redirect()->route('overtime.detail', $this->formId);
-
             } else {
-                // -- Create Mode --
                 $header = OvertimeFormService::create(collect($validated));
-
                 session()->flash('success', 'Overtime form created successfully.');
                 return redirect()->route('overtime.detail', $header->id);
             }
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            foreach ($e->errors() as $key => $messages) {
-                foreach ($messages as $msg) {
-                    $this->addError($key, $msg);
-                }
-            }
-            $this->validationErrors = $this->getErrorBag()->toArray();
-            
-            $firstError = collect($e->errors())->flatten()->first() ?? 'Form validation failed.';
-            $this->dispatch('flash', type: 'error', message: $firstError);
-            
-            return null;
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Overtime Form Submission Error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'user_id'   => auth()->id(),
-                'form_id'   => $this->formId,
-                'trace'     => $e->getTraceAsString(),
-            ]);
-            report($e);
-            $this->dispatch('flash', type: 'error', message: 'Failed to save overtime form! Please try again.');
-
+            \Illuminate\Support\Facades\Log::error('Overtime Form Error: ' . $e->getMessage());
+            $this->dispatch('flash', type: 'error', message: 'Failed to save form.');
             return null;
         }
     }
-
-    // ── Data helpers ──────────────────────────────────────────────────────────
 
     protected function fetchEmployees(): array
     {
@@ -385,4 +391,3 @@ class Form extends Component
         ]);
     }
 }
-

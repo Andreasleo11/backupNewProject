@@ -13,39 +13,72 @@ use Illuminate\Support\Str;
 
 final class OvertimeJPayrollService
 {
-    private const JPAYROLL_URL = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+    /**
+     * Push single overtime detail to J-Payroll system (Add).
+     */
+    public function pushSingleDetail(OvertimeFormDetail $detail): array
+    {
+        if ($detail->is_processed == 1) {
+            return ['success' => false, 'message' => 'Detail sudah dipush', 'code' => 400];
+        }
 
-    private const AUTHORIZATION_HEADER = 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==';
+        return $this->processRequest($detail, '1'); // Choice 1 = Add
+    }
 
     /**
-     * Push single overtime detail to J-Payroll system.
+     * Remove single overtime detail from J-Payroll system (Delete).
      */
-    public function pushSingleDetail(OvertimeFormDetail $detail, string $action): array
+    public function removeSingleDetail(OvertimeFormDetail $detail): array
     {
-        // Validate header not already pushed
-        if ($detail->header->is_push == 1) {
-            return [
-                'success' => false,
-                'message' => 'Header sudah dipush',
-                'code' => 400,
-            ];
+        if ($detail->is_processed == 0 || !$detail->payroll_voucher_id) {
+            return ['success' => false, 'message' => 'Detail belum dipush atau ID Voucher tidak ditemukan', 'code' => 400];
         }
 
-        // Handle rejection
-        if ($action === 'reject') {
-            return $this->rejectDetail($detail);
-        }
+        return $this->processRequest($detail, '3'); // Choice 3 = Delete
+    }
 
-        // Handle approval - validate action
-        if ($action !== 'approve') {
-            return [
-                'success' => false,
-                'message' => 'Aksi tidak valid',
-                'code' => 400,
-            ];
-        }
+    /**
+     * Check if a detail exists in J-Payroll (using API_View_Overtime).
+     */
+    public function checkDetailExists(array $data): array
+    {
+        $url = config('services.jpayroll.base_url') . 'API_View_Overtime.php';
+        $auth = config('services.jpayroll.auth');
 
-        return $this->approveAndPushDetail($detail);
+        $payload = [
+            'CompanyArea' => config('services.jpayroll.company_area'),
+            'NIK'         => $data['nik'],
+            'Date1'       => Carbon::parse($data['overtime_date'])->format('d/m/Y'),
+            'Date2'       => Carbon::parse($data['overtime_date'])->format('d/m/Y'),
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => $auth,
+                'Content-Type' => 'application/json',
+            ])->timeout(15)->post($url, $payload);
+
+            $resJson = $response->json();
+
+            // Check if data exists based on the provided JSON structure
+            $total = (int) ($resJson['total'] ?? 0);
+            $hasData = !empty($resJson['data']) && is_array($resJson['data']);
+
+            if ($response->successful() && ($total > 0 || $hasData)) {
+                $firstRecord = $resJson['data'][0] ?? null;
+                return [
+                    'exists' => true,
+                    'message' => 'Record found in JPayroll',
+                    'transaction_id' => $firstRecord['NoVoucher'] ?? null
+                ];
+            }
+
+            return ['exists' => false, 'message' => 'Not found in JPayroll'];
+
+        } catch (\Exception $e) {
+            Log::error("❌ JPayroll Check Exception", ['error' => $e->getMessage()]);
+            return ['exists' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -55,20 +88,8 @@ final class OvertimeJPayrollService
     {
         $header = OvertimeForm::with('details.employee')->find($headerId);
 
-        if (! $header) {
-            return [
-                'success' => false,
-                'message' => 'Header tidak ditemukan',
-                'code' => 404,
-            ];
-        }
-
-        if ($header->is_push == 1) {
-            return [
-                'success' => false,
-                'message' => 'Header sudah dipush sebelumnya',
-                'code' => 400,
-            ];
+        if (!$header) {
+            return ['success' => false, 'message' => 'Header tidak ditemukan', 'code' => 404];
         }
 
         $successCount = 0;
@@ -76,15 +97,11 @@ final class OvertimeJPayrollService
 
         foreach ($header->details as $detail) {
             // Skip rejected or already processed
-            if ($detail->status === 'Rejected') {
+            if ($detail->status === 'Rejected' || $detail->is_processed == 1) {
                 continue;
             }
 
-            if ($detail->status === 'Approved' && $detail->is_processed == 1) {
-                continue;
-            }
-
-            $result = $this->pushDetailToJPayroll($detail, $header);
+            $result = $this->pushSingleDetail($detail);
 
             if ($result['success']) {
                 $successCount++;
@@ -92,17 +109,16 @@ final class OvertimeJPayrollService
                 $failed[] = [
                     'detail_id' => $detail->id,
                     'NIK' => $detail->NIK,
-                    'reason' => $result['reason'],
+                    'reason' => $result['message'],
                 ];
             }
         }
 
-        // Update header push status
         $this->checkAndUpdateHeaderPushStatus($headerId);
 
         return [
             'success' => true,
-            'message' => 'Proses push selesai',
+            'message' => 'Proses batch selesai',
             'total_success' => $successCount,
             'total_failed' => count($failed),
             'failed_details' => $failed,
@@ -116,197 +132,128 @@ final class OvertimeJPayrollService
     {
         $header = OvertimeForm::with('details')->find($headerId);
 
-        if (! $header) {
-            return false;
-        }
+        if (!$header) return false;
 
-        // Check if any detail has pending status (null)
-        $hasPending = $header->details->contains(function ($detail) {
-            return is_null($detail->status);
+        $hasUnprocessed = $header->details->contains(function ($detail) {
+            return $detail->is_processed == 0 && $detail->status !== 'Rejected';
         });
 
-        if (! $hasPending) {
+        if (!$hasUnprocessed) {
             $header->is_push = 1;
             $header->save();
+            return true;
         }
 
-        return ! $hasPending;
+        return false;
     }
 
     /**
-     * Reject a detail without pushing to J-Payroll.
+     * Internal request handler for JPayroll API.
      */
-    private function rejectDetail(OvertimeFormDetail $detail): array
+    private function processRequest(OvertimeFormDetail $detail, string $choice): array
     {
-        $detail->status = 'Rejected';
-        $detail->save();
+        $payload = $this->buildPayload($detail, $choice);
+        $url = config('services.jpayroll.base_url') . 'API_Store_Overtime.php';
+        $auth = config('services.jpayroll.auth');
 
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => $auth,
+                'Content-Type' => 'application/json',
+            ])->timeout(30)->post($url, $payload);
+
+            $responseBody = $response->body();
+            $responseJson = $response->json();
+            
+            $logData = [
+                'detail_id' => $detail->id,
+                'choice' => $choice,
+                'status' => $response->status(),
+                'response' => $responseBody
+            ];
+
+            if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
+                return $this->handleSuccess($detail, $choice, $responseJson, $logData);
+            }
+
+            return $this->handleBusinessError($detail, $choice, $responseJson, $logData);
+
+        } catch (\Exception $e) {
+            Log::error("❌ JPayroll Connection Exception [Detail: {$detail->id}]", ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Koneksi ke JPayroll gagal (Timeout/Network)',
+                'code' => 500
+            ];
+        }
+    }
+
+    private function handleSuccess(OvertimeFormDetail $detail, string $choice, array $response, array $log): array
+    {
+        Log::info("✅ JPayroll Success [Detail: {$detail->id}, Choice: {$choice}]", $log);
+
+        if ($choice === '1') {
+            $detail->is_processed = 1;
+            $detail->status = 'Approved';
+            $detail->payroll_voucher_id = $response['transactionid'];
+        } else {
+            $detail->is_processed = 0;
+            $detail->status = null;
+            $detail->payroll_voucher_id = null;
+        }
+
+        $detail->save();
         $this->checkAndUpdateHeaderPushStatus($detail->header_id);
 
-        return [
-            'success' => true,
-            'message' => 'Data berhasil direject',
-            'code' => 200,
-        ];
+        return ['success' => true, 'message' => 'Berhasil diproses', 'code' => 200];
     }
 
-    /**
-     * Approve detail and push to J-Payroll.
-     */
-    private function approveAndPushDetail(OvertimeFormDetail $detail): array
+    private function handleBusinessError(OvertimeFormDetail $detail, string $choice, ?array $response, array $log): array
     {
-        $payload = $this->buildJPayrollPayload($detail);
+        $message = $response['msg'] ?? 'Unknown Error';
+        Log::warning("⚠️ JPayroll Business Error [Detail: {$detail->id}, Choice: {$choice}]", $log);
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => self::AUTHORIZATION_HEADER,
-                'Content-Type' => 'application/json',
-            ])->post(self::JPAYROLL_URL, $payload);
-
-            $responseData = [
-                'NIK' => $detail->NIK,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ];
-
-            $responseJson = json_decode($response->body(), true);
-
-            if (
-                $response->successful() &&
-                isset($responseJson['status']) &&
-                $responseJson['status'] == '200'
-            ) {
-                $detail->is_processed = 1;
-                $detail->status = 'Approved';
-                $detail->save();
-
-                $this->checkAndUpdateHeaderPushStatus($detail->header_id);
-
-                Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
-
-                return [
-                    'success' => true,
-                    'message' => 'Data berhasil dipush & diapprove',
-                    'response' => $responseData,
-                    'code' => 200,
-                ];
-            } else {
-                Log::warning(
-                    "⚠️ Push rejected for detail ID: {$detail->id} - JPayroll response not success",
-                    $responseData
-                );
-
-                return [
-                    'success' => false,
-                    'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' .
-                        ($responseJson['msg'] ?? 'Unknown error'),
-                    'response' => $responseData,
-                    'code' => 400,
-                ];
-            }
-        } catch (\Exception $e) {
-            Log::error("❌ Exception push for detail ID: {$detail->id}", [
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Terjadi exception saat push',
-                'error' => $e->getMessage(),
-                'code' => 500,
-            ];
+        // Only mark as Rejected if it's a "Real" business rejection (Duplicate, Invalid Emp, etc)
+        // Choice 401 is persistent, so we can reject.
+        if ($log['status'] === 401) {
+            return ['success' => false, 'message' => 'Akses JPayroll Ditolak (401)', 'code' => 401];
         }
+
+        // If it's a business rejection from JPayroll side (e.g. "Data already exists")
+        if ($choice === '1') {
+            $detail->status = 'Rejected';
+            $detail->reason = "Ditolak Payroll: {$message}";
+            $detail->save();
+        }
+
+        return ['success' => false, 'message' => "Payroll Error: {$message}", 'code' => 400];
     }
 
-    /**
-     * Push detail to J-Payroll (used in batch processing).
-     */
-    private function pushDetailToJPayroll(OvertimeFormDetail $detail, OvertimeForm $header): array
-    {
-        $payload = $this->buildJPayrollPayload($detail);
-
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => self::AUTHORIZATION_HEADER,
-                'Content-Type' => 'application/json',
-            ])->post(self::JPAYROLL_URL, $payload);
-
-            $responseJson = $response->json();
-            $responseData = [
-                'NIK' => $detail->NIK,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ];
-
-            if (
-                $response->successful() &&
-                isset($responseJson['status']) &&
-                $responseJson['status'] == '200'
-            ) {
-                $detail->is_processed = 1;
-                $detail->status = 'Approved';
-                $detail->save();
-
-                Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
-
-                return ['success' => true];
-            } else {
-                $msg = $responseJson['msg'] ?? 'Unknown error';
-
-                $detail->status = 'Rejected';
-                $detail->reason = "Reject JPAYROLL karena {$msg}";
-                $detail->save();
-
-                Log::warning(
-                    "⚠️ Push rejected & status updated for detail ID: {$detail->id}",
-                    $responseData
-                );
-
-                return [
-                    'success' => false,
-                    'reason' => 'Rejected by JPayroll',
-                ];
-            }
-        } catch (\Exception $e) {
-            Log::error("❌ Exception push for detail ID: {$detail->id}", [
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'reason' => 'Exception: ' . $e->getMessage(),
-            ];
-        }
-    }
-
-    /**
-     * Build J-Payroll API payload from overtime detail.
-     */
-    private function buildJPayrollPayload(OvertimeFormDetail $detail): array
+    private function buildPayload(OvertimeFormDetail $detail, string $choice): array
     {
         $employee = $detail->employee;
-        $header = $detail->header;
+        $companyArea = config('services.jpayroll.company_area');
 
-        return [
-            'OTType' => '1',
-            'OTDate' => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
-            'JobDesc' => Str::limit($detail->job_desc, 250),
-            'Department' => $employee->organization_structure ?? 0,
-            'StartDate' => Carbon::parse($detail->start_date)->format('d/m/Y'),
-            'StartTime' => Carbon::parse($detail->start_time)->format('H:i'),
-            'EndDate' => Carbon::parse($detail->end_date)->format('d/m/Y'),
-            'EndTime' => Carbon::parse($detail->end_time)->format('H:i'),
-            'BreakTime' => $detail->break,
-            'Remark' => Str::limit(
-                "({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}",
-                250
-            ),
-            'Choice' => '1',
-            'CompanyArea' => '10000',
-            'EmpList' => [
-                'NIK1' => $detail->NIK,
-            ],
+        $payload = [
+            'OTType'      => '1', // 1=Hour
+            'OTDate'      => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
+            'JobDesc'     => Str::limit($detail->job_desc, 250),
+            'Department'  => $employee->organization_structure ?? 0,
+            'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
+            'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
+            'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
+            'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
+            'BreakTime'   => $detail->break,
+            'Remark'      => Str::limit("(#{$detail->header_id}) {$detail->remarks}", 250),
+            'Choice'      => $choice,
+            'CompanyArea' => $companyArea,
+            'EmpList'     => ['NIK1' => $detail->NIK],
         ];
+
+        if ($choice === '3') {
+            $payload['NoVoucher'] = $detail->payroll_voucher_id;
+        }
+
+        return $payload;
     }
 }
-

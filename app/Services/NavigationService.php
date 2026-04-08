@@ -411,9 +411,9 @@ class NavigationService
                     ],
                     [
                         'label' => 'Important Documents',
-                        'route' => 'importantdoc.index',
+                        'route' => 'hrd.importantDocs.index',
                         'icon' => 'folder-open',
-                        'active' => request()->routeIs('importantdoc.index'),
+                        'active' => request()->routeIs('hrd.importantDocs.index'),
                         'permission' => 'document.view',
                     ],
                 ],

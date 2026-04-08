@@ -74,25 +74,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 
     // Important Doc
-    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])
-        ->name('hrd.importantDocs.index')
-        ->middleware('permission:get-important-docs');
-    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])
-        ->name('hrd.importantDocs.create')
-        ->middleware('permission:create-important-doc');
-    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])
-        ->name('hrd.importantDocs.store')
-        ->middleware('permission:store-important-doc');
-    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])
-        ->name('hrd.importantDocs.detail')
-        ->middleware('permission:detail-important-doc');
-    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])
-        ->name('hrd.importantDocs.edit')
-        ->middleware('permission:edit-important-doc');
-    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])
-        ->name('hrd.importantDocs.update')
-        ->middleware('permission:update-important-doc');
-    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])
-        ->name('hrd.importantDocs.delete')
-        ->middleware('permission:delete-important-doc'); 
+    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
+    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
+    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
+    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
+    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
+    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
+    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+    Route::post('/hrd/importantdocs/{id}/restore', [ImportantDocController::class, 'restore'])->name('hrd.importantDocs.restore');
+    Route::delete('/hrd/importantdocs/{id}/force', [ImportantDocController::class, 'forceDelete'])->name('hrd.importantDocs.forceDelete');
+    Route::delete('/hrd/importantdocs/files/{fileId}', [ImportantDocController::class, 'destroyFile'])->name('hrd.importantDocs.file.delete');
 });

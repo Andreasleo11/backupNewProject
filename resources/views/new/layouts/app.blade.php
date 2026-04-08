@@ -29,26 +29,26 @@
     <style>
         [x-cloak] { display: none !important; }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
+            border-radius: 1.5rem;
         }
         .main-gradient {
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
-                        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent),
+            background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.04), transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.04), transparent 40%),
                         #f8fafc;
         }
         .premium-shadow {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02), inset 0 0 0 1px rgba(255,255,255,0.4);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 5px;
@@ -100,6 +100,19 @@
             ).length;
         }
     }' x-cloak>
+    {{-- Top-level Progress Bar for any Livewire transition --}}
+    <div wire:loading.delay.shorter class="fixed top-0 left-0 right-0 z-[200] pointer-events-none">
+        <div class="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 w-full animate-[progress_1s_ease-in-out_infinite] origin-left"></div>
+    </div>
+    <style>
+        @keyframes progress {
+            0% { transform: scaleX(0); opacity: 0; }
+            10% { opacity: 1; }
+            80% { transform: scaleX(0.85); opacity: 1; }
+            100% { transform: scaleX(1); opacity: 0; }
+        }
+    </style>
+
     {{-- Mobile sidebar --}}
     <div class="md:hidden" x-show="sidebarOpen" x-transition.opacity>
         <div class="fixed inset-0 z-[70] bg-slate-950/40 backdrop-blur-sm" @click="sidebarOpen = false"></div>
@@ -435,7 +448,7 @@
                          :style="`width: ${toast.progress}%; transition-duration: 100ms`"></div>
                 </div>
 
-                <div class="flex-shrink-0 mt-1" x-html="getIcon(toast.type)"></div>
+                <div class="flex-shrink-0 mt-1" x-html="icon(toast.type)"></div>
 
                 <div class="flex-1 min-w-0 py-0.5">
                     <p class="text-sm font-bold leading-tight tracking-tight" x-text="toast.message"></p>
