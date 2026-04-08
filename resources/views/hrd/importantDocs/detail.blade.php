@@ -1,198 +1,162 @@
 @extends('new.layouts.app')
 
 @section('content')
-    @php
-        use Carbon\Carbon;
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        {{-- Slim Header --}}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Document Details</h1>
+                <nav class="text-[10px] font-bold uppercase tracking-widest text-slate-400" aria-label="Breadcrumb">
+                    <ol class="flex items-center gap-1.5 p-0 m-0">
+                        <li><a href="{{ route('home') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
+                        <li>/</li>
+                        <li><a href="{{ route('hrd.importantDocs.index') }}" class="hover:text-indigo-600 transition-colors">Important Documents</a></li>
+                        <li>/</li>
+                        <li class="text-slate-500">{{ $importantDoc->name }}</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <a href="{{ route('hrd.importantDocs.edit', $importantDoc->id) }}" 
+                   class="inline-flex h-9 items-center justify-center rounded-lg bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-all active:scale-95">
+                    <i class="bx bx-edit mr-1.5"></i> Edit Document
+                </a>
+                <a href="{{ route('hrd.importantDocs.index') }}" 
+                   class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+                    <i class="bx bx-arrow-back mr-1.5"></i> Back to List
+                </a>
+            </div>
+        </div>
 
-        $expiredDate = Carbon::parse($importantDoc->expired_date);
-        $isExpired = $expiredDate->isPast();
-    @endphp
+        {{-- Current Status Card --}}
+        @php
+            $diffDays = $today->diffInDays($importantDoc->expired_date, false);
+            $statusClass = match(true) {
+                $diffDays < 0 => 'bg-rose-100 text-rose-700 border-rose-200',
+                $diffDays <= $thresholdDays => 'bg-amber-100 text-amber-700 border-amber-200',
+                default => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            };
+            $statusLabel = match(true) {
+                $diffDays < 0 => 'Expired Document',
+                $diffDays === 0 => 'Expires Today',
+                $diffDays <= $thresholdDays => 'Expiring Soon',
+                default => 'Active & Valid',
+            };
+        @endphp
 
-    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {{-- Header + Breadcrumb --}}
-        <section class="flex flex-col gap-3">
-            <div class="flex items-start justify-between gap-3">
-                <div>
-                    <h1 class="text-xl font-semibold text-slate-900">
-                        Detail Important Document
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500">
-                        Lihat informasi lengkap dan lampiran untuk dokumen ini.
-                    </p>
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="{{ $statusClass }} px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-2xl bg-white/50 backdrop-blur-md border border-current/20 flex items-center justify-center text-current shadow-sm">
+                        <i class="bx bx-file text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold">{{ $importantDoc->name }}</h2>
+                        <p class="text-[10px] uppercase font-black tracking-widest opacity-70">{{ $importantDoc->type->name }}</p>
+                    </div>
                 </div>
-
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('hrd.importantDocs.index') }}"
-                        class="inline-flex items-center rounded-md border border-slate-200 bg-white
-                              px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50
-                              focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
-                        Back
-                    </a>
-
-                    <a href="{{ route('hrd.importantDocs.edit', $importantDoc->id) }}"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5
-                              text-xs font-semibold text-white shadow-sm hover:bg-indigo-700
-                              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                        Edit
-                    </a>
+                <div class="flex flex-col items-end">
+                    <span class="text-[11px] font-black uppercase tracking-tighter opacity-60">Status</span>
+                    <span class="text-xl font-black italic uppercase tracking-tight">{{ $statusLabel }}</span>
                 </div>
             </div>
 
-            <nav class="text-xs text-slate-500" aria-label="Breadcrumb">
-                <ol class="flex flex-wrap items-center gap-1">
-                    <li>
-                        <a href="{{ route('home') }}" class="hover:text-slate-700 hover:underline">
-                            Home
-                        </a>
-                    </li>
-                    <li class="text-slate-400">/</li>
-                    <li>
-                        <a href="{{ route('hrd.importantDocs.index') }}" class="hover:text-slate-700 hover:underline">
-                            Important Documents
-                        </a>
-                    </li>
-                    <li class="text-slate-400">/</li>
-                    <li class="font-medium text-slate-700">
-                        Detail
-                    </li>
-                </ol>
-            </nav>
-        </section>
-
-        {{-- Detail Card --}}
-        <section>
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5">
-                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div class="space-y-2">
-                        <h2 class="text-lg font-semibold text-slate-900 break-words">
-                            {{ $importantDoc->name }}
-                        </h2>
-
-                        @if ($importantDoc->document_id)
-                            <p class="text-xs font-mono text-slate-500">
-                                ID: {{ $importantDoc->document_id }}
-                            </p>
-                        @endif
-
-                        @if ($importantDoc->description)
-                            <p class="mt-2 text-sm text-slate-600 whitespace-pre-line">
-                                {{ $importantDoc->description }}
-                            </p>
-                        @endif
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+                {{-- Info Column 1 --}}
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Document Number</span>
+                        <p class="text-sm font-bold text-slate-700">{{ $importantDoc->document_id ?: 'N/A' }}</p>
                     </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Expiry Date</span>
+                        <p class="text-sm font-bold text-slate-700">{{ optional($importantDoc->expired_date)->format('d F Y') }}</p>
+                        <p class="text-[10px] font-medium text-slate-400 italic">
+                             @if($diffDays < 0)
+                                Passed {{ abs($diffDays) }} days ago
+                             @elseif($diffDays == 0)
+                                Expires Today
+                             @else
+                                {{ $diffDays }} days remaining
+                             @endif
+                        </p>
+                    </div>
+                </div>
 
-                    <div class="space-y-2 text-sm text-right md:text-left">
-                        {{-- Type --}}
-                        <div class="flex items-center justify-end gap-2 md:justify-start">
-                            <span class="text-slate-500">Type</span>
-                            <span
-                                class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-                                {{ $importantDoc->type->name }}
-                            </span>
-                        </div>
-
-                        {{-- Expired Date --}}
-                        <div class="flex items-center justify-end gap-2 md:justify-start">
-                            <span class="text-slate-500">Expired</span>
-                            <span class="text-sm font-medium text-slate-800">
-                                {{ $expiredDate->format('d-m-Y') }}
-                            </span>
-                        </div>
-
-                        {{-- Status --}}
-                        <div class="flex items-center justify-end gap-2 md:justify-start">
-                            <span class="text-slate-500">Status</span>
-                            @if ($isExpired)
-                                <span
-                                    class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
-                                    Expired
-                                </span>
-                            @else
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                                    Active
-                                </span>
-                            @endif
-                        </div>
+                {{-- Info Column 2: Description --}}
+                <div class="md:col-span-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Notes / Description</span>
+                    <div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 leading-relaxed border border-slate-100 min-h-[100px]">
+                        {{ $importantDoc->description ?: 'No description provided for this document.' }}
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        {{-- Attachments --}}
-        <section aria-label="attachment" class="space-y-3">
-            <div class="flex items-center justify-between gap-2">
-                <h3 class="text-sm font-semibold text-slate-800">
-                    Attachments
-                </h3>
-                @if ($importantDoc->files->isNotEmpty())
-                    <p class="text-xs text-slate-500">
-                        {{ $importantDoc->files->count() }} file attached
-                    </p>
-                @endif
+        {{-- Attachments Gallery --}}
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="border-b border-slate-100 px-6 py-4 bg-slate-50/50 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest">Document Attachments</h2>
+                <span class="text-[10px] font-bold text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">{{ $importantDoc->files->count() }} Files</span>
             </div>
 
-            @if ($importantDoc->files->isNotEmpty())
-                <div class="space-y-2">
+            @if ($importantDoc->files->isEmpty())
+                <div class="p-12 text-center">
+                    <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="bx bx-paperclip text-3xl text-slate-300"></i>
+                    </div>
+                    <p class="text-sm text-slate-500">No attachments found for this document.</p>
+                </div>
+            @else
+                <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     @foreach ($importantDoc->files as $file)
                         @php
-                            $filename = $file->name;
-                            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                            $url = asset('storage/importantDocuments/' . $filename);
-
-                            if (in_array($extension, ['pdf'])) {
-                                $label = 'PDF';
-                            } elseif (in_array($extension, ['xls', 'xlsx', 'csv'])) {
-                                $label = 'Spreadsheet';
-                            } elseif (in_array($extension, ['png', 'jpg', 'jpeg'])) {
-                                $label = 'Image';
-                            } elseif (in_array($extension, ['doc', 'docx'])) {
-                                $label = 'Document';
-                            } else {
-                                $label = strtoupper($extension ?: 'FILE');
-                            }
+                            $extension = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
+                            $icon = match(true) {
+                                in_array($extension, ['pdf']) => 'bxs-file-pdf text-rose-500',
+                                in_array($extension, ['xls','xlsx','csv']) => 'bxs-spread-sheet text-emerald-500',
+                                in_array($extension, ['png','jpg','jpeg']) => 'bxs-image text-indigo-500',
+                                in_array($extension, ['doc','docx']) => 'bxs-file-doc text-blue-500',
+                                default => 'bxs-file text-slate-400',
+                            };
+                            $isImage = in_array($extension, ['png', 'jpg', 'jpeg']);
                         @endphp
-
-                        <div
-                            class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div
-                                    class="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-700">
-                                    {{ $label }}
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-medium text-slate-800" title="{{ $filename }}">
-                                        {{ $filename }}
-                                    </p>
-                                    <p class="text-xs text-slate-500">
-                                        Click download to save this file.
-                                    </p>
-                                </div>
+                        
+                        <div class="group flex flex-col rounded-xl border border-slate-200 bg-white hover:border-indigo-500 hover:shadow-lg transition-all overflow-hidden">
+                            <div class="aspect-video bg-slate-50 flex items-center justify-center relative border-b border-slate-100">
+                                <i class="bx {{ $icon }} text-5xl transition-transform group-hover:scale-110"></i>
+                                @if($isImage)
+                                    <div class="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/5 transition-colors"></div>
+                                @endif
                             </div>
-
-                            <div class="flex items-center gap-2 shrink-0">
-                                <a href="{{ $url }}" target="_blank"
-                                    class="hidden sm:inline-flex items-center rounded-md border border-slate-200
-                                          bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50
-                                          focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
-                                    Open
-                                </a>
-                                <a href="{{ $url }}" download="{{ $filename }}"
-                                    class="inline-flex items-center rounded-md bg-emerald-600 px-2.5 py-1.5
-                                          text-xs font-semibold text-white shadow-sm hover:bg-emerald-700
-                                          focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
-                                    Download
+                            
+                            <div class="p-3 flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-bold text-slate-700 truncate" title="{{ $file->name }}">{{ $file->name }}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase">{{ strtoupper($extension) }}</p>
+                                </div>
+                                <a href="{{ asset('storage/importantDocuments/' . $file->name) }}" target="_blank"
+                                   class="h-8 w-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center"
+                                   title="Download / View">
+                                    <i class="bx bx-download text-base"></i>
                                 </a>
                             </div>
                         </div>
                     @endforeach
                 </div>
-            @else
-                <div
-                    class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                    No attachment were uploaded for this document.
-                </div>
             @endif
-        </section>
+        </div>
+
+        {{-- Footer Actions --}}
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last Updated: {{ $importantDoc->updated_at->format('M d, Y H:i') }}</span>
+            <form action="{{ route('hrd.importantDocs.delete', $importantDoc->id) }}" method="POST" onsubmit="return confirm('Delete this document? (This action can be undone by an administrator)')">
+                @csrf @method('DELETE')
+                <button type="submit" class="inline-flex h-9 items-center justify-center rounded-lg px-4 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-all">
+                    <i class="bx bx-trash mr-1.5"></i> Delete Document
+                </button>
+            </form>
+        </div>
     </div>
 @endsection

@@ -16,10 +16,10 @@
                     </button>
                 </h1>
                 <nav class="text-[10px] font-bold uppercase tracking-widest text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex items-center gap-1.5">
+                    <ol class="flex items-center gap-1.5 p-0 m-0">
                         <li><a href="{{ route('home') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
                         <li>/</li>
-                        <li class="text-slate-500">Document Library</li>
+                        <li class="text-slate-500">Important Documents</li>
                     </ol>
                 </nav>
             </div>

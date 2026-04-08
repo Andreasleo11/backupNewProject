@@ -90,16 +90,24 @@ class ImportantDocController extends Controller
     public function detail($id)
     {
         $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
+        $threshold = 2; // Default for context
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return view('hrd.importantDocs.detail', compact('importantDoc'));
+        return view('hrd.importantDocs.detail', compact('importantDoc', 'thresholdDays', 'today'));
     }
 
     public function edit($id)
     {
         $types        = ImportantDocType::all()->reverse();
         $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
+        $threshold = 2; // Default for context
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return view('hrd.importantDocs.edit', compact('importantDoc', 'types'));
+        return view('hrd.importantDocs.edit', compact('importantDoc', 'types', 'thresholdDays', 'today'));
     }
 
     public function update(Request $request, $id)
@@ -146,13 +154,7 @@ class ImportantDocController extends Controller
 
     public function destroy($id)
     {
-        $importantDoc = ImportantDoc::with('files')->findOrFail($id);
-
-        // Remove all attached files from disk first
-        foreach ($importantDoc->files as $file) {
-            Storage::delete('public/importantDocuments/' . $file->name);
-        }
-
+        $importantDoc = ImportantDoc::findOrFail($id);
         $importantDoc->delete();
 
         return redirect()
@@ -166,8 +168,6 @@ class ImportantDocController extends Controller
     public function destroyFile($fileId)
     {
         $file = ImportantDocFile::findOrFail($fileId);
-
-        Storage::delete('public/importantDocuments/' . $file->name);
         $file->delete();
 
         return back()->with('success', 'File berhasil dihapus!');
