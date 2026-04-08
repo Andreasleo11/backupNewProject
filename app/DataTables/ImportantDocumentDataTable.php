@@ -100,6 +100,10 @@ class ImportantDocumentDataTable extends DataTable
                     </div>';
                 }
             )
+            ->filterColumn('document', function($query, $keyword) {
+                $query->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('document_id', 'like', "%{$keyword}%");
+            })
             ->filterColumn('type', function($query, $keyword) {
                 if (empty($keyword)) return;
                 $query->whereHas('type', function($q) use ($keyword) {
@@ -162,8 +166,12 @@ class ImportantDocumentDataTable extends DataTable
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->dom('frtip')
-            ->orderBy(4, 'asc')
-            ->buttons([]);
+            ->orderBy(2, 'asc')
+            ->buttons([])
+            ->language([
+                'searchPlaceholder' => 'Search name, ID or notes...',
+                'search' => '',
+            ]);
     }
 
     /**
@@ -172,8 +180,7 @@ class ImportantDocumentDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')->searchable(false),
-            Column::computed('document')
+            Column::make('document')
                 ->title('Document Info')
                 ->addClass('align-middle'),
             Column::make('type')
@@ -182,11 +189,6 @@ class ImportantDocumentDataTable extends DataTable
                 ->searchable(true)
                 ->orderable(false)
                 ->addClass('text-center align-middle'),
-            Column::make('description')
-                ->title('Notes')
-                ->addClass('align-middle')
-                ->searchable(false)
-                ->orderable(false),
             Column::make('expired_date')
                 ->data('expired_date')
                 ->title('Expiry')
@@ -231,7 +233,8 @@ class ImportantDocumentDataTable extends DataTable
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center align-middle'),
-            Column::make('status_type')->title('Status Type')->visible(false)->searchable(true)
+            Column::make('status_type')->title('Status Type')->visible(false)->searchable(true),
+            Column::make('description')->title('Description')->visible(false)->searchable(true),
         ];
     }
 
