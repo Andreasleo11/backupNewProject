@@ -13,6 +13,15 @@ use Yajra\DataTables\Services\DataTable;
 class ImportantDocumentDataTable extends DataTable
 {
     /**
+     * The warning threshold in months.
+     *
+     * @var int
+     */
+    public $thresholdDays = 60;
+    public $threshold = 2;
+    public $today;
+
+    /**
      * Build DataTable class.
      *
      * @param QueryBuilder $query Results from query() method.
@@ -20,21 +29,28 @@ class ImportantDocumentDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn(
+            ->addColumn('document', function($doc) {
+                $idLine = $doc->document_id ? '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">' . e($doc->document_id) . '</div>' : '';
+                return '<div>' . 
+                            '<div class="font-bold text-slate-900 text-sm">' . e($doc->name) . '</div>' . 
+                            $idLine . 
+                       '</div>';
+            })
+            ->editColumn(
                 'action',
-                '<div class="flex items-center justify-center gap-1">
+                '<div class="flex items-center justify-center gap-1.5">
                     <a href="{{ route(\'hrd.importantDocs.detail\', $id) }}"
-                        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
-                        <i class="bx bx-info-circle mr-1"></i>Detail
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Detail">
+                        <i class="bx bx-show text-lg"></i>
                     </a>
                     <a href="{{ route(\'hrd.importantDocs.edit\', $id) }}"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700">
-                        <i class="bx bx-edit mr-1"></i>Edit
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
+                        <i class="bx bx-edit text-lg"></i>
                     </a>
                     <div x-data="{ open: false }" class="inline-block">
                         <button type="button" @click="open = true"
-                            class="inline-flex items-center rounded-md bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700">
-                            <i class="bx bx-trash-alt mr-1"></i>Delete
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                            <i class="bx bx-trash text-lg"></i>
                         </button>
                         <template x-teleport="body">
                             <div>
@@ -64,6 +80,13 @@ class ImportantDocumentDataTable extends DataTable
                     </div>
                 </div>',
             )
+            ->filterColumn('type', function($query, $keyword) {
+                if (empty($keyword)) return;
+                $query->whereHas('type', function($q) use ($keyword) {
+                    $q->where('name', $keyword);
+                });
+            })
+            ->rawColumns(['action', 'expired_date', 'document'])
             ->setRowId('id');
     }
 
@@ -86,16 +109,9 @@ class ImportantDocumentDataTable extends DataTable
             ->setTableId('importantdocument-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(5, 'asc')
-            // ->dom('Bfrtip')
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                // Button::make('pdf'),
-                Button::make('print'),
-                Button::make('reset'),
-                Button::make('reload'),
-            ]);
+            ->dom('frtip')
+            ->orderBy(4, 'asc')
+            ->buttons([]);
     }
 
     /**
@@ -104,40 +120,59 @@ class ImportantDocumentDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')->addClass('text-center align-middle'),
-            Column::make('document_id')->addClass('text-center align-middle'),
-            Column::make('name')->addClass('text-center align-middle'),
+            Column::make('id')->searchable(false),
+            Column::computed('document')
+                ->title('Document Info')
+                ->addClass('align-middle'),
             Column::make('type')
+                ->title('Category')
                 ->data('type.name')
-                ->searchable(false)
+                ->searchable(true)
                 ->orderable(false)
                 ->addClass('text-center align-middle'),
-            Column::make('description')->addClass('text-center align-middle'),
+            Column::make('description')
+                ->title('Notes')
+                ->addClass('align-middle')
+                ->searchable(false)
+                ->orderable(false),
             Column::make('expired_date')
                 ->data('expired_date')
-                ->title('Expired Date')
+                ->title('Expiry')
                 ->addClass('text-center align-middle')->renderRaw('
                 function(data, type, row, meta){
                     if (type === \'display\') {
-                        // Example date string from the database
-                        let dateString = data;
+                        let dbDate = new Date(data);
+                        let now = new Date(\'' . ($this->today ? $this->today->toDateString() : now()->toDateString()) . '\');
+                        now.setHours(0,0,0,0);
+                        dbDate.setHours(0,0,0,0);
 
-                        // Parse the date string into a JavaScript Date object
-                        let dbDate = new Date(dateString);
+                        let diffTime = dbDate - now;
+                        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        let thresholdDays = ' . ($this->thresholdDays ?? 60) . ';
 
-                        // Get the current date
-                        let currentDate = new Date();
+                        let options = { day: \'2-digit\', month: \'2-digit\', year: \'numeric\' };
+                        let displayDate = new Date(data).toLocaleDateString(\'id-ID\', options);
 
-                        // Calculate a date that is 2 months from now
-                        let twoMonthsFromNow = new Date();
-                        twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
-
-                        // Compare the parsed database date with the calculated date
-                        if (dbDate.getTime() < twoMonthsFromNow.getTime()) {
-                            return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">\' + dateString + \'</span>\';
+                        if (diffDays < 0) {
+                            return \'<div class=\"flex flex-col items-center gap-1\">\' +
+                                        \'<span class=\"inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-700\">\' +
+                                            \'Expired \' + Math.abs(diffDays) + \'d ago\' +
+                                        \'</span>\' +
+                                        \'<span class=\"text-[10px] font-medium text-slate-400\">\' + displayDate + \'</span>\' +
+                                    \'</div>\';
+                        } else if (diffDays <= thresholdDays) {
+                            let label = (diffDays === 0) ? \'Expires Today\' : \'Expiring in \' + diffDays + \'d\';
+                            return \'<div class=\"flex flex-col items-center gap-1\">\' +
+                                        \'<span class=\"inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700\">\' +
+                                            label +
+                                        \'</span>\' +
+                                        \'<span class=\"text-[10px] font-medium text-slate-400\">\' + displayDate + \'</span>\' +
+                                    \'</div>\';
+                        } else {
+                            return \'<span class=\"text-sm font-medium text-slate-600\">\' + displayDate + \'</span>\';
                         }
                     }
-                    return data; // Return the original data for other types
+                    return data;
                 }
             '),
             Column::computed('action')

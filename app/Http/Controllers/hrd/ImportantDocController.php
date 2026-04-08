@@ -12,11 +12,27 @@ use Illuminate\Support\Facades\Storage;
 
 class ImportantDocController extends Controller
 {
-    public function index(ImportantDocumentDataTable $dataTable)
+    public function index(ImportantDocumentDataTable $dataTable, Request $request)
     {
-        $importantDocs = ImportantDoc::with('type', 'files')->orderBy('expired_date')->get();
+        $threshold = $request->get('threshold', 2);
+        $today = now()->startOfDay();
+        $warningDate = now()->addMonths($threshold)->endOfDay();
+        $thresholdDays = $today->diffInDays($warningDate);
 
-        return $dataTable->render('hrd.importantDocs.index', compact('importantDocs'));
+        $stats = [
+            'total'         => ImportantDoc::count(),
+            'active'        => ImportantDoc::where('expired_date', '>', $warningDate)->count(),
+            'expiring_soon' => ImportantDoc::whereBetween('expired_date', [$today, $warningDate])->count(),
+            'expired'       => ImportantDoc::where('expired_date', '<', $today)->count(),
+        ];
+
+        $types = ImportantDocType::all();
+
+        $dataTable->thresholdDays = $thresholdDays;
+        $dataTable->threshold = $threshold; // Still needed for the UI dropdown state
+        $dataTable->today = $today;
+
+        return $dataTable->render('hrd.importantDocs.index', compact('stats', 'threshold', 'types', 'thresholdDays'));
     }
 
     /**
