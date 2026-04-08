@@ -22,41 +22,55 @@ class ImportantDocumentDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn(
                 'action',
-                '
-            <a href="{{ route("hrd.importantDocs.detail", $id) }}"
-                class="btn btn-secondary me-1">
-                <div class="col d-flex align-middle">
-                    <box-icon name="info-circle" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Detail</span>
-                </div>
-            </a>
-            <a href="{{ route("hrd.importantDocs.edit", $id) }}"
-                class="btn btn-primary me-1">
-                <div class="col d-flex">
-                    <box-icon name="edit" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Edit</span>
-                </div>
-            </a>
-
-            <button data-bs-toggle="modal"
-                data-bs-target="#delete-confirmation-modal-{{ $id }}"
-                class="btn btn-danger"
-                onclick="event.preventDefault(); document.getElementById("delete-form").submit()">
-                <div class="col d-flex">
-                    <box-icon name="trash" color="white" class="pb-1"></box-icon>
-                    <span class="ms-1">Delete</span>
-                </div>
-            </button>
-            ',
+                '<div class="flex items-center justify-center gap-1">
+                    <a href="{{ route(\'hrd.importantDocs.detail\', $id) }}"
+                        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                        <i class="bx bx-info-circle mr-1"></i>Detail
+                    </a>
+                    <a href="{{ route(\'hrd.importantDocs.edit\', $id) }}"
+                        class="inline-flex items-center rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-700">
+                        <i class="bx bx-edit mr-1"></i>Edit
+                    </a>
+                    <div x-data="{ open: false }" class="inline-block">
+                        <button type="button" @click="open = true"
+                            class="inline-flex items-center rounded-md bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700">
+                            <i class="bx bx-trash-alt mr-1"></i>Delete
+                        </button>
+                        <template x-teleport="body">
+                            <div>
+                                <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false" x-cloak></div>
+                                <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" x-cloak>
+                                    <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+                                        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
+                                            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                <i class="bx bx-error-circle text-rose-500"></i> Delete Confirmation
+                                            </h2>
+                                            <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="bx bx-x text-xl"></i></button>
+                                        </div>
+                                        <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action cannot be undone.</div>
+                                        <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
+                                            <button type="button" @click="open = false" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+                                            <form method="POST" action="{{ route(\'hrd.importantDocs.delete\', $id) }}">
+                                                @csrf @method(\'DELETE\')
+                                                <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
+                                                    <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>',
             )
-            // ->editColumn('expired_date', '{{ \Carbon\Carbon::parse($expired_date)->format(\'d-m-Y\') }}')
             ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\ImportantDocument $model
+     * @param ImportantDoc $model
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
@@ -117,7 +131,6 @@ class ImportantDocumentDataTable extends DataTable
                         // Calculate a date that is 2 months from now
                         let twoMonthsFromNow = new Date();
                         twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
-                        console.log(twoMonthsFromNow);
 
                         // Compare the parsed database date with the calculated date
                         if (dbDate.getTime() < twoMonthsFromNow.getTime()) {

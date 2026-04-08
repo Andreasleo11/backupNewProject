@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\hrd\ImportantDoc;
 use App\Models\hrd\ImportantDocFile;
 use App\Models\hrd\ImportantDocType;
-use Dompdf\Dompdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ImportantDocController extends Controller
 {
@@ -34,42 +34,34 @@ class ImportantDocController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate form
         $request->validate([
-            'name' => 'required|max:255',
-            'type_id' => 'required',
-            'expired_date' => 'required',
-            'files.*' => 'file|max:2048|nullable',
+            'name'        => 'required|max:255',
+            'type_id'     => 'required',
+            'expired_date'=> 'required',
+            'files.*'     => 'file|max:2048|nullable',
             'document_id' => 'string|max:255|nullable',
             'description' => 'string|max:255|nullable',
         ]);
 
-        // Create a new ImportantDoc instance with additional data
         $importantDoc = ImportantDoc::create([
-            'name' => $request->name,
-            'type_id' => $request->type_id,
+            'name'         => $request->name,
+            'type_id'      => $request->type_id,
             'expired_date' => $request->expired_date,
-            'document_id' => $request->document_id,
-            'description' => $request->description,
+            'document_id'  => $request->document_id,
+            'description'  => $request->description,
         ]);
 
         if ($request->hasFile('files')) {
-            // dd($request->file('files'));
             foreach ($request->file('files') as $file) {
-                // Generate a unique filename
                 $fileName = time() . '-' . $file->getClientOriginalName();
-
-                // Read file content
                 $fileData = file_get_contents($file->getRealPath());
 
-                // Store the file in the filesystem
                 $file->storeAs('public/importantDocuments', $fileName);
 
-                // Store file data in the database
                 $importantDoc->files()->create([
-                    'name' => $fileName,
+                    'name'      => $fileName,
                     'mime_type' => $file->getClientMimeType(),
-                    'data' => $fileData,
+                    'data'      => $fileData,
                 ]);
             }
         }
@@ -81,15 +73,15 @@ class ImportantDocController extends Controller
 
     public function detail($id)
     {
-        $importantDoc = ImportantDoc::find($id);
+        $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
 
         return view('hrd.importantDocs.detail', compact('importantDoc'));
     }
 
     public function edit($id)
     {
-        $types = ImportantDocType::all()->reverse();
-        $importantDoc = ImportantDoc::with('type')->find($id);
+        $types        = ImportantDocType::all()->reverse();
+        $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
 
         return view('hrd.importantDocs.edit', compact('importantDoc', 'types'));
     }
@@ -97,58 +89,71 @@ class ImportantDocController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|max:255',
-            'type_id' => 'required|max:255',
+            'name'         => 'required|max:255',
+            'type_id'      => 'required',
             'expired_date' => 'required',
+            'document_id'  => 'nullable|string|max:255',
+            'description'  => 'nullable|string|max:255',
+            'files.*'      => 'nullable|file|max:2048',
         ]);
 
-        $importantDoc = ImportantDoc::find($id);
+        $importantDoc = ImportantDoc::findOrFail($id);
 
-        if ($importantDoc) {
-            $importantDoc->update($request->all());
+        $importantDoc->update([
+            'name'         => $request->name,
+            'type_id'      => $request->type_id,
+            'expired_date' => $request->expired_date,
+            'document_id'  => $request->document_id,
+            'description'  => $request->description,
+        ]);
 
-            return redirect()
-                ->route('hrd.importantDocs.index')
-                ->with('success', 'Data berhasil diupdate!');
-        } else {
-            return redirect()->route('hrd.importantDocs.index')->with('error', 'Data not found!');
+        // Append any newly uploaded files
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '-' . $file->getClientOriginalName();
+                $fileData = file_get_contents($file->getRealPath());
+
+                $file->storeAs('public/importantDocuments', $fileName);
+
+                $importantDoc->files()->create([
+                    'name'      => $fileName,
+                    'mime_type' => $file->getClientMimeType(),
+                    'data'      => $fileData,
+                ]);
+            }
         }
+
+        return redirect()
+            ->route('hrd.importantDocs.detail', $importantDoc->id)
+            ->with('success', 'Data berhasil diupdate!');
     }
 
     public function destroy($id)
     {
-        ImportantDoc::find($id)->delete();
+        $importantDoc = ImportantDoc::with('files')->findOrFail($id);
+
+        // Remove all attached files from disk first
+        foreach ($importantDoc->files as $file) {
+            Storage::delete('public/importantDocuments/' . $file->name);
+        }
+
+        $importantDoc->delete();
 
         return redirect()
             ->route('hrd.importantDocs.index')
             ->with('success', 'Data berhasil dihapus!');
     }
 
-    public function downloadFile(ImportantDocFile $file)
+    /**
+     * Delete a single file attachment from a document.
+     */
+    public function destroyFile($fileId)
     {
-        return response()->streamDownload(function () use ($file) {
-            echo $file->data;
-        }, $file->name);
-    }
+        $file = ImportantDocFile::findOrFail($fileId);
 
-    public function previewPdf($file)
-    {
-        // Retrieve the document from the database
-        $document = $file;
+        Storage::delete('public/importantDocuments/' . $file->name);
+        $file->delete();
 
-        // Initialize Dompdf
-        $dompdf = new Dompdf;
-
-        // Load the PDF content
-        $dompdf->loadHtml($document->content);
-
-        // (Optional) Set paper size and orientation
-        $dompdf->setPaper('A4', 'portrait');
-
-        // Render the PDF
-        $dompdf->render();
-
-        // Output the PDF content to the browser
-        return $dompdf->stream($document->name);
+        return back()->with('success', 'File berhasil dihapus!');
     }
 }

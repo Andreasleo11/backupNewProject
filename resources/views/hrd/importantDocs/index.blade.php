@@ -28,7 +28,7 @@
             <nav class="text-sm" aria-label="Breadcrumb">
                 <ol class="flex flex-wrap items-center gap-1 text-slate-500">
                     <li>
-                        <a href="{{ route('hrd') }}" class="hover:text-slate-700 hover:underline">
+                        <a href="{{ route('home') }}" class="hover:text-slate-700 hover:underline">
                             Dashboard
                         </a>
                     </li>

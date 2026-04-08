@@ -27,14 +27,14 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
 });
 
 // HRD Home
-Route::middleware(['checkDepartment:HRD,PERSONNEL,DIRECTOR', 'checkSessionId'])->group(function () {
-    Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd');
-    Route::get('/hrd/important-doc', [ImportantDocController::class, 'index'])->name('importantdoc.index');
-    Route::post('/hrd/important-doc', [ImportantDocController::class, 'upload'])->name('important.doc.upload');
-    Route::get('/hrd/important-doc/{filename}/download', [ImportantDocController::class, 'download'])->name('important.doc.download');
+// Route::middleware(['checkDepartment:HRD,PERSONNEL,DIRECTOR', 'checkSessionId'])->group(function () {
+//     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd');
+//     Route::get('/hrd/important-doc', [ImportantDocController::class, 'index'])->name('importantdoc.index');
+//     Route::post('/hrd/important-doc', [ImportantDocController::class, 'upload'])->name('important.doc.upload');
+//     Route::get('/hrd/important-doc/{filename}/download', [ImportantDocController::class, 'download'])->name('important.doc.download');
 
-    Route::get('/personnel/home', [HrdHomeController::class, 'index'])->name('personnel');
-});
+//     Route::get('/personnel/home', [HrdHomeController::class, 'index'])->name('personnel');
+// });
 
 // Director Home & QA/QC Reports
 Route::middleware(['checkDepartment:DIRECTOR,PERSONNEL', 'checkSessionId'])->group(function () {
