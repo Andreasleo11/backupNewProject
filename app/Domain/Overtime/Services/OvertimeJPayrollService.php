@@ -59,18 +59,21 @@ final class OvertimeJPayrollService
             ])->timeout(15)->post($url, $payload);
 
             $resJson = $response->json();
-            
-            // If status is 200 and msg is not "Data Not Found" (or similar), it exists
-            if ($response->successful() && isset($resJson['status']) && $resJson['status'] == '200') {
-                // If it's found, it usually returns the transaction ID in 'msg' or 'transactionid'
+
+            // Check if data exists based on the provided JSON structure
+            $total = (int) ($resJson['total'] ?? 0);
+            $hasData = !empty($resJson['data']) && is_array($resJson['data']);
+
+            if ($response->successful() && ($total > 0 || $hasData)) {
+                $firstRecord = $resJson['data'][0] ?? null;
                 return [
-                    'exists' => true, 
-                    'message' => $resJson['msg'] ?? 'Record found',
-                    'transaction_id' => $resJson['transactionid'] ?? null
+                    'exists' => true,
+                    'message' => 'Record found in JPayroll',
+                    'transaction_id' => $firstRecord['NoVoucher'] ?? null
                 ];
             }
 
-            return ['exists' => false, 'message' => $resJson['msg'] ?? 'Not found'];
+            return ['exists' => false, 'message' => 'Not found in JPayroll'];
 
         } catch (\Exception $e) {
             Log::error("❌ JPayroll Check Exception", ['error' => $e->getMessage()]);
