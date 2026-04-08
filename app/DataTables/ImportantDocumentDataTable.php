@@ -20,6 +20,7 @@ class ImportantDocumentDataTable extends DataTable
     public $thresholdDays = 60;
     public $threshold = 2;
     public $today;
+    public $tab = 'all';
 
     /**
      * Build DataTable class.
@@ -38,47 +39,66 @@ class ImportantDocumentDataTable extends DataTable
             })
             ->editColumn(
                 'action',
-                '<div class="flex items-center justify-center gap-1.5">
-                    <button type="button" @click="$store.docLibrary.openDetail({{ $id }})"
-                        class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
-                        <i class="bx bx-show text-lg"></i>
-                    </button>
-                    <a href="{{ route(\'hrd.importantDocs.edit\', $id) }}"
-                        class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
-                        <i class="bx bx-edit text-lg"></i>
-                    </a>
-                    <div x-data="{ open: false }" class="inline-block">
-                        <button type="button" @click="open = true"
-                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                            <i class="bx bx-trash text-lg"></i>
+                function($row) {
+                    if ($row->trashed()) {
+                        return '<div class="flex items-center justify-center gap-1.5">
+                                    <form method="POST" action="'.route('hrd.importantDocs.restore', $row->id).'" onsubmit="return confirm(\'Restore this document?\')">
+                                        '.csrf_field().'
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Restore">
+                                            <i class="bx bx-undo text-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="'.route('hrd.importantDocs.forceDelete', $row->id).'" onsubmit="return confirm(\'Permanently delete this? This cannot be undone.\')">
+                                        '.csrf_field().' '.method_field('DELETE').'
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Permanent Delete">
+                                            <i class="bx bx-trash-alt text-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>';
+                    }
+
+                    return '<div class="flex items-center justify-center gap-1.5">
+                        <button type="button" @click="$store.docLibrary.openDetail('.$row->id.')"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
+                            <i class="bx bx-show text-lg"></i>
                         </button>
-                        <template x-teleport="body">
-                            <div>
-                                <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false" x-cloak></div>
-                                <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" x-cloak>
-                                    <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
-                                        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
-                                            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                                                <i class="bx bx-error-circle text-rose-500"></i> Delete Confirmation
-                                            </h2>
-                                            <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="bx bx-x text-xl"></i></button>
-                                        </div>
-                                        <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action cannot be undone.</div>
-                                        <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
-                                            <button type="button" @click="open = false" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
-                                            <form method="POST" action="{{ route(\'hrd.importantDocs.delete\', $id) }}">
-                                                @csrf @method(\'DELETE\')
-                                                <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
-                                                    <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
-                                                </button>
-                                            </form>
+                        <a href="'.route('hrd.importantDocs.edit', $row->id).'"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
+                            <i class="bx bx-edit text-lg"></i>
+                        </a>
+                        <div x-data="{ open: false }" class="inline-block">
+                            <button type="button" @click="open = true"
+                                class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
+                                <i class="bx bx-trash text-lg"></i>
+                            </button>
+                            <template x-teleport="body">
+                                <div>
+                                    <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false" x-cloak></div>
+                                    <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" x-cloak>
+                                        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+                                            <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
+                                                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                    <i class="bx bx-error-circle text-rose-500"></i> Delete Confirmation
+                                                </h2>
+                                                <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="bx bx-x text-xl"></i></button>
+                                            </div>
+                                            <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action can be undone by an administrator.</div>
+                                            <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
+                                                <button type="button" @click="open = false" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+                                                <form method="POST" action="'.route('hrd.importantDocs.delete', $row->id).'">
+                                                    '.csrf_field().' '.method_field('DELETE').'
+                                                    <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
+                                                        <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>',
+                            </template>
+                        </div>
+                    </div>';
+                }
             )
             ->filterColumn('type', function($query, $keyword) {
                 if (empty($keyword)) return;
@@ -87,12 +107,26 @@ class ImportantDocumentDataTable extends DataTable
                 });
             })
             ->addColumn('status_type', function($row) {
+                if ($row->trashed()) return 'archived';
                 $today = $this->today ? $this->today->startOfDay() : now()->startOfDay();
                 $diffDays = $today->diffInDays($row->expired_date, false);
 
                 if ($diffDays < 0) return 'expired';
                 if ($diffDays <= ($this->thresholdDays ?? 60)) return 'expiring';
                 return 'active';
+            })
+            ->filterColumn('status_type', function($query, $keyword) {
+                $today = now()->startOfDay();
+                $threshold = $this->threshold ?? 2;
+                $warningDate = now()->addMonths($threshold)->endOfDay();
+
+                if ($keyword === 'expired') {
+                    $query->where('expired_date', '<', $today);
+                } elseif ($keyword === 'expiring') {
+                    $query->whereBetween('expired_date', [$today, $warningDate]);
+                } elseif ($keyword === 'active') {
+                    $query->where('expired_date', '>', $warningDate);
+                }
             })
             ->rawColumns(['action', 'expired_date', 'document'])
             ->setRowId('id');
@@ -105,7 +139,17 @@ class ImportantDocumentDataTable extends DataTable
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
-        return $model::with('type')->newQuery();
+        $query = $model::with('type');
+
+        if ($this->tab === 'archived') {
+            $query->onlyTrashed();
+        } elseif ($this->tab === 'required') {
+            $threshold = $this->threshold ?? 2;
+            $warningDate = now()->addMonths($threshold)->endOfDay();
+            $query->where('expired_date', '<=', $warningDate);
+        }
+
+        return $query->newQuery();
     }
 
     /**

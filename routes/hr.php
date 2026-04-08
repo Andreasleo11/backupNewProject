@@ -81,5 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
     Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
     Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+    Route::post('/hrd/importantdocs/{id}/restore', [ImportantDocController::class, 'restore'])->name('hrd.importantDocs.restore');
+    Route::delete('/hrd/importantdocs/{id}/force', [ImportantDocController::class, 'forceDelete'])->name('hrd.importantDocs.forceDelete');
     Route::delete('/hrd/importantdocs/files/{fileId}', [ImportantDocController::class, 'destroyFile'])->name('hrd.importantDocs.file.delete');
 });

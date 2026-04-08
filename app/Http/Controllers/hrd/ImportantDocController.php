@@ -15,6 +15,7 @@ class ImportantDocController extends Controller
     public function index(ImportantDocumentDataTable $dataTable, Request $request)
     {
         $threshold = $request->get('threshold', 2);
+        $tab = $request->get('tab', 'all'); // New tab parameter
         $today = now()->startOfDay();
         $warningDate = now()->addMonths($threshold)->endOfDay();
         $thresholdDays = $today->diffInDays($warningDate);
@@ -24,15 +25,18 @@ class ImportantDocController extends Controller
             'active'        => ImportantDoc::where('expired_date', '>', $warningDate)->count(),
             'expiring_soon' => ImportantDoc::whereBetween('expired_date', [$today, $warningDate])->count(),
             'expired'       => ImportantDoc::where('expired_date', '<', $today)->count(),
+            'archived'      => ImportantDoc::onlyTrashed()->count(),
+            'action_needed' => ImportantDoc::where('expired_date', '<=', $warningDate)->count(),
         ];
 
         $types = ImportantDocType::all();
 
         $dataTable->thresholdDays = $thresholdDays;
-        $dataTable->threshold = $threshold; // Still needed for the UI dropdown state
+        $dataTable->threshold = $threshold;
         $dataTable->today = $today;
+        $dataTable->tab = $tab; // Pass tab to DataTable
 
-        return $dataTable->render('hrd.importantDocs.index', compact('stats', 'threshold', 'types', 'thresholdDays'));
+        return $dataTable->render('hrd.importantDocs.index', compact('stats', 'threshold', 'types', 'thresholdDays', 'tab'));
     }
 
     /**
@@ -175,5 +179,43 @@ class ImportantDocController extends Controller
         $file->delete();
 
         return back()->with('success', 'File berhasil dihapus!');
+    }
+
+    /**
+     * Restore a soft-deleted document.
+     */
+    public function restore($id)
+    {
+        $doc = ImportantDoc::withTrashed()->findOrFail($id);
+        $doc->restore();
+
+        // Also restore associated files
+        ImportantDocFile::onlyTrashed()->where('important_doc_id', $id)->restore();
+
+        return redirect()
+            ->route('hrd.importantDocs.index', ['tab' => 'archived'])
+            ->with('success', 'Dokumen berhasil dipulihkan!');
+    }
+
+    /**
+     * Permanently delete a document and its physical files.
+     */
+    public function forceDelete($id)
+    {
+        $doc = ImportantDoc::withTrashed()->with(['files' => function($q) {
+            $q->withTrashed();
+        }])->findOrFail($id);
+
+        // Physical deletion
+        foreach ($doc->files as $file) {
+            Storage::delete('public/importantDocuments/' . $file->name);
+            $file->forceDelete();
+        }
+
+        $doc->forceDelete();
+
+        return redirect()
+            ->route('hrd.importantDocs.index', ['tab' => 'archived'])
+            ->with('success', 'Dokumen dihapus secara permanen!');
     }
 }
