@@ -174,11 +174,12 @@
             <section x-show="stage >= 2" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
                 @include('livewire.overtime.partials.roster')
 
-                <div class="pt-10 flex flex-col items-center gap-6" x-data="{ running: false }">
+                <div x-show="items.length > 0" x-transition x-cloak class="pt-10 flex flex-col items-center gap-6" x-data="{ running: false }">
                     {{-- THE INTEGRITY CHECKER TRIGGER --}}
                     <div x-show="!isIntegrityChecked" x-collapse>
                         <button type="button" 
                             @click="running = true; $wire.runIntegrityCheck().then(() => running = false)"
+                            
                             :disabled="running"
                             class="h-20 px-16 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl transition-all flex items-center gap-4 group hover:scale-[1.02] active:scale-95 disabled:opacity-50">
                             <div class="flex flex-col text-left">
@@ -191,74 +192,105 @@
                         </button>
                     </div>
 
-                    {{-- THE READINESS CHECKLIST --}}
+                    {{-- THE READINESS SNAPSHOT (HUMAN-READABLE) --}}
                     <div x-show="Object.keys(integrityResults).length > 0" x-collapse
-                        class="w-full max-w-xl bg-white rounded-[2rem] border border-slate-200 p-6 shadow-xl relative overflow-hidden">
-                        <div class="flex items-center justify-between mb-6 border-b border-slate-50 pb-4">
-                             <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Submission Readiness</h3>
-                             <div class="flex items-center gap-2">
-                                 <span class="h-2 w-2 rounded-full" :class="isIntegrityChecked ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
-                                 <span class="text-[9px] font-black uppercase tracking-widest" :class="isIntegrityChecked ? 'text-emerald-600' : 'text-slate-400'" x-text="isIntegrityChecked ? 'Ready' : 'Incomplete'"></span>
-                             </div>
+                        class="w-full max-w-xl bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-2xl relative overflow-hidden">
+                        
+                        {{-- STATUS PILL & SUMMARY --}}
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center gap-3 px-6 py-2 rounded-full mb-6 transition-all"
+                                :class="isIntegrityChecked ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'">
+                                <span class="relative flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="isIntegrityChecked ? 'bg-emerald-400' : 'bg-slate-300'"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3" :class="isIntegrityChecked ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+                                </span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em]" x-text="isIntegrityChecked ? 'Readiness Achieved' : 'Verifying Roster...'"></span>
+                            </div>
+
+                            <div class="flex flex-col items-center justify-center">
+                                <template x-if="isIntegrityChecked">
+                                    <div class="text-center animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <div class="h-16 w-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-500 shadow-inner">
+                                            <i class='bx bx-check-shield text-4xl'></i>
+                                        </div>
+                                        <p class="text-2xl font-black text-slate-900 leading-none">Ready for Submission</p>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3">
+                                            All <span class="text-emerald-600 font-black">{{ $this->headcount }}</span> members verified successfully
+                                        </p>
+                                    </div>
+                                </template>
+
+                                <template x-if="!isIntegrityChecked && integrityResults.payroll === 'failed'">
+                                    <div class="text-center animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <div class="h-16 w-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500 shadow-inner">
+                                            <i class='bx bx-error-alt text-4xl'></i>
+                                        </div>
+                                        <p class="text-2xl font-black text-slate-900 leading-none uppercase tracking-tight">Conflicts Detected</p>
+                                        <p class="text-[10px] font-bold text-rose-400 uppercase tracking-[0.2em] mt-3">
+                                            Found <span class="text-rose-600 font-black">{{ $this->conflictCount }}</span> critical issues in roster
+                                        </p>
+                                    </div>
+                                </template>
+
+                                <template x-if="!isIntegrityChecked && (integrityResults.payroll === 'loading' || integrityResults.local === 'loading')">
+                                    <div class="text-center">
+                                        <i class='bx bx-loader-alt animate-spin text-4xl text-slate-200 mb-4'></i>
+                                        <p class="text-sm font-black text-slate-300 uppercase tracking-widest">Securing Connection...</p>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
 
-                        <div class="space-y-4">
-                            {{-- STRUCTURAL CHECK --}}
-                            <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
-                                :class="integrityResults.structural === 'passed' ? 'bg-emerald-50' : (integrityResults.structural === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
-                                <div class="flex items-center gap-4">
-                                    <div class="h-10 w-10 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                        {{-- COLLAPSIBLE TECHNICAL AUDIT --}}
+                        <div x-data="{ showLogs: false }" class="border-t border-slate-50 pt-6">
+                            <button type="button" @click="showLogs = !showLogs" class="w-full flex items-center justify-between group">
+                                <span class="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] group-hover:text-slate-500 transition-colors">Technical Audit Logs</span>
+                                <i class='bx transition-transform duration-300' :class="showLogs ? 'bx-chevron-up rotate-180' : 'bx-chevron-down text-slate-300'" ></i>
+                            </button>
+
+                            <div x-show="showLogs" x-collapse title="Audit Details" class="mt-6 space-y-3">
+                                {{-- STRUCTURAL CHECK --}}
+                                <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
+                                    :class="integrityResults.structural === 'passed' ? 'bg-emerald-50' : (integrityResults.structural === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
+                                    <div class="flex items-center gap-4">
                                         <i class='bx' :class="integrityResults.structural === 'passed' ? 'bx-check-double text-emerald-500 text-xl' : (integrityResults.structural === 'failed' ? 'bx-error-circle text-rose-500 text-xl' : 'bx-list-check text-slate-400 text-xl')"></i>
+                                        <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Structural integrity</p>
                                     </div>
-                                    <div>
-                                        <p class="text-[11px] font-black uppercase tracking-tight" :class="integrityResults.structural === 'failed' ? 'text-rose-700' : 'text-slate-900'">Structural Integrity</p>
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Employee Data & Tasks</p>
-                                    </div>
+                                    <span class="text-[8px] font-black uppercase" :class="integrityResults.structural === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.structural"></span>
                                 </div>
-                                <span class="text-[9px] font-black uppercase" :class="integrityResults.structural === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.structural"></span>
-                            </div>
 
-                            {{-- LOCAL CONFLICT CHECK --}}
-                            <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
-                                :class="integrityResults.local === 'passed' ? 'bg-emerald-50' : (integrityResults.local === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
-                                <div class="flex items-center gap-4">
-                                    <div class="h-10 w-10 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                                {{-- LOCAL CONFLICT CHECK --}}
+                                <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
+                                    :class="integrityResults.local === 'passed' ? 'bg-emerald-50' : (integrityResults.local === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
+                                    <div class="flex items-center gap-4">
                                         <i class='bx' :class="integrityResults.local === 'passed' ? 'bx-data text-emerald-500 text-xl' : (integrityResults.local === 'failed' ? 'bx-block text-rose-500 text-xl' : 'bx-data text-slate-400 text-xl')"></i>
+                                        <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Local database conflict</p>
                                     </div>
-                                    <div>
-                                        <p class="text-[11px] font-black uppercase tracking-tight" :class="integrityResults.local === 'failed' ? 'text-rose-700' : 'text-slate-900'">Database Conflict Guard</p>
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Local Pending Records</p>
-                                    </div>
+                                    <span class="text-[8px] font-black uppercase" :class="integrityResults.local === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.local"></span>
                                 </div>
-                                <span class="text-[9px] font-black uppercase" :class="integrityResults.local === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.local"></span>
-                            </div>
 
-                            {{-- PAYROLL GUARD --}}
-                            <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
-                                :class="integrityResults.payroll === 'passed' ? 'bg-emerald-50' : (integrityResults.payroll === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
-                                <div class="flex items-center gap-4">
-                                    <div class="h-10 w-10 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                                {{-- PAYROLL GUARD --}}
+                                <div class="flex items-center justify-between p-4 rounded-2xl transition-all"
+                                    :class="integrityResults.payroll === 'passed' ? 'bg-emerald-50' : (integrityResults.payroll === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
+                                    <div class="flex items-center gap-4">
                                         <i class='bx' :class="integrityResults.payroll === 'passed' ? 'bx-network-chart text-emerald-500 text-xl' : (integrityResults.payroll === 'failed' ? 'bx-bolt-circle text-rose-500 text-xl' : 'bx-network-chart text-slate-400 text-xl')"></i>
+                                        <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">JPayroll live verify</p>
                                     </div>
-                                    <div>
-                                        <p class="text-[11px] font-black uppercase tracking-tight" :class="integrityResults.payroll === 'failed' ? 'text-rose-700' : 'text-slate-900'">JPayroll Conflict Guard</p>
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">External Live Verify</p>
-                                    </div>
+                                    <span class="text-[8px] font-black uppercase" :class="integrityResults.payroll === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.payroll"></span>
                                 </div>
-                                <span class="text-[9px] font-black uppercase" :class="integrityResults.payroll === 'passed' ? 'text-emerald-600' : 'text-slate-400'" x-text="integrityResults.payroll"></span>
                             </div>
                         </div>
 
                         {{-- THE FINAL SEAL --}}
-                        <div x-show="isIntegrityChecked" x-collapse class="mt-8 pt-8 border-t-4 border-dashed border-slate-50">
+                        <div x-show="isIntegrityChecked" x-collapse class="mt-10">
                             <button type="submit" wire:loading.attr="disabled"
-                                class="w-full h-20 rounded-[2rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-200 transition-all flex items-center justify-center gap-4 group hover:scale-[1.01] active:scale-95">
+                                class="w-full h-20 rounded-3xl bg-indigo-600 text-white shadow-2xl shadow-indigo-100/50 transition-all flex items-center justify-center gap-4 group hover:scale-[1.01] active:scale-95">
                                 <div class="flex flex-col text-left">
-                                    <span class="text-[10px] font-black text-indigo-200 uppercase tracking-[0.3em] leading-none mb-1">Validated & Ready</span>
+                                    <span class="text-[10px] font-black text-indigo-200 uppercase tracking-[0.3em] leading-none mb-1">Authenticated Snapshot</span>
                                     <span class="text-lg font-black uppercase tracking-tight leading-none" wire:loading.remove wire:target="submit">{{ $formId ? 'Update Record' : 'Confirm & Submit' }}</span>
                                     <span class="text-lg font-black uppercase tracking-tight leading-none" wire:loading wire:target="submit">Finalizing...</span>
                                 </div>
-                                <i class='bx bx-check-shield text-3xl text-indigo-300' wire:loading.remove></i>
+                                <i class='bx bx-check-shield text-3xl text-indigo-300 group-hover:scale-110 transition-transform' wire:loading.remove></i>
                                 <i class='bx bx-loader-alt animate-spin text-3xl' wire:loading></i>
                             </button>
                         </div>

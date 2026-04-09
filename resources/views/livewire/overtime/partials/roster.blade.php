@@ -1,4 +1,4 @@
-{{-- Roster Area --}}
+ {{-- Roster Area --}}
 <div class="space-y-6" x-data="{ showOverride: {} }">
     
     {{-- UNIFIED ROSTER TOOLBAR --}}
@@ -89,8 +89,54 @@
         </div>
     </div>
 
-    {{-- THE TABLE --}}
-    <div class="bg-white rounded-[2rem] border border-slate-200/60 shadow-sm overflow-visible">
+    {{-- THE ROSTER CONTENT --}}
+    <div class="relative">
+        {{-- QUICK START HERO (EMPTY STATE DISCOVERY) --}}
+        <template x-if="items.length === 0">
+            <div class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-16 text-center animate-in fade-in zoom-in duration-500">
+                <div class="h-24 w-24 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-indigo-600 shadow-inner">
+                    <i class='bx bxs-group-plus text-5xl'></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Build Your Roster</h3>
+                <p class="text-sm text-slate-400 font-bold uppercase tracking-widest mb-12 max-w-sm mx-auto leading-relaxed">Choose an entry method to start your overtime request</p>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                    {{-- BULK PATH --}}
+                    <button type="button" @click="$wire.set('showBulkTray', true)" 
+                        class="group relative h-20 px-10 rounded-3xl bg-indigo-600 text-white shadow-2xl shadow-indigo-200 transition-all hover:scale-[1.03] active:scale-95 flex items-center gap-4">
+                        <span class="absolute -top-2 -right-2 flex h-6 w-6">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-6 w-6 bg-indigo-500 border-2 border-white flex items-center justify-center text-[10px] font-black">!</span>
+                        </span>
+                        <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">
+                            <i class='bx bx-layer-plus'></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-[0.2em] leading-none mb-1">Recommended</p>
+                            <p class="text-base font-black uppercase tracking-tight leading-none">Select from Directory</p>
+                        </div>
+                    </button>
+
+                    <div class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">OR</div>
+
+                    {{-- MANUAL PATH --}}
+                    <button type="button" @click="addRow()" 
+                        class="h-20 px-10 rounded-3xl bg-slate-900 text-white shadow-2xl shadow-slate-200 transition-all hover:scale-[1.03] active:scale-95 flex items-center gap-4 group">
+                        <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl group-hover:translate-x-1 transition-transform">
+                            <i class='bx bx-plus'></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none mb-1">Standard</p>
+                            <p class="text-base font-black uppercase tracking-tight leading-none">Add Member Manually</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        {{-- THE TABLE --}}
+        <div x-show="items.length > 0" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-visible">
         <div class="overflow-visible">
             <table class="w-full text-left border-separate border-spacing-0">
                 <thead>

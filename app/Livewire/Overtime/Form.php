@@ -54,6 +54,7 @@ class Form extends Component
     public array $validationErrors = [];
     public bool $isCheckingPayroll = false;
     public bool $syncEnabled = true;
+    public bool $showTechnicalLogs = false;
 
     /**
      * Computed Property: List of departments for the selection.
@@ -76,6 +77,40 @@ class Form extends Component
             ->limit(15)
             ->pluck('job_desc')
             ->toArray();
+    }
+
+    #[Computed]
+    public function headcount(): int
+    {
+        return collect($this->items)->filter(fn($i) => !empty($i['nik']))->count();
+    }
+
+    #[Computed]
+    public function totalNetHours(): string
+    {
+        $totalMinutes = 0;
+        foreach ($this->items as $item) {
+            if (empty($item['start_time']) || empty($item['end_time'])) continue;
+            try {
+                $start = \Carbon\Carbon::parse($item['start_time']);
+                $end = \Carbon\Carbon::parse($item['end_time']);
+                if ($end->lt($start)) $end->addDay();
+                
+                $diff = $start->diffInMinutes($end);
+                $net = $diff - (int)($item['break'] ?? 0);
+                if ($net > 0) $totalMinutes += $net;
+            } catch (\Exception $e) {}
+        }
+
+        $hours = floor($totalMinutes / 60);
+        $mins = $totalMinutes % 60;
+        return $mins > 0 ? "{$hours}h {$mins}m" : "{$hours}h";
+    }
+
+    #[Computed]
+    public function conflictCount(): int
+    {
+        return collect($this->items)->filter(fn($i) => ($i['payroll_status'] ?? 'pending') === 'exists')->count();
     }
 
     public function mount(?int $id = null): void
@@ -129,11 +164,14 @@ class Form extends Component
             
             $this->global_overtime_date = now()->format('Y-m-d');
             $this->global_end_date = now()->format('Y-m-d');
-
-            $this->addEmptyRow();
         }
 
         $this->refreshEmployees();
+    }
+
+    public function addRow(): void
+    {
+        $this->addEmptyRow();
     }
 
     public function refreshEmployees(): void
