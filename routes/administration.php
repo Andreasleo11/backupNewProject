@@ -37,12 +37,14 @@ Route::middleware('auth')->group(function () {
             // Evaluation Data Management (Admin)
             Route::get('/evaluation-data', [\App\Http\Controllers\Admin\EvaluationDataManagementController::class, 'index'])->name('evaluation-data.index');
             Route::post('/evaluation-data/upload', [\App\Http\Controllers\Admin\EvaluationDataManagementController::class, 'upload'])->name('evaluation-data.upload');
+            Route::post('/evaluation-data/commit', [\App\Http\Controllers\Admin\EvaluationDataManagementController::class, 'commit'])->name('evaluation-data.commit');
             Route::delete('/evaluation-data/truncate', [\App\Http\Controllers\Admin\EvaluationDataManagementController::class, 'truncate'])->name('evaluation-data.truncate');
             Route::delete('/evaluation-data/{id}', [\App\Http\Controllers\Admin\EvaluationDataManagementController::class, 'destroy'])->name('evaluation-data.destroy');
 
             // Weekly Evaluation Data Management (Admin)
             Route::get('/evaluation-data-weekly', [\App\Http\Controllers\Admin\EvaluationDataWeeklyManagementController::class, 'index'])->name('evaluation-data-weekly.index');
             Route::post('/evaluation-data-weekly/upload', [\App\Http\Controllers\Admin\EvaluationDataWeeklyManagementController::class, 'upload'])->name('evaluation-data-weekly.upload');
+            Route::post('/evaluation-data-weekly/commit', [\App\Http\Controllers\Admin\EvaluationDataWeeklyManagementController::class, 'commit'])->name('evaluation-data-weekly.commit');
             Route::delete('/evaluation-data-weekly/truncate', [\App\Http\Controllers\Admin\EvaluationDataWeeklyManagementController::class, 'truncate'])->name('evaluation-data-weekly.truncate');
             Route::delete('/evaluation-data-weekly/{id}', [\App\Http\Controllers\Admin\EvaluationDataWeeklyManagementController::class, 'destroy'])->name('evaluation-data-weekly.destroy');
         });

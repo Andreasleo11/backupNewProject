@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\EvaluationDataWeekly;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\EvaluationWeeklyDataImport;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use Carbon\Carbon;
 
 class EvaluationDataWeeklyManagementController extends Controller
 {
@@ -18,7 +23,7 @@ class EvaluationDataWeeklyManagementController extends Controller
     }
 
     /**
-     * Store and process the uploaded Excel/CSV file.
+     * Store and scan the uploaded Excel/CSV file for integrity reporting.
      */
     public function upload(Request $request)
     {
@@ -26,7 +31,91 @@ class EvaluationDataWeeklyManagementController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Upload logic stubbed']);
+        $file = $request->file('file');
+        $path = $file->store('temp_imports_weekly');
+
+        try {
+            $data = Excel::toCollection(new EvaluationWeeklyDataImport, $file)->first();
+            
+            $report = [
+                'new' => 0,
+                'updates' => 0,
+                'errors' => [],
+                'total' => count($data),
+                'temp_path' => $path
+            ];
+
+            foreach ($data as $index => $row) {
+                $nik = trim($row['nik'] ?? $row['NIK'] ?? $row['employee_id'] ?? '');
+                $monthInput = $row['month'] ?? $row['Month'] ?? $row['periode'] ?? $row['Periode'] ?? null;
+                
+                if (empty($nik)) continue;
+
+                $employee = Employee::where('nik', $nik)->first();
+                if (!$employee) {
+                    $report['errors'][] = "Row " . ($index + 2) . ": NIK '$nik' not found in Employee database.";
+                    continue;
+                }
+
+                $month = null;
+                try {
+                    if ($monthInput) {
+                        if (is_numeric($monthInput)) {
+                            $month = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($monthInput)->format('Y-m-d');
+                        } else {
+                            try {
+                                $month = Carbon::createFromFormat('d/m/Y', $monthInput)->format('Y-m-d');
+                            } catch (\Exception $e) {
+                                $month = Carbon::parse($monthInput)->format('Y-m-d');
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {}
+
+                if (!$month) {
+                    $report['errors'][] = "Row " . ($index + 2) . ": Invalid period format.";
+                    continue;
+                }
+
+                // Rule: If NIK + Month combo is unique, it's a NEW record. If it exists, it's an UPDATE.
+                $exists = EvaluationDataWeekly::where('NIK', $nik)->where('Month', $month)->exists();
+                if ($exists) {
+                    $report['updates']++;
+                } else {
+                    $report['new']++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'report' => $report,
+                'message' => 'Integrity scan complete.'
+            ]);
+
+        } catch (\Exception $e) {
+            Storage::delete($path);
+            return response()->json(['success' => false, 'message' => 'Scan failed: ' . $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Commit the scanned data to the database.
+     */
+    public function commit(Request $request)
+    {
+        $path = $request->temp_path;
+        if (!$path || !Storage::exists($path)) {
+            return response()->json(['success' => false, 'message' => 'Temporary file not found or expired.'], 422);
+        }
+
+        try {
+            Excel::import(new EvaluationWeeklyDataImport, Storage::path($path));
+            Storage::delete($path);
+
+            return response()->json(['success' => true, 'message' => 'Weekly data successfully imported.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Import failed: ' . $e->getMessage()], 422);
+        }
     }
 
     /**
