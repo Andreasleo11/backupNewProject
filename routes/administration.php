@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
                 ->name('departments.index')
                 ->middleware('can:department.view-any');
                 
-            Route::view('/employees', 'admin.employees.index')
+            Route::get('/employees', \App\Livewire\Admin\Employees\EmployeeIndex::class)
                 ->name('employees.index')
                 ->middleware('can:employee.view-any');
 

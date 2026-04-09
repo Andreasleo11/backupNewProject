@@ -23,7 +23,7 @@ final class EmployeeDto
     public static function fromApi(array $r): self
     {
         return new self(
-            nik: (string) ($r['nik'] ?? ''),
+            nik: (string) ($r['NIK'] ?? ''),
             name: (string) ($r['Name'] ?? ''),
             sex: (string) ($r['Sex'] ?? ''),
             costCenterCode: (string) ($r['CostCenterCode'] ?? ''),

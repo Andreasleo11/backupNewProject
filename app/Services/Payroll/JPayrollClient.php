@@ -62,7 +62,7 @@ final class JPayrollClient implements JPayrollClientContract
         $resp = Http::retry(3, 500)
             ->timeout(30)
             ->asJson()
-            ->withHeaders(['Authorization' => 'Basic ' . $this->auth])
+            ->withHeaders(['Authorization' => $this->auth])
             ->post(rtrim($this->baseUrl, '/') . '/' . $endpoint, $payload);
 
         if ($resp->successful()) {

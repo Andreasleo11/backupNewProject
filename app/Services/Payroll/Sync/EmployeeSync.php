@@ -14,51 +14,81 @@ final class EmployeeSync
     /** @param EmployeeDto[] $items */
     public function sync(array $items): int
     {
-        $statusMap = config('payroll.status_map', []);
-        $branchHints = config('payroll.branch_hints', []);
-
-        $rows = [];
-        foreach ($items as $e) {
-            $empStatus = $this->normalizeStatus($e->employeeStatusRaw, $statusMap);
-            $branch = $this->inferBranch($e->employeeStatusRaw, $branchHints);
-
-            $rows[] = [
-                'NIK' => $e->nik,
-                'Nama' => $e->name,
-                'Gender' => $e->sex,
-                'Dept' => substr($e->costCenterCode, 0, 3),
-                'start_date' => $e->startDate?->toDateString(),
-                'end_date' => $e->endDate?->toDateString(),
-                'Grade' => $e->gradeCode,
-                'employee_status' => $empStatus ?? 'UNKNOWN',
-                'Branch' => $branch ?? 'JAKARTA',
-                'status' => $e->employeeStatusRaw,
-                'organization_structure' => $e->organizationStructure,
-            ];
-        }
+        $rows = $this->mapRows($items);
 
         return $this->repo->upsert($rows);
     }
 
-    private function normalizeStatus(string $raw, array $map): ?string
+    /**
+     * Detailed comparison of JPayroll data vs database.
+     *
+     * @param EmployeeDto[] $items
+     * @return array{summary: array, details: array}
+     */
+    public function preview(array $items): array
     {
-        foreach ($map as $needle => $value) {
-            if (str_contains($raw, $needle)) {
-                return $value;
-            }
-        }
+        $incoming = collect($this->mapRows($items))->keyBy('nik');
+        $current = collect($this->repo->getAllForDiff())->map(fn($r) => (array) $r);
 
-        return null;
+        $new = $incoming->diffKeys($current);
+        $inactive = $current->diffKeys($incoming);
+
+        $updated = $incoming->intersectByKeys($current)->map(function ($row, $nik) use ($current) {
+            $curr = $current[$nik];
+            $diffs = [];
+
+            foreach ($row as $key => $val) {
+                if (array_key_exists($key, $curr) && (string)$curr[$key] !== (string)$val) {
+                    $diffs[$key] = [
+                        'old' => $curr[$key],
+                        'new' => $val,
+                    ];
+                }
+            }
+
+            return $diffs ? ['nik' => $nik, 'name' => $row['name'], 'diffs' => $diffs] : null;
+        })->filter();
+
+        $unchangedCount = $incoming->count() - $new->count() - $updated->count();
+
+        return [
+            'summary' => [
+                'new' => $new->count(),
+                'updated' => $updated->count(),
+                'unchanged' => $unchangedCount,
+                'inactive' => $inactive->count(),
+            ],
+            'details' => [
+                'new' => $new->values()->toArray(),
+                'updated' => $updated->values()->toArray(),
+                'inactive' => $inactive->values()->toArray(),
+            ],
+        ];
     }
 
-    private function inferBranch(string $raw, array $hints): ?string
+    /** @param EmployeeDto[] $items */
+    private function mapRows(array $items): array
     {
-        foreach ($hints as $needle => $branch) {
-            if (str_contains($raw, $needle)) {
-                return $branch;
-            }
-        }
+        $statusMap = config('payroll.status_map', []);
+        $branchHints = config('payroll.branch_hints', []);
 
-        return null;
+        return array_map(function ($e) use ($statusMap, $branchHints) {
+            $empStatus = collect($statusMap)->first(fn($v, $k) => str_contains($e->employeeStatusRaw, $k));
+            $branch = collect($branchHints)->first(fn($v, $k) => str_contains($e->employeeStatusRaw, $k)) ?? 'JAKARTA';
+
+            return [
+                'nik' => $e->nik,
+                'name' => $e->name,
+                'gender' => $e->sex,
+                'dept_code' => substr($e->costCenterCode, 0, 3),
+                'start_date' => $e->startDate?->toDateString(),
+                'end_date' => $e->endDate?->toDateString(),
+                'grade_code' => $e->gradeCode,
+                'employment_type' => $empStatus ?? 'UNKNOWN',
+                'branch' => $branch,
+                'employment_scheme' => substr((string) $e->employeeStatusRaw, 0, 100),
+                'organization_structure' => $e->organizationStructure,
+            ];
+        }, $items);
     }
 }
