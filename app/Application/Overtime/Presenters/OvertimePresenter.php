@@ -75,7 +75,7 @@ class OvertimePresenter
             return [
                 'label'   => 'Synced Successfully',
                 'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200/50',
-                'icon'    => 'bx-check-double',
+                'icon'    => 'bxs-check-shield',
             ];
         }
 
@@ -86,11 +86,55 @@ class OvertimePresenter
                 'icon'    => 'bx-time-five',
             ];
         }
-
         return [
             'label'   => 'Pending Approval',
             'classes' => 'bg-slate-100 text-slate-500 border-slate-200/50',
             'icon'    => 'bx-dots-horizontal-rounded',
         ];
+    }
+
+    public static function smartState($fot): array
+    {
+        $status = strtoupper($fot->workflow_status ?? 'DRAFT');
+        $review = self::reviewMeta($fot);
+        
+        // Priority 1: Terminal Rejection
+        if ($status === 'REJECTED') {
+            $meta = self::statusMeta($status);
+            $meta['stage'] = 'rejected';
+            return $meta;
+        }
+
+        // Priority 2: Sync Failures or Success
+        if (str_contains(strtolower($review['label']), 'sync') || str_contains(strtolower($review['label']), 'error')) {
+            $review['stage'] = 'sync';
+            if ($review['label'] === 'Synced Successfully') {
+                $review['label'] = 'Finalized';
+            }
+            return $review;
+        }
+
+        // Priority 3: Audit (Signed but not synced)
+        if ($status === 'APPROVED') {
+            $review['stage']   = 'audit';
+            $review['classes'] = 'bg-indigo-50 text-indigo-700 border-indigo-100';
+            $review['icon']    = 'bxs-check-shield'; // Carry the shield into the badge
+            $review['label']   = 'Auditing';
+            return $review;
+        }
+
+        // Priority 4: Signing Journey
+        $meta = self::statusMeta($status);
+        $meta['stage'] = 'signing';
+        $meta['label'] = 'Signing';
+        $meta['icon']  = 'bx-pen';
+        
+        // Add signing metadata
+        $steps = $fot->approvalRequest?->steps ?? collect();
+        $meta['total_steps']  = $steps->count();
+        $meta['signed_steps'] = $steps->filter(fn($s) => strtolower($s->status ?? '') === 'approved')->count();
+        $meta['current_actor']= $fot->workflow_step;
+
+        return $meta;
     }
 }

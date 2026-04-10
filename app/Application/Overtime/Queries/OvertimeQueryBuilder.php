@@ -23,8 +23,20 @@ class OvertimeQueryBuilder
     {
         $query = ($query ?? OvertimeForm::query())
             ->select([
-                'id', 'user_id', 'dept_id', 'branch', 'status',
-                'is_push', 'is_planned', 'is_after_hour', 'created_at',
+                'header_form_overtime.id', 
+                'header_form_overtime.user_id', 
+                'header_form_overtime.dept_id', 
+                'header_form_overtime.branch', 
+                'header_form_overtime.status',
+                'header_form_overtime.is_push', 
+                'header_form_overtime.is_planned', 
+                'header_form_overtime.is_after_hour', 
+                'header_form_overtime.created_at',
+            ])
+            ->addSelect([
+                'first_overtime_date' => \App\Domain\Overtime\Models\OvertimeFormDetail::selectRaw('MIN(start_date)')
+                    ->whereColumn('header_id', 'header_form_overtime.id')
+                    ->limit(1)
             ])
             ->with([
                 'user:id,name',
@@ -43,12 +55,7 @@ class OvertimeQueryBuilder
                 'details as failed_count' => fn ($q) => $q->where('status', 'Rejected')->whereNotNull('reason'),
             ]);
 
-        // Precompute one consistent earliest date for sort & display
-        $query->selectSub(function ($sub) {
-            $sub->from('detail_form_overtime as d')
-                ->selectRaw('MIN(d.start_date)')
-                ->whereColumn('d.header_id', 'header_form_overtime.id');
-        }, 'first_overtime_date');
+        return $query->byRole($user);
 
         return $query->byRole($user);
     }
@@ -77,12 +84,12 @@ class OvertimeQueryBuilder
             $filters[] = new DepartmentFilter($params['dept']);
         }
 
-        if (isset($params['isPush']) && $user->hasRole('verificator')) {
-            $filters[] = new PushStatusFilter($params['isPush']);
-        }
-
         if (!empty($params['infoStatus']) && !($params['excludeInfoStatus'] ?? false)) {
-            $filters[] = new StatusFilter($params['infoStatus']);
+            if ($params['infoStatus'] === 'my_approval') {
+                $filters[] = new \App\Application\Overtime\Queries\Filters\MyApprovalFilter($user);
+            } else {
+                $filters[] = new StatusFilter($params['infoStatus']);
+            }
         }
 
         if (!empty($params['search'])) {
