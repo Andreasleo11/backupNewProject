@@ -20,10 +20,12 @@ class ImportJob extends Model
         'finished_at',
         'source_disk',
         'source_path',
+        'results_snapshot',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'results_snapshot' => 'array',
     ];
 }

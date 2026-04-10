@@ -29,25 +29,14 @@ final class JPayrollService
         CarbonImmutable|string|null $toDate = null,
     ): array {
         $tz = config('payroll.timezone', 'Asia/Jakarta');
-
         $year ??= now($tz)->year;
-        $from =
-            $fromDate instanceof CarbonImmutable
-                ? $fromDate
-                : ($fromDate
-                    ? CarbonImmutable::parse($fromDate, $tz)
-                    : now($tz)->startOfMonth()->toImmutable());
-        $to =
-            $toDate instanceof CarbonImmutable
-                ? $toDate
-                : ($toDate
-                    ? CarbonImmutable::parse($toDate, $tz)
-                    : now($tz)->subDay()->endOfDay()->toImmutable());
 
-        if ($from->gt($to)) {
+        $range = $this->resolveDateRange($fromDate, $toDate, $tz);
+
+        if ($range['from']->gt($range['to'])) {
             return [
                 'success' => false,
-                'message' => "Invalid range: {$from->toDateString()} > {$to->toDateString()}",
+                'message' => "Invalid range: {$range['from']->toDateString()} > {$range['to']->toDateString()}",
             ];
         }
 
@@ -66,45 +55,54 @@ final class JPayrollService
             $progress->phase('annual_leave', count($leaves), count($leaves));
 
             // Phase 3: Attendance weekly (slice by weeks)
-            $processed = 0;
-            $cursor = $from->startOfWeek(\Carbon\CarbonInterface::MONDAY);
-            $end = $to->endOfDay();
+            $this->syncAttendanceBatches($companyArea, $range['from'], $range['to'], $progress);
 
-            while ($cursor->lte($end)) {
-                $rangeStart = $cursor;
-                $rangeEnd = $cursor->endOfWeek(\Carbon\CarbonInterface::SUNDAY);
-                if ($rangeEnd->gt($end)) {
-                    $rangeEnd = $end;
-                }
-
-                $batch = $this->client->getAttendance($companyArea, $rangeStart, $rangeEnd, null);
-                $processed += count($batch);
-                $this->attendanceSync->sync($batch);
-
-                $progress->phase(
-                    'attendance',
-                    $processed,
-                    null, // unknown total (unless you estimate)
-                    $rangeStart->toDateString() . ' → ' . $rangeEnd->toDateString(),
-                );
-
-                $cursor = $cursor->addWeek();
-            }
-
-            $progress->done($processed, null, 'Sync completed');
+            $progress->done();
 
             return ['success' => true, 'message' => 'Sync completed'];
         } catch (Throwable $e) {
             $progress->error($e->getMessage());
-            Log::error('Sync failed', [
-                'companyArea' => $companyArea,
-                'year' => $year,
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'error' => $e->getMessage(),
-            ]);
+            Log::error('Sync failed', ['error' => $e->getMessage()]);
 
-            return ['success' => false, 'message' => 'Sync failed: ' . $e->getMessage()];
+            return ['success' => false, 'message' => "Sync failed: " . $e->getMessage()];
+        }
+    }
+
+    public function previewSync(
+        string $companyArea = '10000',
+        ?int $year = null,
+    ): array {
+        $tz = config('payroll.timezone', 'Asia/Jakarta');
+        $year ??= now($tz)->year;
+
+        try {
+            $employees = $this->client->getMasterEmployees($companyArea);
+            $preview = $this->employeeSync->preview($employees);
+            
+            return array_merge(['success' => true], $preview);
+        } catch (Throwable $e) {
+            Log::error('Preview failed', ['error' => $e->getMessage()]);
+            return ['success' => false, 'message' => "Preview failed: " . $e->getMessage()];
+        }
+    }
+
+    private function resolveDateRange($from, $to, $tz): array
+    {
+        $f = $from instanceof CarbonImmutable ? $from : ($from ? CarbonImmutable::parse($from, $tz) : now($tz)->startOfMonth()->toImmutable());
+        $t = $to instanceof CarbonImmutable ? $to : ($to ? CarbonImmutable::parse($to, $tz) : now($tz)->subDay()->endOfDay()->toImmutable());
+        return ['from' => $f, 'to' => $t];
+    }
+
+    private function syncAttendanceBatches($area, $from, $to, $progress): void
+    {
+        $cursor = $from->startOfWeek(\Carbon\CarbonInterface::MONDAY);
+        while ($cursor->lte($to)) {
+            $rangeEnd = $cursor->endOfWeek(\Carbon\CarbonInterface::SUNDAY)->min($to->endOfDay());
+            $batch = $this->client->getAttendance($area, $cursor, $rangeEnd, null);
+            $this->attendanceSync->sync($batch);
+            
+            $progress->phase('attendance', count($batch), null, "{$cursor->toDateString()} → {$rangeEnd->toDateString()}");
+            $cursor = $cursor->addWeek();
         }
     }
 }

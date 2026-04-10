@@ -41,6 +41,19 @@ final class EmployeeRepository
     }
 
     /**
+     * Get all employees indexed by NIK for comparison.
+     *
+     * @return array<string, object>
+     */
+    public function getAllForDiff(): array
+    {
+        return DB::table('employees')
+            ->get()
+            ->keyBy('nik')
+            ->toArray();
+    }
+
+    /**
      * Update leave balances (may vary by schema).
      *
      * @param array<string,int> $nikToRemain

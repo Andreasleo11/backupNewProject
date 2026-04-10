@@ -15,16 +15,17 @@ class SyncEmployeesJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $companyArea;
-
     protected int $year;
+    protected ?int $importJobId;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $companyArea, int $year)
+    public function __construct(string $companyArea, int $year, ?int $importJobId = null)
     {
         $this->companyArea = $companyArea;
-        $this->year = $year ?? now()->year;
+        $this->year = $year;
+        $this->importJobId = $importJobId;
     }
 
     /**
@@ -32,7 +33,17 @@ class SyncEmployeesJob implements ShouldQueue
      */
     public function handle(JPayrollService $service): void
     {
+        $importJob = $this->importJobId ? \App\Models\ImportJob::find($this->importJobId) : null;
+
         $result = $service->syncEmployeesLeaveAndAttendanceFromApi($this->companyArea, $this->year);
+
+        if ($importJob) {
+            $importJob->update([
+                'status' => $result['success'] ? 'completed' : 'failed',
+                'error' => $result['success'] ? null : $result['message'],
+                'finished_at' => now(),
+            ]);
+        }
 
         if (! $result['success']) {
             Log::error('Sync failed in job: ' . $result['message']);
