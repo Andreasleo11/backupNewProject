@@ -8,6 +8,8 @@ use App\Models\ImportJob;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use Livewire\Attributes\Computed;
+
 class EmployeeIndex extends Component
 {
     use WithPagination;
@@ -19,16 +21,23 @@ class EmployeeIndex extends Component
     public int $perPage = 10;
     public bool $showAdvancedFilters = false;
 
-    public string $sortBy = 'name';          // default sort column
-    public string $sortDirection = 'asc';   // default sort direction
+    public string $sortBy = 'name';
+    public string $sortDirection = 'asc';
 
-    public ?array $previewData = null;      // Holds {summary: [], details: []}
-    public ?array $activeLog = null;        // Holds a historical sync log
-    public string $previewTab = 'summary';  // Current view in sync modal
-    public string $previewSearch = '';     // Filter for drilldown lists
+    public ?array $previewData = null;
+    public ?array $activeLog = null;
+    public string $previewTab = 'summary';
+    public string $previewSearch = '';
 
-    public ?string $selectedNik = null;    // For the Quick Audit drawer
+    public ?string $selectedNik = null;
     public ?\App\Infrastructure\Persistence\Eloquent\Models\Employee $selectedEmployee = null;
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'branch' => ['except' => ''],
+        'deptCode' => ['except' => ''],
+        'employmentType' => ['except' => ''],
+    ];
 
     public function updatedSearch(): void
     {
@@ -52,16 +61,11 @@ class EmployeeIndex extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['search', 'branch', 'deptCode', 'employmentType', 'perPage']);
+        $this->reset(['search', 'branch', 'deptCode', 'employmentType']);
         $this->resetPage();
     }
 
-    public function toggleAdvancedFilters(): void
-    {
-        $this->showAdvancedFilters = !$this->showAdvancedFilters;
-    }
-
-    public function sort_by($column)
+    public function sort_by(string $column): void
     {
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -69,11 +73,10 @@ class EmployeeIndex extends Component
             $this->sortBy = $column;
             $this->sortDirection = 'asc';
         }
-
         $this->resetPage();
     }
 
-    public function openAudit($nik): void
+    public function openAudit(string $nik): void
     {
         $this->selectedNik = $nik;
         $this->selectedEmployee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::where('nik', $nik)
@@ -90,7 +93,6 @@ class EmployeeIndex extends Component
     public function sync(\App\Services\JPayrollService $service): void
     {
         $result = $service->previewSync('10000', now()->year);
-
         if ($result['success']) {
             $this->previewData = $result;
             $this->previewTab = 'summary';
@@ -102,7 +104,6 @@ class EmployeeIndex extends Component
 
     public function confirmSync(): void
     {
-        // Create an audit log record with the final snapshot
         $log = \App\Models\ImportJob::create([
             'type' => 'jpayroll_sync',
             'status' => 'running',
@@ -112,12 +113,11 @@ class EmployeeIndex extends Component
         ]);
 
         \App\Jobs\SyncEmployeesJob::dispatch('10000', now()->year, $log->id);
-
         $this->previewData = null;
-        session()->flash('success', 'Sync job dispatched and will be updated in the background.');
+        session()->flash('success', 'Sync job dispatched.');
     }
 
-    public function viewLog($id): void
+    public function viewLog(int $id): void
     {
         $log = \App\Models\ImportJob::find($id);
         if ($log && $log->results_snapshot) {
@@ -137,14 +137,16 @@ class EmployeeIndex extends Component
         $this->previewData = null;
     }
 
-    public function sort_icon($field): string
+    public function sort_icon(string $field): string
     {
         if ($this->sortBy !== $field) return '⇅';
         return $this->sortDirection === 'asc' ? '↑' : '↓';
     }
 
-    public function render(ListEmployees $listEmployees, \App\Domain\Employee\Repositories\EmployeeRepository $repo)
+    #[Computed]
+    public function employees()
     {
+        $listEmployees = app(ListEmployees::class);
         $filter = new EmployeeFilter(
             search: $this->search,
             perPage: $this->perPage,
@@ -155,37 +157,51 @@ class EmployeeIndex extends Component
             employmentType: $this->employmentType ?: null,
         );
 
-        $employees = $listEmployees->execute($filter);
+        return $listEmployees->execute($filter);
+    }
 
-        $recentSyncs = \App\Models\ImportJob::where('type', 'jpayroll_sync')
+    #[Computed]
+    public function globalStats(): array
+    {
+        $repo = app(\App\Domain\Employee\Repositories\EmployeeRepository::class);
+        return $repo->getGlobalStats();
+    }
+
+    #[Computed]
+    public function recentSyncs()
+    {
+        return \App\Models\ImportJob::where('type', 'jpayroll_sync')
             ->latest('started_at')
             ->take(5)
             ->get();
+    }
 
-        $globalStats = $repo->getGlobalStats();
-
-        // Dynamic Branch Resolution
-        $availableBranches = \App\Infrastructure\Persistence\Eloquent\Models\Employee::distinct()
+    #[Computed]
+    public function availableBranches()
+    {
+        return \App\Infrastructure\Persistence\Eloquent\Models\Employee::distinct()
             ->whereNotNull('branch')
             ->orderBy('branch')
             ->pluck('branch');
+    }
 
-        // Dynamic Department Resolution
-        $availableDepartments = \App\Infrastructure\Persistence\Eloquent\Models\Department::orderBy('name')->get();
+    #[Computed]
+    public function availableDepartments()
+    {
+        return \App\Infrastructure\Persistence\Eloquent\Models\Department::orderBy('name')->get();
+    }
 
-        // Dynamic Employment Types (Statuses)
-        $availableEmploymentTypes = \App\Infrastructure\Persistence\Eloquent\Models\Employee::distinct()
+    #[Computed]
+    public function availableEmploymentTypes()
+    {
+        return \App\Infrastructure\Persistence\Eloquent\Models\Employee::distinct()
             ->whereNotNull('employment_type')
             ->orderBy('employment_type')
             ->pluck('employment_type');
+    }
 
-        return view('admin.employees.index', [
-            'employees' => $employees,
-            'recentSyncs' => $recentSyncs,
-            'globalStats' => $globalStats,
-            'availableBranches' => $availableBranches,
-            'availableDepartments' => $availableDepartments,
-            'availableEmploymentTypes' => $availableEmploymentTypes,
-        ])->layout('new.layouts.app');
+    public function render()
+    {
+        return view('admin.employees.index')->layout('new.layouts.app');
     }
 }
