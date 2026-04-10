@@ -33,9 +33,6 @@ class Index extends Component
     #[Url(as: 'info_status')]
     public ?string $infoStatus = null; // pending|approved|rejected|null
 
-    #[Url(as: 'is_push')]
-    public ?string $isPush = null; // "1" | "0" | null
-
     #[Url(as: 'hide_signed')]
     public bool $hideSigned = true; // Default hide items I already signed
 
@@ -58,6 +55,7 @@ class Index extends Component
     public array $departments = [];
 
     public ?int $pendingDeleteId = null;
+
 
     #[On('confirm-delete')]
     public function confirmDelete(int $id): void
@@ -89,18 +87,12 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function buildStats()
+    public function buildStats(): array
     {
         $builder = new OvertimeQueryBuilder();
-        $h = $builder->build(Auth::user(), [
-            'startDate' => $this->startDate,
-            'endDate' => $this->endDate,
-            'dept' => $this->dept,
-            'isPush' => $this->isPush,
-            'search' => $this->search,
-            'hideSigned' => $this->hideSigned,
+        $h = $builder->build(Auth::user(), array_merge($this->getFilterParams(), [
             'excludeInfoStatus' => true,
-        ]);
+        ]));
 
         $row = DB::table('detail_form_overtime as d')
             ->join('header_form_overtime as h', 'd.header_id', '=', 'h.id')
@@ -109,9 +101,9 @@ class Index extends Component
             })
             ->whereNull('d.deleted_at')
             ->selectRaw("
-                SUM(CASE WHEN d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
-                SUM(CASE WHEN d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
-                SUM(CASE WHEN d.status IS NULL THEN 1 ELSE 0 END) as pending
+                SUM(CASE WHEN h.status = 'APPROVED' AND d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN h.status = 'APPROVED' AND d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
+                SUM(CASE WHEN h.status = 'APPROVED' AND d.status IS NULL THEN 1 ELSE 0 END) as pending
             ")
             ->first();
 
@@ -120,33 +112,35 @@ class Index extends Component
         $pending = (int) ($row->pending ?? 0);
         $total = max(1, $approved + $rejected + $pending);
 
+        $myApprovalCount = (new OvertimeQueryBuilder())->build(Auth::user(), ['infoStatus' => 'my_approval'])->count();
+
         return [
-            'approved'     => $approved,
-            'rejected'     => $rejected,
-            'pending'      => $pending,
-            'total'        => $total,
-            'pct_approved' => round(($approved * 100) / $total),
-            'pct_rejected' => round(($rejected * 100) / $total),
-            'pct_pending'  => round(($pending * 100) / $total),
+            'approved'          => $approved,
+            'rejected'          => $rejected,
+            'pending'           => $pending,
+            'total'             => $total,
+            'pct_approved'      => round(($approved * 100) / $total),
+            'pct_rejected'      => round(($rejected * 100) / $total),
+            'pct_pending'       => round(($pending * 100) / $total),
+            'my_approval_count' => $myApprovalCount,
         ];
     }
 
     protected function rules(): array
     {
         return [
-            'startDate' => ['nullable', 'date'],
-            'endDate' => ['nullable', 'date'],
-            'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected'])],
-            'isPush' => ['nullable', Rule::in(['0', '1'])],
-            'perPage' => ['integer', Rule::in([10, 25, 50])],
-            'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'status', 'workflow_status'])],
+            'startDate'     => ['nullable', 'date'],
+            'endDate'       => ['nullable', 'date'],
+            'infoStatus'    => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval'])],
+            'perPage'       => ['integer', Rule::in([10, 25, 50])],
+            'sortField'     => ['string', Rule::in(['id', 'first_overtime_date', 'status', 'workflow_status'])],
             'sortDirection' => ['string', Rule::in(['asc', 'desc'])],
         ];
     }
 
     public function updated($name, $value): void
     {
-        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'isPush', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned'])) {
+        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned'])) {
             $this->resetPage();
         }
 
@@ -170,12 +164,27 @@ class Index extends Component
     {
         $this->authorize('viewAny', OvertimeForm::class);
         $this->departments = Department::select('id', 'name')->orderBy('name')->get()->toArray();
+
+        // Auto-redirect to "My Approvals" for high-level oversight roles
+        // Only trigger if no explicit filter is given.
+        if (empty($this->infoStatus)) {
+            $user = Auth::user();
+            if ($user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
+                $myApprovalCount = app(OvertimeQueryBuilder::class)
+                    ->build($user, ['infoStatus' => 'my_approval'])
+                    ->count();
+                
+                if ($myApprovalCount >= 0) {
+                    $this->infoStatus = 'my_approval';
+                }
+            }
+        }
     }
 
     public function resetFilters(): void
     {
         $this->startDate = null; $this->endDate = null; $this->dept = null;
-        $this->infoStatus = null; $this->isPush = null; $this->search = '';
+        $this->infoStatus = null; $this->search = '';
         $this->range = null; $this->hideSigned = true;
         $this->resetPage();
     }
@@ -242,7 +251,6 @@ class Index extends Component
             'dates'      => [$this->startDate = null, $this->endDate = null, $this->range = null],
             'dept'       => $this->dept = null,
             'infoStatus' => $this->infoStatus = null,
-            'isPush'     => $this->isPush = null,
             'search'     => $this->search = '',
             default      => null,
         };
@@ -261,15 +269,7 @@ class Index extends Component
             ]);
 
             $builder = new OvertimeQueryBuilder();
-            $query = $builder->build(Auth::user(), [
-                'startDate'  => $this->startDate,
-                'endDate'    => $this->endDate,
-                'dept'       => $this->dept,
-                'infoStatus' => $this->infoStatus,
-                'isPush'     => $this->isPush,
-                'search'     => $this->search,
-                'hideSigned' => $this->hideSigned,
-            ]);
+            $query = $builder->build(Auth::user(), $this->getFilterParams());
 
             $query->orderBy('id', 'desc')->chunk(1000, function ($rows) use ($out) {
                 foreach ($rows as $fot) {
@@ -298,28 +298,26 @@ class Index extends Component
         return Auth::user()->can('overtime.review');
     }
 
-    public static function statusMeta(?string $status): array
-    {
-        return OvertimePresenter::statusMeta($status);
-    }
 
-    public static function reviewMeta($fot): array
+    /**
+     * Centralized source of truth for query parameters to prevent redundancy.
+     */
+    private function getFilterParams(): array
     {
-        return OvertimePresenter::reviewMeta($fot);
+        return [
+            'startDate'  => $this->startDate,
+            'endDate'    => $this->endDate,
+            'dept'       => $this->dept,
+            'infoStatus' => $this->infoStatus,
+            'search'     => $this->search,
+            'hideSigned' => $this->hideSigned,
+        ];
     }
 
     public function render()
     {
         $builder = new OvertimeQueryBuilder();
-        $query = $builder->build(Auth::user(), [
-            'startDate'  => $this->startDate,
-            'endDate'    => $this->endDate,
-            'dept'       => $this->dept,
-            'infoStatus' => $this->infoStatus,
-            'isPush'     => $this->isPush,
-            'search'     => $this->search,
-            'hideSigned' => $this->hideSigned,
-        ]);
+        $query = $builder->build(Auth::user(), $this->getFilterParams());
 
         // Sorting
         $query->reorder();
@@ -337,7 +335,7 @@ class Index extends Component
             'dataheader'       => $dataheader,
             'departments'      => $this->departments,
             'user'             => Auth::user(),
-            'stats'            => $this->isDetailReviewer() ? $this->buildStats() : null,
+            'stats'            => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0],
             'isPrivileged'     => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
         ]);
