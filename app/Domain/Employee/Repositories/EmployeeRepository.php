@@ -26,6 +26,15 @@ interface EmployeeRepository
         ?string $search,
         int $perPage = 10,
         ?string $sortBy = null,
-        string $sortDirection = 'asc'
+        string $sortDirection = 'asc',
+        ?string $branch = null,
+        ?string $deptCode = null,
+        ?string $employmentType = null,
     ): LengthAwarePaginator;
+
+    /**
+     * Get global system-wide statistics for the dashboard.
+     * @return array{total: int, permanent: int, contract: int, remote: int}
+     */
+    public function getGlobalStats(): array;
 }
