@@ -102,7 +102,8 @@
                 </div>
                 {{-- Progress mini-bar --}}
                 <div class="absolute bottom-0 left-0 h-1 bg-slate-100 w-full overflow-hidden">
-                    <div class="{{ $card['bg'] }} h-full transition-all duration-700" style="width: {{ $stats['pct_'.$card['key']] }}%"></div>
+                    <?php $pctValue = $stats['pct_' . $card['key']] ?? 0; ?>
+                    <div class="<?php echo $card['bg']; ?> h-full transition-all duration-700" style="width: <?php echo $pctValue; ?>%"></div>
                 </div>
             </button>
             @endforeach
