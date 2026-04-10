@@ -15,13 +15,17 @@ trait WithOvertimeActions
 
     public function addEmptyRow(): void
     {
+        $endDate = $this->show_date_override && $this->global_custom_end_date 
+            ? $this->global_custom_end_date 
+            : $this->global_overtime_date;
+
         $this->items[] = [
             'id'            => null, 'nik' => '', 'name' => '',
             'overtime_date' => $this->global_overtime_date,
             'job_desc'      => $this->global_job_desc,
             'start_date'    => $this->global_overtime_date,
             'start_time'    => $this->global_start_time,
-            'end_date'      => $this->global_end_date,
+            'end_date'      => $endDate,
             'end_time'      => $this->global_end_time,
             'break'         => $this->global_break,
             'remarks'       => $this->global_remarks,
@@ -91,10 +95,20 @@ trait WithOvertimeActions
     public function updatedGlobalOvertimeDate($value): void {
         if (!$this->syncEnabled) return;
         $this->global_end_date = $value;
-        foreach($this->items as $i => $item) { 
-            $this->items[$i]['overtime_date'] = $value; 
-            $this->items[$i]['start_date'] = $value; 
-            $this->items[$i]['end_date'] = $value;
+        
+        if ($this->show_date_override && $this->global_custom_end_date) {
+            $customEnd = $this->global_custom_end_date;
+            foreach($this->items as $i => $item) { 
+                $this->items[$i]['overtime_date'] = $value;
+                $this->items[$i]['start_date'] = $value; 
+                $this->items[$i]['end_date'] = $customEnd;
+            }
+        } else {
+            foreach($this->items as $i => $item) { 
+                $this->items[$i]['overtime_date'] = $value; 
+                $this->items[$i]['start_date'] = $value; 
+                $this->items[$i]['end_date'] = $value;
+            }
         }
         $this->resetIntegrity();
     }
@@ -102,6 +116,31 @@ trait WithOvertimeActions
         if (!$this->syncEnabled) return;
         foreach($this->items as $i => $item) { $this->items[$i]['end_date'] = $value; }
         $this->resetIntegrity();
+    }
+    public function updatedGlobalCustomEndDate($value): void {
+        if (!$this->syncEnabled) return;
+        foreach($this->items as $i => $item) { 
+            $this->items[$i]['end_date'] = $value; 
+        }
+        $this->resetIntegrity();
+    }
+    public function updatedShowDateOverride($value): void {
+        $this->resetIntegrity();
+        
+        // Only initialize on first expansion (when custom end date is empty)
+        if ($value && empty($this->global_custom_end_date)) {
+            $nextDay = \Carbon\Carbon::parse($this->global_overtime_date)->addDay()->format('Y-m-d');
+            $this->global_custom_end_date = $nextDay;
+            foreach($this->items as $i => $item) {
+                $this->items[$i]['end_date'] = $nextDay;
+            }
+        } elseif (!$value) {
+            // When collapsed, reset end dates back to overtime date
+            $this->global_custom_end_date = '';
+            foreach($this->items as $i => $item) {
+                $this->items[$i]['end_date'] = $this->global_overtime_date;
+            }
+        }
     }
     public function updatedGlobalStartTime($value): void {
         if (!$this->syncEnabled) return;

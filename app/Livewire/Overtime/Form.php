@@ -40,6 +40,10 @@ class Form extends Component
     public string $global_break = '0';
     public string $global_remarks = '';
 
+    // Date Override Settings
+    public bool $show_date_override = false;
+    public string $global_custom_end_date = '';
+
     // Detail rows
     public array $items = [];
     public array $removedDetailIds = [];
@@ -152,10 +156,13 @@ class Form extends Component
                 $this->global_overtime_date = $first['overtime_date'];
                 $this->global_job_desc      = $first['job_desc'];
                 $this->global_start_time    = $first['start_time'];
-                $this->global_end_date      = $first['end_date'];
-                $this->global_end_time      = $first['end_time'];
+$this->global_end_date      = $first['end_date'];
                 $this->global_break         = $first['break'];
                 $this->global_remarks       = $first['remarks'];
+
+                // Check if end_date differs from overtime date (overtime extends to next day)
+                $this->global_custom_end_date = $first['end_date'];
+                $this->show_date_override = $first['end_date'] !== $first['overtime_date'];
             }
         } else {
             $this->authorize('create', OvertimeForm::class);
@@ -211,9 +218,14 @@ class Form extends Component
             $rules["items.$i.start_date"]    = 'required|date';
             $rules["items.$i.start_time"]    = 'required';
             $rules["items.$i.end_date"]      = 'required|date|after_or_equal:items.'.$i.'.start_date';
-            $rules["items.$i.end_time"]      = 'required|after:items.'.$i.'.start_time';
+            $rules["items.$i.end_time"]      = 'required';
             $rules["items.$i.break"]         = 'required|numeric|min:0|max:180';
             $rules["items.$i.remarks"]       = 'nullable|string|max:250';
+
+            // Add time validation only if dates are the same (same-day entries)
+            if ($item['start_date'] === $item['end_date']) {
+                $rules["items.$i.end_time"] .= '|after:items.'.$i.'.start_time';
+            }
         }
 
         return $rules;
@@ -233,7 +245,7 @@ class Form extends Component
             $messages["items.$i.job_desc.required"]       = "Row $n: Task description is required.";
             $messages["items.$i.start_time.required"]     = "Row $n: Start time missing.";
             $messages["items.$i.end_time.required"]       = "Row $n: End time missing.";
-            $messages["items.$i.end_time.after"]          = "Row $n: End time must be after start time.";
+            $messages["items.$i.end_time.after"]          = "Row $n: End time must be after start time (same day entries only).";
             $messages["items.$i.end_date.after_or_equal"] = "Row $n: End date invalid.";
         }
 
@@ -305,18 +317,32 @@ class Form extends Component
             'global_overtime_date' => 'required|date',
             'global_job_desc'      => 'required|string|min:3',
             'global_start_time'    => 'required',
-            'global_end_time'      => 'required|after:global_start_time',
+            'global_end_time'      => 'required',
             'global_break'         => 'required|numeric|min:0|max:180',
         ];
 
-        $this->validate($rules, [
+        // Add time validation only for same-day mode
+        if (!$this->show_date_override) {
+            $rules['global_end_time'] .= '|after:global_start_time';
+        }
+
+        // Add custom end date validation for multi-day mode
+        if ($this->show_date_override) {
+            $rules['global_custom_end_date'] = 'required|date|after_or_equal:global_overtime_date';
+        }
+
+        $messages = [
             'dept_id.required'              => 'A department selection is required.',
             'global_overtime_date.required' => 'Please set an effectivity date.',
             'global_job_desc.required'      => 'The main objective is required.',
             'global_start_time.required'    => 'Start time is required.',
             'global_end_time.required'      => 'End time is required.',
             'global_end_time.after'         => 'The end time must be later than the start time.',
-        ]);
+            'global_custom_end_date.required' => 'End date is required for multi-day overtime.',
+            'global_custom_end_date.after_or_equal' => 'End date must be on or after the start date.',
+        ];
+
+        $this->validate($rules, $messages);
         return true;
     }
 
@@ -345,9 +371,15 @@ class Form extends Component
         if (!$emp) return;
 
         // Replace empty placeholder if it's the only row
+        $endDate = $this->show_date_override && $this->global_custom_end_date 
+            ? $this->global_custom_end_date 
+            : $this->global_overtime_date;
+
         if (count($this->items) === 1 && empty($this->items[0]['nik'])) {
             $this->items[0]['nik'] = $emp->nik;
             $this->items[0]['name'] = $emp->name;
+            $this->items[0]['start_date'] = $this->global_overtime_date;
+            $this->items[0]['end_date'] = $endDate;
             $this->resetErrorBag('items.0.nik'); // CLEAR RECENT SUBMISSION ERRORS
         } else {
             $this->items[] = [
@@ -358,7 +390,7 @@ class Form extends Component
                 'job_desc'      => $this->global_job_desc,
                 'start_date'    => $this->global_overtime_date,
                 'start_time'    => $this->global_start_time,
-                'end_date'      => $this->global_end_date,
+                'end_date'      => $endDate,
                 'end_time'      => $this->global_end_time,
                 'break'         => $this->global_break,
                 'remarks'       => $this->global_remarks,
@@ -486,15 +518,15 @@ class Form extends Component
 
                 DB::commit();
                 $this->dispatch('flash', type: 'success', message: 'Overtime form updated successfully.');
-                return redirect()->route('overtime.index');
+                return redirect()->route('overtime.detail', $this->form->id);
 
             } else {
                 $service = app(OvertimeFormService::class);
                 $header = $service->create(collect($this->validate()));
-                
+
                 DB::commit();
                 $this->dispatch('flash', type: 'success', message: 'Overtime form created successfully.');
-                return redirect()->route('overtime.index');
+                return redirect()->route('overtime.detail', $header->id);
             }
 
         } catch (Throwable $e) {

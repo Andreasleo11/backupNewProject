@@ -118,26 +118,79 @@
                         </div>
                     </div>
 
-                    {{-- STAGE 2: GLOBAL SCHEDULE SETTINGS --}}
-                    <div class="p-8 space-y-10" x-show="stage === 1" x-collapse>
-                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-50">
-                             <div class="space-y-3">
-                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Overtime Date</label>
-                                 <input type="date" wire:model.live="global_overtime_date" 
-                                     class="w-full rounded-2xl border px-6 py-4 font-black text-center transition-all {{ $errors->has('global_overtime_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
-                                 @error('global_overtime_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+{{-- STAGE 2: GLOBAL SCHEDULE SETTINGS --}}
+                    <div class="p-8 space-y-8" x-show="stage === 1" x-collapse>
+                         {{-- MODE SELECTION --}}
+                         <div class="flex items-center justify-center pb-6 border-b border-slate-100">
+                             <div class="flex items-center gap-4 bg-slate-100 rounded-2xl p-1">
+                                 <button type="button" wire:click="show_date_override = false"
+                                     class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                     :class="show_date_override ? 'text-slate-500 hover:text-slate-700' : 'bg-white text-indigo-700 shadow-lg'">
+                                     <i class='bx bx-calendar-event mr-2'></i>Same Day
+                                 </button>
+                                 <button type="button" wire:click="show_date_override = true"
+                                     class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                     :class="show_date_override ? 'bg-white text-indigo-700 shadow-lg' : 'text-slate-500 hover:text-slate-700'">
+                                     <i class='bx bx-calendar-week mr-2'></i>Multi-Day
+                                 </button>
                              </div>
-                             <div class="space-y-3">
-                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Start Time</label>
-                                 <input type="time" wire:model.live="global_start_time" 
-                                     class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_start_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
-                                 @error('global_start_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                         </div>
+
+                         {{-- SAME DAY MODE --}}
+                         <div x-show="!show_date_override" x-transition class="space-y-6">
+                             <div class="text-center mb-4">
+                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Single day overtime schedule</span>
                              </div>
-                             <div class="space-y-3">
-                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">End Time</label>
-                                 <input type="time" wire:model.live="global_end_time" 
-                                     class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_end_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
-                                 @error('global_end_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                  <div class="space-y-3">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Overtime Date</label>
+                                      <input type="date" wire:model.live="global_overtime_date"
+                                          class="w-full rounded-2xl border px-6 py-4 font-black text-center transition-all {{ $errors->has('global_overtime_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
+                                      @error('global_overtime_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                  </div>
+                                  <div class="space-y-3">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Start Time</label>
+                                      <input type="time" wire:model.live="global_start_time"
+                                          class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_start_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
+                                      @error('global_start_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                  </div>
+                                  <div class="space-y-3">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">End Time</label>
+                                      <input type="time" wire:model.live="global_end_time"
+                                          class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_end_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
+                                      @error('global_end_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                  </div>
+                             </div>
+                         </div>
+
+                         {{-- MULTI-DAY MODE --}}
+                         <div x-show="show_date_override" x-transition class="space-y-6">
+                             <div class="text-center mb-4">
+                                 <span class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.15em]">Multi-day overtime schedule</span>
+                             </div>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                  <div class="space-y-3">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Start Date & Time</label>
+                                      <div class="grid grid-cols-2 gap-3">
+                                          <input type="date" wire:model.live="global_overtime_date"
+                                              class="w-full rounded-2xl border px-4 py-4 font-black text-center transition-all {{ $errors->has('global_overtime_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
+                                          <input type="time" wire:model.live="global_start_time"
+                                              class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_start_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
+                                      </div>
+                                      @error('global_overtime_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                      @error('global_start_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                  </div>
+                                  <div class="space-y-3">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">End Date & Time</label>
+                                      <div class="grid grid-cols-2 gap-3">
+                                          <input type="date" wire:model.live="global_custom_end_date"
+                                              class="w-full rounded-2xl border border-indigo-200 px-4 py-4 font-black text-center transition-all bg-white {{ $errors->has('global_custom_end_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'text-slate-900' }}">
+                                          <input type="time" wire:model.live="global_end_time"
+                                              class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_end_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
+                                      </div>
+                                      @error('global_custom_end_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                      @error('global_end_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                  </div>
                              </div>
                          </div>
 
@@ -338,11 +391,14 @@ document.addEventListener('alpine:init', () => {
         global_end_d: $wire.entangle('global_end_date', true),
         global_end_t: $wire.entangle('global_end_time', true),
         global_break: $wire.entangle('global_break', true),
+        show_date_override: $wire.entangle('show_date_override', true),
+        global_custom_end_date: $wire.entangle('global_custom_end_date', true),
 
         syncToGlobal(index) {
+            const endDate = this.show_date_override && this.global_custom_end_date ? this.global_custom_end_date : this.global_date;
             this.items[index].overtime_date = this.global_date;
             this.items[index].start_date    = this.global_date;
-            this.items[index].end_date      = this.global_date;
+            this.items[index].end_date      = endDate;
             this.items[index].start_time    = this.global_start;
             this.items[index].end_time      = this.global_end_t;
             this.items[index].break         = this.global_break;
