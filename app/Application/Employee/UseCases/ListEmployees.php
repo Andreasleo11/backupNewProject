@@ -19,6 +19,9 @@ class ListEmployees
             perPage: $filter->perPage,
             sortBy: $filter->sortBy,
             sortDirection: $filter->sortDirection,
+            branch: $filter->branch,
+            deptCode: $filter->deptCode,
+            employmentType: $filter->employmentType,
         );
     }
 }

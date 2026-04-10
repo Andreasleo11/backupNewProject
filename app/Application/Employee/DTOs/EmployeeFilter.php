@@ -9,5 +9,8 @@ class EmployeeFilter
         public readonly ?int $perPage = 10,
         public ?string $sortBy = null,
         public string $sortDirection = 'asc',
+        public readonly ?string $branch = null,
+        public readonly ?string $deptCode = null,
+        public readonly ?string $employmentType = null,
     ) {}
 }

@@ -43,7 +43,7 @@ class EloquentEmployeeRepository implements EmployeeRepository
     }
 
     /**
-     * @return Employee[]
+     * @return EmployeeEntity[]
      */
     public function findByIds(array $ids): array
     {
@@ -62,9 +62,13 @@ class EloquentEmployeeRepository implements EmployeeRepository
         ?string $search,
         int $perPage = 10,
         ?string $sortBy = null,
-        string $sortDirection = 'asc'
+        string $sortDirection = 'asc',
+        ?string $branch = null,
+        ?string $deptCode = null,
+        ?string $employmentType = null,
     ): LengthAwarePaginator {
-        $query = EmployeeModel::query();
+        $query = EmployeeModel::query()
+            ->with(['evaluationData', 'warningLogs', 'latestDailyReport', 'department']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -73,15 +77,65 @@ class EloquentEmployeeRepository implements EmployeeRepository
             });
         }
 
+        if ($branch) {
+            $query->where('branch', $branch);
+        }
+
+        if ($deptCode) {
+            $query->where('dept_code', $deptCode);
+        }
+
+        if ($employmentType) {
+            $query->where('employment_type', $employmentType);
+        }
+
         // Sorting (with whitelist)
-        $sortable = ['nik', 'name', 'start_date', 'jatah_cuti_tahun', 'end_date']; // add allowed columns here
+        $sortable = [
+            'nik', 'name', 'start_date', 'jatah_cuti_tahun', 'end_date',
+            'branch', 'dept_code', 'employment_type', 'position', 'grade_level'
+        ];
 
         if ($sortBy && in_array($sortBy, $sortable)) {
             $sortDirection = strtolower($sortDirection) === 'desc' ? 'desc' : 'asc';
             $query->orderBy($sortBy, $sortDirection);
+        } else {
+            // Default sort
+            $query->orderBy('name', 'asc');
         }
 
         return $query->paginate($perPage);
+    }
+
+    public function getGlobalStats(): array
+    {
+        $today = now()->format('Y-m-d');
+        $statusMap = config('payroll.status_map', []);
+        
+        // Active Base Query: No end_date or end_date in future
+        $activeQuery = EmployeeModel::where(function($q) use ($today) {
+            $q->whereNull('end_date')
+              ->orWhere('end_date', '>', $today);
+        })->where('employment_type', '!=', 'NOT ACTIVE');
+
+        $totalActive = (clone $activeQuery)->count();
+
+        // Dynamic Grouping Based on config/payroll.php status_map
+        // Keys = values currently in DB, Values = internal categories (TETAP, KONTRAK, etc)
+        $counts = [];
+        foreach ($statusMap as $dbKey => $internalCategory) {
+            $counts[$internalCategory] = ($counts[$internalCategory] ?? 0) + 
+                (clone $activeQuery)->where('employment_type', $dbKey)->count();
+        }
+
+        return [
+            'total' => $totalActive,
+            'permanent' => $counts['TETAP'] ?? 0,
+            'contract' => ($counts['KONTRAK'] ?? 0) + ($counts['MAGANG'] ?? 0),
+            'karawang' => (clone $activeQuery)->where('branch', 'KARAWANG')->count(),
+            'metadata' => [
+                'status_mapping' => $statusMap,
+            ]
+        ];
     }
 
     private function toEntity(EmployeeModel $model): EmployeeEntity
