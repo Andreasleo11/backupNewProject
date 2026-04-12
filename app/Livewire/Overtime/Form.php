@@ -33,6 +33,7 @@ class Form extends Component
 
     // Shared Default Fields (The UX Overhaul)
     public string $global_overtime_date = '';
+    public string $global_start_date = '';
     public string $global_job_desc = '';
     public string $global_start_time = '';
     public string $global_end_date = '';
@@ -154,15 +155,16 @@ class Form extends Component
             if (count($this->items) > 0) {
                 $first = $this->items[0];
                 $this->global_overtime_date = $first['overtime_date'];
+                $this->global_start_date    = $first['start_date'];
                 $this->global_job_desc      = $first['job_desc'];
                 $this->global_start_time    = $first['start_time'];
-$this->global_end_date      = $first['end_date'];
+                $this->global_end_date      = $first['end_date'];
                 $this->global_break         = $first['break'];
                 $this->global_remarks       = $first['remarks'];
 
                 // Check if end_date differs from overtime date (overtime extends to next day)
                 $this->global_custom_end_date = $first['end_date'];
-                $this->show_date_override = $first['end_date'] !== $first['overtime_date'];
+                $this->show_date_override = $first['end_date'] !== $first['overtime_date'] || $first['start_date'] !== $first['overtime_date'];
             }
         } else {
             $this->authorize('create', OvertimeForm::class);
@@ -170,6 +172,7 @@ $this->global_end_date      = $first['end_date'];
             $this->dept_id = $user->employee->department->id;
             
             $this->global_overtime_date = now()->format('Y-m-d');
+            $this->global_start_date = now()->format('Y-m-d');
             $this->global_end_date = now()->format('Y-m-d');
         }
 
@@ -315,6 +318,7 @@ $this->global_end_date      = $first['end_date'];
             'dept_id' => 'required|exists:departments,id',
             'branch'  => 'required|string',
             'global_overtime_date' => 'required|date',
+            'global_start_date'    => 'required|date',
             'global_job_desc'      => 'required|string|min:3',
             'global_start_time'    => 'required',
             'global_end_time'      => 'required',
@@ -324,6 +328,8 @@ $this->global_end_date      = $first['end_date'];
         // Add time validation only for same-day mode
         if (!$this->show_date_override) {
             $rules['global_end_time'] .= '|after:global_start_time';
+            // In same day mode, we should ensure dates match if not using override
+            // But usually Step 1 enforced same date.
         }
 
         // Add custom end date validation for multi-day mode
@@ -334,6 +340,7 @@ $this->global_end_date      = $first['end_date'];
         $messages = [
             'dept_id.required'              => 'A department selection is required.',
             'global_overtime_date.required' => 'Please set an effectivity date.',
+            'global_start_date.required'    => 'Please set a start date.',
             'global_job_desc.required'      => 'The main objective is required.',
             'global_start_time.required'    => 'Start time is required.',
             'global_end_time.required'      => 'End time is required.',
@@ -371,6 +378,10 @@ $this->global_end_date      = $first['end_date'];
         if (!$emp) return;
 
         // Replace empty placeholder if it's the only row
+        $startDate = $this->show_date_override && $this->global_start_date
+            ? $this->global_start_date
+            : $this->global_overtime_date;
+
         $endDate = $this->show_date_override && $this->global_custom_end_date 
             ? $this->global_custom_end_date 
             : $this->global_overtime_date;
@@ -378,7 +389,8 @@ $this->global_end_date      = $first['end_date'];
         if (count($this->items) === 1 && empty($this->items[0]['nik'])) {
             $this->items[0]['nik'] = $emp->nik;
             $this->items[0]['name'] = $emp->name;
-            $this->items[0]['start_date'] = $this->global_overtime_date;
+            $this->items[0]['overtime_date'] = $this->global_overtime_date;
+            $this->items[0]['start_date'] = $startDate;
             $this->items[0]['end_date'] = $endDate;
             $this->resetErrorBag('items.0.nik'); // CLEAR RECENT SUBMISSION ERRORS
         } else {
@@ -388,7 +400,7 @@ $this->global_end_date      = $first['end_date'];
                 'name'          => $emp->name,
                 'overtime_date' => $this->global_overtime_date,
                 'job_desc'      => $this->global_job_desc,
-                'start_date'    => $this->global_overtime_date,
+                'start_date'    => $startDate,
                 'start_time'    => $this->global_start_time,
                 'end_date'      => $endDate,
                 'end_time'      => $this->global_end_time,
