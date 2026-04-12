@@ -168,16 +168,25 @@
                              <div class="text-center mb-4">
                                  <span class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.15em]">Multi-day overtime schedule</span>
                              </div>
+
+                             <div class="flex items-center justify-center pb-6">
+                                 <div class="space-y-3 w-full max-w-sm">
+                                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Overtime Date (Payroll Reference)</label>
+                                      <input type="date" wire:model.live="global_overtime_date"
+                                          class="w-full rounded-2xl border px-6 py-4 font-black text-center transition-all {{ $errors->has('global_overtime_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
+                                      @error('global_overtime_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                 </div>
+                             </div>
                              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                   <div class="space-y-3">
                                       <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Start Date & Time</label>
                                       <div class="grid grid-cols-2 gap-3">
-                                          <input type="date" wire:model.live="global_overtime_date"
-                                              class="w-full rounded-2xl border px-4 py-4 font-black text-center transition-all {{ $errors->has('global_overtime_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
+                                          <input type="date" wire:model.live="global_start_date"
+                                              class="w-full rounded-2xl border px-4 py-4 font-black text-center transition-all {{ $errors->has('global_start_date') ? 'border-rose-300 bg-rose-50/30 text-rose-600' : 'border-slate-200 bg-slate-50/50 text-slate-900' }}">
                                           <input type="time" wire:model.live="global_start_time"
                                               class="w-full rounded-2xl border py-4 font-mono font-black text-center text-indigo-600 text-lg shadow-inner transition-all {{ $errors->has('global_start_time') ? 'border-rose-300 ring-4 ring-rose-500/5 bg-rose-50' : 'border-slate-200' }}">
                                       </div>
-                                      @error('global_overtime_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
+                                      @error('global_start_date') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
                                       @error('global_start_time') <p class="text-[8px] font-black text-rose-500 uppercase tracking-widest text-center">{{ $message }}</p> @enderror
                                   </div>
                                   <div class="space-y-3">
@@ -392,12 +401,14 @@ document.addEventListener('alpine:init', () => {
         global_end_t: $wire.entangle('global_end_time', true),
         global_break: $wire.entangle('global_break', true),
         show_date_override: $wire.entangle('show_date_override', true),
+        global_start_date: $wire.entangle('global_start_date', true),
         global_custom_end_date: $wire.entangle('global_custom_end_date', true),
 
         syncToGlobal(index) {
+            const startDate = this.show_date_override && this.global_start_date ? this.global_start_date : this.global_date;
             const endDate = this.show_date_override && this.global_custom_end_date ? this.global_custom_end_date : this.global_date;
             this.items[index].overtime_date = this.global_date;
-            this.items[index].start_date    = this.global_date;
+            this.items[index].start_date    = startDate;
             this.items[index].end_date      = endDate;
             this.items[index].start_time    = this.global_start;
             this.items[index].end_time      = this.global_end_t;
@@ -417,12 +428,11 @@ document.addEventListener('alpine:init', () => {
         },
 
         calculateNet(row) {
-            if(!row.start_time || !row.end_time) return '0h';
+            if(!row.start_time || !row.end_time || !row.start_date || !row.end_date) return '0h';
             try {
-                const s = new Date(`2000-01-01T${row.start_time}`);
-                const e = new Date(`2000-01-01T${row.end_time}`);
+                const s = new Date(`${row.start_date}T${row.start_time}`);
+                const e = new Date(`${row.end_date}T${row.end_time}`);
                 let diff = (e - s) / 60000;
-                if(diff < 0) diff += 1440;
                 const net = diff - (parseInt(row.break) || 0);
                 if(net <= 0) return '0h';
                 const hours = Math.floor(net / 60);

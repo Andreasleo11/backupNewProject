@@ -231,9 +231,13 @@
                                          class="inline-flex flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2 transition-all hover:bg-slate-50 shadow-sm w-full relative"
                                          :class="hasTimeError(index) ? 'border-rose-400 bg-rose-50 ring-4 ring-rose-500/10' : 'border-slate-200 bg-white'">
 
-                                         {{-- DATE RANGE (shown only if different dates or multi-day mode) --}}
-                                         <template x-if="row.start_date !== row.end_date || $wire.show_date_override">
-                                             <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5" x-text="formatDateRange(row.start_date, row.end_date)"></div>
+                                         {{-- DATE RANGE (shown only if dates differ or multi-day mode) --}}
+                                         <template x-if="row.start_date !== row.end_date || row.overtime_date !== row.start_date">
+                                             <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+                                                 <span x-text="row.overtime_date"></span>
+                                                 <span class="mx-1 opacity-30">|</span>
+                                                 <span x-text="formatDateRange(row.start_date, row.end_date)"></span>
+                                             </div>
                                          </template>
 
                                          <div class="flex items-center gap-1 text-[10px] font-mono font-black transition-colors"
@@ -264,13 +268,26 @@
                                              <button type="button" @click="syncToGlobal(index)" class="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1"><i class='bx bx-sync'></i> Sync Global</button>
                                          </div>
 
-                                         {{-- DATE CONTEXT --}}
-                                         <template x-if="row.start_date !== row.end_date || $wire.show_date_override">
-                                             <div class="mb-4 p-3 rounded-xl bg-indigo-50/50 border border-indigo-100">
-                                                 <div class="text-[8px] font-black text-indigo-600 uppercase tracking-widest mb-1">Date Range</div>
-                                                 <div class="text-[10px] font-black text-slate-700" x-text="formatDateRange(row.start_date, row.end_date)"></div>
+                                         {{-- DATE CONTEXT OVERRIDES --}}
+                                         <div class="mb-6 space-y-4">
+                                             <div>
+                                                  <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Overtime Date (Payroll Ref)</label>
+                                                  <input type="date" x-model="row.overtime_date" 
+                                                      class="w-full rounded-xl py-2.5 px-3 text-xs font-black transition-all border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-300">
                                              </div>
-                                         </template>
+                                             <div class="grid grid-cols-2 gap-4">
+                                                 <div>
+                                                      <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Start Date</label>
+                                                      <input type="date" x-model="row.start_date" 
+                                                          class="w-full rounded-xl py-2.5 px-3 text-xs font-black transition-all border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-300">
+                                                 </div>
+                                                 <div>
+                                                      <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">End Date</label>
+                                                      <input type="date" x-model="row.end_date" 
+                                                          class="w-full rounded-xl py-2.5 px-3 text-xs font-black transition-all border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-300">
+                                                 </div>
+                                             </div>
+                                         </div>
                                         <div class="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label class="block text-[8px] font-black uppercase text-slate-400 mb-1.5 ml-1">Start</label>
