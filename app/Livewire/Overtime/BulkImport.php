@@ -287,8 +287,8 @@ class BulkImport extends Component
 
             if ($row['is_valid']) {
                 $this->totalValid++;
-                // Grouping Signature: dept + session type (per-employee branch is used at creation)
-                $sig = md5(($row['branch'] ?? '') . '_' . $row['dept_id'] . '_' . $row['is_after_hour']);
+                // Grouping Signature: dept + session type + date
+                $sig = md5(($row['branch'] ?? '') . '_' . $row['dept_id'] . '_' . $row['is_after_hour'] . '_' . $row['overtime_date']);
                 $row['group_signature'] = $sig;
 
                 if (!isset($this->groupedHeaders[$sig])) {
@@ -298,6 +298,7 @@ class BulkImport extends Component
                         'dept_id'      => $row['dept_id'],
                         'session'      => $row['session_type'],
                         'is_after_hour'=> $row['is_after_hour'],
+                        'date'         => $row['overtime_date'],
                         'count'        => 0,
                     ];
                 }
@@ -359,7 +360,8 @@ class BulkImport extends Component
                 
                 // Aggregate description mapping (combine distinct tasks)
                 $tasks = collect($rows)->pluck('task')->filter()->unique()->implode(', ');
-                $desc = \Illuminate\Support\Str::limit("Bulk Assignment: " . $tasks, 250);
+                $dateStr = \Carbon\Carbon::parse($headerData['date'])->format('d M Y');
+                $desc = \Illuminate\Support\Str::limit("Bulk [{$dateStr}]: " . $tasks, 250);
 
                 // Determine if planned (if any start_date is in the future)
                 $isPlanned = collect($rows)->contains(function($r) {
