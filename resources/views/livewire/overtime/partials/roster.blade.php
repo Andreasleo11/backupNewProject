@@ -14,7 +14,9 @@
             <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg"><i class='bx bx-group text-xl'></i></div>
             <div>
                 <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">3. Employee Roster</h2>
-                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" x-text="items.length + ' Members added'"></p>
+                <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5"
+                   :class="$wire.stagedRosterData.length > 0 ? 'text-indigo-500' : 'text-slate-400'"
+                   x-text="$wire.stagedRosterData.length > 0 ? $wire.stagedRosterData.length + ' Staged · ' + items.length + ' Added' : items.length + ' Members added'"></p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -30,17 +32,103 @@
         </div>
     </div>
 
-    {{-- BULK UTILITY TRAY --}}
-    <div x-show="$wire.showBulkTray" x-collapse x-cloak>
-        <div class="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-2xl shadow-indigo-100/50">
+    {{-- BULK UTILITY TRAY: auto-open when staged data is present --}}
+    <div x-show="$wire.showBulkTray || $wire.stagedRosterData.length > 0" x-collapse x-cloak>
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl shadow-indigo-100/50">
             <div class="max-w-4xl mx-auto">
-                {{-- HEADER --}}
+                {{-- HEADER & IMPORT --}}
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight">Direct Multi-Selection</h3>
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Click to instantly add or remove members</p>
                     </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" wire:click="downloadRosterTemplate" class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 hover:text-slate-700 transition-all">
+                            <i class='bx bx-download text-lg'></i> Template
+                        </button>
+                        <div class="relative group">
+                            <input type="file" wire:model="rosterFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="Upload Excel list of NIKs">
+                            <button type="button" class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all pointer-events-none">
+                                <div wire:loading wire:target="rosterFile" class="mr-1">
+                                    <i class='bx bx-loader-alt animate-spin text-sm'></i>
+                                </div>
+                                <div wire:loading.remove wire:target="rosterFile">
+                                    <i class='bx bx-import text-lg'></i>
+                                </div>
+                                Import NIK List
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                @if(count($stagedRosterData) > 0)
+                {{-- STAGING AREA --}}
+                <div class="border-t border-slate-100 pt-6">
+                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-4">
+                        <div class="flex items-center justify-between font-black uppercase tracking-widest text-[10px]">
+                            <span class="text-slate-500">Staging Review</span>
+                            <span class="text-indigo-600">{{ count($stagedRosterData) }} Entries Scanned</span>
+                        </div>
+                        <div class="mt-4 max-h-[300px] overflow-y-auto custom-scrollbar bg-white rounded-xl border border-slate-100">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/50 border-b border-slate-100">
+                                        <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Identity</th>
+                                        <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Schedule Override</th>
+                                        <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Task</th>
+                                        <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    @foreach($stagedRosterData as $staged)
+                                        <tr class="hover:bg-slate-50/30 transition-colors">
+                                            <td class="px-4 py-3 align-top">
+                                                <p class="text-xs font-black text-slate-900">{{ $staged['name'] }}</p>
+                                                <p class="text-[10px] font-mono font-bold text-slate-500 mt-0.5">{{ $staged['nik'] }}</p>
+                                            </td>
+                                            <td class="px-4 py-3 align-top">
+                                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ $staged['overtime_date'] }}</p>
+                                                <div class="flex items-center gap-1 text-[10px] font-mono font-black text-slate-900 bg-slate-100 px-2 py-1 rounded w-fit">
+                                                    <span>{{ $staged['start_time'] }}</span>
+                                                    <i class='bx bx-right-arrow-alt text-slate-400 text-[8px]'></i>
+                                                    <span>{{ $staged['end_time'] }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 align-top">
+                                                <p class="text-[10px] font-medium text-slate-600 leading-relaxed max-w-xs break-words line-clamp-2" title="{{ $staged['job_desc'] }}">{{ $staged['job_desc'] ?: '—' }}</p>
+                                            </td>
+                                            <td class="px-4 py-3 text-right align-top">
+                                                @if($staged['is_valid'])
+                                                    <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
+                                                        <i class='bx bx-check'></i> Ready
+                                                    </span>
+                                                @else
+                                                    <div class="flex flex-col items-end">
+                                                        <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-rose-600 bg-rose-50 px-2 py-1 rounded">
+                                                            <i class='bx bx-x'></i> Invalid
+                                                        </span>
+                                                        <span class="text-[8px] font-bold text-rose-400 mt-1 uppercase tracking-wider">{{ implode(', ', $staged['errors']) }}</span>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3">
+                        <button type="button" wire:click="cancelStagedRoster" class="h-10 px-6 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest transition-all">
+                            Cancel
+                        </button>
+                        <button type="button" wire:click="commitStagedRoster" class="h-10 px-6 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 text-[10px] font-black uppercase tracking-widest shadow-md shadow-indigo-100 transition-all flex items-center gap-2">
+                            <i class='bx bx-check-double text-sm'></i> Commit Valid Members
+                        </button>
+                    </div>
+                </div>
+                @else
                 
                 {{-- SEARCH --}}
                 <div class="relative" x-data="{ q: '' }">
@@ -92,6 +180,7 @@
                         </template>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -99,8 +188,8 @@
     {{-- THE ROSTER CONTENT --}}
     <div class="relative">
         {{-- QUICK START HERO (EMPTY STATE DISCOVERY) --}}
-        <template x-if="items.length === 0">
-            <div class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-16 text-center animate-in fade-in zoom-in duration-500">
+        <template x-if="items.length === 0 && $wire.stagedRosterData.length === 0">
+            <div class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-8 text-center animate-in fade-in zoom-in duration-500">
                 <div class="h-24 w-24 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-indigo-600 shadow-inner">
                     <i class='bx bxs-group-plus text-5xl'></i>
                 </div>
@@ -148,19 +237,19 @@
             <table class="w-full text-left border-separate border-spacing-0">
                 <thead>
                     <tr class="bg-slate-50/50">
-                         <th class="px-8 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-16">#</th>
-                         <th class="px-4 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-64">Employee</th>
-                         <th class="px-4 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 min-w-[200px]">Specific Task</th>
-                         <th class="px-4 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-44 text-center">Timing</th>
-                         <th class="px-4 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-24 text-center">Status</th>
-                         <th class="px-8 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-16"></th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-16">#</th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-64">Employee</th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 min-w-[200px]">Specific Task</th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-44 text-center">Timing</th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-24 text-center">Status</th>
+                         <th class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 w-16"></th>
                      </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     <template x-for="(row, index) in items" :key="row.id || ('new-' + index)">
                         <tr class="group hover:bg-slate-50/50 transition-all" x-data="{ open: false, q: '', editingTimes: false }">
                             {{-- Index --}}
-                            <td class="px-8 py-6 align-top">
+                            <td class="px-4 py-4 align-top">
                                 <div class="h-7 w-7 rounded-lg flex items-center justify-center text-[10px] font-black" 
                                     :class="row.nik ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-100 text-slate-400'" 
                                     x-text="index + 1"></div>
@@ -339,7 +428,7 @@
                             </td>
 
                             {{-- ACTIONS --}}
-                            <td class="px-8 py-6 align-top text-right">
+                            <td class="px-4 py-4 align-top text-right">
                                 <button type="button" @click="removeRow(index)" x-show="items.length > 1"
                                     class="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
                                     <i class='bx bx-trash-alt'></i>
@@ -352,7 +441,7 @@
         </div>
         
         {{-- EMPTY STATE --}}
-        <template x-if="items.length === 0">
+        <template x-if="items.length === 0 && $wire.stagedRosterData.length === 0">
              <div class="py-20 text-center">
                  <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300"><i class='bx bx-user-plus text-3xl'></i></div>
                  <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No members added yet</p>

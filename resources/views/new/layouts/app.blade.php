@@ -358,6 +358,9 @@
             Livewire.on('toast', function(params) {
                 window.__toastAdd(params);
             });
+            Livewire.on('flash', function(params) {
+                window.__toastAdd(params);
+            });
         });
 
         // Also capture window-level toast events (from Alpine $dispatch or manual JS)

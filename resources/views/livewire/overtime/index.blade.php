@@ -61,8 +61,14 @@
                     </a>
                 @endif
 
+                <a href="{{ route('overtime.bulk') }}"
+                    class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-xs font-black text-indigo-600 shadow-sm transition-all hover:bg-indigo-50 hover:border-indigo-200 focus:ring-2 focus:ring-slate-200">
+                    <i class='bx bx-cloud-upload text-lg'></i>
+                    Smart Bulk
+                </a>
+
                 <a href="{{ route('overtime.create') }}"
-                    class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-black text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 focus:ring-2 focus:ring-indigo-500">
+                    class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-black text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-slate-900 shadow-sm active:translate-y-0 focus:ring-2 focus:ring-indigo-500">
                     <i class='bx bx-plus-circle text-lg'></i>
                     New Request
                 </a>

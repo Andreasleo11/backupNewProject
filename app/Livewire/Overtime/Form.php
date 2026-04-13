@@ -43,6 +43,7 @@ class Form extends Component
 
     // Date Override Settings
     public bool $show_date_override = false;
+    public bool $excel_mode = false;
     public string $global_custom_end_date = '';
 
     // Detail rows
@@ -52,6 +53,8 @@ class Form extends Component
 
     // Bulk Management
     public bool $showBulkTray = false;
+    public $rosterFile;
+    public array $stagedRosterData = [];
 
     // Local State
     public bool $isIntegrityChecked = false;
@@ -314,6 +317,18 @@ class Form extends Component
 
     public function validateStep1(): bool
     {
+        // In Excel Mode, the schedule fields are not required —
+        // they will come from the uploaded file per-row.
+        if ($this->excel_mode) {
+            $this->validate([
+                'dept_id' => 'required|exists:departments,id',
+                'branch'  => 'required|string',
+            ], [
+                'dept_id.required' => 'A department selection is required.',
+            ]);
+            return true;
+        }
+
         $rules = [
             'dept_id' => 'required|exists:departments,id',
             'branch'  => 'required|string',
@@ -328,8 +343,6 @@ class Form extends Component
         // Add time validation only for same-day mode
         if (!$this->show_date_override) {
             $rules['global_end_time'] .= '|after:global_start_time';
-            // In same day mode, we should ensure dates match if not using override
-            // But usually Step 1 enforced same date.
         }
 
         // Add custom end date validation for multi-day mode
@@ -351,6 +364,173 @@ class Form extends Component
 
         $this->validate($rules, $messages);
         return true;
+    }
+
+    public function downloadRosterTemplate()
+    {
+        $headers = [
+            'NIK', 
+            'Overtime Date (YYYY-MM-DD)', 
+            'Start Date (YYYY-MM-DD)', 
+            'Start Time (HH:MM)', 
+            'End Date (YYYY-MM-DD)', 
+            'End Time (HH:MM)', 
+            'Break (Mins)', 
+            'Task', 
+            'Remarks'
+        ];
+        
+        $callback = function() use($headers) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            fputcsv($file, [
+                '12345', 
+                now()->format('Y-m-d'), 
+                now()->format('Y-m-d'), 
+                '17:00', 
+                now()->format('Y-m-d'), 
+                '19:00', 
+                '0', 
+                'Optional Override Task', 
+                ''
+            ]); 
+            fputcsv($file, ['67890', '', '', '', '', '', '', '', 'Left blank implies using Global Settings']);
+            fclose($file);
+        };
+
+        return response()->streamDownload($callback, 'roster_import_template.csv', [
+            'Content-type' => 'text/csv',
+        ]);
+    }
+
+    public function updatedRosterFile()
+    {
+        $this->validate([
+            'rosterFile' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        $this->stagedRosterData = [];
+
+        try {
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new class {}, $this->rosterFile->getRealPath());
+            $rows = $data[0] ?? [];
+            
+            // Skip the header if it says 'NIK'
+            if (isset($rows[0][0]) && strtoupper(trim($rows[0][0])) === 'NIK') {
+                $rows = array_slice($rows, 1);
+            }
+
+            // Defaults
+            $defOvtDate = $this->global_overtime_date;
+            $defStartDate = $this->show_date_override && $this->global_start_date ? $this->global_start_date : $defOvtDate;
+            $defEndDate = $this->show_date_override && $this->global_custom_end_date ? $this->global_custom_end_date : $defOvtDate;
+
+            foreach ($rows as $index => $row) {
+                if (empty(array_filter($row))) continue;
+                
+                $rawNik = trim((string)($row[0] ?? ''));
+                // Normalize to 5-digit zero-padded NIK (handles Excel float like 7073.0)
+                if (is_numeric($rawNik)) {
+                    $nik = str_pad((string)(int)$rawNik, 5, '0', STR_PAD_LEFT);
+                } else {
+                    $nik = str_pad($rawNik, 5, '0', STR_PAD_LEFT);
+                }
+                if (empty($nik) || $nik === '00000') continue;
+
+                $isValid = true;
+                $errors = [];
+                $name = 'Unknown';
+
+                $emp = Employee::where('nik', $nik)->first();
+                if (!$emp) {
+                    $isValid = false;
+                    $errors[] = "NIK not found";
+                } else {
+                    $name = $emp->name;
+                    if (collect($this->items)->contains('nik', $nik)) {
+                        $isValid = false;
+                        $errors[] = "Already in roster";
+                    }
+                }
+
+                $this->stagedRosterData[] = [
+                    'nik'           => $nik,
+                    'name'          => $name,
+                    'is_valid'      => $isValid,
+                    'errors'        => $errors,
+                    
+                    // Specific Overrides fallback to global settings
+                    'overtime_date' => !empty($row[1]) ? trim((string)$row[1]) : $defOvtDate,
+                    'start_date'    => !empty($row[2]) ? trim((string)$row[2]) : $defStartDate,
+                    'start_time'    => !empty($row[3]) ? trim((string)$row[3]) : $this->global_start_time,
+                    'end_date'      => !empty($row[4]) ? trim((string)$row[4]) : $defEndDate,
+                    'end_time'      => !empty($row[5]) ? trim((string)$row[5]) : $this->global_end_time,
+                    'break'         => !empty($row[6]) ? trim((string)$row[6]) : $this->global_break,
+                    'job_desc'      => !empty($row[7]) ? trim((string)$row[7]) : $this->global_job_desc,
+                    'remarks'       => !empty($row[8]) ? trim((string)$row[8]) : $this->global_remarks,
+                ];
+            }
+            
+            $this->dispatch('flash', type: 'info', message: "Staged " . count($this->stagedRosterData) . " potential roster members.");
+
+            // In Excel Mode: automatically signal the wizard to show Step 3
+            // The user still gets to review the staging panel before committing.
+            if ($this->excel_mode) {
+                $this->dispatch('excel-roster-staged');
+            }
+
+        } catch (\Throwable $e) {
+            $this->dispatch('flash', type: 'error', message: 'Failed to process roster file: ' . $e->getMessage());
+        }
+
+        $this->rosterFile = null;
+    }
+
+    public function commitStagedRoster()
+    {
+        $addedCount = 0;
+
+        foreach ($this->stagedRosterData as $staged) {
+            if ($staged['is_valid']) {
+                if (count($this->items) === 1 && empty($this->items[0]['nik'])) {
+                    $this->items[0]['nik']           = $staged['nik'];
+                    $this->items[0]['name']          = $staged['name'];
+                    $this->items[0]['overtime_date'] = $staged['overtime_date'];
+                    $this->items[0]['start_date']    = $staged['start_date'];
+                    $this->items[0]['start_time']    = $staged['start_time'];
+                    $this->items[0]['end_date']      = $staged['end_date'];
+                    $this->items[0]['end_time']      = $staged['end_time'];
+                    $this->items[0]['break']         = $staged['break'];
+                    $this->items[0]['job_desc']      = $staged['job_desc'];
+                    $this->items[0]['remarks']       = $staged['remarks'];
+                } else {
+                    $this->items[] = [
+                        'id'            => null,
+                        'nik'           => $staged['nik'],
+                        'name'          => $staged['name'],
+                        'overtime_date' => $staged['overtime_date'],
+                        'start_date'    => $staged['start_date'],
+                        'start_time'    => $staged['start_time'],
+                        'end_date'      => $staged['end_date'],
+                        'end_time'      => $staged['end_time'],
+                        'break'         => $staged['break'],
+                        'job_desc'      => $staged['job_desc'],
+                        'remarks'       => $staged['remarks'],
+                        'payroll_status'=> 'pending'
+                    ];
+                }
+                $addedCount++;
+            }
+        }
+
+        $this->stagedRosterData = [];
+        $this->resetIntegrity();
+        $this->dispatch('flash', type: 'success', message: "Added $addedCount members successfully.");
+    }
+
+    public function cancelStagedRoster()
+    {
+        $this->stagedRosterData = [];
     }
 
     public function toggleEmployee(string $nik): void
