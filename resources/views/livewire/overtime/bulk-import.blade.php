@@ -208,7 +208,10 @@
                                 <i class='bx bxs-folder-open'></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black uppercase tracking-tight">{{ $header['department'] }} ({{ $header['branch'] }})</p>
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <p class="text-[10px] font-black uppercase tracking-tight">{{ $header['department'] }} ({{ $header['branch'] }})</p>
+                                    <span class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{{ \Carbon\Carbon::parse($header['date'])->format('d M') }}</span>
+                                </div>
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-[8px] font-black uppercase tracking-widest {{ $activeFilter === $sig ? 'text-white/80' : ($header['is_after_hour'] ? 'text-indigo-500' : 'text-emerald-500') }}">{{ $header['session'] }}</span>
                                     <span class="h-1 W-1 rounded-full {{ $activeFilter === $sig ? 'bg-white/40' : 'bg-slate-300' }}"></span>
