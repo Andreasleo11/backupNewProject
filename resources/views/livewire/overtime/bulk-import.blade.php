@@ -283,6 +283,7 @@
 
                                     <td class="px-6 py-4 align-top">
                                         <div class="flex flex-col gap-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-slate-900 text-white w-fit">{{ \Carbon\Carbon::parse($row['overtime_date'])->format('d M') }}</span>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 w-fit">{{ $row['branch'] ?: '?' }}</span>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 w-fit">{{ $row['department'] ?: '?' }}</span>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest {{ $row['is_after_hour'] ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600' }} w-fit">{{ $row['session_type'] }}</span>
