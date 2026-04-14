@@ -38,14 +38,24 @@ class SendDailyApprovalSummary extends Command
             $allActionable = \App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::forUser($user)
                 ->where('status', 'IN_REVIEW')
                 ->whereHas('steps', function ($sq) use ($user) {
+                    $roleIds = $user->roles->pluck('id')->toArray();
+                    $roleNames = $user->getRoleNames()->toArray();
+
                     $sq->whereColumn('sequence', 'approval_requests.current_step')
-                       ->where(function ($match) use ($user) {
+                       ->where(function ($match) use ($user, $roleIds, $roleNames) {
                            $match->where(function ($uMatch) use ($user) {
                                $uMatch->where('approver_type', 'user')
                                       ->where('approver_id', $user->id);
-                           })->orWhere(function ($rMatch) use ($user) {
+                           })->orWhere(function ($rMatch) use ($roleIds, $roleNames) {
                                $rMatch->where('approver_type', 'role')
-                                      ->whereIn('approver_id', $user->roles->pluck('id')->toArray());
+                                      ->where(function ($q) use ($roleIds, $roleNames) {
+                                          if (!empty($roleIds)) {
+                                              $q->whereIn('approver_id', $roleIds);
+                                          }
+                                          if (!empty($roleNames)) {
+                                              $q->orWhereIn('approver_id', $roleNames);
+                                          }
+                                      });
                            });
                        });
                 })
