@@ -108,8 +108,35 @@ class ApprovalVisibilityScoper
                         });
 
                         // 2. AND if branch-scoped, MUST also match the jurisdiction
+                        // EXCEPT if the turn is explicitly targeted at the User ID, or the Verificator role
                         if ($isBranchScoped) {
-                            $manager->applyVisibilityScope($matchGroup, $user, ['IN_REVIEW']);
+                            $verificatorRole = $user->roles->firstWhere('name', 'verificator');
+                            $verifIds = ['verificator'];
+                            if ($verificatorRole) $verifIds[] = $verificatorRole->id;
+
+                            $matchGroup->where(function ($branchGroup) use ($user, $manager, $verifIds) {
+                                // A. User ID direct assignment override
+                                $branchGroup->whereHas('steps', function ($sq) use ($user) {
+                                    $sq->whereColumn('sequence', 'approval_requests.current_step')
+                                       ->where('approver_type', 'user')
+                                       ->where('approver_id', $user->id);
+                                });
+
+                                // B. Verificator Role override (always global)
+                                $branchGroup->orWhereHas('steps', function ($sq) use ($verifIds) {
+                                    $sq->whereColumn('sequence', 'approval_requests.current_step')
+                                       ->where('approver_type', 'role')
+                                       ->where(function ($fq) use ($verifIds) {
+                                           $fq->whereIn('approver_id', $verifIds)
+                                              ->orWhere('approver_snapshot_role_slug', 'verificator');
+                                       });
+                                });
+
+                                // C. Strict Jurisdiction Scoping
+                                $branchGroup->orWhere(function ($jurisdictionQuery) use ($user, $manager) {
+                                    $manager->applyVisibilityScope($jurisdictionQuery, $user, ['IN_REVIEW']);
+                                });
+                            });
                         }
                     });
             });
