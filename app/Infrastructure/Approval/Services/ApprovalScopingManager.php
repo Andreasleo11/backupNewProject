@@ -31,7 +31,7 @@ class ApprovalScopingManager
     public function isUserEligible(User $user, string $roleSlug, Approvable $approvable): bool
     {
         // 1. Department-Scoped Roles (Origination Match)
-        $deptScopedRoles = ['department-head', 'supervisor', 'verificator', 'purchasing-manager'];
+        $deptScopedRoles = ['department-head', 'supervisor', 'purchasing-manager'];
         if (in_array($roleSlug, $deptScopedRoles)) {
             $formDept = $approvable->getApprovableDepartmentName();
             if (! $formDept) {
@@ -247,6 +247,18 @@ class ApprovalScopingManager
                     });
                 }
             }
+
+            // C. Verificator (Global Approved OT Oversight)
+            // Allows Verificators to see all Approved Overtime forms globally for review
+            if ($user->hasRole('verificator')) {
+                $targetStatuses = $statuses ?? ['APPROVED'];
+                if (in_array('APPROVED', $targetStatuses)) {
+                    $q->orWhere(function ($sub) {
+                        $sub->where('status', 'APPROVED')
+                            ->where('approvable_type', \App\Domain\Overtime\Models\OvertimeForm::class);
+                    });
+                }
+            }
         });
     }
 
@@ -259,7 +271,7 @@ class ApprovalScopingManager
                          $user->can('overtime.view-all') || 
                          $user->can('pr.view-all');
 
-        if ($canGlobalView || $user->hasRole('verificator')) {
+        if ($canGlobalView) {
             $query->orWhere(function ($q) use ($user, $statuses) {
                 // Director sees everything in index views
                 if ($user->hasRole('director')) {
@@ -330,8 +342,8 @@ class ApprovalScopingManager
             }
         }
 
-        // B. Dept Head / Supervisor / Verificator (Department Isolation)
-        $oversightRoles = ['department-head', 'supervisor', 'verificator', 'purchasing-manager'];
+        // B. Dept Head / Supervisor (Department Isolation)
+        $oversightRoles = ['department-head', 'supervisor', 'purchasing-manager'];
         if ($userRoles->intersect($oversightRoles)->isNotEmpty()) {
             $formDept = $approvable->getApprovableDepartmentName();
             if ($formDept) {
@@ -362,8 +374,9 @@ class ApprovalScopingManager
             }
         }
 
-        // D. Director (Top-Level Oversight)
-        if ($userRoles->contains('director')) {
+        // D. Director & Verificator (Top-Level Oversight)
+        // Verificators need global read access to view PRs they are assigned to and OTs they must review
+        if ($userRoles->contains('director') || $userRoles->contains('verificator')) {
             return true;
         }
 
