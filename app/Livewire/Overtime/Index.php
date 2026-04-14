@@ -4,10 +4,13 @@ namespace App\Livewire\Overtime;
 
 use App\Application\Overtime\Queries\OvertimeQueryBuilder;
 use App\Application\Overtime\Presenters\OvertimePresenter;
-use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Domain\Overtime\Models\OvertimeForm;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Application\Approval\Contracts\Approvals;
+use Auth;
+use Carbon\Carbon;
+use DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -55,6 +58,13 @@ class Index extends Component
     public array $departments = [];
 
     public ?int $pendingDeleteId = null;
+    
+    // Selection & Bulk Action State
+    public array $selectedIds = [];
+    public bool $showSnapshot = false;
+    public array $snapshot = [];
+    public array $warnings = [];
+    public bool $isProcessingBulk = false;
 
 
     #[On('confirm-delete')]
@@ -142,6 +152,7 @@ class Index extends Component
     {
         if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned'])) {
             $this->resetPage();
+            $this->selectedIds = [];
         }
 
         if (in_array($name, ['startDate', 'endDate'])) {
@@ -300,8 +311,134 @@ class Index extends Component
 
 
     /**
-     * Centralized source of truth for query parameters to prevent redundancy.
+     * Decision Intelligence: Load a detailed snapshot of the selected batch.
      */
+    public function loadSnapshot(): void
+    {
+        if (empty($this->selectedIds)) return;
+
+        $this->isProcessingBulk = true;
+        
+        $details = OvertimeFormDetail::whereIn('header_id', $this->selectedIds)->get();
+        $headers = OvertimeForm::with('department')->whereIn('id', $this->selectedIds)->get();
+
+        $totalMinutes = 0;
+        foreach ($details as $d) {
+            try {
+                $start = Carbon::parse($d->start_date . ' ' . $d->start_time);
+                $end = Carbon::parse($d->end_date . ' ' . $d->end_time);
+                $diff = $start->diffInMinutes($end);
+                $totalMinutes += max(0, $diff - (int)$d->break);
+            } catch (\Exception $e) {}
+        }
+
+        $this->snapshot = [
+            'total_forms'     => count($this->selectedIds),
+            'total_employees' => $details->pluck('NIK')->unique()->count(),
+            'total_hours'     => round($totalMinutes / 60, 1),
+            'date_range'      => [
+                'start' => $details->min('overtime_date'),
+                'end'   => $details->max('overtime_date'),
+            ],
+            'departments'     => $headers->pluck('department.name')->filter()->countBy()->toArray(),
+        ];
+
+        $this->calculateHeuristicWarnings($details);
+        
+        $this->isProcessingBulk = false;
+        $this->showSnapshot = true;
+    }
+
+    private function calculateHeuristicWarnings($details): void
+    {
+        $this->warnings = [];
+        
+        // 1. Session Overlap Check (within selected batch)
+        $overlaps = [];
+        $byNik = $details->groupBy('NIK');
+        
+        foreach ($byNik as $nik => $rows) {
+            if ($rows->count() < 2) continue;
+            
+            // Basic sort by start time
+            $sorted = $rows->sortBy(fn($r) => $r->start_date . ' ' . $r->start_time);
+            $prev = null;
+            
+            foreach ($sorted as $current) {
+                if ($prev) {
+                    $prevEnd = Carbon::parse($prev->end_date . ' ' . $prev->end_time);
+                    $currStart = Carbon::parse($current->start_date . ' ' . $current->start_time);
+                    
+                    if ($currStart->lt($prevEnd)) {
+                        $overlaps[] = "Employee #{$nik} ({$current->name}) has overlapping sessions on " . Carbon::parse($current->start_date)->format('d M');
+                        break; // Only report once per employee to avoid spam
+                    }
+                }
+                $prev = $current;
+            }
+        }
+        
+        if (!empty($overlaps)) {
+            $this->warnings['overlaps'] = array_slice($overlaps, 0, 5); // Limit to top 5
+            if (count($overlaps) > 5) $this->warnings['overlaps'][] = "...and " . (count($overlaps) - 5) . " more conflicts.";
+        }
+
+        // 2. High Intensity Check (>12 hours in a single form/day)
+        $highIntensity = $details->filter(function($d) {
+            try {
+                $start = Carbon::parse($d->start_date . ' ' . $d->start_time);
+                $end = Carbon::parse($d->end_date . ' ' . $d->end_time);
+                return ($start->diffInHours($end) - ($d->break / 60)) > 12;
+            } catch (\Exception) { return false; }
+        });
+
+        if ($highIntensity->count() > 0) {
+            $this->warnings['intensity'] = "{$highIntensity->count()} sessions exceed 12 hours of duration.";
+        }
+    }
+
+    public function bulkApprove(): void
+    {
+        $this->processBulkAction('approve');
+    }
+
+    public function bulkReject(): void
+    {
+        $this->processBulkAction('reject');
+    }
+
+    private function processBulkAction(string $action): void
+    {
+        $approvalService = app(Approvals::class);
+        $userId = Auth::id();
+        $successCount = 0;
+        $failCount = 0;
+
+        foreach ($this->selectedIds as $id) {
+            try {
+                $form = OvertimeForm::findOrFail($id);
+                if ($approvalService->canAct($form, $userId)) {
+                    if ($action === 'approve') {
+                        $approvalService->approve($form, $userId, "Bulk approved via Dashboard");
+                    } else {
+                        $approvalService->reject($form, $userId, "Bulk rejected via Dashboard");
+                    }
+                    $successCount++;
+                } else {
+                    $failCount++;
+                }
+            } catch (\Exception $e) {
+                $failCount++;
+            }
+        }
+
+        $this->selectedIds = [];
+        $this->showSnapshot = false;
+        
+        $msg = "Batch {$action} complete. {$successCount} processed, {$failCount} skipped/failed.";
+        $this->dispatch('flash', type: $successCount > 0 ? 'success' : 'error', message: $msg);
+    }
+
     private function getFilterParams(): array
     {
         return [
@@ -338,6 +475,7 @@ class Index extends Component
             'stats'            => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0],
             'isPrivileged'     => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
+            'canApprove'       => Auth::user()->can('overtime.approve'),
         ]);
     }
 }
