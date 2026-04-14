@@ -7,6 +7,9 @@ use App\Application\PurchaseRequest\Queries\Filters\BranchFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DateRangeFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DepartmentFilter;
 use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Application\PurchaseRequest\Queries\Filters\PurchaseRequestFilter;
 use App\Application\PurchaseRequest\Queries\Filters\StatusFilter;
@@ -39,6 +42,7 @@ final class PurchaseRequestQueryBuilder
     public function forUser(User $user, ?Builder $query = null): Builder
     {
         $query = ($query ?? PurchaseRequest::query())
+            ->withCount('items')
             ->with([
                 'files',
                 'createdBy',
@@ -119,6 +123,9 @@ final class PurchaseRequestQueryBuilder
                 'my_approval'    => new MyApprovalFilter($user),
                 'in_review'      => new InReviewFilter(),
                 'approved_month' => new ApprovedThisMonthFilter(),
+                'my_active'      => new MyActiveRequestsFilter($user),
+                'dept_active'    => new DeptActiveRequestsFilter($user),
+                'drafts'         => new DraftsFilter($user),
                 default          => null,
             };
 

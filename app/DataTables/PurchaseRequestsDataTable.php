@@ -40,10 +40,14 @@ class PurchaseRequestsDataTable extends DataTable
                 ])->render();
             })
             ->editColumn('date_pr', function ($pr) {
-                return Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta')->format('d-m-Y');
+                $date = Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta');
+                $absolute = $date->format('d-m-Y');
+                $relative = $date->diffForHumans();
+                
+                return "<div><div class='font-medium text-slate-700'>{$relative}</div><div class='text-[10px] text-slate-400'>{$absolute}</div></div>";
             })
             ->editColumn('approved_at', function ($pr) {
-                return $pr->approved_date
+                return $pr->approved_at
                     ? Carbon::parse($pr->approved_at)
                         ->setTimezone('Asia/Jakarta')
                         ->format('d-m-Y (H:i)')
@@ -54,47 +58,43 @@ class PurchaseRequestsDataTable extends DataTable
                     return '<span class="text-slate-400 text-xs">-</span>';
                 }
 
-                $badge = view('partials.workflow-status-badge', ['pr' => $pr])->render();
-
-                // Add current approver if in review
-                if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {
-                    return $badge . '<div class="text-[10px] text-slate-500 mt-1 text-center truncate max-w-[150px]" title="' . htmlentities($pr->workflow_step) . '">' . e($pr->workflow_step) . '</div>';
-                }
-
-                // Add actionable feedback strings directly to the datatable view for terminal states
-                if (in_array($pr->workflow_status, ['REJECTED', 'RETURNED', 'CANCELED']) || $pr->is_cancel) {
-                    $approval = method_exists($pr, 'approvalRequest') ? $pr->approvalRequest : null;
-                    $actionStep = $approval && isset($approval->steps) ? $approval->steps->firstWhere('sequence', $approval->current_step) : null;
-                    $reason = '';
-                    
-                    if ($pr->workflow_status === 'RETURNED') {
-                        $reason = $actionStep->return_reason ?? 'Revision required';
-                    } elseif ($pr->workflow_status === 'REJECTED') {
-                        $reason = $actionStep->remarks ?? ($pr->description ?? '');
-                    } elseif ($pr->workflow_status === 'CANCELED' || $pr->is_cancel) {
-                        $reason = $pr->cancellation_reason ?? ($pr->cancel_reason ?? ($pr->description ?? ($actionStep->remarks ?? '')));
-                    }
-
-                    if ($reason) {
-                        return $badge . '<div class="text-[10px] text-slate-500 mt-1 italic text-center truncate max-w-[150px]" title="' . htmlentities('Reason: ' . $reason) . '">' . e('Reason: ' . $reason) . '</div>';
-                    }
-                }
-
-                return $badge;
+                return view('partials.workflow-status-badge', ['pr' => $pr])->render();
             })
             ->addColumn('document', function ($pr) {
-                // Combine PR No and Doc Num
                 $prNo = $pr->pr_no ? e($pr->pr_no) : '<span class="text-slate-400 italic">No PR Num</span>';
-                $docNum = $pr->doc_num ? e($pr->doc_num) : '';
+                $branch = $pr->branch?->value ?? ($pr->branch ?? 'HQ');
+                $maker = $pr->createdBy?->name ?? 'System';
 
-                return "<div><div class='font-bold text-slate-800'>{$prNo}</div><div class='text-xs text-slate-500'>{$docNum}</div></div>";
+                return "
+                    <div class='flex flex-col gap-0.5'>
+                        <div class='flex items-center gap-1.5'>
+                            <span class='font-bold text-slate-900 tracking-tight'>{$prNo}</span>
+                            <span class='text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold border border-slate-200 uppercase'>{$branch}</span>
+                        </div>
+                        <div class='text-[10px] text-slate-400 font-medium flex items-center gap-1'>
+                            <i class='bx bx-user text-xs'></i>
+                            <span>{$maker}</span>
+                        </div>
+                    </div>
+                ";
             })
-            ->addColumn('routing', function ($pr) {
-                // Combine From Dept -> To Dept
+            ->addColumn('items_routing', function ($pr) {
+                $count = $pr->items_count ?? 0;
                 $from = $pr->from_department ? e($pr->from_department) : 'Unknown';
                 $to = $pr->to_department->value ?? ($pr->to_department ?? 'Unknown');
 
-                return "<div class='text-sm'><span class='text-slate-600'>{$from}</span> <i class='bi bi-arrow-right text-indigo-400 mx-1'></i> <span class='text-slate-800 font-medium'>{$to}</span></div>";
+                $countBadge = "<span class='inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-inset ring-indigo-700/10'>{$count} Items</span>";
+
+                return "
+                    <div class='flex flex-col gap-1'>
+                        <div>{$countBadge}</div>
+                        <div class='text-[10px] text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]'>
+                            <span class='text-slate-500'>{$from}</span>
+                            <i class='bx bx-right-arrow-alt mx-0.5'></i>
+                            <span class='text-indigo-600 font-semibold'>{$to}</span>
+                        </div>
+                    </div>
+                ";
             })
             ->editColumn('supplier', function ($pr) {
                 if (!$pr->supplier) {
@@ -102,7 +102,7 @@ class PurchaseRequestsDataTable extends DataTable
                 }
                 return '<div class="truncate max-w-[200px] text-sm text-slate-700" title="' . e($pr->supplier) . '">' . e($pr->supplier) . '</div>';
             })
-            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'routing', 'supplier'])
+            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'items_routing', 'supplier', 'date_pr'])
             ->setRowId('id');
     }
 
@@ -124,14 +124,8 @@ class PurchaseRequestsDataTable extends DataTable
             ->setTableId('purchaserequests-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom('Bfrtip')
-            ->orderBy(1)
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
-            ]);
+            ->dom('frtip')
+            ->orderBy(1);
     }
 
     /**
@@ -150,36 +144,36 @@ class PurchaseRequestsDataTable extends DataTable
                 ->addClass('text-center align-middle'),
             Column::make('id')->visible(false),
             Column::computed('document')
-                ->title('Document')
-                ->exportable(false)
-                ->printable(false),
-            Column::make('branch'),
-            Column::make('date_pr')->title('Req. Date'),
-            Column::computed('routing')
-                ->title('Routing')
-                ->exportable(false)
-                ->printable(false),
+                ->title('Document & Maker')
+                ->addClass('align-middle')
+                ->width('200px'),
+            Column::make('date_pr')
+                ->title('Requested')
+                ->addClass('align-middle')
+                ->width('120px'),
+            Column::computed('items_routing')
+                ->title('Items & Routing')
+                ->addClass('align-middle')
+                ->width('200px'),
             Column::make('supplier')
                 ->title('Supplier')
-                ->width('200px')
+                ->width('180px')
                 ->addClass('align-middle'),
             Column::computed('workflow_status')
                 ->title('Status')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
+                ->addClass('text-center align-middle')
+                ->width('150px'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
-            Column::computed('status')
-                ->exportable(false)
-                ->printable(false)
-                ->addClass('text-center')
-                ->visible(false), // Hide legacy status column
-            Column::make('po_number')->title('PO Number'),
-
-            // Hidden columns for standard export/search purposes to still work
+                ->addClass('text-center align-middle')
+                ->width('100px'),
+            
+            // Hidden data columns for searchability
+            Column::make('po_number')->visible(false),
+            Column::make('branch')->visible(false),
             Column::make('pr_no')->visible(false),
             Column::make('doc_num')->visible(false),
             Column::make('from_department')->visible(false),

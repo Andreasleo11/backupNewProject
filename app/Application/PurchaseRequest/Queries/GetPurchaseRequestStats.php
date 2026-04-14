@@ -7,6 +7,9 @@ namespace App\Application\PurchaseRequest\Queries;
 use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
 use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Cache;
@@ -20,6 +23,9 @@ class GetPurchaseRequestStats
     /**
      * Get PR statistics for the current user
      */
+    /**
+     * Get PR statistics for the current user
+     */
     public function execute(): array
     {
         $user = auth()->user();
@@ -30,66 +36,102 @@ class GetPurchaseRequestStats
         $userId = $user->id;
         $cacheKey = "pr_stats_user_{$userId}";
 
-        // Lower cache duration to 2 minutes for better responsiveness while protecting DB
         return Cache::remember($cacheKey, now()->addMinutes(2), function () use ($user) {
-            return [
-                'pending_my_approval' => $this->getPendingMyApproval($user),
-                'in_review' => $this->getInReview($user),
-                'approved_this_month' => $this->getApprovedThisMonth($user),
-                'total_value_pending' => $this->getTotalValuePending($user),
+            $isStrategic = $user->hasAnyRole(['director', 'super-admin', 'purchasing-manager']);
+            $isVerificator = $user->hasRole('verificator');
+
+            // 1. Always show Pending My Approval (Workload)
+            $stats = [
+                'pending_my_approval' => $this->getPendingMyApproval($user)
             ];
+
+            if ($isStrategic) {
+                // Strategic roles see global metrics
+                $stats['in_review'] = $this->getInReview($user);
+                $stats['approved_this_month'] = $this->getApprovedThisMonth($user);
+                $stats['total_value_pending'] = $this->getTotalValuePending($user);
+            } else {
+                // Operational roles see contextual metrics
+                $stats['my_active'] = $this->getMyActiveCount($user);
+                
+                if (! $isVerificator) {
+                    $stats['dept_active'] = $this->getDeptActiveCount($user);
+                }
+                
+                $stats['drafts'] = $this->getDraftsCount($user);
+            }
+
+            return $stats;
         });
     }
 
     /**
      * Get count of PRs pending current user's approval
      */
-    private function getPendingMyApproval(User $user): int
+    private function getPendingMyApproval($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical MyApprovalFilter
         (new MyApprovalFilter($user))->apply($query);
+        return $query->count();
+    }
 
+    /**
+     * Get count of PRs created by the user that are currently in review
+     */
+    private function getMyActiveCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new MyActiveRequestsFilter($user))->apply($query);
+        return $query->count();
+    }
+
+    /**
+     * Get count of PRs in the user's department that are currently in review
+     */
+    private function getDeptActiveCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new DeptActiveRequestsFilter($user))->apply($query);
+        return $query->count();
+    }
+
+    /**
+     * Get count of drafts created by the user
+     */
+    private function getDraftsCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new DraftsFilter($user))->apply($query);
         return $query->count();
     }
 
     /**
      * Get count of all PRs in review visible to this user
      */
-    private function getInReview(User $user): int
+    private function getInReview($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical InReviewFilter
         (new InReviewFilter())->apply($query);
-
         return $query->count();
     }
 
     /**
      * Get count of PRs approved this month visible to this user
      */
-    private function getApprovedThisMonth(User $user): int
+    private function getApprovedThisMonth($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical ApprovedThisMonthFilter
         (new ApprovedThisMonthFilter())->apply($query);
-
         return $query->count();
     }
 
     /**
      * Get total value of pending PRs grouped by currency visible to this user
      */
-    private function getTotalValuePending(User $user): array
+    private function getTotalValuePending($user): array
     {
         $totals = [];
-
         $query = $this->queryBuilder->forUser($user);
-        
-        // Only count In-Review PRs for value pending
         (new InReviewFilter())->apply($query);
 
         $prs = $query->with('items')->get();
@@ -106,12 +148,7 @@ class GetPurchaseRequestStats
             }
         }
 
-        // Ensure IDR: 0 is returned if nothing exists
-        if (empty($totals)) {
-            return ['IDR' => 0];
-        }
-
-        return $totals;
+        return !empty($totals) ? $totals : ['IDR' => 0];
     }
 
     /**

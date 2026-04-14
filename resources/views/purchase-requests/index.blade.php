@@ -81,50 +81,68 @@
             color: #4f46e5;
         }
         
-        /* Buttons Collection */
-        div.dt-button-collection {
-            border-radius: 1rem !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-            border: 1px solid #e2e8f0 !important;
-            padding: 0.5rem !important;
-        }
     </style>
 @endpush
 
     <div class="sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
         {{-- HEADER CARD --}}
-        <div class="glass-card mb-6 overflow-hidden pt-8 pb-6 px-6 relative">
+        <div class="glass-card mb-6 overflow-hidden pt-5 pb-4 px-6 relative">
             <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 pointer-events-none"></div>
             <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4 border-l-4 border-indigo-600 pl-4">
-                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                        <i class='bx bx-receipt text-2xl'></i>
+                    <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                        <i class='bx bx-receipt text-xl'></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-black tracking-tight text-slate-800">
-                            Purchase Requests Overview
-                        </h1>
+                        <div class="flex items-center gap-3">
+                            <h1 class="text-xl sm:text-2xl font-black tracking-tight text-slate-800">
+                                Purchase Requests Overview
+                            </h1>
+                            @if(request()->filled('filter'))
+                                <div class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold border border-indigo-200 flex items-center gap-1 shadow-sm uppercase tracking-wide">
+                                    <i class="bx bx-filter-alt"></i>
+                                    @if(request('filter') === 'my_approval') Pending My Approval
+                                    @elseif(request('filter') === 'in_review') In Review
+                                    @elseif(request('filter') === 'approved_month') Approved This Month
+                                    @else Custom Saved Filter
+                                    @endif
+                                    <a href="{{ route('purchase-requests.index', ['filter' => 'all']) }}" class="ml-1 text-indigo-400 hover:text-indigo-900 transition-colors bg-white rounded-full h-4 w-4 flex items-center justify-center border border-indigo-200"><i class="bx bx-x text-xs"></i></a>
+                                </div>
+                            @endif
+                        </div>
                         <p class="text-sm font-medium text-slate-500 mt-0.5">
                             Centralized tracking and workflow management for all departmental requisitions.
                         </p>
                     </div>
                 </div>
 
-                <div class="relative z-10 flex flex-wrap items-center gap-3">
+                <div class="relative z-10 flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                    {{-- Insights Toggle --}}
+                    <button type="button" @click="activeDrawer = (activeDrawer === 'insights' ? null : 'insights')" 
+                            class="inline-flex items-center justify-center rounded-xl bg-white h-10 w-10 text-sm font-semibold shadow-sm border transition-all hover:-translate-y-0.5"
+                            :class="{'border-amber-300 ring-2 ring-amber-50 bg-amber-50 text-amber-700': activeDrawer === 'insights', 'border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600': activeDrawer !== 'insights'}"
+                            title="Toggle Statistics & Insights">
+                        <i class="bx bx-bar-chart-alt-2 text-xl"></i>
+                    </button>
 
-                    {{-- Export button --}}
-                    <a href="{{ route('purchase-requests.export-excel') }}"
-                    class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5">
-                        <i class="bi bi-file-earmark-excel text-lg"></i>
-                        <span>Export</span>
-                    </a>
+                    {{-- Filters Toggle --}}
+                    <button type="button" @click="activeDrawer = (activeDrawer === 'filters' ? null : 'filters')" 
+                            class="inline-flex items-center justify-center rounded-xl bg-white h-10 w-10 text-sm font-semibold shadow-sm border transition-all hover:-translate-y-0.5 relative"
+                            :class="{'border-indigo-300 ring-2 ring-indigo-50 bg-indigo-50 text-indigo-700': activeDrawer === 'filters' || activeFilterCount > 0, 'border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600': activeDrawer !== 'filters' && activeFilterCount === 0}"
+                            title="Filter & Export Options">
+                        <i class="bi bi-funnel text-lg"></i>
+                        <span x-show="activeFilterCount > 0" class="absolute -top-1.5 -right-1.5 bg-indigo-600 text-white text-[10px] h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center border-2 border-white" x-text="activeFilterCount"></span>
+                    </button>
+
+                    <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
                     {{-- Create PR button --}}
                     @can('pr.create')
                         <a href="{{ route('purchase-requests.create') }}"
-                        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:from-indigo-500 hover:to-violet-500 hover:-translate-y-0.5">
-                            <i class="bi bi-plus-lg text-lg"></i>
-                            <span>New Request</span>
+                        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:from-indigo-500 hover:to-violet-500 hover:-translate-y-0.5 h-10">
+                            <i class="bi bi-plus-lg text-base"></i>
+                            <span class="hidden sm:inline">New Request</span>
+                            <span class="sm:hidden">New</span>
                         </a>
                     @endcan
                 </div>
@@ -132,13 +150,25 @@
         </div>
 
         {{-- STATS DASHBOARD --}}
-        @include('partials.pr-stats-cards', ['stats' => $stats])
+        <div x-show="activeDrawer === 'insights'" x-collapse x-cloak>
+            <div class="mb-6">
+                @include('partials.pr-stats-cards', ['stats' => $stats])
+            </div>
+        </div>
 
         {{-- BATCH ACTIONS --}}
         @if($canBatchApprove)
-            <div class="glass-card p-4 flex flex-wrap items-center gap-3 backdrop-blur-md bg-white/70" id="batch-action-bar">
+            <div x-show="selectedIds.length > 0" x-cloak 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="glass-card mb-4 p-4 flex flex-wrap items-center gap-3 backdrop-blur-md bg-white/70 border border-indigo-100 shadow-md shadow-indigo-100/50" id="batch-action-bar">
+                
                 <span class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                    <div class="h-6 w-1 bg-indigo-500 rounded-full"></div>
+                    <div class="h-6 w-1 bg-indigo-500 rounded-full animate-pulse"></div>
                     Director Actions
                 </span>
 
@@ -146,7 +176,6 @@
 
                 {{-- Approve Selected --}}
                 <button id="batch-approve-btn"
-                        x-show="selectedIds.length > 0" x-cloak
                         @click="confirmBatchApprove('{{ route('purchase-requests.batch-approve') }}')"
                         class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
                     <i class="bi bi-check-lg group-hover:scale-110 transition-transform"></i>
@@ -155,7 +184,7 @@
 
                 {{-- Reject Selected --}}
                 <button id="batch-reject-btn"
-                        x-show="selectedIds.length > 0 && !showRejectReason" x-cloak
+                        x-show="!showRejectReason"
                         @click="showRejectReason = true"
                         class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100 hover:border-rose-300 transition-all hover:-translate-y-0.5 group">
                     <i class="bi bi-x-lg group-hover:scale-110 transition-transform"></i>
@@ -222,33 +251,9 @@
             <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
             
             <div class="rounded-xl p-4">
-                {{-- ACTIVE URL FILTER INDICATOR --}}
-                @if(request()->filled('filter'))
-                    <div class="mb-5 rounded-2xl bg-indigo-50/80 border border-indigo-100 p-3.5 flex items-center justify-between shadow-sm backdrop-blur-sm animate-fade-in">
-                        <div class="flex items-center gap-3.5">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 shadow-inner">
-                                <i class="bx bx-filter-alt text-xl"></i>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Active View</span>
-                                <span class="text-sm text-indigo-950 font-bold">
-                                    @if(request('filter') === 'my_approval') Pending My Approval
-                                    @elseif(request('filter') === 'in_review') In Review
-                                    @elseif(request('filter') === 'approved_month') Approved This Month
-                                    @else Custom Saved Filter
-                                    @endif
-                                </span>
-                            </div>
-                        </div>
-                        <a href="{{ route('purchase-requests.index', ['filter' => 'all']) }}" class="group inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl border border-indigo-200 transition-all hover:shadow-md shadow-sm">
-                            <i class="bx bx-x text-sm group-hover:rotate-90 transition-transform"></i> Clear Filter
-                        </a>
-                    </div>
-                @endif
-
                 {{-- CUSTOM DATA FILTERS --}}
-                <div class="mb-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none"></div>
+                <div x-show="activeDrawer === 'filters'" x-collapse x-cloak>
+                    <div class="mb-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden bg-gradient-to-r from-slate-50 to-white">
                     
                     <div class="relative flex items-center gap-2 text-slate-800 font-bold text-sm uppercase tracking-wider">
                         <div class="h-5 w-1 bg-slate-300 rounded-full"></div>
@@ -275,10 +280,10 @@
                         <i class="bx bx-buildings absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors text-lg pointer-events-none"></i>
                         <select id="filter-department" x-model="filters.department" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm !pl-10 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                             <option value="">All Target Departments</option>
-                            <option value="PURCHASING">Purchasing</option>
-                            <option value="PERSONALIA">Personalia / HRD</option>
-                            <option value="MAINTENANCE">Maintenance</option>
-                            <option value="COMPUTER">Computer / IT</option>
+                            <option value="Purchasing">Purchasing</option>
+                            <option value="Personnel">Personalia / HRD</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Computer">Computer / IT</option>
                         </select>
                     </div>
 
@@ -290,13 +295,25 @@
                             <i class="bx bx-x text-lg"></i>
                         </button>
                     </div>
-                    
-                    <button id="btn-reset-filters" @click="resetFilters()" class="relative z-10 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors ml-auto sm:ml-0 flex items-center gap-1 bg-slate-50 hover:bg-indigo-50 px-3 py-2 rounded-lg border border-transparent hover:border-indigo-100">
-                        <i class="bx bx-reset"></i> Reset
-                    </button>
-                </div>
+                    <div class="h-8 w-px bg-slate-100 mx-2 hidden lg:block"></div>
 
-                <div class="premium-datatable-wrapper overflow-x-auto custom-scrollbar pb-4 block w-full">
+                    <div class="flex items-center gap-3 ml-auto">
+                        {{-- Export Spreadsheet within Filter workflow --}}
+                        <a href="{{ route('purchase-requests.export-excel') }}"
+                           class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5 shrink-0"
+                           title="Export active filter results to Excel">
+                            <i class="bi bi-file-earmark-excel text-lg text-emerald-600"></i>
+                            <span class="hidden lg:inline">Export</span>
+                        </a>
+
+                        <button id="btn-reset-filters" @click="resetFilters()" class="relative z-10 text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors flex items-center gap-1 bg-slate-50 hover:bg-rose-50 px-3 py-2.5 rounded-xl border border-transparent hover:border-rose-100 shrink-0">
+                            <i class="bx bx-reset text-base"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+                <div class="premium-datatable-wrapper custom-scrollbar pb-4 block w-full mt-2">
                     {{ $dataTable->table(['class' => 'table table-hover table-striped w-full nowrap']) }}
                 </div>
             </div>
@@ -434,15 +451,18 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{ $dataTable->scripts() }}
 
-    {{-- ALPINE COMPONENT LOGIC --}}
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('prIndex', () => ({
+        window.prIndex = function() {
+            return {
                 tableId: 'purchaserequests-table',
+                activeDrawer: null,
                 filters: {
                     status: '',
                     department: '',
                     date: ''
+                },
+                get activeFilterCount() {
+                    return [this.filters.status, this.filters.department, this.filters.date].filter(Boolean).length;
                 },
                 selectedIds: [],
                 showRejectReason: false,
@@ -451,6 +471,30 @@
                 pollingInterval: null,
 
                 init() {
+                    // Manual Persistence (Safest way across all Alpine setups)
+                    // Default to 'insights' if no preference saved yet
+                    const savedDrawer = localStorage.getItem('pr_active_drawer');
+                    this.activeDrawer = savedDrawer === null ? 'insights' : savedDrawer;
+
+                    const savedFilters = localStorage.getItem('pr_filters');
+                    if (savedFilters) {
+                        try {
+                            const parsed = JSON.parse(savedFilters);
+                            if (parsed) this.filters = parsed;
+                        } catch (e) {
+                            console.warn('Failed to parse saved filters', e);
+                        }
+                    }
+
+                    // Save on change
+                    this.$watch('activeDrawer', val => {
+                        if (val) localStorage.setItem('pr_active_drawer', val);
+                        else localStorage.removeItem('pr_active_drawer');
+                    });
+                    this.$watch('filters', val => {
+                        localStorage.setItem('pr_filters', JSON.stringify(val));
+                    }, { deep: true });
+
                     // Start intercepting Datatables data
                     const waitInterval = setInterval(() => {
                         if(window.LaravelDataTables && window.LaravelDataTables[this.tableId]) {
@@ -673,8 +717,8 @@
                         Swal.fire({ icon: 'error', title: 'Oops...', text: err.message || 'Something went wrong!' });
                     });
                 }
-            }));
-        });
+            };
+        };
     </script>
 
     {{-- Quick-View Action Helpers --}}
