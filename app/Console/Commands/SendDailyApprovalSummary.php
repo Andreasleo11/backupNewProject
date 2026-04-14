@@ -37,6 +37,7 @@ class SendDailyApprovalSummary extends Command
             // 2. Fetch all requests where it is currently this user's turn to take action
             $allActionable = \App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::forUser($user)
                 ->where('status', 'IN_REVIEW')
+                ->with(['steps', 'approvable'])
                 ->whereHas('steps', function ($sq) use ($user) {
                     $roleIds = $user->roles->pluck('id')->toArray();
                     $roleNames = $user->getRoleNames()->toArray();
@@ -66,10 +67,20 @@ class SendDailyApprovalSummary extends Command
 
             $summaryRequests = $allActionable->filter(function ($request) use ($user, $scopingManager) {
                 if (!$request->approvable) return false;
+
+                // 1. Jurisdictional Scoping
+                // Verify the user has the right to approve THIS specific request based on department boundaries.
+                $step = $request->steps->firstWhere('sequence', (int) $request->current_step);
                 
+                if ($step && $step->approver_type === 'role') {
+                    $roleSlug = $step->approver_snapshot_role_slug;
+                    if (! $scopingManager->isUserEligible($user, $roleSlug, $request->approvable)) {
+                        return false;
+                    }
+                }
+                
+                // 2. Personal Notification Preferences Check
                 $moduleClass = get_class($request->approvable);
-                
-                // Use the centralized helper for preference matching
                 return $scopingManager->wantsNotification($user, $moduleClass, 'daily_summary');
             });
 
