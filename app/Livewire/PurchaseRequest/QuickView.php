@@ -14,6 +14,7 @@ class QuickView extends Component
     public ?int $prId = null;
     public string $rejectReason = '';
     public bool $showRejectInput = false;
+    public bool $isLoading = false;
 
     public function mount(?int $prId = null)
     {
@@ -27,6 +28,7 @@ class QuickView extends Component
         $this->prId = is_array($id) ? ($id['id'] ?? null) : $id;
         $this->showRejectInput = false;
         $this->rejectReason = '';
+        $this->isLoading = true;
         
         // Dispatch browser event to open the drawer/modal if needed
         $this->dispatch('open-quick-view-drawer');
@@ -85,6 +87,7 @@ class QuickView extends Component
             'filteredItemDetail' => collect(),
             'totals' => [],
             'flags' => [],
+            'isLoading' => $this->isLoading,
         ];
 
         if ($this->prId) {
@@ -100,6 +103,8 @@ class QuickView extends Component
                 // Silently fail or log, template handles null pr
             }
         }
+
+        $this->isLoading = false;
         
         return view('livewire.purchase-request.quick-view', $viewData);
     }

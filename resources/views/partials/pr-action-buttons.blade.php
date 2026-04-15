@@ -3,6 +3,7 @@
     @if (!$pr->is_cancel)
         <button type="button"
                 title="Quick View"
+                wire:click.prefetch="openQuickView({{ $pr->id }})"
                 @click="$dispatch('open-quick-view-modal', { id: {{ $pr->id }} })"
                 class="group flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm">
             <i class='bx bx-search-alt text-lg group-hover:scale-110 transition-transform'></i>

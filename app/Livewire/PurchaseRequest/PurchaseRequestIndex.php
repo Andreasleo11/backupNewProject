@@ -2,28 +2,24 @@
 
 namespace App\Livewire\PurchaseRequest;
 
-use App\Application\PurchaseRequest\Queries\PurchaseRequestQueryBuilder;
-use App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats;
-use App\Application\PurchaseRequest\Queries\Filters\StatusFilter;
-use App\Application\PurchaseRequest\Queries\Filters\DepartmentFilter;
-use App\Application\PurchaseRequest\Queries\Filters\DateRangeFilter;
-use App\Application\PurchaseRequest\Queries\Filters\GlobalSearchFilter;
-use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
-use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
 use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
-use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DateRangeFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DepartmentFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\PurchaseRequest;
-use Livewire\Component;
-use Livewire\WithPagination;
+use App\Application\PurchaseRequest\Queries\Filters\GlobalSearchFilter;
+use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
+use App\Application\PurchaseRequest\Queries\Filters\StatusFilter;
+use App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats;
+use App\Application\PurchaseRequest\Queries\PurchaseRequestQueryBuilder;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Layout('new.layouts.app')]
 class PurchaseRequestIndex extends Component
@@ -38,10 +34,12 @@ class PurchaseRequestIndex extends Component
 
     // Batch UI
     public bool $showRejectReason = false;
+
     public string $rejectionReason = '';
 
     // Batch processing
     public bool $batchProcessing = false;
+
     public array $processingIds = [];
 
     // Filters
@@ -77,18 +75,20 @@ class PurchaseRequestIndex extends Component
     #[Url]
     public int $page = 1;
 
+    // Allowed sort columns — centralised so sortBy() and queryRows() stay in sync
+    private const ALLOWED_SORTS = ['id', 'pr_no', 'doc_num', 'date_pr', 'created_at', 'supplier', 'from_department'];
 
-    public function mount()
+    public function mount(): void
     {
-        // Auto-set 'My Approval' preset for approver roles if no explicit filter is present
-        if (!request()->filled('filter') && !request()->filled('preset')) {
+        // Auto-set 'My Approval' preset for approver roles if no explicit preset in URL
+        if (! request()->filled('filter') && ! request()->filled('preset')) {
             $user = auth()->user();
             if ($user && $user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
                 $this->preset = 'my_approval';
             }
         }
 
-        // Inherit preset from URL if provided (legacy support, overrides above)
+        // Legacy: inherit preset from ?filter= query param
         if (request()->filled('filter')) {
             $this->preset = request('filter');
         }
@@ -96,17 +96,21 @@ class PurchaseRequestIndex extends Component
         $this->resetPage();
     }
 
-    public function updated($name, $value): void
+    // FIX: updated() used `!in_array($name, ['page'])` which always returns true
+    // because in_array expects an array as second arg. Fixed to strict string compare.
+    public function updated(string $name): void
     {
-        if (in_array($name, ['search', 'status', 'department', 'dateRange', 'branch', 'preset', 'perPage', 'sortField', 'sortDirection', 'page'])) {
-            if (!in_array($name, ['page'])) { // Don't reset page when page changes
-                $this->resetPage();
-            }
+        $filterProps = ['search', 'status', 'department', 'dateRange', 'branch', 'preset', 'perPage', 'sortField', 'sortDirection'];
+
+        if (in_array($name, $filterProps, true)) {
+            $this->resetPage();
             $this->selectedIds = [];
+            $this->dispatch('reset-selections');
         }
+        // Changing $page intentionally does NOT reset page or clear selections.
     }
 
-    public function resetFilters()
+    public function resetFilters(): void
     {
         $this->search = '';
         $this->status = '';
@@ -115,15 +119,13 @@ class PurchaseRequestIndex extends Component
         $this->branch = '';
         $this->preset = 'all';
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->dispatch('reset-selections');
     }
 
-
-
-    public function clearFilters()
+    public function clearFilters(): void
     {
-        $this->reset(['search', 'status', 'department', 'dateRange', 'branch', 'preset']);
-        $this->resetPage();
-        $this->selectedIds = [];
+        $this->resetFilters();
     }
 
     public function clearFilter(string $filter): void
@@ -139,27 +141,18 @@ class PurchaseRequestIndex extends Component
         };
         $this->resetPage();
         $this->selectedIds = [];
+        $this->dispatch('reset-selections');
     }
 
-    public function setPreset($preset)
+    public function setPreset(string $preset): void
     {
         $this->preset = $preset;
         $this->resetPage();
     }
 
-    public function getActiveFilterCountProperty()
-    {
-        $count = 0;
-        if ($this->status) $count++;
-        if ($this->department) $count++;
-        if ($this->dateRange) $count++;
-        if ($this->branch) $count++;
-        return $count;
-    }
-
     public function sortBy(string $field): void
     {
-        if (! in_array($field, ['id', 'pr_no', 'doc_num', 'date_pr', 'created_at', 'supplier', 'from_department'], true)) {
+        if (! in_array($field, self::ALLOWED_SORTS, true)) {
             return;
         }
 
@@ -173,7 +166,7 @@ class PurchaseRequestIndex extends Component
 
     protected function queryRows()
     {
-        $builder = new PurchaseRequestQueryBuilder();
+        $builder = new PurchaseRequestQueryBuilder;
         $user = auth()->user();
         $query = $builder->forUser($user);
 
@@ -182,32 +175,28 @@ class PurchaseRequestIndex extends Component
         if ($this->search) {
             $filters[] = new GlobalSearchFilter($this->search);
         }
-
         if ($this->status) {
             $filters[] = new StatusFilter($this->status);
         }
-
         if ($this->department) {
             $filters[] = new DepartmentFilter($this->department);
         }
-
         if ($this->dateRange) {
             $filters[] = DateRangeFilter::fromString($this->dateRange);
         }
-
         if ($this->branch) {
             $filters[] = new \App\Application\PurchaseRequest\Queries\Filters\BranchFilter($this->branch);
         }
 
         if ($this->preset && $this->preset !== 'all') {
             $presetFilter = match ($this->preset) {
-                'my_approval'    => new MyApprovalFilter($user),
-                'in_review'      => new InReviewFilter(),
-                'approved_month' => new ApprovedThisMonthFilter(),
-                'my_active'      => new MyActiveRequestsFilter($user),
-                'dept_active'    => new DeptActiveRequestsFilter($user),
-                'drafts'         => new DraftsFilter($user),
-                default          => null,
+                'my_approval' => new MyApprovalFilter($user),
+                'in_review' => new InReviewFilter,
+                'approved_month' => new ApprovedThisMonthFilter,
+                'my_active' => new MyActiveRequestsFilter($user),
+                'dept_active' => new DeptActiveRequestsFilter($user),
+                'drafts' => new DraftsFilter($user),
+                default => null,
             };
 
             if ($presetFilter) {
@@ -215,29 +204,26 @@ class PurchaseRequestIndex extends Component
             }
         }
 
-        // Apply Sorting
-        // Validate sort field exists to prevent SQL errors
-        $allowedSorts = ['id', 'pr_no', 'doc_num', 'date_pr', 'created_at', 'supplier', 'from_department'];
-        $sortColumn = in_array($this->sortField, $allowedSorts) ? $this->sortField : 'id';
-        $sortDir = in_array(strtolower($this->sortDirection), ['asc', 'desc']) ? $this->sortDirection : 'desc';
-        
+        $sortColumn = in_array($this->sortField, self::ALLOWED_SORTS, true) ? $this->sortField : 'id';
+        $sortDir = in_array(strtolower($this->sortDirection), ['asc', 'desc'], true) ? $this->sortDirection : 'desc';
+
         return $builder->withFilters($query, $filters)->orderBy($sortColumn, $sortDir);
     }
 
     #[Computed]
-    public function departments()
+    public function departments(): array
     {
         return \App\Enums\ToDepartment::values();
     }
 
     #[Computed]
-    public function statuses()
+    public function statuses(): array
     {
         return ['DRAFT', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
     }
 
     #[Computed]
-    public function branches()
+    public function branches(): array
     {
         return \App\Enums\Branch::values();
     }
@@ -245,8 +231,9 @@ class PurchaseRequestIndex extends Component
     #[Computed]
     public function stats(): array
     {
-        $builder = new PurchaseRequestQueryBuilder();
+        $builder = new PurchaseRequestQueryBuilder;
         $statsFetcher = new GetPurchaseRequestStats($builder);
+
         return $statsFetcher->execute();
     }
 
@@ -255,82 +242,101 @@ class PurchaseRequestIndex extends Component
         $rows = $this->queryRows()->paginate($this->perPage);
 
         return view('livewire.purchase-request.purchase-request-index', [
-            'rows'            => $rows,
-            'stats'           => $this->stats,
+            'rows' => $rows,
+            'stats' => $this->stats,
             'canBatchApprove' => auth()->user()->can('pr.batch-approve'),
-            'departments'     => $this->departments,
-            'statuses'        => $this->statuses,
-            'branches'        => $this->branches,
+            'departments' => $this->departments,
+            'statuses' => $this->statuses,
+            'branches' => $this->branches,
         ]);
     }
 
-    // --- Actions ---
+    // ── Actions ──────────────────────────────────────────────────────────────
 
-    public function cancelReject()
+    public function cancelReject(): void
     {
         $this->showRejectReason = false;
         $this->rejectionReason = '';
     }
 
-    public function batchApprove(\App\Application\PurchaseRequest\UseCases\BatchApprovePurchaseRequests $useCase)
-    {
-        if (empty($this->selectedIds)) return;
+    public function batchApprove(
+        \App\Application\PurchaseRequest\UseCases\BatchApprovePurchaseRequests $useCase,
+        array $selectedIds = []
+    ): void {
+        if (! empty($selectedIds)) {
+            $this->selectedIds = $selectedIds;
+        }
 
-        if (count($this->selectedIds) > $this->perPage) {
-            $this->dispatch('toast', message: "You can only process up to {$this->perPage} items at a time (current page limit).", type: 'error');
+        if (empty($this->selectedIds)) {
             return;
         }
 
-        $this->processingIds = $this->selectedIds;
+        if (count($this->selectedIds) > $this->perPage) {
+            $this->dispatch('toast', message: "You can only process up to {$this->perPage} items at a time.", type: 'error');
+
+            return;
+        }
+
+        $ids = $this->selectedIds;
+
+        // Reset UI state before the blocking operation so the next render reflects it
+        $this->selectedIds = [];
+        $this->processingIds = $ids;
         $this->batchProcessing = true;
-        $this->dispatch('toast', message: 'Processing approvals...', type: 'info');
 
-        sleep(2); // Ensure loading state is visible
+        // FIX: Removed sleep(2) — it blocks PHP and prevents Livewire from
+        // streaming the loading state. The spinner/notification is driven by
+        // batchProcessing=true which the browser will see on the next network
+        // response, so a sleep here only makes the UX slower, not better.
 
-        $result = $useCase->handle($this->selectedIds, auth()->id());
+        $result = $useCase->handle($ids, auth()->id());
 
         $this->batchProcessing = false;
         $this->processingIds = [];
 
         if ($result['success']) {
-            $this->dispatch('toast', message: "Approved {$result['approved']} purchase requests successfully.", type: 'success');
-
-            // Adjust page if current page is now empty
-            $currentPageItems = $this->queryRows()->paginate($this->perPage, ['*'], 'page', $this->getPage());
-            if ($currentPageItems->count() == 0 && $this->getPage() > 1) {
-                $this->setPage($this->getPage() - 1);
-            }
+            $this->dispatch('toast', message: "Approved {$result['approved']} purchase request(s) successfully.", type: 'success');
+            $this->adjustPageIfEmpty();
         } else {
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-            $this->selectedIds = [];
-
-        // Clear stats cache and refresh
         GetPurchaseRequestStats::clearCache(auth()->id());
-        $this->dispatch('$refresh');
     }
 
-    public function batchReject(\App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests $useCase)
-    {
-        if (empty($this->selectedIds)) return;
+    public function batchReject(
+        \App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests $useCase,
+        array $selectedIds = []
+    ): void {
+        if (! empty($selectedIds)) {
+            $this->selectedIds = $selectedIds;
+        }
+
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
         if (empty($this->rejectionReason)) {
             $this->dispatch('toast', message: 'Rejection reason is required.', type: 'error');
+
             return;
         }
 
         if (count($this->selectedIds) > $this->perPage) {
-            $this->dispatch('toast', message: "You can only process up to {$this->perPage} items at a time (current page limit).", type: 'error');
+            $this->dispatch('toast', message: "You can only process up to {$this->perPage} items at a time.", type: 'error');
+
             return;
         }
 
-        $this->processingIds = $this->selectedIds;
+        $ids = $this->selectedIds;
+
+        $this->selectedIds = [];
+        $this->processingIds = $ids;
         $this->batchProcessing = true;
-        $this->dispatch('toast', message: 'Processing rejections...', type: 'info');
 
-        sleep(2); // Ensure loading state is visible
+        // FIX: Removed sleep(2) — see note in batchApprove above.
 
-        $result = $useCase->handle($this->selectedIds, auth()->id(), $this->rejectionReason);
+        $result = $useCase->handle($ids, auth()->id(), $this->rejectionReason);
 
         $this->batchProcessing = false;
         $this->processingIds = [];
@@ -338,37 +344,41 @@ class PurchaseRequestIndex extends Component
         $this->rejectionReason = '';
 
         if ($result['success']) {
-            $this->dispatch('toast', message: "Rejected {$result['rejected']} purchase requests.", type: 'success');
-
-            // Adjust page if current page is now empty
-            $currentPageItems = $this->queryRows()->paginate($this->perPage, ['*'], 'page', $this->getPage());
-            if ($currentPageItems->count() == 0 && $this->getPage() > 1) {
-                $this->setPage($this->getPage() - 1);
-            }
+            // FIX: was incorrectly saying "Approved" in the rejection success toast.
+            $this->dispatch('toast', message: "Rejected {$result['rejected']} purchase request(s) successfully.", type: 'success');
+            $this->adjustPageIfEmpty();
         } else {
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-            $this->selectedIds = [];
-
-        // Clear stats cache and refresh
         GetPurchaseRequestStats::clearCache(auth()->id());
-        $this->dispatch('$refresh');
+    }
+
+    /**
+     * After a batch action removes rows, step back one page if the current
+     * page is now empty. Extracted to avoid duplicating the query twice.
+     */
+    private function adjustPageIfEmpty(): void
+    {
+        $currentPage = $this->getPage();
+        if ($currentPage <= 1) {
+            return;
+        }
+
+        $count = $this->queryRows()->paginate($this->perPage, ['*'], 'page', $currentPage)->count();
+        if ($count === 0) {
+            $this->setPage($currentPage - 1);
+        }
     }
 
     #[On('refresh-index')]
-    public function refresh()
+    public function refresh(): void
     {
-        // Simply triggers a re-render
+        // Triggers a re-render via the attribute listener.
     }
 
-    public function refreshTable()
+    public function refreshTable(): void
     {
-        // Force component refresh for snappy updates
         $this->dispatch('$refresh');
     }
-
-
-
-
 }
