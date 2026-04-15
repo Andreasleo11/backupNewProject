@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Events\OvertimeStatusChanged;
 use App\Domain\Overtime\Models\OvertimeForm;
+use App\Events\OvertimeStatusChanged;
 use App\Models\User;
 use App\Notifications\FormOvertimeNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +29,7 @@ class SendOvertimeStatusNotification implements ShouldQueue
         // Terminal states: notify the creator (and optionally verificators).
         if (in_array($form->status, ['approved', 'rejected'], true)) {
             $this->notifyCreator($form);
+
             return;
         }
 
@@ -78,17 +79,16 @@ class SendOvertimeStatusNotification implements ShouldQueue
 
         return [
             'greeting' => 'Form Overtime Notification',
-            'body'     => implode('<br>', [
-                "We waiting for your sign for this report:",
+            'body' => implode('<br>', [
+                'We waiting for your sign for this report:',
                 "- Report ID : {$form->id}",
                 "- Department : {$form->department?->name}",
                 "- Create Date: {$formattedDate}",
                 "- Created By : {$form->user?->name}",
-            "- Status     : {$status}",
+                "- Status     : {$status}",
             ]),
             'actionText' => 'View Detail',
-            'actionURL'  => route('overtime.detail', $form->id),
+            'actionURL' => route('overtime.detail', $form->id),
         ];
     }
 }
-

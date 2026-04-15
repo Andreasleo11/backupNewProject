@@ -14,7 +14,7 @@ class TicketActivity extends Model
 
     protected $table = 'ticket_activities';
 
-    const UPDATED_AT = null; // Immutable log
+    public const UPDATED_AT = null; // Immutable log
 
     protected $fillable = [
         'ticket_id',

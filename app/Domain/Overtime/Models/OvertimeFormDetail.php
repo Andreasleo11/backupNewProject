@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OvertimeFormDetail extends Model
 {
-    use SoftDeletes, HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'detail_form_overtime';
 
@@ -46,4 +46,3 @@ class OvertimeFormDetail extends Model
         return $this->hasOne(ActualOvertimeDetail::class, 'key', 'id');
     }
 }
-

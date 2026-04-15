@@ -4,8 +4,8 @@ namespace App\Livewire\MonthlyBudget;
 
 use App\Domain\MonthlyBudget\Actions\SubmitBudgetReportAction;
 use App\Domain\MonthlyBudget\Services\BudgetReportService;
-use App\Models\MonthlyBudgetReport as Report;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Models\MonthlyBudgetReport as Report;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -16,10 +16,15 @@ class Form extends Component
 
     // Report Header
     public ?int $reportId = null;
+
     public $dept_no;
+
     public $report_date;
+
     public bool $useExcel = false;
+
     public $excel_file;
+
     public ?string $excelName = null;
 
     // Report Items
@@ -41,7 +46,7 @@ class Form extends Component
             $rules['items.*.uom'] = 'required|string|max:255';
             $rules['items.*.quantity'] = 'required|numeric|min:0';
             $rules['items.*.remark'] = 'nullable|string|max:255';
-            
+
             if ($this->isDept363) {
                 $rules['items.*.spec'] = 'required|string|max:255';
                 $rules['items.*.last_recorded_stock'] = 'nullable|numeric';
@@ -59,9 +64,10 @@ class Form extends Component
             $this->reportId = $reportId;
             $report = Report::with('details')->findOrFail($reportId);
 
-            if (!$report->isDraft()) {
+            if (! $report->isDraft()) {
                 session()->flash('error', 'Only reports in Draft state can be edited.');
                 $this->redirectRoute('monthly-budget-reports.show', $reportId);
+
                 return;
             }
 
@@ -77,7 +83,7 @@ class Form extends Component
 
     public function getIsDept363Property(): bool
     {
-        return (string)$this->dept_no === '363';
+        return (string) $this->dept_no === '363';
     }
 
     public function addItem(): void
@@ -106,7 +112,7 @@ class Form extends Component
 
     public function totalQuantity(): float
     {
-        return array_reduce($this->items, fn($sum, $item) => $sum + (float)($item['quantity'] ?? 0), 0.0);
+        return array_reduce($this->items, fn ($sum, $item) => $sum + (float) ($item['quantity'] ?? 0), 0.0);
     }
 
     public function saveDraft(BudgetReportService $service): void
@@ -136,17 +142,17 @@ class Form extends Component
             } else {
                 if ($this->reportId) {
                     $result = $service->updateReport($this->reportId, $data);
-                    
+
                     // Sync items (Delete and Re-create for simplicity in this TALL implementation)
                     \App\Models\MonthlyBudgetReportDetail::where('header_id', $this->reportId)->delete();
                     foreach ($this->items as $item) {
                         // Strip IDs and metadata to avoid conflicts and mass-assignment issues
                         $cleanItem = collect($item)->except(['id', 'header_id', 'created_at', 'updated_at', 'deleted_at'])->toArray();
-                        
+
                         // Sanitize numeric fields
                         $cleanItem['last_recorded_stock'] = empty($cleanItem['last_recorded_stock']) ? null : $cleanItem['last_recorded_stock'];
                         $cleanItem['quantity'] = empty($cleanItem['quantity']) ? 0 : $cleanItem['quantity'];
-                        
+
                         \App\Models\MonthlyBudgetReportDetail::create(array_merge($cleanItem, ['header_id' => $this->reportId]));
                     }
                 } else {
@@ -154,21 +160,21 @@ class Form extends Component
                 }
             }
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 throw new \Exception($result['message']);
             }
 
             $report = $result['report'];
 
             if ($action === 'submit' && $submitAction) {
-                $submitResult = $submitAction->execute($report, (int)auth()->id());
-                if (!$submitResult['success']) {
+                $submitResult = $submitAction->execute($report, (int) auth()->id());
+                if (! $submitResult['success']) {
                     throw new \Exception($submitResult['message']);
                 }
             }
 
             DB::commit();
-            
+
             $message = ($action === 'submit' && isset($submitResult))
                 ? $submitResult['message']
                 : 'Draft saved successfully.';
@@ -185,7 +191,7 @@ class Form extends Component
     public function render()
     {
         return view('monthly-budget.reports.form', [
-            'departments' => Department::where('is_office', false)->where('is_active', true)->get()
+            'departments' => Department::where('is_office', false)->where('is_active', true)->get(),
         ]);
     }
 }

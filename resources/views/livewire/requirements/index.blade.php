@@ -9,7 +9,8 @@
     {{-- Page header --}}
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-3">
-            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-200 shrink-0">
+            <div
+                class="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-200 shrink-0">
                 <i class="bx bx-clipboard text-white text-2xl"></i>
             </div>
             <div>
@@ -34,9 +35,7 @@
         {{-- Search --}}
         <div class="relative flex-1 min-w-[200px]">
             <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-            <input type="text"
-                wire:model.live.debounce.300ms="search"
-                placeholder="Search by code or name…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by code or name…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
 
@@ -89,10 +88,10 @@
             @forelse($items as $r)
                 @php
                     $freqColors = [
-                        'once'      => 'bg-slate-100 text-slate-600',
-                        'yearly'    => 'bg-sky-100 text-sky-700',
+                        'once' => 'bg-slate-100 text-slate-600',
+                        'yearly' => 'bg-sky-100 text-sky-700',
                         'quarterly' => 'bg-amber-100 text-amber-700',
-                        'monthly'   => 'bg-emerald-100 text-emerald-700',
+                        'monthly' => 'bg-emerald-100 text-emerald-700',
                     ];
                     $freqColor = $freqColors[$r->frequency] ?? 'bg-slate-100 text-slate-600';
                 @endphp
@@ -102,20 +101,23 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <span class="text-xs font-mono font-semibold text-slate-400">{{ $r->code }}</span>
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $freqColor }}">
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $freqColor }}">
                                     {{ ucfirst($r->frequency) }}
                                 </span>
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                <span
+                                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
                                     Min {{ $r->min_count }}
                                 </span>
-                                @if($r->requires_approval)
-                                    <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-violet-50 text-violet-700 border border-violet-200">
+                                @if ($r->requires_approval)
+                                    <span
+                                        class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-violet-50 text-violet-700 border border-violet-200">
                                         <i class="bx bx-shield-alt-2 text-xs"></i> Approval
                                     </span>
                                 @endif
                             </div>
                             <p class="text-sm font-semibold text-slate-800">{{ $r->name }}</p>
-                            @if($r->description)
+                            @if ($r->description)
                                 <p class="text-xs text-slate-400 mt-0.5 truncate">{{ $r->description }}</p>
                             @endif
                         </div>
@@ -136,8 +138,9 @@
             @empty
                 <div class="py-16 text-center">
                     <i class="bx bx-clipboard text-4xl text-slate-300"></i>
-                    <p class="text-sm font-medium text-slate-500 mt-2">No requirements found{{ $search ? " for \"{$search}\"" : '' }}.</p>
-                    @if($search || $filterFreq || $filterApproval !== '')
+                    <p class="text-sm font-medium text-slate-500 mt-2">No requirements
+                        found{{ $search ? " for \"{$search}\"" : '' }}.</p>
+                    @if ($search || $filterFreq || $filterApproval !== '')
                         <button wire:click="$set('search', ''); $set('filterFreq', ''); $set('filterApproval', '')"
                             class="mt-3 text-xs text-indigo-600 hover:underline">Clear filters</button>
                     @else

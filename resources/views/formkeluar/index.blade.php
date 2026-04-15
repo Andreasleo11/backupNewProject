@@ -1,11 +1,7 @@
 @extends('new.layouts.app')
 
 @section('content')
-    
-    <div
-        x-data="{ }"
-        class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
-    >
+    <div x-data="{}" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {{-- Header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
@@ -19,7 +15,7 @@
 
             <div class="flex items-center gap-2">
                 <a href="{{ route('formkeluar.create') }}"
-                   class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" />
                     </svg>
@@ -65,7 +61,8 @@
 
                                 {{-- Doc Num --}}
                                 <td class="px-3 py-2 align-middle text-slate-700 whitespace-nowrap">
-                                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-700">
+                                    <span
+                                        class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-700">
                                         {{ $fk->doc_num }}
                                     </span>
                                 </td>
@@ -73,10 +70,11 @@
                                 {{-- Action --}}
                                 <td class="px-3 py-2 align-middle text-center">
                                     <a href="{{ route('formkeluar.detail', ['id' => $fk->id]) }}"
-                                       class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20"
-                                             fill="currentColor">
-                                            <path d="M10 3C5 3 1.73 7.11.46 9.53a1.86 1.86 0 000 1.94C1.73 13.89 5 18 10 18s8.27-4.11 9.54-6.53a1.86 1.86 0 000-1.94C18.27 7.11 15 3 10 3zm0 3a3 3 0 11-3 3 3 3 0 013-3z" />
+                                            fill="currentColor">
+                                            <path
+                                                d="M10 3C5 3 1.73 7.11.46 9.53a1.86 1.86 0 000 1.94C1.73 13.89 5 18 10 18s8.27-4.11 9.54-6.53a1.86 1.86 0 000-1.94C18.27 7.11 15 3 10 3zm0 3a3 3 0 11-3 3 3 3 0 013-3z" />
                                         </svg>
                                         Detail
                                     </a>
@@ -103,7 +101,8 @@
                                         }
                                     @endphp
 
-                                    <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $statusStyles }}">
+                                    <span
+                                        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold {{ $statusStyles }}">
                                         {{ $statusLabel }}
                                     </span>
                                 </td>

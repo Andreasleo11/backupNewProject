@@ -1,7 +1,6 @@
 @extends('new.layouts.app')
 
 @section('content')
-
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {{-- Header --}}
         <section class="mb-4">
@@ -17,7 +16,7 @@
 
                 <div class="flex items-center gap-2">
                     <a href="{{ route('formcuti.create') }}"
-                       class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                        class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                         + Create
                     </a>
                 </div>
@@ -78,7 +77,7 @@
 
                                     <td class="px-3 py-2 text-center align-middle">
                                         <a href="{{ route('formcuti.detail', ['id' => $fc->id]) }}"
-                                           class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                            class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                                             <i class='bx bx-info-circle mr-1 text-xs'></i>
                                             Detail
                                         </a>
@@ -86,15 +85,18 @@
 
                                     <td class="px-3 py-2 text-center align-middle">
                                         @if ($fc->is_accept == 1)
-                                            <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
                                                 APPROVED
                                             </span>
                                         @elseif (is_null($fc->is_accept))
-                                            <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-100">
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-100">
                                                 WAITING
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-100">
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-100">
                                                 REJECTED
                                             </span>
                                         @endif

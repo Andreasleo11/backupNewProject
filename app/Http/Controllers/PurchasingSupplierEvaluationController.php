@@ -24,7 +24,7 @@ class PurchasingSupplierEvaluationController extends Controller
     {
         $supplierData = $this->evaluationService->getSupplierData();
         $header = PurchasingHeaderEvaluationSupplier::get();
-        
+
         return view('purchasing.evaluationsupplier.supplier_selection', compact('supplierData', 'header'));
     }
 

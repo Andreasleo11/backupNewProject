@@ -2,9 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ApprovalFlow;
-use App\Domain\Overtime\Models\OvertimeForm;
-use App\Support\ApprovalFlowResolver;
 use Illuminate\Console\Command;
 
 class OvertimeAutographs extends Command
@@ -29,7 +26,7 @@ class OvertimeAutographs extends Command
     public function handle()
     {
         $this->error('This command is deprecated. The Overtime module now uses the Unified ApprovalEngine.');
+
         return 1;
     }
 }
-

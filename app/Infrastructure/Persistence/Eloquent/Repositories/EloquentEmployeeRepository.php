@@ -92,7 +92,7 @@ class EloquentEmployeeRepository implements EmployeeRepository
         // Sorting (with whitelist)
         $sortable = [
             'nik', 'name', 'start_date', 'jatah_cuti_tahun', 'end_date',
-            'branch', 'dept_code', 'employment_type', 'position', 'grade_level'
+            'branch', 'dept_code', 'employment_type', 'position', 'grade_level',
         ];
 
         if ($sortBy && in_array($sortBy, $sortable)) {
@@ -110,11 +110,11 @@ class EloquentEmployeeRepository implements EmployeeRepository
     {
         $today = now()->format('Y-m-d');
         $statusMap = config('payroll.status_map', []);
-        
+
         // Active Base Query: No end_date or end_date in future
-        $activeQuery = EmployeeModel::where(function($q) use ($today) {
+        $activeQuery = EmployeeModel::where(function ($q) use ($today) {
             $q->whereNull('end_date')
-              ->orWhere('end_date', '>', $today);
+                ->orWhere('end_date', '>', $today);
         })->where('employment_type', '!=', 'NOT ACTIVE');
 
         $totalActive = (clone $activeQuery)->count();
@@ -123,7 +123,7 @@ class EloquentEmployeeRepository implements EmployeeRepository
         // Keys = values currently in DB, Values = internal categories (TETAP, KONTRAK, etc)
         $counts = [];
         foreach ($statusMap as $dbKey => $internalCategory) {
-            $counts[$internalCategory] = ($counts[$internalCategory] ?? 0) + 
+            $counts[$internalCategory] = ($counts[$internalCategory] ?? 0) +
                 (clone $activeQuery)->where('employment_type', $dbKey)->count();
         }
 
@@ -134,7 +134,7 @@ class EloquentEmployeeRepository implements EmployeeRepository
             'karawang' => (clone $activeQuery)->where('branch', 'KARAWANG')->count(),
             'metadata' => [
                 'status_mapping' => $statusMap,
-            ]
+            ],
         ];
     }
 

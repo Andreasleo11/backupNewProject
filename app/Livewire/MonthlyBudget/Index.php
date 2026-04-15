@@ -2,8 +2,8 @@
 
 namespace App\Livewire\MonthlyBudget;
 
-use App\Models\MonthlyBudgetReport as Report;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Models\MonthlyBudgetReport as Report;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -87,7 +87,7 @@ class Index extends Component
             $like = '%' . trim($this->search) . '%';
             $query->where(function (Builder $q) use ($like) {
                 $q->where('doc_num', 'like', $like)
-                  ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', $like));
+                    ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', $like));
             });
         }
 

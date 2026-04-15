@@ -28,7 +28,7 @@ final class EmployeeSync
     public function preview(array $items): array
     {
         $incoming = collect($this->mapRows($items))->keyBy('nik');
-        $current = collect($this->repo->getAllForDiff())->map(fn($r) => (array) $r);
+        $current = collect($this->repo->getAllForDiff())->map(fn ($r) => (array) $r);
 
         $new = $incoming->diffKeys($current);
         $inactive = $current->diffKeys($incoming);
@@ -38,7 +38,7 @@ final class EmployeeSync
             $diffs = [];
 
             foreach ($row as $key => $val) {
-                if (array_key_exists($key, $curr) && (string)$curr[$key] !== (string)$val) {
+                if (array_key_exists($key, $curr) && (string) $curr[$key] !== (string) $val) {
                     $diffs[$key] = [
                         'old' => $curr[$key],
                         'new' => $val,
@@ -73,8 +73,8 @@ final class EmployeeSync
         $branchHints = config('payroll.branch_hints', []);
 
         return array_map(function ($e) use ($statusMap, $branchHints) {
-            $empStatus = collect($statusMap)->first(fn($v, $k) => str_contains($e->employeeStatusRaw, $k));
-            $branch = collect($branchHints)->first(fn($v, $k) => str_contains($e->employeeStatusRaw, $k)) ?? 'JAKARTA';
+            $empStatus = collect($statusMap)->first(fn ($v, $k) => str_contains($e->employeeStatusRaw, $k));
+            $branch = collect($branchHints)->first(fn ($v, $k) => str_contains($e->employeeStatusRaw, $k)) ?? 'JAKARTA';
 
             return [
                 'nik' => $e->nik,

@@ -54,17 +54,23 @@
     <x-lockable-card :locked="$locked" :overlay="$overlay" title="Problems" :isSaved=$isSaved class="mt-4">
         <div data-step-problem>
             <div wire:ignore x-data="{ dirty: false, saved: @js($isSaved), ts: @js($savedAt) }" x-init="const root = $el.closest('[data-step-problem]');;
-            const markDirty = () => { dirty = true;
-                saved = false };
+            const markDirty = () => {
+                dirty = true;
+                saved = false
+            };
             root.addEventListener('input', markDirty, { capture: true });
             root.addEventListener('change', markDirty, { capture: true });
             
-            Livewire.on('problemsSaved', e => { dirty = false;
+            Livewire.on('problemsSaved', e => {
+                dirty = false;
                 saved = true;
-                ts = e?.savedAt ?? new Date().toISOString() });
-            Livewire.on('problemsReset', () => { dirty = false;
+                ts = e?.savedAt ?? new Date().toISOString()
+            });
+            Livewire.on('problemsReset', () => {
+                dirty = false;
                 saved = false;
-                ts = null });" class="mb-2" aria-live="polite">
+                ts = null
+            });" class="mb-2" aria-live="polite">
                 <template x-if="dirty">
                     <span class="badge rounded-pill bg-warning text-dark">
                         <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes

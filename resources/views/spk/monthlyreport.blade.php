@@ -7,17 +7,12 @@
         foreach ($monthlyReport as $row) {
             $totalPresentase += $row['presentase'];
         }
-        $averagePresentase = count($monthlyReport) > 0
-            ? $totalPresentase / count($monthlyReport)
-            : null;
+        $averagePresentase = count($monthlyReport) > 0 ? $totalPresentase / count($monthlyReport) : null;
 
         $selectedMonthName = \Carbon\Carbon::createFromDate(null, $month, 1)->translatedFormat('F');
     @endphp
 
-    <div
-        x-data="{ submitting: false }"
-        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
-    >
+    <div x-data="{ submitting: false }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {{-- Page header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
             <div>
@@ -61,23 +56,15 @@
 
         {{-- Filter panel --}}
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5 mb-6">
-            <form
-                method="GET"
-                action="{{ route('spk.monthlyreport') }}"
-                class="space-y-4"
-                @submit="submitting = true"
-            >
+            <form method="GET" action="{{ route('spk.monthlyreport') }}" class="space-y-4" @submit="submitting = true">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {{-- Month --}}
                     <div>
                         <label for="month" class="block text-xs font-medium text-slate-700 mb-1.5">
                             Select month
                         </label>
-                        <select
-                            name="month"
-                            id="month"
-                            class="block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
+                        <select name="month" id="month"
+                            class="block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             @foreach (range(1, 12) as $m)
                                 <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                     {{ \Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F') }}
@@ -91,11 +78,8 @@
                         <label for="year" class="block text-xs font-medium text-slate-700 mb-1.5">
                             Select year
                         </label>
-                        <select
-                            name="year"
-                            id="year"
-                            class="block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        >
+                        <select name="year" id="year"
+                            class="block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             @foreach (range(date('Y') - 5, date('Y') + 5) as $y)
                                 <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>
                                     {{ $y }}
@@ -107,10 +91,8 @@
                     {{-- Quick actions --}}
                     <div class="flex flex-col justify-end gap-2">
                         <div class="flex flex-wrap gap-2">
-                            <button
-                                type="submit"
-                                class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 w-full sm:w-auto"
-                            >
+                            <button type="submit"
+                                class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 w-full sm:w-auto">
                                 <span x-show="!submitting">
                                     Apply filter
                                 </span>
@@ -125,10 +107,8 @@
                                 </span>
                             </button>
 
-                            <a
-                                href="{{ route('spk.monthlyreport') }}"
-                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 w-full sm:w-auto"
-                            >
+                            <a href="{{ route('spk.monthlyreport') }}"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 w-full sm:w-auto">
                                 Reset
                             </a>
                         </div>
@@ -214,7 +194,8 @@
                                     {{ $report['menit_durasi'] }}
                                 </td>
                                 <td class="px-3 py-2 align-top text-right">
-                                    <span class="inline-flex items-center justify-end rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                    <span
+                                        class="inline-flex items-center justify-end rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                                         {{ $report['presentase'] }}%
                                     </span>
                                 </td>
@@ -233,7 +214,8 @@
                                     Average Presentase:
                                 </td>
                                 <td class="px-3 py-3 text-right">
-                                    <span class="inline-flex items-center justify-end rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
+                                    <span
+                                        class="inline-flex items-center justify-end rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800">
                                         {{ number_format($averagePresentase, 2) }}%
                                     </span>
                                 </td>
@@ -244,7 +226,8 @@
             </div>
 
             @if (!empty($monthlyReport))
-                <div class="px-4 py-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div
+                    class="px-4 py-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <p class="text-[11px] text-slate-500">
                         Showing <span class="font-medium text-slate-700">{{ count($monthlyReport) }}</span> records for
                         {{ $selectedMonthName }} {{ $year }}.

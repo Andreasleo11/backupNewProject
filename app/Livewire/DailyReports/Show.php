@@ -9,6 +9,7 @@ use Livewire\Component;
 class Show extends Component
 {
     public string $employee_id;
+
     public ?\App\Infrastructure\Persistence\Eloquent\Models\Employee $employee = null;
 
     #[Url(as: 'from')]
@@ -22,16 +23,16 @@ class Show extends Component
         $user = auth()->user();
         $this->employee_id = $employee_id;
         $this->employee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::where('nik', $employee_id)->first();
-        
-        if (!$this->employee) {
+
+        if (! $this->employee) {
             abort(404, 'Employee not found');
         }
 
         // Authorization: Ensure Head can only see their department's employees
         // Bernadett and Director/super-admin can see everyone
         $canSeeAll = $user->name === 'Bernadett' || $user->hasRole('DIRECTOR') || $user->hasRole('super-admin');
-        
-        if (!$canSeeAll && $this->employee->dept_code !== $user->department?->dept_no) {
+
+        if (! $canSeeAll && $this->employee->dept_code !== $user->department?->dept_no) {
             abort(403, 'Anda tidak memiliki akses ke data karyawan ini.');
         }
 

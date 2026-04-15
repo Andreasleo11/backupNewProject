@@ -19,6 +19,7 @@
 
         /* PRINT STYLES */
         @media print {
+
             /* Hide all by default */
             body * {
                 visibility: hidden;
@@ -86,17 +87,14 @@
                     </p>
                 </div>
 
-            <div class="d-flex gap-2">
-                <a href="{{ route('purchasing.evaluationsupplier.index') }}"
-                   class="btn btn-outline-secondary btn-sm">
-                    ← Back to Supplier Evaluation
-                </a>
-                <button type="button"
-                        class="btn btn-outline-primary btn-sm"
-                        onclick="window.print()">
-                    Print
-                </button>
-            </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('purchasing.evaluationsupplier.index') }}" class="btn btn-outline-secondary btn-sm">
+                        ← Back to Supplier Evaluation
+                    </a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                        Print
+                    </button>
+                </div>
         </section>
 
         {{-- FILTER FORM --}}
@@ -115,7 +113,8 @@
                             <select name="vendor_name" id="vendor_name" class="form-select">
                                 <option value="">-- All Vendors --</option>
                                 @foreach ($vendorNames as $vendor)
-                                    <option value="{{ $vendor }}" {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
+                                    <option value="{{ $vendor }}"
+                                        {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
                                         {{ $vendor }}
                                     </option>
                                 @endforeach

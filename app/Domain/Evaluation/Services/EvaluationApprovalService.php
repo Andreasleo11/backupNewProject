@@ -2,9 +2,8 @@
 
 namespace App\Domain\Evaluation\Services;
 
-use App\Models\EvaluationData;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\EvaluationData;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,7 +25,7 @@ class EvaluationApprovalService
     public function grade(EvaluationData $record, array $scores, User $grader): void
     {
         $record->update(array_merge($scores, [
-            'pengawas'       => $grader->name,
+            'pengawas' => $grader->name,
             'approval_status' => 'graded',
         ]));
     }
@@ -53,7 +52,7 @@ class EvaluationApprovalService
 
         return DB::transaction(function () use ($records, $approver) {
             $records->each(fn ($record) => $record->update([
-                'depthead'        => $approver->name,
+                'depthead' => $approver->name,
                 'approval_status' => 'dept_approved',
             ]));
 
@@ -83,7 +82,7 @@ class EvaluationApprovalService
 
         return DB::transaction(function () use ($records, $approver) {
             $records->each(fn ($record) => $record->update([
-                'generalmanager'  => $approver->name,
+                'generalmanager' => $approver->name,
                 'approval_status' => 'fully_approved',
             ]));
 
@@ -99,10 +98,10 @@ class EvaluationApprovalService
     public function reject(EvaluationData $record, string $remark, User $rejector): void
     {
         $record->update([
-            'remark'          => $remark,
+            'remark' => $remark,
             'approval_status' => 'rejected',
             // Mark the approver field with 'rejected' for legacy compatibility
-            'depthead'        => 'rejected',
+            'depthead' => 'rejected',
         ]);
     }
 
@@ -113,10 +112,10 @@ class EvaluationApprovalService
     public function regrade(EvaluationData $record, array $scores, User $grader): void
     {
         $record->update(array_merge($scores, [
-            'pengawas'        => $grader->name,
-            'depthead'        => null,   // clear rejection marker
-            'generalmanager'  => null,
-            'remark'          => null,
+            'pengawas' => $grader->name,
+            'depthead' => null,   // clear rejection marker
+            'generalmanager' => null,
+            'remark' => null,
             'approval_status' => 'graded',
         ]));
     }
@@ -133,8 +132,8 @@ class EvaluationApprovalService
             $query->where('evaluation_type', $type);
         }
 
-        $total        = $query->count();
-        $approved     = (clone $query)->where('approval_status', 'fully_approved')->count();
+        $total = $query->count();
+        $approved = (clone $query)->where('approval_status', 'fully_approved')->count();
 
         return $total > 0 && $total === $approved;
     }
@@ -166,7 +165,7 @@ class EvaluationApprovalService
             ->toArray();
 
         $statuses = ['pending', 'graded', 'dept_approved', 'fully_approved', 'rejected'];
-        $result   = array_fill_keys($statuses, 0);
+        $result = array_fill_keys($statuses, 0);
 
         foreach ($counts as $status => $count) {
             $result[$status] = $count;
@@ -185,11 +184,11 @@ class EvaluationApprovalService
     {
         $q = EvaluationData::whereMonth('Month', $month)
             ->whereYear('Month', $year);
-            
+
         if ($deptNo) {
             $q->where('dept', $deptNo);
         }
-        
+
         return $q;
     }
 }

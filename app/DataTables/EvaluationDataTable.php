@@ -8,7 +8,6 @@ use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -43,7 +42,8 @@ class EvaluationDataTable extends DataTable
      * When set, the query is scoped to this specific month+year.
      */
     protected ?int $filterMonth = null;
-    protected ?int $filterYear  = null;
+
+    protected ?int $filterYear = null;
 
     /**
      * Set which evaluation type this DataTable instance represents.
@@ -61,7 +61,7 @@ class EvaluationDataTable extends DataTable
     public function forPeriod(int $month, int $year): static
     {
         $this->filterMonth = $month;
-        $this->filterYear  = $year;
+        $this->filterYear = $year;
 
         return $this;
     }
@@ -72,8 +72,8 @@ class EvaluationDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         $calculator = app(EvaluationScoreCalculatorService::class);
-        $canGrade   = Auth::user()?->can('evaluation.grade') ?? false;
-        $type       = $this->type;
+        $canGrade = Auth::user()?->can('evaluation.grade') ?? false;
+        $type = $this->type;
 
         $dt = (new EloquentDataTable($query))
             ->addColumn('grade', function (Employee $row) {
@@ -86,9 +86,9 @@ class EvaluationDataTable extends DataTable
                     $evalData->total >= 91 => 'A',
                     $evalData->total >= 71 => 'B',
                     $evalData->total >= 61 => 'C',
-                    default                => 'D',
+                    default => 'D',
                 };
-                
+
                 $color = match ($grade) {
                     'A' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
                     'B' => 'bg-sky-100 text-sky-800 border-sky-200',
@@ -98,13 +98,13 @@ class EvaluationDataTable extends DataTable
 
                 return '<span class="px-2.5 py-1 rounded-md text-xs font-bold border ' . $color . '">' . $grade . '</span>';
             })
-            ->addColumn('action', function (Employee $row) use ($type, $canGrade) {
+            ->addColumn('action', function (Employee $row) use ($canGrade) {
                 if (! $canGrade) {
                     return '<span class="text-xs text-slate-400 italic">No Access</span>';
                 }
 
                 $evalData = $row->evaluationData->first();
-                $status   = $evalData?->approval_status;
+                $status = $evalData?->approval_status;
 
                 // Derive lock from approval_status — no is_lock column needed
                 $isLocked = in_array($status, ['dept_approved', 'fully_approved']);
@@ -116,15 +116,15 @@ class EvaluationDataTable extends DataTable
                 }
 
                 $updateUrl = route('evaluation.grade.nik', [
-                    'nik'   => $row->nik,
+                    'nik' => $row->nik,
                     'month' => $this->filterMonth ?: date('n'),
-                    'year'  => $this->filterYear  ?: date('Y'),
+                    'year' => $this->filterYear ?: date('Y'),
                 ]);
 
                 $fetchUrl = route('evaluation.show.nik', [
-                    'nik'   => $row->nik,
+                    'nik' => $row->nik,
                     'month' => $this->filterMonth ?: date('n'),
-                    'year'  => $this->filterYear  ?: date('Y'),
+                    'year' => $this->filterYear ?: date('Y'),
                 ]);
 
                 [$icon, $label, $style] = $evalData
@@ -139,14 +139,14 @@ class EvaluationDataTable extends DataTable
             })
             ->addColumn('approval_status', function (Employee $row) {
                 $evalData = $row->evaluationData->first();
-                $status   = $evalData?->approval_status ?? 'pending';
+                $status = $evalData?->approval_status ?? 'pending';
 
                 [$label, $classes] = match ($status) {
-                    'graded'         => ['Graded',       'bg-amber-100 text-amber-800 border-amber-200'],
-                    'dept_approved'  => ['Dept Approved','bg-sky-100 text-sky-800 border-sky-200'],
+                    'graded' => ['Graded',       'bg-amber-100 text-amber-800 border-amber-200'],
+                    'dept_approved' => ['Dept Approved', 'bg-sky-100 text-sky-800 border-sky-200'],
                     'fully_approved' => ['Final',        'bg-emerald-100 text-emerald-800 border-emerald-200'],
-                    'rejected'       => ['Rejected',     'bg-rose-100 text-rose-800 border-rose-200'],
-                    default          => ['Pending',      'bg-slate-100 text-slate-500 border-slate-200'],
+                    'rejected' => ['Rejected',     'bg-rose-100 text-rose-800 border-rose-200'],
+                    default => ['Pending',      'bg-slate-100 text-slate-500 border-slate-200'],
                 };
 
                 return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ' . $classes . '">' . $label . '</span>';
@@ -158,19 +158,28 @@ class EvaluationDataTable extends DataTable
                 }
 
                 $badges = [];
-                if ($evalData->Alpha > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $evalData->Alpha . '</span>';
-                if ($evalData->Telat > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $evalData->Telat . '</span>';
-                if ($evalData->Izin > 0)  $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $evalData->Izin . '</span>';
-                if ($evalData->Sakit > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $evalData->Sakit . '</span>';
+                if ($evalData->Alpha > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $evalData->Alpha . '</span>';
+                }
+                if ($evalData->Telat > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $evalData->Telat . '</span>';
+                }
+                if ($evalData->Izin > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $evalData->Izin . '</span>';
+                }
+                if ($evalData->Sakit > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $evalData->Sakit . '</span>';
+                }
 
                 if (empty($badges)) {
                     return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
                 }
-                
+
                 return '<div class="flex flex-wrap gap-1 items-center justify-center text-xs">' . implode('', $badges) . '</div>';
             })
             ->addColumn('total', function (Employee $row) {
                 $evalData = $row->evaluationData->first();
+
                 return $evalData ? $evalData->total : 0;
             })
             ->rawColumns(['grade', 'approval_status', 'absence_summary', 'action'])
@@ -178,12 +187,12 @@ class EvaluationDataTable extends DataTable
             ->orderColumn('total', function ($query, $order) {
                 // Server-side sort for the computed 'total' column via a correlated sub-query.
                 $month = $this->filterMonth;
-                $year  = $this->filterYear;
+                $year = $this->filterYear;
 
                 $sub = EvaluationData::select('total')
                     ->whereColumn('nik', 'employees.nik')
                     ->when($month, fn ($q) => $q->whereMonth('Month', $month))
-                    ->when($year,  fn ($q) => $q->whereYear('Month', $year))
+                    ->when($year, fn ($q) => $q->whereYear('Month', $year))
                     ->limit(1);
 
                 $query->orderBy($sub, $order);
@@ -191,35 +200,41 @@ class EvaluationDataTable extends DataTable
             ->filterColumn('total', function ($query, $keyword) {
                 // Allow filtering/searching by numeric total value.
                 $month = $this->filterMonth;
-                $year  = $this->filterYear;
+                $year = $this->filterYear;
 
                 $query->whereHas('evaluationData', function ($q) use ($keyword, $month, $year) {
                     $q->when($month, fn ($q) => $q->whereMonth('Month', $month))
-                      ->when($year,  fn ($q) => $q->whereYear('Month', $year))
-                      ->where('total', 'like', "%{$keyword}%");
+                        ->when($year, fn ($q) => $q->whereYear('Month', $year))
+                        ->where('total', 'like', "%{$keyword}%");
                 });
             });
 
         // Regular: add old-system computed columns (split attendance + criteria)
         if ($type === 'regular') {
             $dt->addColumn('totalkehadiran', function (Employee $row) {
-                    $evalData = $row->evaluationData->first();
-                    if (! $evalData) return 0;
-                    
-                    $deduction = ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5);
-                    return max(0, 40 - $deduction);
-                })
+                $evalData = $row->evaluationData->first();
+                if (! $evalData) {
+                    return 0;
+                }
+
+                $deduction = ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5);
+
+                return max(0, 40 - $deduction);
+            })
                 ->addColumn('totaldiscipline', function (Employee $row) use ($calculator) {
                     $evalData = $row->evaluationData->first();
-                    if (! $evalData) return 0;
+                    if (! $evalData) {
+                        return 0;
+                    }
 
                     $scores = [
                         'kerajinan_kerja' => $evalData->kerajinan_kerja,
-                        'kerapian_kerja'  => $evalData->kerapian_kerja,
-                        'prestasi'        => $evalData->prestasi,
-                        'loyalitas'       => $evalData->loyalitas,
-                        'perilaku_kerja'  => $evalData->perilaku_kerja,
+                        'kerapian_kerja' => $evalData->kerapian_kerja,
+                        'prestasi' => $evalData->prestasi,
+                        'loyalitas' => $evalData->loyalitas,
+                        'perilaku_kerja' => $evalData->perilaku_kerja,
                     ];
+
                     return $calculator->calculateTotalOld($scores, $evalData) - 40 + (
                         ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5)
                     );
@@ -229,36 +244,42 @@ class EvaluationDataTable extends DataTable
         // Yayasan / Magang: new 9-field system + approval row colouring
         if (in_array($type, ['yayasan', 'magang'], true)) {
             $dt->addColumn('totaldiscipline', function (Employee $row) use ($calculator) {
-                    $evalData = $row->evaluationData->first();
-                    if (! $evalData) return 0;
+                $evalData = $row->evaluationData->first();
+                if (! $evalData) {
+                    return 0;
+                }
 
-                    $scores = [
-                        'kemampuan_kerja'   => $evalData->kemampuan_kerja,
-                        'kecerdasan_kerja'  => $evalData->kecerdasan_kerja,
-                        'qualitas_kerja'    => $evalData->qualitas_kerja,
-                        'disiplin_kerja'    => $evalData->disiplin_kerja,
-                        'kepatuhan_kerja'   => $evalData->kepatuhan_kerja,
-                        'lembur'            => $evalData->lembur,
-                        'efektifitas_kerja' => $evalData->efektifitas_kerja,
-                        'relawan'           => $evalData->relawan,
-                        'integritas'        => $evalData->integritas,
-                    ];
-                    return $calculator->calculateTotal($scores, $evalData);
-                })
+                $scores = [
+                    'kemampuan_kerja' => $evalData->kemampuan_kerja,
+                    'kecerdasan_kerja' => $evalData->kecerdasan_kerja,
+                    'qualitas_kerja' => $evalData->qualitas_kerja,
+                    'disiplin_kerja' => $evalData->disiplin_kerja,
+                    'kepatuhan_kerja' => $evalData->kepatuhan_kerja,
+                    'lembur' => $evalData->lembur,
+                    'efektifitas_kerja' => $evalData->efektifitas_kerja,
+                    'relawan' => $evalData->relawan,
+                    'integritas' => $evalData->integritas,
+                ];
+
+                return $calculator->calculateTotal($scores, $evalData);
+            })
                 ->addColumn('pengawas', function (Employee $row) {
                     $evalData = $row->evaluationData->first();
+
                     return $evalData ? $evalData->pengawas : null;
                 })
                 ->setRowAttr([
                     'class' => function (Employee $row) {
                         $evalData = $row->evaluationData->first();
-                        if (! $evalData) return 'bg-slate-50/50';
+                        if (! $evalData) {
+                            return 'bg-slate-50/50';
+                        }
 
                         return match ($evalData->approval_status) {
-                            'rejected'       => 'table-danger',
+                            'rejected' => 'table-danger',
                             'fully_approved' => 'table-primary',
-                            'dept_approved'  => 'table-success',
-                            default          => '',
+                            'dept_approved' => 'table-success',
+                            default => '',
                         };
                     },
                 ]);
@@ -274,14 +295,14 @@ class EvaluationDataTable extends DataTable
      */
     public function query(Employee $model): QueryBuilder
     {
-        $user     = Auth::user();
+        $user = Auth::user();
         $resolver = app(DepartmentEmployeeResolver::class);
 
         try {
             $employees = match ($this->type) {
                 'yayasan' => $resolver->resolveYayasanForUser($user),
-                'magang'  => $resolver->resolveMagangForUser($user),
-                default   => $resolver->resolveForUser($user),
+                'magang' => $resolver->resolveMagangForUser($user),
+                default => $resolver->resolveForUser($user),
             };
         } catch (\Throwable) {
             $employees = collect();
@@ -307,20 +328,32 @@ class EvaluationDataTable extends DataTable
         // 3. Apply optional status filter from stats cards click
         if ($statusFilter = $this->request()->get('status')) {
             if ($statusFilter === 'pending') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->whereDoesntHave('evaluationData', function ($sub) {
-                        if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
-                        if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                        if ($this->filterMonth) {
+                            $sub->whereMonth('Month', $this->filterMonth);
+                        }
+                        if ($this->filterYear) {
+                            $sub->whereYear('Month', $this->filterYear);
+                        }
                     })->orWhereHas('evaluationData', function ($sub) {
-                        if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
-                        if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                        if ($this->filterMonth) {
+                            $sub->whereMonth('Month', $this->filterMonth);
+                        }
+                        if ($this->filterYear) {
+                            $sub->whereYear('Month', $this->filterYear);
+                        }
                         $sub->where('approval_status', 'pending');
                     });
                 });
             } else {
                 $query->whereHas('evaluationData', function ($sub) use ($statusFilter) {
-                    if ($this->filterMonth) $sub->whereMonth('Month', $this->filterMonth);
-                    if ($this->filterYear)  $sub->whereYear('Month', $this->filterYear);
+                    if ($this->filterMonth) {
+                        $sub->whereMonth('Month', $this->filterMonth);
+                    }
+                    if ($this->filterYear) {
+                        $sub->whereYear('Month', $this->filterYear);
+                    }
                     $sub->where('approval_status', $statusFilter);
                 });
             }
@@ -364,17 +397,17 @@ class EvaluationDataTable extends DataTable
      */
     public static function columnsForJs(string $type): array
     {
-        $instance = (new static())->forType($type);
+        $instance = (new static)->forType($type);
 
         return array_map(function (Column $col) {
             return [
-                'data'       => $col->data,
-                'name'       => $col->name,
-                'title'      => $col->title,
-                'orderable'  => $col->orderable ?? true,
+                'data' => $col->data,
+                'name' => $col->name,
+                'title' => $col->title,
+                'orderable' => $col->orderable ?? true,
                 'searchable' => $col->searchable ?? true,
-                'visible'    => $col->visible ?? true,
-                'className'  => $col->className ?? '',
+                'visible' => $col->visible ?? true,
+                'className' => $col->className ?? '',
             ];
         }, $instance->getColumns());
     }
@@ -390,8 +423,8 @@ class EvaluationDataTable extends DataTable
     {
         return match ($this->type) {
             'yayasan' => 'disciplineyayasantable-table',
-            'magang'  => 'disciplinemagang-table',
-            default   => 'disciplinetable-table',
+            'magang' => 'disciplinemagang-table',
+            default => 'disciplinetable-table',
         };
     }
 

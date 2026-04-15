@@ -2,13 +2,12 @@
 
 namespace App\Livewire\DeliveryNote;
 
-use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
-use App\Infrastructure\Persistence\Eloquent\Models\Destination;
-use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Layout;
-use Livewire\Component;
 use App\Domains\Operations\Actions\CreateDeliveryNote;
 use App\Domains\Operations\Actions\UpdateDeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
+use App\Infrastructure\Persistence\Eloquent\Models\Destination;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('new.layouts.app')]
 class DeliveryNoteForm extends Component
@@ -169,6 +168,7 @@ class DeliveryNoteForm extends Component
             $total += (float) ($dest['kenek_cost'] ?? 0);
             $total += (float) ($dest['balikan_cost'] ?? 0);
         }
+
         return $total;
     }
 

@@ -10,14 +10,14 @@ class SearchFilter implements OvertimeFilter
 
     public function apply(Builder $query): void
     {
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $s = trim($this->search);
             $query->where(function ($qq) use ($s) {
                 if (ctype_digit($s)) {
                     $qq->orWhere('id', (int) $s);
                 }
                 $qq->orWhere('branch', 'like', $s . '%')
-                   ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $s . '%'));
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $s . '%'));
             });
         }
     }

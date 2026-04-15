@@ -660,11 +660,11 @@
                                                             :style="holding
                                                                 ?
                                                                 `transform: scale(.98);
-                                                                                                                                                                                                                                                                                                                                                                           background: linear-gradient(to right,
-                                                                                                                                                                                                                                                                                                                                                                             rgba(220,38,38,.15) 0%,
-                                                                                                                                                                                                                                                                                                                                                                             rgba(220,38,38,.15) ${progress}%,
-                                                                                                                                                                                                                                                                                                                                                                             transparent ${progress}%,
-                                                                                                                                                                                                                                                                                                                                                                             transparent 100%);` :
+                                                                                                                                                                                                                                                                                                                                                                                                                                       background: linear-gradient(to right,
+                                                                                                                                                                                                                                                                                                                                                                                                                                         rgba(220,38,38,.15) 0%,
+                                                                                                                                                                                                                                                                                                                                                                                                                                         rgba(220,38,38,.15) ${progress}%,
+                                                                                                                                                                                                                                                                                                                                                                                                                                         transparent ${progress}%,
+                                                                                                                                                                                                                                                                                                                                                                                                                                         transparent 100%);` :
                                                                 ''">
                                                             {{ $tag->name }}
                                                             <button type="button" class="text-[10px] text-red-500"
@@ -942,5 +942,5 @@
                 </div>
             @endif
         </div>
-    </div>
-</div>
+        </div>
+        </div>

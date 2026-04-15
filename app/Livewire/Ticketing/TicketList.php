@@ -14,12 +14,25 @@ class TicketList extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public string $priorityFilter = '';
 
-    public function updatingSearch() { $this->resetPage(); }
-    public function updatingStatusFilter() { $this->resetPage(); }
-    public function updatingPriorityFilter() { $this->resetPage(); }
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPriorityFilter()
+    {
+        $this->resetPage();
+    }
 
     public function gotoDetail($id)
     {
@@ -36,8 +49,8 @@ class TicketList extends Component
                         ->orWhere('ticket_number', 'like', "%{$this->search}%");
                 });
             })
-            ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->priorityFilter, fn($q) => $q->where('priority', $this->priorityFilter))
+            ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->priorityFilter, fn ($q) => $q->where('priority', $this->priorityFilter))
             ->latest('created_at');
 
         return view('livewire.ticketing.ticket-list', [

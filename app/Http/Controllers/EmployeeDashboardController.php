@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EmployeeDataTable;
 use App\DataTables\EmployeeWithEvaluationDataTable;
-use App\Jobs\SyncEmployeesJob;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Jobs\SyncEmployeesJob;
 use App\Models\EvaluationDataWeekly;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

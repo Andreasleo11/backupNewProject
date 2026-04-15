@@ -100,4 +100,3 @@ class NotifyOvertimeApprovers extends Command
         }
     }
 }
-

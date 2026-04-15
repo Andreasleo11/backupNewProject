@@ -5,8 +5,10 @@
 
     {{-- Status chip (kept stable with wire:ignore; listens for events) --}}
     <div wire:ignore x-data="{ dirty: false, saved: @js($isSaved), ts: @js($savedAt) }" x-init="const root = $el.closest('[data-step-judgement]');;
-    const markDirty = () => { dirty = true;
-        saved = false };
+    const markDirty = () => {
+        dirty = true;
+        saved = false
+    };
     
     root.addEventListener('input', markDirty, { capture: true });
     root.addEventListener('change', markDirty, { capture: true });
@@ -16,9 +18,11 @@
         saved = true;
         ts = e?.savedAt ?? new Date().toISOString();
     });
-    Livewire.on('judgementReset', () => { dirty = false;
+    Livewire.on('judgementReset', () => {
+        dirty = false;
         saved = false;
-        ts = null });" class="mb-2" aria-live="polite">
+        ts = null
+    });" class="mb-2" aria-live="polite">
         <template x-if="dirty">
             <span class="badge rounded-pill bg-warning text-dark">
                 <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes

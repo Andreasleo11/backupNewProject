@@ -152,14 +152,14 @@ class PurchaseRequest extends Model implements Approvable
         $creator = $this->creator;
         if ($creator) {
             $signatures[] = [
-                'step_code'  => 'Prepared By',
-                'user'       => $creator,
-                'name'       => $creator->name,
-                'image'      => $this->creator_signature_url,
-                'at'         => $this->created_at,
-                'status'     => 'signed',
+                'step_code' => 'Prepared By',
+                'user' => $creator,
+                'name' => $creator->name,
+                'image' => $this->creator_signature_url,
+                'at' => $this->created_at,
+                'status' => 'signed',
                 'is_current' => false,
-                'source'     => 'creator',
+                'source' => 'creator',
             ];
         }
 
@@ -345,7 +345,7 @@ class PurchaseRequest extends Model implements Approvable
 
     public function getApprovableIdentifier(): string
     {
-        return $this->pr_no ?? (string)$this->doc_num;
+        return $this->pr_no ?? (string) $this->doc_num;
     }
 
     public function getApprovableShowUrl(): string

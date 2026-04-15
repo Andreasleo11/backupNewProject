@@ -39,8 +39,11 @@ class Index extends Component
 
     // Generation Properties
     public bool $showGenerateButton = false;
+
     public ?string $generationMonth = null;
+
     public bool $isConfirmingGeneration = false;
+
     public array $generationPreview = [];
 
     // Whitelist sort fields -> db columns
@@ -114,7 +117,7 @@ class Index extends Component
 
     public function cloneReport(int $id, BudgetSummaryService $service): void
     {
-        // For simplicity, we clone to the current month if not specified, 
+        // For simplicity, we clone to the current month if not specified,
         // but typically the service might handle logic or we could prompt.
         // For now, let's clone to "next month" relative to the source.
         $source = Report::find($id);
@@ -199,12 +202,12 @@ class Index extends Component
     public function generateConfirmed(BudgetSummaryService $service): void
     {
         $date = $this->normalizeMonth($this->generationMonth);
-        
+
         // Find all approved reports for this month
         $carbonDate = \Carbon\Carbon::parse($date);
         $approvedReports = \App\Models\MonthlyBudgetReport::whereYear('report_date', $carbonDate->year)
             ->whereMonth('report_date', $carbonDate->month)
-            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED'))
+            ->whereHas('approvalRequest', fn ($q) => $q->where('status', 'APPROVED'))
             ->get();
 
         if ($approvedReports->isEmpty()) {
@@ -212,27 +215,27 @@ class Index extends Component
             session()->flash('error', $msg);
             $this->dispatch('flash', type: 'error', message: $msg);
             $this->dispatch('toast', type: 'error', message: $msg);
-            
+
             return;
         }
 
         // Separate reports: Moulding (363) vs Others
-        $mouldingReports = $approvedReports->filter(fn($r) => $r->dept_no == '363');
-        $generalReports = $approvedReports->filter(fn($r) => $r->dept_no != '363');
+        $mouldingReports = $approvedReports->filter(fn ($r) => $r->dept_no == '363');
+        $generalReports = $approvedReports->filter(fn ($r) => $r->dept_no != '363');
 
         $reportsToGenerate = [];
-        
+
         if ($mouldingReports->isNotEmpty()) {
             $reportsToGenerate[] = [
                 'is_moulding' => true,
-                'reports' => $mouldingReports->groupBy('dept_no')
+                'reports' => $mouldingReports->groupBy('dept_no'),
             ];
         }
 
         if ($generalReports->isNotEmpty()) {
             $reportsToGenerate[] = [
                 'is_moulding' => false,
-                'reports' => $generalReports->groupBy('dept_no')
+                'reports' => $generalReports->groupBy('dept_no'),
             ];
         }
 
@@ -245,7 +248,7 @@ class Index extends Component
                 'is_moulding' => $group['is_moulding'],
             ];
 
-            $reportsMap = $group['reports']->map(fn($g) => $g->pluck('id')->toArray())->toArray();
+            $reportsMap = $group['reports']->map(fn ($g) => $g->pluck('id')->toArray())->toArray();
             $result = $service->createSummary($data, $reportsMap);
             if ($result['success']) {
                 $successCount++;
@@ -260,6 +263,7 @@ class Index extends Component
 
             $this->isConfirmingGeneration = false;
             $this->generationMonth = null;
+
             return;
         }
 
@@ -280,11 +284,11 @@ class Index extends Component
 
         // Role based visibility
         if ($user->hasRole('DIRECTOR')) {
-            $query->whereHas('approvalRequest', fn($q) => $q->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']));
+            $query->whereHas('approvalRequest', fn ($q) => $q->whereIn('status', ['IN_REVIEW', 'APPROVED', 'REJECTED']));
         } elseif ($user->is_head && $user->hasRole('DESIGN')) {
-            $query->whereHas('approvalRequest', fn($q) => $q->where('status', 'IN_REVIEW'));
+            $query->whereHas('approvalRequest', fn ($q) => $q->where('status', 'IN_REVIEW'));
         } elseif ($user->is_gm) {
-            $query->whereHas('approvalRequest', fn($q) => $q->where('status', 'IN_REVIEW'));
+            $query->whereHas('approvalRequest', fn ($q) => $q->where('status', 'IN_REVIEW'));
         }
 
         // Keyword
@@ -303,7 +307,7 @@ class Index extends Component
             if ($this->status === 'DRAFT') {
                 $query->whereDoesntHave('approvalRequest');
             } else {
-                $query->whereHas('approvalRequest', fn($q) => $q->where('status', $this->status));
+                $query->whereHas('approvalRequest', fn ($q) => $q->where('status', $this->status));
             }
         }
 

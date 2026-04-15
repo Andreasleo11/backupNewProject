@@ -10,7 +10,7 @@ class ApprovableModuleScanner
 {
     /**
      * Scan the application to find all classes implementing the Approvable interface.
-     * 
+     *
      * @return array<string, string> Map of class name to human-readable label
      */
     public function scan(): array
@@ -31,7 +31,7 @@ class ApprovableModuleScanner
 
                 $className = $this->getClassNameFromFile($file->getRealPath());
 
-                if (!$className || !class_exists($className)) {
+                if (! $className || ! class_exists($className)) {
                     continue;
                 }
 

@@ -41,4 +41,3 @@ class OvertimeSummarySheet implements FromView
         return view('formovertime.export_summary_excel', compact('summary'));
     }
 }
-

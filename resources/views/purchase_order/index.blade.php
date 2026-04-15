@@ -187,7 +187,8 @@
                     },
                     error: function() {
                         alert(
-                        'An error occurred while rejecting the selected purchase orders.');
+                            'An error occurred while rejecting the selected purchase orders.'
+                            );
                     },
                 });
             });

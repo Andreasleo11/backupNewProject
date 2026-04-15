@@ -16,22 +16,21 @@ final class StatusFilter implements PurchaseRequestFilter
     {
         $query->where(function ($q) {
             match ($this->status) {
-                'DRAFT'     => $q->where(fn ($s) =>
-                                   $s->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'DRAFT'))
-                                     ->orWhereDoesntHave('approvalRequest')),
-                'CANCELED'  => $q->where('purchase_requests.is_cancel', 1),
+                'DRAFT' => $q->where(fn ($s) => $s->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'DRAFT'))
+                    ->orWhereDoesntHave('approvalRequest')),
+                'CANCELED' => $q->where('purchase_requests.is_cancel', 1),
                 'IN_REVIEW' => $q->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'IN_REVIEW')),
-                'APPROVED'  => $q->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'APPROVED')),
-                'REJECTED'  => $q->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'REJECTED')),
-                default     => null,
+                'APPROVED' => $q->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'APPROVED')),
+                'REJECTED' => $q->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'REJECTED')),
+                default => null,
             };
         });
 
         // For non-cancelled status queries, exclude hard-cancelled PRs
         if ($this->status !== 'CANCELED') {
-            $query->where(fn ($q) =>
-                $q->whereNull('purchase_requests.is_cancel')
-                  ->orWhere('purchase_requests.is_cancel', 0)
+            $query->where(
+                fn ($q) => $q->whereNull('purchase_requests.is_cancel')
+                    ->orWhere('purchase_requests.is_cancel', 0)
             );
         }
     }

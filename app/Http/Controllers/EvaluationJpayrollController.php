@@ -45,10 +45,10 @@ class EvaluationJpayrollController extends Controller
     public function index(Request $request)
     {
         $month = (int) ($request->input('month') ?? now()->month);
-        $year  = (int) ($request->input('year')  ?? now()->year);
+        $year = (int) ($request->input('year') ?? now()->year);
 
         $departmentStatus = $this->statusService->getDepartmentStatusForMonth($month, $year);
-        $readyCount       = count(array_filter($departmentStatus, fn ($s) => $s === 'Ready'));
+        $readyCount = count(array_filter($departmentStatus, fn ($s) => $s === 'Ready'));
 
         return view('evaluation.jpayroll.index', compact('departmentStatus', 'month', 'year', 'readyCount'));
     }
@@ -64,9 +64,9 @@ class EvaluationJpayrollController extends Controller
     public function download(Request $request)
     {
         $month = (int) $request->input('month');
-        $year  = (int) $request->input('year');
+        $year = (int) $request->input('year');
 
-        $rows     = $this->statusService->exportJpayrollCollection($month, $year);
+        $rows = $this->statusService->exportJpayrollCollection($month, $year);
         $fileName = sprintf('EvaluasiYayasan-JPayroll_%d-%02d.xlsx', $year, $month);
 
         return Excel::download(
@@ -87,7 +87,7 @@ class EvaluationJpayrollController extends Controller
     {
         try {
             $month = (int) ($request->input('month') ?? now()->month);
-            $year  = (int) ($request->input('year')  ?? now()->year);
+            $year = (int) ($request->input('year') ?? now()->year);
 
             $data = $this->statusService->getDepartmentStatusForMonth($month, $year);
 

@@ -123,16 +123,16 @@
                         <span class="hidden sm:inline">Send mail</span>
                     </button>
                 @endif
-                
+
                 {{-- Upload files --}}
                 <!-- Should implement permission guard -->
                 <button type="button"
-                        class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
+                    class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
                                    px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                        @click="openUploadFiles = true">
-                        <i class="bx bx-upload text-sm"></i>
-                        <span class="hidden sm:inline">Upload</span>
+                    @click="openUploadFiles = true">
+                    <i class="bx bx-upload text-sm"></i>
+                    <span class="hidden sm:inline">Upload</span>
                 </button>
 
                 {{-- Adjust form --}}
@@ -722,7 +722,7 @@
             @include('partials.file-attachments', [
                 'files' => $report->files,
                 'showDelete' => true,
-                'title' => 'Related Documents'
+                'title' => 'Related Documents',
             ])
         </div>
     </div>

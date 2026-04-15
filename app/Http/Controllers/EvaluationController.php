@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EvaluationDataTable;
 use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
-use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Domain\Evaluation\Services\EvaluationApprovalService;
+use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 /**
  * EvaluationController
@@ -28,7 +28,7 @@ class EvaluationController extends Controller
 {
     public function __construct(
         private DepartmentEmployeeResolver $resolver,
-        private EvaluationApprovalService  $approvalService,
+        private EvaluationApprovalService $approvalService,
     ) {}
 
     // ──────────────────────────────────────────────────────
@@ -42,13 +42,13 @@ class EvaluationController extends Controller
      */
     public function index(Request $request, ?int $month = null, ?int $year = null)
     {
-        $user      = Auth::user();
+        $user = Auth::user();
         $prevMonth = now()->subMonth();
 
         // Default: previous month (so grading in current month evaluates prior period).
         // subMonth() handles Jan→Dec cross-year automatically.
         $month ??= (int) $prevMonth->format('m');
-        $year  ??= (int) $prevMonth->format('Y');
+        $year ??= (int) $prevMonth->format('Y');
 
         $isElevated = $user->canAny(['evaluation.view-any', 'evaluation.approve-final']);
 
@@ -56,14 +56,14 @@ class EvaluationController extends Controller
         // Allowed window = Jan 1 of prevMonth.year  →  prevMonth (handles Dec/Jan edge).
         if (! $isElevated) {
             $allowedStart = $prevMonth->copy()->startOfYear();
-            $selected     = \Carbon\Carbon::createFromDate($year, $month, 1);
+            $selected = \Carbon\Carbon::createFromDate($year, $month, 1);
 
             if ($selected->lt($allowedStart) || $selected->gt($prevMonth->copy()->endOfMonth())) {
                 return redirect()->route('evaluation.index');
             }
         }
 
-        $deptNo  = $isElevated ? null : $user->department?->dept_no;
+        $deptNo = $isElevated ? null : $user->department?->dept_no;
 
         // Status summary for the header chips
         $summary = $this->approvalService->statusSummary($month, $year, $deptNo);
@@ -74,15 +74,15 @@ class EvaluationController extends Controller
             ->exists();
 
         // Can export? All records for this period must be fully_approved (if deptNo is null, it checks company-wide)
-        $canExport       = $this->approvalService->canExport($month, $year, $deptNo);
-        $canApproveDept  = $user->can('evaluation.approve-department');
+        $canExport = $this->approvalService->canExport($month, $year, $deptNo);
+        $canApproveDept = $user->can('evaluation.approve-department');
         $canApproveFinal = $user->can('evaluation.approve-final');
 
         // Which tabs is this user allowed to see?
         $allowedTabs = array_values(array_filter([
             $user->can('evaluation.view-regular') ? 'regular' : null,
             $user->can('evaluation.view-yayasan') ? 'yayasan' : null,
-            $user->can('evaluation.view-magang')  ? 'magang'  : null,
+            $user->can('evaluation.view-magang') ? 'magang' : null,
         ]));
 
         if (empty($allowedTabs)) {
@@ -90,9 +90,16 @@ class EvaluationController extends Controller
         }
 
         return view('evaluation.index', compact(
-            'month', 'year', 'user', 'summary',
-            'canExport', 'canApproveDept', 'canApproveFinal',
-            'allowedTabs', 'hasData', 'isElevated'
+            'month',
+            'year',
+            'user',
+            'summary',
+            'canExport',
+            'canApproveDept',
+            'canApproveFinal',
+            'allowedTabs',
+            'hasData',
+            'isElevated'
         ));
     }
 
@@ -107,7 +114,7 @@ class EvaluationController extends Controller
     public function dataRegular(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year',  now()->year);
+        $year = $request->integer('year', now()->year);
 
         return $dataTable->forType('regular')->forPeriod($month, $year)->ajax();
     }
@@ -119,7 +126,7 @@ class EvaluationController extends Controller
     public function dataYayasan(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year',  now()->year);
+        $year = $request->integer('year', now()->year);
 
         return $dataTable->forType('yayasan')->forPeriod($month, $year)->ajax();
     }
@@ -131,7 +138,7 @@ class EvaluationController extends Controller
     public function dataMagang(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year',  now()->year);
+        $year = $request->integer('year', now()->year);
 
         return $dataTable->forType('magang')->forPeriod($month, $year)->ajax();
     }
@@ -147,6 +154,7 @@ class EvaluationController extends Controller
     public function grade(Request $request, int $id)
     {
         $record = EvaluationData::with('karyawan')->findOrFail($id);
+
         return $this->processGrading($request, $record);
     }
 
@@ -158,13 +166,13 @@ class EvaluationController extends Controller
     public function gradeByNik(Request $request, string $nik, int $month, int $year)
     {
         $employee = Employee::where('nik', $nik)->firstOrFail();
-        
+
         $record = EvaluationData::firstOrNew([
             'NIK' => $nik,
             'Month' => Carbon::create($year, $month, 1)->format('Y-m-d'),
         ]);
 
-        if (!$record->exists) {
+        if (! $record->exists) {
             // Need to populate relations and base values for a new record to pass validation
             $record->pe_id = null; // Generated normally in some flow? It's nullable or default.
             $record->department_id = $employee->department->id ?? null;
@@ -184,9 +192,9 @@ class EvaluationController extends Controller
         $user = Auth::user();
 
         $fields = $record->useNewScoringSystem()
-            ? ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
-               'kepatuhan_kerja','lembur','efektifitas_kerja','relawan','integritas']
-            : ['kerajinan_kerja','kerapian_kerja','prestasi','loyalitas','perilaku_kerja'];
+            ? ['kemampuan_kerja', 'kecerdasan_kerja', 'qualitas_kerja', 'disiplin_kerja',
+                'kepatuhan_kerja', 'lembur', 'efektifitas_kerja', 'relawan', 'integritas']
+            : ['kerajinan_kerja', 'kerapian_kerja', 'prestasi', 'loyalitas', 'perilaku_kerja'];
 
         $scores = $request->only($fields);
 
@@ -220,11 +228,11 @@ class EvaluationController extends Controller
     {
         $this->authorize('evaluation.approve-department');
 
-        $user   = Auth::user();
+        $user = Auth::user();
         $deptNo = $user->department->dept_no;
-        $month   = $request->integer('month');
-        $year    = $request->integer('year');
-        $type    = $request->input('type'); // regular|yayasan|magang|null (all)
+        $month = $request->integer('month');
+        $year = $request->integer('year');
+        $type = $request->input('type'); // regular|yayasan|magang|null (all)
 
         $count = $this->approvalService->approveDept($month, $year, $deptNo, $user, $type);
 
@@ -243,10 +251,10 @@ class EvaluationController extends Controller
     {
         $this->authorize('evaluation.approve-final');
 
-        $user   = Auth::user();
-        $month  = $request->integer('month');
-        $year   = $request->integer('year');
-        $type   = $request->input('type');
+        $user = Auth::user();
+        $month = $request->integer('month');
+        $year = $request->integer('year');
+        $type = $request->input('type');
 
         $count = $this->approvalService->approveHrd($month, $year, $user, $type);
 
@@ -337,10 +345,10 @@ class EvaluationController extends Controller
         return response()->json(array_merge(
             $record->toArray(),
             [
-                'ytd_alpha'  => (int) ($ytd->ytd_alpha  ?? 0),
-                'ytd_telat'  => (int) ($ytd->ytd_telat  ?? 0),
-                'ytd_izin'   => (int) ($ytd->ytd_izin   ?? 0),
-                'ytd_sakit'  => (int) ($ytd->ytd_sakit  ?? 0),
+                'ytd_alpha' => (int) ($ytd->ytd_alpha ?? 0),
+                'ytd_telat' => (int) ($ytd->ytd_telat ?? 0),
+                'ytd_izin' => (int) ($ytd->ytd_izin ?? 0),
+                'ytd_sakit' => (int) ($ytd->ytd_sakit ?? 0),
                 'ytd_months' => (int) ($ytd->ytd_months ?? 0),
             ]
         ));
@@ -356,12 +364,12 @@ class EvaluationController extends Controller
      */
     public function summary(Request $request)
     {
-        $month  = $request->integer('month', now()->month);
-        $year   = $request->integer('year',  now()->year);
-        $type   = $request->input('type');
-        
+        $month = $request->integer('month', now()->month);
+        $year = $request->integer('year', now()->year);
+        $type = $request->input('type');
+
         $deptNo = Auth::user()->canAny(['evaluation.view-any', 'evaluation.approve-final'])
-            ? null 
+            ? null
             : Auth::user()->department?->dept_no;
 
         return response()->json(
@@ -389,20 +397,20 @@ class EvaluationController extends Controller
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('subject_id', 'like', "%{$search}%")
-                  ->orWhereHas('causer', fn($q2) => $q2->where('name', 'like', "%{$search}%"));
+                    ->orWhere('subject_id', 'like', "%{$search}%")
+                    ->orWhereHas('causer', fn ($q2) => $q2->where('name', 'like', "%{$search}%"));
             });
         }
 
         $perPage = (int) $request->get('per_page', 50);
-        $page    = (int) $request->get('page', 1);
+        $page = (int) $request->get('page', 1);
 
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
         $data = $paginated->getCollection()->map(function ($activity) {
             $props = $activity->properties ?? collect();
-            $old   = $props->get('old', []);
-            $new   = $props->get('attributes', []);
+            $old = $props->get('old', []);
+            $new = $props->get('attributes', []);
 
             // Build a readable diff string
             $changes = [];
@@ -412,20 +420,20 @@ class EvaluationController extends Controller
             }
 
             return [
-                'id'          => $activity->id,
-                'date'        => $activity->created_at->format('d M Y H:i'),
-                'causer'      => $activity->causer?->name ?? 'System',
+                'id' => $activity->id,
+                'date' => $activity->created_at->format('d M Y H:i'),
+                'causer' => $activity->causer?->name ?? 'System',
                 'description' => $activity->description,
-                'subject_id'  => $activity->subject_id,
-                'changes'     => implode("\n", $changes) ?: '—',
+                'subject_id' => $activity->subject_id,
+                'changes' => implode("\n", $changes) ?: '—',
             ];
         });
 
         return response()->json([
-            'data'         => $data,
+            'data' => $data,
             'current_page' => $paginated->currentPage(),
-            'last_page'    => $paginated->lastPage(),
-            'total'        => $paginated->total(),
+            'last_page' => $paginated->lastPage(),
+            'total' => $paginated->total(),
         ]);
     }
 
@@ -442,11 +450,9 @@ class EvaluationController extends Controller
         $this->authorize('evaluation.approve-final');
 
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year',  now()->year);
-        $type  = $request->query('type', 'regular');
+        $year = $request->integer('year', now()->year);
+        $type = $request->query('type', 'regular');
 
         return $dataTable->forType($type)->forPeriod($month, $year)->excel();
     }
-
 }
-

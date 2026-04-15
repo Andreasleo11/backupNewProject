@@ -29,13 +29,13 @@
 
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('spk.monthlyreport') }}"
-                   class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                     Monthly report
                 </a>
 
                 @if ($showCreateButton)
                     <a href="{{ route('spk.create') }}"
-                       class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                        class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                         New report
                     </a>
                 @endif
@@ -44,9 +44,7 @@
 
         {{-- Filter panel --}}
         <div x-data="spkFilter()" class="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <form method="GET"
-                  action="{{ route('spk.index') }}"
-                  class="p-4 space-y-3">
+            <form method="GET" action="{{ route('spk.index') }}" class="p-4 space-y-3">
 
                 <div class="flex flex-wrap gap-3">
                     {{-- Column --}}
@@ -54,10 +52,8 @@
                         <label for="filter_column" class="block text-xs font-medium text-slate-600 mb-1">
                             Filter column
                         </label>
-                        <select id="filter_column"
-                                name="filter_column"
-                                x-model="column"
-                                class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <select id="filter_column" name="filter_column" x-model="column"
+                            class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">-- Select column --</option>
                             <option value="no_dokumen">No. Dokumen</option>
                             <option value="pelapor">Pelapor</option>
@@ -72,10 +68,8 @@
                         <label for="filter_action" class="block text-xs font-medium text-slate-600 mb-1">
                             Action
                         </label>
-                        <select id="filter_action"
-                                name="filter_action"
-                                x-model="action"
-                                class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <select id="filter_action" name="filter_action" x-model="action"
+                            class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">-- Select action --</option>
                             <option value="contains">Contains</option>
                             <option value="equals">Equals</option>
@@ -90,11 +84,8 @@
                         <label for="filter_value" class="block text-xs font-medium text-slate-600 mb-1">
                             Filter value
                         </label>
-                        <input id="filter_value"
-                               name="filter_value"
-                               x-model="value"
-                               :type="isDateColumn ? 'date' : 'text'"
-                               class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <input id="filter_value" name="filter_value" x-model="value" :type="isDateColumn ? 'date' : 'text'"
+                            class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
                     {{-- Value 2 (for between) --}}
@@ -102,26 +93,24 @@
                         <label for="filter_value_2" class="block text-xs font-medium text-slate-600 mb-1">
                             Filter value (to)
                         </label>
-                        <input id="filter_value_2"
-                               name="filter_value_2"
-                               x-model="value2"
-                               :type="isDateColumn ? 'date' : 'text'"
-                               class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <input id="filter_value_2" name="filter_value_2" x-model="value2"
+                            :type="isDateColumn ? 'date' : 'text'"
+                            class="block py-2 px-3 w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
                     {{-- Buttons --}}
                     <div class="flex items-end gap-2">
                         <button type="submit"
-                                class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                            class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                             Apply filter
                         </button>
 
                         @if (request()->filled('filter_column') ||
-                             request()->filled('filter_action') ||
-                             request()->filled('filter_value') ||
-                             request()->filled('filter_value_2'))
+                                request()->filled('filter_action') ||
+                                request()->filled('filter_value') ||
+                                request()->filled('filter_value_2'))
                             <a href="{{ route('spk.index') }}"
-                               class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50">
+                                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50">
                                 Reset
                             </a>
                         @endif

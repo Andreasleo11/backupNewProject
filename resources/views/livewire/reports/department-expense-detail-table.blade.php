@@ -27,20 +27,15 @@
                     <span class="mr-2 text-slate-400">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input
-                        type="search"
-                        class="flex-1 bg-transparent text-xs sm:text-sm focus:outline-none"
-                        placeholder="Search item/source/uom…"
-                        wire:model.live.debounce.300ms="search"
-                    >
+                    <input type="search" class="flex-1 bg-transparent text-xs sm:text-sm focus:outline-none"
+                        placeholder="Search item/source/uom…" wire:model.live.debounce.300ms="search">
                 </div>
             </div>
 
             {{-- Per page --}}
             <select
                 class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs sm:text-sm text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                wire:model.live="perPage"
-            >
+                wire:model.live="perPage">
                 <option value="10">10 / page</option>
                 <option value="25">25 / page</option>
                 <option value="50">50 / page</option>
@@ -73,63 +68,41 @@
             <thead>
                 @php
                     $arrow = fn($col) => $sortBy === $col
-                        ? ($sortDir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill')
+                        ? ($sortDir === 'asc'
+                            ? 'bi-caret-up-fill'
+                            : 'bi-caret-down-fill')
                         : 'bi-filter';
                 @endphp
                 <tr class="border-b border-slate-200 bg-slate-50/80 text-xs uppercase text-slate-500">
-                    <th
-                        class="sortable px-3 py-2 font-medium"
-                        style="min-width: 112px;"
-                        wire:click="sort('expense_date')"
-                    >
+                    <th class="sortable px-3 py-2 font-medium" style="min-width: 112px;"
+                        wire:click="sort('expense_date')">
                         Date
                         <i class="bi {{ $arrow('expense_date') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 font-medium"
-                        style="min-width: 128px;"
-                        wire:click="sort('source')"
-                    >
+                    <th class="sortable px-3 py-2 font-medium" style="min-width: 128px;" wire:click="sort('source')">
                         Source
                         <i class="bi {{ $arrow('source') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 font-medium"
-                        style="min-width: 260px;"
-                        wire:click="sort('item_name')"
-                    >
+                    <th class="sortable px-3 py-2 font-medium" style="min-width: 260px;" wire:click="sort('item_name')">
                         Item
                         <i class="bi {{ $arrow('item_name') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 text-right font-medium"
-                        style="min-width: 100px;"
-                        wire:click="sort('quantity')"
-                    >
+                    <th class="sortable px-3 py-2 text-right font-medium" style="min-width: 100px;"
+                        wire:click="sort('quantity')">
                         Qty
                         <i class="bi {{ $arrow('quantity') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 font-medium"
-                        style="min-width: 80px;"
-                        wire:click="sort('uom')"
-                    >
+                    <th class="sortable px-3 py-2 font-medium" style="min-width: 80px;" wire:click="sort('uom')">
                         UoM
                         <i class="bi {{ $arrow('uom') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 text-right font-medium"
-                        style="min-width: 140px;"
-                        wire:click="sort('unit_price')"
-                    >
+                    <th class="sortable px-3 py-2 text-right font-medium" style="min-width: 140px;"
+                        wire:click="sort('unit_price')">
                         Unit Price
                         <i class="bi {{ $arrow('unit_price') }} ml-1"></i>
                     </th>
-                    <th
-                        class="sortable px-3 py-2 text-right font-medium"
-                        style="min-width: 160px;"
-                        wire:click="sort('line_total')"
-                    >
+                    <th class="sortable px-3 py-2 text-right font-medium" style="min-width: 160px;"
+                        wire:click="sort('line_total')">
                         Line Total
                         <i class="bi {{ $arrow('line_total') }} ml-1"></i>
                     </th>
@@ -138,8 +111,8 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse($rows as $l)
                     @php
-                        $isPR   = $l->source === 'purchase_request';
-                        $label  = $isPR ? 'Purchase Request' : 'Monthly Budget';
+                        $isPR = $l->source === 'purchase_request';
+                        $label = $isPR ? 'Purchase Request' : 'Monthly Budget';
                         $pillClasses = $isPR
                             ? 'bg-indigo-50 text-indigo-700 ring-indigo-100'
                             : 'bg-emerald-50 text-emerald-700 ring-emerald-100';
@@ -165,13 +138,9 @@
                             </span>
                         </td>
                         <td class="px-3 py-2 text-xs sm:text-sm">
-                            <a
-                                href="{{ $url }}"
-                                target="_blank"
-                                rel="noopener"
+                            <a href="{{ $url }}" target="_blank" rel="noopener"
                                 class="cell-clip text-indigo-600 underline-offset-2 hover:text-indigo-800 hover:underline"
-                                title="{{ $l->item_name }}"
-                            >
+                                title="{{ $l->item_name }}">
                                 {{ $l->item_name }}
                             </a>
                         </td>
@@ -211,14 +180,14 @@
                             Rp {{ number_format($sumTotal, 2, ',', '.') }}
                         </th>
                     </tr>
-                @endif
+            @endif
         </table>
     </div>
 
     {{-- Pagination + meta --}}
     @php
-        $from  = $rows->firstItem() ?? 0;
-        $to    = $rows->lastItem() ?? 0;
+        $from = $rows->firstItem() ?? 0;
+        $to = $rows->lastItem() ?? 0;
         $total = $rows->total();
     @endphp
 

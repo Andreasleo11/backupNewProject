@@ -32,7 +32,7 @@
             @if ($summary->count())
                 <div class="flex items-center gap-2">
                     <a href="{{ route('overtime.summary.export', ['start_date' => $start, 'end_date' => $end]) }}"
-                       class="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
+                        class="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
                         📥 Export ke Excel
                     </a>
                 </div>
@@ -43,42 +43,27 @@
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-100 px-4 py-3 sm:px-6">
                 {{-- Filter form --}}
-                <form method="GET"
-                      action="{{ route('overtime.summary') }}"
-                      class="grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr,1.2fr,auto] items-end">
+                <form method="GET" action="{{ route('overtime.summary') }}"
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr,1.2fr,auto] items-end">
                     <div>
                         <label for="start_date" class="block text-xs font-medium text-slate-700">
                             Tanggal Mulai
                         </label>
-                        <input
-                            type="date"
-                            id="start_date"
-                            name="start_date"
-                            value="{{ $start }}"
-                            required
-                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-                        >
+                        <input type="date" id="start_date" name="start_date" value="{{ $start }}" required
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60">
                     </div>
 
                     <div>
                         <label for="end_date" class="block text-xs font-medium text-slate-700">
                             Tanggal Selesai
                         </label>
-                        <input
-                            type="date"
-                            id="end_date"
-                            name="end_date"
-                            value="{{ $end }}"
-                            required
-                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-                        >
+                        <input type="date" id="end_date" name="end_date" value="{{ $end }}" required
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60">
                     </div>
 
                     <div class="flex sm:justify-end">
-                        <button
-                            type="submit"
-                            class="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                        >
+                        <button type="submit"
+                            class="inline-flex w-full sm:w-auto items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                             🔍 Tampilkan
                         </button>
                     </div>
@@ -160,7 +145,8 @@
                             Tidak ada data lembur ditemukan
                         </p>
                         <p class="text-xs text-slate-500">
-                            Pilih rentang tanggal di atas lalu klik <span class="font-semibold">Tampilkan</span> untuk melihat ringkasan lembur.
+                            Pilih rentang tanggal di atas lalu klik <span class="font-semibold">Tampilkan</span> untuk
+                            melihat ringkasan lembur.
                         </p>
                     </div>
                 @endif

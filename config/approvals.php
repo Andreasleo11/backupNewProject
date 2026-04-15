@@ -10,7 +10,7 @@ return [
     */
     'approvables' => [
         \App\Infrastructure\Persistence\Eloquent\Models\VerificationReport::class => 'Verification Report',
-        \App\Infrastructure\Persistence\Eloquent\Models\VerificationItem::class   => 'Verification Item',
+        \App\Infrastructure\Persistence\Eloquent\Models\VerificationItem::class => 'Verification Item',
         // add more…
     ],
 
@@ -33,7 +33,7 @@ return [
     */
     'department_links' => [
         'LOGISTIC' => ['STORE'],
-        'QC'       => ['QA'],
+        'QC' => ['QA'],
     ],
 
     /*

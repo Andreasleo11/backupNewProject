@@ -6,8 +6,7 @@
         <nav aria-label="Breadcrumb" class="text-sm">
             <ol class="flex flex-wrap gap-1 text-slate-500">
                 <li>
-                    <a href="{{ route('employee_trainings.index') }}"
-                       class="hover:text-slate-700">
+                    <a href="{{ route('employee_trainings.index') }}" class="hover:text-slate-700">
                         Employee Trainings
                     </a>
                 </li>
@@ -30,7 +29,7 @@
             </div>
 
             <a href="{{ route('employee_trainings.index') }}"
-               class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                 Back to List
             </a>
         </div>
@@ -79,11 +78,13 @@
                             <p class="text-sm">
                                 <span class="font-medium text-slate-600">Evaluated:</span>
                                 @if ($training->evaluated)
-                                    <span class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                                         Yes
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 ring-1 ring-rose-200">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 ring-1 ring-rose-200">
                                         No
                                     </span>
                                 @endif
@@ -96,17 +97,16 @@
             {{-- Footer actions --}}
             <div class="flex items-center justify-end gap-2 px-6 py-3 bg-slate-50 border-t border-slate-200">
                 <a href="{{ route('employee_trainings.edit', $training->id) }}"
-                   class="inline-flex items-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
                     Edit
                 </a>
 
-                <form action="{{ route('employee_trainings.destroy', $training->id) }}"
-                      method="POST"
-                      onsubmit="return confirm('Are you sure you want to delete this training record?');">
+                <form action="{{ route('employee_trainings.destroy', $training->id) }}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to delete this training record?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
-                            class="inline-flex items-center rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1">
+                        class="inline-flex items-center rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1">
                         Delete
                     </button>
                 </form>

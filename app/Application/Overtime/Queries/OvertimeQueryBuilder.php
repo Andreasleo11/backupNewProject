@@ -6,13 +6,11 @@ use App\Application\Overtime\Queries\Filters\DateRangeFilter;
 use App\Application\Overtime\Queries\Filters\DepartmentFilter;
 use App\Application\Overtime\Queries\Filters\HideSignedFilter;
 use App\Application\Overtime\Queries\Filters\OvertimeFilter;
-use App\Application\Overtime\Queries\Filters\PushStatusFilter;
 use App\Application\Overtime\Queries\Filters\SearchFilter;
 use App\Application\Overtime\Queries\Filters\StatusFilter;
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 /**
  * Unified entry point for all Overtime Form list queries.
@@ -23,20 +21,20 @@ class OvertimeQueryBuilder
     {
         $query = ($query ?? OvertimeForm::query())
             ->select([
-                'header_form_overtime.id', 
-                'header_form_overtime.user_id', 
-                'header_form_overtime.dept_id', 
-                'header_form_overtime.branch', 
+                'header_form_overtime.id',
+                'header_form_overtime.user_id',
+                'header_form_overtime.dept_id',
+                'header_form_overtime.branch',
                 'header_form_overtime.status',
-                'header_form_overtime.is_push', 
-                'header_form_overtime.is_planned', 
-                'header_form_overtime.is_after_hour', 
+                'header_form_overtime.is_push',
+                'header_form_overtime.is_planned',
+                'header_form_overtime.is_after_hour',
                 'header_form_overtime.created_at',
             ])
             ->addSelect([
                 'first_overtime_date' => \App\Domain\Overtime\Models\OvertimeFormDetail::selectRaw('MIN(start_date)')
                     ->whereColumn('header_id', 'header_form_overtime.id')
-                    ->limit(1)
+                    ->limit(1),
             ])
             ->with([
                 'user:id,name',
@@ -80,11 +78,11 @@ class OvertimeQueryBuilder
             $filters[] = new DateRangeFilter($params['startDate'], $params['endDate']);
         }
 
-        if (!empty($params['dept']) && $this->isPrivilegedUser($user)) {
+        if (! empty($params['dept']) && $this->isPrivilegedUser($user)) {
             $filters[] = new DepartmentFilter($params['dept']);
         }
 
-        if (!empty($params['infoStatus']) && !($params['excludeInfoStatus'] ?? false)) {
+        if (! empty($params['infoStatus']) && ! ($params['excludeInfoStatus'] ?? false)) {
             if ($params['infoStatus'] === 'my_approval') {
                 $filters[] = new \App\Application\Overtime\Queries\Filters\MyApprovalFilter($user);
             } else {
@@ -92,7 +90,7 @@ class OvertimeQueryBuilder
             }
         }
 
-        if (!empty($params['search'])) {
+        if (! empty($params['search'])) {
             $filters[] = new SearchFilter($params['search']);
         }
 
@@ -105,8 +103,8 @@ class OvertimeQueryBuilder
 
     private function isPrivilegedUser(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'director', 'general-manager']) || 
-               $user->can('overtime.view-all') || 
+        return $user->hasAnyRole(['super-admin', 'director', 'general-manager']) ||
+               $user->can('overtime.view-all') ||
                $user->can('approval.view-all');
     }
 }

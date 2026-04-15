@@ -2,16 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\EvaluationDataDataTable;
-use App\Exports\EvaluationDataExp;
-use App\Imports\EvaluationDataImport;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\EvaluationData;
-use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
 
 class EvaluationDataController extends Controller
 {
@@ -76,8 +69,6 @@ class EvaluationDataController extends Controller
 
         return view('setting.formatrequestallinperpanjangan', compact('statuses', 'departments'));
     }
-
-
 
     public function getFormatYearallin(Request $request)
     {
@@ -164,7 +155,6 @@ class EvaluationDataController extends Controller
         return view('test', compact('employees', 'year', 'magang'));
     }
 
-
     public function getFormatYearallinPerpanjangan(Request $request)
     {
         $dept = $request->input('dept');
@@ -192,6 +182,4 @@ class EvaluationDataController extends Controller
         // Pass employees and the selected year to the view
         return view('evaluasiPerpanjanganKaryawan', compact('employees', 'year', 'magang'));
     }
-
 }
-

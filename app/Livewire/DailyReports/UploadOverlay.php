@@ -11,9 +11,13 @@ class UploadOverlay extends Component
     use WithFileUploads;
 
     public $isOpen = false;
+
     public $step = 'upload'; // upload, preview, results
+
     public $report_file;
+
     public $previewData = [];
+
     public $logs = [];
 
     protected $listeners = ['openUpload' => 'open'];
@@ -37,8 +41,9 @@ class UploadOverlay extends Component
 
         $result = $uploadService->processExcelUpload($this->report_file->getRealPath());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $this->addError('report_file', $result['message']);
+
             return;
         }
 
@@ -50,7 +55,7 @@ class UploadOverlay extends Component
     {
         $this->logs = $uploadService->confirmUpload($this->previewData);
         $this->step = 'results';
-        
+
         $this->dispatch('refreshIndex')->to(Index::class);
     }
 

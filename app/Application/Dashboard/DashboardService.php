@@ -3,9 +3,9 @@
 namespace App\Application\Dashboard;
 
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use Spatie\Activitylog\Models\Activity;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardService
 {
@@ -40,22 +40,34 @@ class DashboardService
                 $q->where('status', 'IN_REVIEW')
                   // 2. Local Scope: Respect jurisdiction-based visibility rules (Branch/Dept)
                   // This scope correctly handles specialized purchaser categories as well.
-                  ->forUser($user);
+                    ->forUser($user);
+            })
+            // 3. ONLY return the step if it matches the current active sequence turn
+            ->whereExists(function ($query) {
+                $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('approval_requests')
+                    ->whereColumn('approval_requests.id', 'approval_steps.approval_request_id')
+                    ->whereColumn('approval_requests.current_step', 'approval_steps.sequence');
             })
             ->where(function ($query) use ($user) {
-                // 3. Match the current step either directly to the user or to one of their roles
+                // 4. Match the current step either directly to the user or to one of their roles
                 $query->where(function ($q) use ($user) {
                     $q->where('approver_type', 'user')
-                      ->where('approver_id', $user->id);
+                        ->where('approver_id', $user->id);
                 })->orWhere(function ($q) use ($user) {
                     $roleIds = $user->roles->pluck('id')->toArray();
                     $roleNames = $user->getRoleNames()->toArray();
 
                     $q->where('approver_type', 'role')
-                      ->where(function ($q2) use ($roleIds, $roleNames) {
-                          $q2->whereIn('approver_id', $roleIds)
-                             ->orWhereIn('approver_id', $roleNames);
-                      });
+                        ->where(function ($q2) use ($roleIds, $roleNames) {
+                            if (! empty($roleIds)) {
+                                $q2->whereIn('approver_id', $roleIds);
+                            }
+                            if (! empty($roleNames)) {
+                                $q2->orWhereIn('approver_id', $roleNames)
+                                    ->orWhereIn('approver_snapshot_role_slug', $roleNames);
+                            }
+                        });
                 });
             })
             ->latest();

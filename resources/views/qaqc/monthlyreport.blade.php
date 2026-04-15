@@ -63,7 +63,8 @@
                         <div class="text-end small text-muted">
                             <div>Total Cannot Use: <strong>{{ $monthCantUse }}</strong></div>
                             <div>Total Rec Qty: <strong>{{ $monthRecQty }}</strong></div>
-                            <div>Total Loss: <strong>{{ 'IDR ' . number_format($monthTotalPrice, 0, ',', '.') }}</strong></div>
+                            <div>Total Loss: <strong>{{ 'IDR ' . number_format($monthTotalPrice, 0, ',', '.') }}</strong>
+                            </div>
                         </div>
                     </div>
 

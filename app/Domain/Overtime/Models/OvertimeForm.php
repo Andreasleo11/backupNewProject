@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OvertimeForm extends Model implements Approvable
 {
-    use SoftDeletes, HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'header_form_overtime';
 
@@ -46,15 +46,15 @@ class OvertimeForm extends Model implements Approvable
     public function processedDetails()
     {
         return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')
-                    ->where('status', 'Approved')
-                    ->where('is_processed', 1);
+            ->where('status', 'Approved')
+            ->where('is_processed', 1);
     }
 
     public function failedDetails()
     {
         return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')
-                    ->where('status', 'Rejected')
-                    ->where('reason', 'like', '%JPAYROLL%');
+            ->where('status', 'Rejected')
+            ->where('reason', 'like', '%JPAYROLL%');
     }
 
     public function flow()
@@ -66,8 +66,6 @@ class OvertimeForm extends Model implements Approvable
     {
         return $this->hasMany(\App\Models\OvertimeFormApproval::class, 'overtime_form_id', 'id');
     }
-
-
 
     // -------------------------------------------------------------------------
     // Approvable contract — makes Overtime polymorphically compatible with the
@@ -123,7 +121,7 @@ class OvertimeForm extends Model implements Approvable
     {
         $approval = $this->approvalRequest;
 
-        if (!$approval || $approval->status !== 'IN_REVIEW') {
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
             return null;
         }
 
@@ -185,4 +183,3 @@ class OvertimeForm extends Model implements Approvable
         });
     }
 }
-

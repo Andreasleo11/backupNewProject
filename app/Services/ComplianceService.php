@@ -33,7 +33,7 @@ class ComplianceService
 
         $today = Carbon::today();
 
-        return $assignments->map(function ($a) use ($scope, $today, $allUploads) {
+        return $assignments->map(function ($a) use ($today, $allUploads) {
             /** @var Requirement $req */
             $req = $a->requirement;
 

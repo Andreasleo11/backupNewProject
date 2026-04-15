@@ -34,6 +34,7 @@ interface EmployeeRepository
 
     /**
      * Get global system-wide statistics for the dashboard.
+     *
      * @return array{total: int, permanent: int, contract: int, remote: int}
      */
     public function getGlobalStats(): array;

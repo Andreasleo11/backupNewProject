@@ -141,7 +141,10 @@
                                             if (isset($map[$actorLabel])) {
                                                 $pretty = $map[$actorLabel];
                                             } elseif (str_starts_with($actorLabel, 'purchaser-')) {
-                                                $pretty = 'Purchaser (' . ucfirst(str_replace('purchaser-', '', $actorLabel)) . ')';
+                                                $pretty =
+                                                    'Purchaser (' .
+                                                    ucfirst(str_replace('purchaser-', '', $actorLabel)) .
+                                                    ')';
                                             }
                                         @endphp
                                         {{ $pretty }}

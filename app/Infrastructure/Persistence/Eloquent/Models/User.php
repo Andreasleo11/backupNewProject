@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -59,7 +58,6 @@ class User extends Authenticatable
         return $this->belongsTo(Department::class);
     }
 
-
     public function getDepartmentAttribute()
     {
         if ($this->department_id) {
@@ -86,7 +84,7 @@ class User extends Authenticatable
             return true;
         }
 
-        // Fallback: If they have ANY active signature, consider it "good enough" 
+        // Fallback: If they have ANY active signature, consider it "good enough"
         // for the transition period to prevent redirect loops.
         return $this->signatures()
             ->whereNull('revoked_at')
@@ -97,7 +95,7 @@ class User extends Authenticatable
     {
         // Check for any permissions that MUST have a signature (Approvers/Makers/Admins)
         $signaturePermissions = \App\Infrastructure\Common\PermissionRegistry::getSignatureRequiredPermissions();
-        
+
         return $this->hasAnyPermission($signaturePermissions);
     }
 }

@@ -1,20 +1,16 @@
 @extends('new.layouts.app')
 
 @section('content')
-    <div
-        x-data="poDashboard({
-            initialMonth: '{{ $selectedMonth }}',
-            filterUrl: '{{ url('/purchase-orders/filter') }}',
-            vendorMonthlyUrl: '{{ url('/purchase-orders/vendor-monthly-totals') }}',
-            vendorDetailsUrl: '{{ url('/purchase-orders/vendor-details') }}',
-            initialStatusCounts: @js($statusCounts),
-            initialCategoryData: @js($categoryChartData),
-            initialVendorTotals: @js($vendorTotals),
-            initialTopVendors: @js($topVendors),
-        })"
-        x-init="init()"
-        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
-    >
+    <div x-data="poDashboard({
+        initialMonth: '{{ $selectedMonth }}',
+        filterUrl: '{{ url('/purchase-orders/filter') }}',
+        vendorMonthlyUrl: '{{ url('/purchase-orders/vendor-monthly-totals') }}',
+        vendorDetailsUrl: '{{ url('/purchase-orders/vendor-details') }}',
+        initialStatusCounts: @js($statusCounts),
+        initialCategoryData: @js($categoryChartData),
+        initialVendorTotals: @js($vendorTotals),
+        initialTopVendors: @js($topVendors),
+    })" x-init="init()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {{-- Header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -31,8 +27,7 @@
                 <nav class="mt-2">
                     <ol class="flex items-center text-xs text-slate-400 gap-1">
                         <li>
-                            <a href="{{ route('po.dashboard') }}"
-                               class="hover:text-slate-600 font-medium">
+                            <a href="{{ route('po.dashboard') }}" class="hover:text-slate-600 font-medium">
                                 Purchase Orders
                             </a>
                         </li>
@@ -48,12 +43,8 @@
                     <label for="monthFilter" class="text-xs font-medium text-slate-600">
                         Period
                     </label>
-                    <select
-                        id="monthFilter"
-                        x-model="month"
-                        @change="onMonthChange"
-                        class="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    >
+                    <select id="monthFilter" x-model="month" @change="onMonthChange"
+                        class="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
                         @foreach ($availableMonths as $month)
                             <option value="{{ $month }}">
                                 {{ $month }}
@@ -63,21 +54,15 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button
-                        type="button"
-                        @click="openTopVendors"
-                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
-                    >
+                    <button type="button" @click="openTopVendors"
+                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
                         Top 5 vendors
                     </button>
 
                     <form x-ref="detailForm" method="GET" action="{{ route('po.index') }}">
                         <input type="hidden" name="month" :value="month">
-                        <button
-                            type="button"
-                            @click.prevent="$refs.detailForm.submit()"
-                            class="inline-flex items-center rounded-lg bg-sky-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
-                        >
+                        <button type="button" @click.prevent="$refs.detailForm.submit()"
+                            class="inline-flex items-center rounded-lg bg-sky-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
                             View PO list
                         </button>
                     </form>
@@ -99,10 +84,7 @@
                 </div>
                 <div class="relative mt-3 px-4 pb-4">
                     <canvas x-ref="monthlyChart" class="h-full w-full"></canvas>
-                    <div
-                        x-show="loading"
-                        class="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70"
-                    >
+                    <div x-show="loading" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70">
                         <div class="h-6 w-6 animate-spin rounded-full border-2 border-sky-500 border-t-transparent"></div>
                     </div>
                 </div>
@@ -155,30 +137,21 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100" x-show="vendorRows.length">
                         <template x-for="vendor in vendorRows" :key="vendor.vendor_name">
-                            <tr
-                                class="group cursor-pointer transition-colors hover:bg-slate-50"
-                                @click="openVendorTotals(vendor.vendor_name)"
-                            >
-                                <td class="px-4 py-2 text-sm font-medium text-slate-900"
-                                    x-text="vendor.vendor_name"></td>
-                                <td class="px-4 py-2 text-sm text-slate-700"
-                                    x-text="formatCurrency(vendor.total)"></td>
-                                <td class="px-4 py-2 text-sm text-slate-700"
-                                    x-text="vendor.po_count"></td>
+                            <tr class="group cursor-pointer transition-colors hover:bg-slate-50"
+                                @click="openVendorTotals(vendor.vendor_name)">
+                                <td class="px-4 py-2 text-sm font-medium text-slate-900" x-text="vendor.vendor_name"></td>
+                                <td class="px-4 py-2 text-sm text-slate-700" x-text="formatCurrency(vendor.total)"></td>
+                                <td class="px-4 py-2 text-sm text-slate-700" x-text="vendor.po_count"></td>
                                 <td class="px-4 py-2 text-right">
                                     <div class="inline-flex gap-2">
-                                        <button
-                                            type="button"
+                                        <button type="button"
                                             class="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
-                                            @click.stop="openVendorTotals(vendor.vendor_name)"
-                                        >
+                                            @click.stop="openVendorTotals(vendor.vendor_name)">
                                             Monthly trend
                                         </button>
-                                        <button
-                                            type="button"
+                                        <button type="button"
                                             class="inline-flex items-center rounded-full border border-sky-500 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 shadow-sm hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
-                                            @click.stop="openVendorPOs(vendor.vendor_name)"
-                                        >
+                                            @click.stop="openVendorPOs(vendor.vendor_name)">
                                             View POs
                                         </button>
                                     </div>
@@ -198,15 +171,8 @@
         </div>
 
         {{-- Top vendors modal --}}
-        <div
-            x-cloak
-            x-show="showTopVendors"
-            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50"
-        >
-            <div
-                class="w-full max-w-lg rounded-2xl bg-white shadow-xl"
-                @click.stop
-            >
+        <div x-cloak x-show="showTopVendors" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50">
+            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl" @click.stop>
                 <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900">
@@ -214,11 +180,9 @@
                         </h3>
                         <p class="text-xs text-slate-500" x-text="month ? `For period ${month}` : ''"></p>
                     </div>
-                    <button
-                        type="button"
+                    <button type="button"
                         class="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        @click="showTopVendors = false"
-                    >
+                        @click="showTopVendors = false">
                         <span class="sr-only">Close</span>
                         ×
                     </button>
@@ -236,11 +200,11 @@
                             <li class="flex items-center justify-between py-2">
                                 <div class="text-sm font-medium text-slate-900">
                                     <span class="mr-2 text-xs font-semibold text-slate-400"
-                                          x-text="'#' + (idx + 1)"></span>
+                                        x-text="'#' + (idx + 1)"></span>
                                     <span x-text="vendor.vendor_name"></span>
                                 </div>
-                                <div class="text-sm font-semibold text-sky-600"
-                                     x-text="formatCurrency(vendor.total)"></div>
+                                <div class="text-sm font-semibold text-sky-600" x-text="formatCurrency(vendor.total)">
+                                </div>
                             </li>
                         </template>
                     </ul>
@@ -249,15 +213,9 @@
         </div>
 
         {{-- Vendor monthly totals modal --}}
-        <div
-            x-cloak
-            x-show="showVendorTotals"
-            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50"
-        >
-            <div
-                class="w-full max-w-2xl rounded-2xl bg-white shadow-xl"
-                @click.stop
-            >
+        <div x-cloak x-show="showVendorTotals"
+            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50">
+            <div class="w-full max-w-2xl rounded-2xl bg-white shadow-xl" @click.stop>
                 <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900"
@@ -266,11 +224,9 @@
                             Spend trend across months.
                         </p>
                     </div>
-                    <button
-                        type="button"
+                    <button type="button"
                         class="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        @click="showVendorTotals = false"
-                    >
+                        @click="showVendorTotals = false">
                         <span class="sr-only">Close</span>
                         ×
                     </button>
@@ -285,26 +241,17 @@
         </div>
 
         {{-- Vendor PO details modal --}}
-        <div
-            x-cloak
-            x-show="showVendorPOs"
-            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50"
-        >
-            <div
-                class="w-full max-w-3xl rounded-2xl bg-white shadow-xl"
-                @click.stop
-            >
+        <div x-cloak x-show="showVendorPOs" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50">
+            <div class="w-full max-w-3xl rounded-2xl bg-white shadow-xl" @click.stop>
                 <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900"
                             x-text="`Purchase orders – ${vendorForDetails || ''}`"></h3>
                         <p class="text-xs text-slate-500" x-text="month ? `For period ${month}` : ''"></p>
                     </div>
-                    <button
-                        type="button"
+                    <button type="button"
                         class="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        @click="showVendorPOs = false"
-                    >
+                        @click="showVendorPOs = false">
                         <span class="sr-only">Close</span>
                         ×
                     </button>
@@ -324,24 +271,18 @@
                         <tbody class="divide-y divide-slate-100" x-show="vendorDetailRows.length">
                             <template x-for="po in vendorDetailRows" :key="po.id">
                                 <tr>
-                                    <td class="px-3 py-2 text-sm text-slate-700"
-                                        x-text="po.invoice_date"></td>
-                                    <td class="px-3 py-2 text-sm font-medium text-slate-900"
-                                        x-text="po.po_number"></td>
+                                    <td class="px-3 py-2 text-sm text-slate-700" x-text="po.invoice_date"></td>
+                                    <td class="px-3 py-2 text-sm font-medium text-slate-900" x-text="po.po_number"></td>
                                     <td class="px-3 py-2 text-right text-sm text-slate-700"
                                         x-text="formatCurrency(po.total)"></td>
                                     <td class="px-3 py-2">
                                         <span
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                            :class="statusBadgeClass(po.status)"
-                                            x-text="po.status"
-                                        ></span>
+                                            :class="statusBadgeClass(po.status)" x-text="po.status"></span>
                                     </td>
                                     <td class="px-3 py-2 text-right">
-                                        <a
-                                            :href="`/purchaseOrder/${po.id}`"
-                                            class="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-                                        >
+                                        <a :href="`/purchaseOrder/${po.id}`"
+                                            class="inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
                                             View
                                         </a>
                                     </td>
@@ -423,7 +364,9 @@
                             options: {
                                 responsive: true,
                                 plugins: {
-                                    legend: { position: 'bottom' },
+                                    legend: {
+                                        position: 'bottom'
+                                    },
                                 },
                             },
                         });
@@ -445,7 +388,9 @@
                             options: {
                                 responsive: true,
                                 plugins: {
-                                    legend: { position: 'bottom' },
+                                    legend: {
+                                        position: 'bottom'
+                                    },
                                 },
                             },
                         });
@@ -564,8 +509,8 @@
                     this.vendorDetailRows = [];
 
                     fetch(
-                        `${this.endpoints.vendorDetails}?vendor=${encodeURIComponent(vendorName)}&month=${encodeURIComponent(this.month)}`
-                    )
+                            `${this.endpoints.vendorDetails}?vendor=${encodeURIComponent(vendorName)}&month=${encodeURIComponent(this.month)}`
+                        )
                         .then(res => res.json())
                         .then(data => {
                             this.vendorDetailRows = data || [];

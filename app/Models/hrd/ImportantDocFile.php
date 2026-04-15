@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ImportantDocFile extends Model
 {
     use SoftDeletes;
+
     protected $fillable = ['name', 'mime_type', 'data'];
 
     public function importantDoc()

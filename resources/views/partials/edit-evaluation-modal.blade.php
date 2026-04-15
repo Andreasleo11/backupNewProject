@@ -3,45 +3,35 @@
     ───────────────────────────────────────────────────
     Triggered via `window.dispatchEvent(new CustomEvent('open-evaluate-modal', {detail: {id, url}}))`
 --}}
-<div x-data="evaluationModal()" 
-     x-show="isOpen" 
-     @open-evaluate-modal.window="openModal($event.detail.fetchUrl, $event.detail.updateUrl)"
-     @keydown.escape.window="closeModal()"
-     class="fixed inset-0 z-[1050] flex items-center justify-center p-4 sm:p-6"
-     style="display: none;"
-     role="dialog"
-     aria-modal="true">
-     
+<div x-data="evaluationModal()" x-show="isOpen"
+    @open-evaluate-modal.window="openModal($event.detail.fetchUrl, $event.detail.updateUrl)"
+    @keydown.escape.window="closeModal()" class="fixed inset-0 z-[1050] flex items-center justify-center p-4 sm:p-6"
+    style="display: none;" role="dialog" aria-modal="true">
+
     <!-- Backdrop -->
-    <div x-show="isOpen" 
-         x-transition:enter="ease-out duration-300" 
-         x-transition:enter-start="opacity-0" 
-         x-transition:enter-end="opacity-100" 
-         x-transition:leave="ease-in duration-200" 
-         x-transition:leave-start="opacity-100" 
-         x-transition:leave-end="opacity-0" 
-         class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" 
-         @click="closeModal()"></div>
+    <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="closeModal()"></div>
 
     <!-- Modal Panel -->
-    <div x-show="isOpen" 
-         x-transition:enter="ease-out duration-300" 
-         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-         x-transition:leave="ease-in duration-200" 
-         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
-         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-         style="max-height: calc(100dvh - 2.5rem);"
-         class="relative w-full max-w-4xl flex flex-col transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all border border-slate-100">
-         
+    <div x-show="isOpen" x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        style="max-height: calc(100dvh - 2.5rem);"
+        class="relative w-full max-w-4xl flex flex-col transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all border border-slate-100">
+
         <form @submit.prevent="submitForm" class="flex flex-col h-full overflow-hidden w-full">
-            
+
             {{-- Premium Header --}}
             <div class="relative px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex-none">
                 <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                        <div
+                            class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
                             <i class="bx bx-edit text-xl"></i>
                         </div>
                         <div>
@@ -50,10 +40,13 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" @click="showGuide = !showGuide" :class="showGuide ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100'" class="border-none rounded-lg p-2 transition-colors focus:outline-none">
+                        <button type="button" @click="showGuide = !showGuide"
+                            :class="showGuide ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100'"
+                            class="border-none rounded-lg p-2 transition-colors focus:outline-none">
                             <i class="bx bx-info-circle text-2xl"></i>
                         </button>
-                        <button type="button" @click="closeModal()" class="text-slate-400 hover:text-slate-500 bg-slate-100 border-none hover:bg-slate-200 rounded-lg p-2 transition-colors focus:outline-none">
+                        <button type="button" @click="closeModal()"
+                            class="text-slate-400 hover:text-slate-500 bg-slate-100 border-none hover:bg-slate-200 rounded-lg p-2 transition-colors focus:outline-none">
                             <i class="bx bx-x text-2xl"></i>
                         </button>
                     </div>
@@ -62,38 +55,47 @@
 
             {{-- Body (Scrollable) --}}
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
-                
+
                 {{-- Loading Spinner --}}
                 <div x-show="isLoading" class="text-center py-10">
-                    <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent align-[-0.125em]" role="status">
-                        <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+                    <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-500 border-r-transparent align-[-0.125em]"
+                        role="status">
+                        <span
+                            class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
                     </div>
                     <p class="mt-3 text-sm text-slate-500 font-medium">Mengambil data...</p>
                 </div>
 
                 {{-- Content --}}
                 <div x-show="!isLoading" style="display: none;">
-                    
+
                     {{-- Employee Summary Container --}}
-                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                    <div
+                        class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                         <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-lg shadow-sm shrink-0">
+                            <div
+                                class="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-lg shadow-sm shrink-0">
                                 <i class="bx bx-user"></i>
                             </div>
                             <div>
                                 <h6 class="font-bold text-slate-800 m-0 text-lg" x-text="record.name"></h6>
-                                <span class="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200" x-text="record.typeBadge"></span>
+                                <span
+                                    class="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200"
+                                    x-text="record.typeBadge"></span>
                             </div>
                         </div>
-                        
+
                         {{-- Absence Mini-Cards row --}}
                         <div class="flex items-center gap-2 flex-wrap">
                             <template x-for="item in absenceItems" :key="item.key">
                                 <div class="text-center px-3 py-2 bg-white rounded-lg border shadow-sm min-w-[72px]"
-                                     :class="item.borderClass">
-                                    <div class="text-[10px] uppercase font-bold text-slate-400" x-text="item.label"></div>
-                                    <div class="font-bold text-lg leading-none mt-0.5" :class="item.valueClass" x-text="item.value"></div>
-                                    <div class="text-[9px] text-slate-400 mt-1 font-semibold uppercase tracking-wide">bulan ini</div>
+                                    :class="item.borderClass">
+                                    <div class="text-[10px] uppercase font-bold text-slate-400" x-text="item.label">
+                                    </div>
+                                    <div class="font-bold text-lg leading-none mt-0.5" :class="item.valueClass"
+                                        x-text="item.value"></div>
+                                    <div class="text-[9px] text-slate-400 mt-1 font-semibold uppercase tracking-wide">
+                                        bulan ini</div>
                                     <div class="mt-1 pt-1 border-t border-slate-100 text-[10px] text-slate-500">
                                         YTD: <span class="font-bold" :class="item.ytdClass" x-text="item.ytd"></span>
                                     </div>
@@ -106,45 +108,47 @@
                     @php
                         use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService as Calc;
                         $modalPenalties = Calc::getPenalties();
-                        $modalNewMaps   = Calc::getScoreMaps();
-                        $modalOldMaps   = Calc::getOldScoreMaps();
+                        $modalNewMaps = Calc::getScoreMaps();
+                        $modalOldMaps = Calc::getOldScoreMaps();
 
                         $modalNewFieldLabels = [
-                            'kemampuan_kerja'   => 'Kemampuan Kerja',
-                            'kecerdasan_kerja'  => 'Kecerdasan Kerja',
-                            'qualitas_kerja'    => 'Kualitas Kerja',
-                            'disiplin_kerja'    => 'Disiplin Kerja',
-                            'kepatuhan_kerja'   => 'Kepatuhan Kerja',
-                            'lembur'            => 'Lembur',
+                            'kemampuan_kerja' => 'Kemampuan Kerja',
+                            'kecerdasan_kerja' => 'Kecerdasan Kerja',
+                            'qualitas_kerja' => 'Kualitas Kerja',
+                            'disiplin_kerja' => 'Disiplin Kerja',
+                            'kepatuhan_kerja' => 'Kepatuhan Kerja',
+                            'lembur' => 'Lembur',
                             'efektifitas_kerja' => 'Efektifitas Kerja',
-                            'relawan'           => 'Relawan',
-                            'integritas'        => 'Integritas',
+                            'relawan' => 'Relawan',
+                            'integritas' => 'Integritas',
                         ];
 
                         $modalOldFieldLabels = [
                             'kerajinan_kerja' => 'Kerajinan Kerja',
-                            'kerapian_kerja'  => 'Kerapian Kerja',
-                            'prestasi'        => 'Prestasi',
-                            'loyalitas'       => 'Loyalitas',
-                            'perilaku_kerja'  => 'Perilaku Kerja',
+                            'kerapian_kerja' => 'Kerapian Kerja',
+                            'prestasi' => 'Prestasi',
+                            'loyalitas' => 'Loyalitas',
+                            'perilaku_kerja' => 'Perilaku Kerja',
                         ];
 
                         $modalGradeCutoffs = [
                             'A' => ['range' => '91 – 100', 'color' => 'green'],
-                            'B' => ['range' => '71 – 90',  'color' => 'blue'],
-                            'C' => ['range' => '61 – 70',  'color' => 'yellow'],
-                            'D' => ['range' => '< 61',     'color' => 'red'],
+                            'B' => ['range' => '71 – 90', 'color' => 'blue'],
+                            'C' => ['range' => '61 – 70', 'color' => 'yellow'],
+                            'D' => ['range' => '< 61', 'color' => 'red'],
                         ];
                     @endphp
                     <div x-show="showGuide" x-collapse style="display: none;" class="mb-6">
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm text-sm text-indigo-900 flex flex-col gap-4">
+                        <div
+                            class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm text-sm text-indigo-900 flex flex-col gap-4">
 
                             {{-- Absence Penalties — from Calc::getPenalties() --}}
                             <div>
                                 <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2">
                                     <i class='bx bx-time'></i> Penilaian Absensi (Otomatis)
                                 </h6>
-                                <p class="mb-1 text-indigo-700">Total Poin Kehadiran Maksimal: <strong class="text-indigo-900">40</strong></p>
+                                <p class="mb-1 text-indigo-700">Total Poin Kehadiran Maksimal: <strong
+                                        class="text-indigo-900">40</strong></p>
                                 <ul class="list-disc pl-5 space-y-0.5 text-indigo-700">
                                     <li>1 Alpha = <strong>−{{ $modalPenalties['alpha'] }} Poin</strong></li>
                                     <li>1 Izin = <strong>−{{ $modalPenalties['izin'] }} Poin</strong></li>
@@ -158,24 +162,29 @@
                             {{-- NEW SYSTEM: Yayasan / Magang — from Calc::getScoreMaps() --}}
                             <div x-show="record.isNewSystem" style="display: none;">
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Baru — Yayasan / Magang)
+                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Baru — Yayasan /
+                                    Magang)
                                 </h6>
                                 <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
                                     <table class="w-full text-xs bg-white/60">
                                         <thead class="bg-indigo-100/60">
                                             <tr>
-                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria</th>
-                                                @foreach (['A','B','C','D','E'] as $g)
-                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">{{ $g }}</th>
+                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria
+                                                </th>
+                                                @foreach (['A', 'B', 'C', 'D', 'E'] as $g)
+                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">
+                                                        {{ $g }}</th>
                                                 @endforeach
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-indigo-100/50">
                                             @foreach ($modalNewMaps as $field => $scores)
                                                 <tr>
-                                                    <td class="px-3 py-1.5 font-medium text-slate-700">{{ $modalNewFieldLabels[$field] ?? $field }}</td>
-                                                    @foreach (['A','B','C','D','E'] as $g)
-                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">{{ $scores[$g] ?? 0 }}</td>
+                                                    <td class="px-3 py-1.5 font-medium text-slate-700">
+                                                        {{ $modalNewFieldLabels[$field] ?? $field }}</td>
+                                                    @foreach (['A', 'B', 'C', 'D', 'E'] as $g)
+                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">
+                                                            {{ $scores[$g] ?? 0 }}</td>
                                                     @endforeach
                                                 </tr>
                                             @endforeach
@@ -189,23 +198,28 @@
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
                                     <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Lama — Regular)
                                 </h6>
-                                <p class="text-xs text-indigo-700 mb-2">Base score: <strong>40</strong> + jumlah kriteria − penalti absensi.</p>
+                                <p class="text-xs text-indigo-700 mb-2">Base score: <strong>40</strong> + jumlah
+                                    kriteria − penalti absensi.</p>
                                 <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
                                     <table class="w-full text-xs bg-white/60">
                                         <thead class="bg-indigo-100/60">
                                             <tr>
-                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria</th>
-                                                @foreach (['A','B','C','D','E'] as $g)
-                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">{{ $g }}</th>
+                                                <th class="text-left px-3 py-2 text-indigo-800 font-semibold">Kriteria
+                                                </th>
+                                                @foreach (['A', 'B', 'C', 'D', 'E'] as $g)
+                                                    <th class="px-3 py-2 text-center text-indigo-800 font-semibold">
+                                                        {{ $g }}</th>
                                                 @endforeach
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-indigo-100/50">
                                             @foreach ($modalOldMaps as $field => $scores)
                                                 <tr>
-                                                    <td class="px-3 py-1.5 font-medium text-slate-700">{{ $modalOldFieldLabels[$field] ?? $field }}</td>
-                                                    @foreach (['A','B','C','D','E'] as $g)
-                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">{{ $scores[$g] ?? 0 }}</td>
+                                                    <td class="px-3 py-1.5 font-medium text-slate-700">
+                                                        {{ $modalOldFieldLabels[$field] ?? $field }}</td>
+                                                    @foreach (['A', 'B', 'C', 'D', 'E'] as $g)
+                                                        <td class="px-3 py-1.5 text-center font-bold text-indigo-700">
+                                                            {{ $scores[$g] ?? 0 }}</td>
                                                     @endforeach
                                                 </tr>
                                             @endforeach
@@ -223,7 +237,8 @@
                                 </h6>
                                 <div class="flex flex-wrap gap-2 text-xs">
                                     @foreach ($modalGradeCutoffs as $g => $info)
-                                        <span class="px-2.5 py-1 bg-{{ $info['color'] }}-100 text-{{ $info['color'] }}-700 rounded-lg font-bold border border-{{ $info['color'] }}-200">
+                                        <span
+                                            class="px-2.5 py-1 bg-{{ $info['color'] }}-100 text-{{ $info['color'] }}-700 rounded-lg font-bold border border-{{ $info['color'] }}-200">
                                             {{ $g }} : {{ $info['range'] }}
                                         </span>
                                     @endforeach
@@ -235,17 +250,20 @@
 
                     {{-- NEW SYSTEM: 9 fields (Yayasan / Magang) --}}
                     <div x-show="record.isNewSystem" style="display: none;">
-                        <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <h6
+                            class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Dasar
                         </h6>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <template x-for="(label, field) in newFieldsConfig" :key="field">
                                 <div>
-                                    <label :for="'new_'+field" class="block text-xs font-semibold text-slate-600 mb-1" x-text="label"></label>
-                                    <input type="text" maxlength="1" :name="field" :id="'new_'+field"
-                                        x-model="form[field]"
-                                        @input="validateInput(field)"
-                                        :class="{'border-rose-400 focus:ring-rose-500/20': errors[field], 'border-slate-300 focus:ring-indigo-500/20': !errors[field]}"
+                                    <label :for="'new_' + field"
+                                        class="block text-xs font-semibold text-slate-600 mb-1"
+                                        x-text="label"></label>
+                                    <input type="text" maxlength="1" :name="field" :id="'new_' + field"
+                                        x-model="form[field]" @input="validateInput(field)"
+                                        :class="{ 'border-rose-400 focus:ring-rose-500/20': errors[
+                                            field], 'border-slate-300 focus:ring-indigo-500/20': !errors[field] }"
                                         class="block w-full text-center font-bold text-indigo-700 text-lg uppercase rounded-lg border py-2 shadow-sm focus:border-indigo-500 focus:ring-2 transition-colors outline-none"
                                         placeholder="A–E" autocomplete="off">
                                 </div>
@@ -255,17 +273,21 @@
 
                     {{-- OLD SYSTEM: 5 fields (Regular) --}}
                     <div x-show="!record.isNewSystem" style="display: none;">
-                        <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <h6
+                            class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Khusus
                         </h6>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border border-slate-100 rounded-xl p-4 bg-white shadow-sm">
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border border-slate-100 rounded-xl p-4 bg-white shadow-sm">
                             <template x-for="(label, field) in oldFieldsConfig" :key="field">
                                 <div>
-                                    <label :for="'old_'+field" class="block text-xs font-semibold text-slate-600 mb-1" x-text="label"></label>
-                                    <input type="text" maxlength="1" :name="field" :id="'old_'+field"
-                                        x-model="form[field]"
-                                        @input="validateInput(field)"
-                                        :class="{'border-rose-400 focus:ring-rose-500/20': errors[field], 'border-slate-300 focus:ring-indigo-500/20': !errors[field]}"
+                                    <label :for="'old_' + field"
+                                        class="block text-xs font-semibold text-slate-600 mb-1"
+                                        x-text="label"></label>
+                                    <input type="text" maxlength="1" :name="field"
+                                        :id="'old_' + field" x-model="form[field]" @input="validateInput(field)"
+                                        :class="{ 'border-rose-400 focus:ring-rose-500/20': errors[
+                                            field], 'border-slate-300 focus:ring-indigo-500/20': !errors[field] }"
                                         class="block w-full text-center font-bold text-indigo-700 text-lg uppercase rounded-lg border py-2 shadow-sm focus:border-indigo-500 focus:ring-2 transition-colors outline-none"
                                         placeholder="A–E" autocomplete="off">
                                 </div>
@@ -277,194 +299,248 @@
             </div>
 
             {{-- Footer --}}
-            <div x-show="!isLoading" class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 flex-none" style="display: none;">
-                <button type="button" @click="closeModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm">Batal</button>
-                <button type="submit" :disabled="isSubmitting" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
-                    <span x-show="isSubmitting" class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent mr-1"></span>
-                    <i x-show="!isSubmitting" class="bx bx-save"></i> 
+            <div x-show="!isLoading"
+                class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 flex-none"
+                style="display: none;">
+                <button type="button" @click="closeModal()"
+                    class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm">Batal</button>
+                <button type="submit" :disabled="isSubmitting"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                    <span x-show="isSubmitting"
+                        class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent mr-1"></span>
+                    <i x-show="!isSubmitting" class="bx bx-save"></i>
                     <span x-text="isSubmitting ? 'Menyimpan...' : 'Simpan Nilai'"></span>
                 </button>
             </div>
-            
+
         </form>
     </div>
 </div>
 
 <script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('evaluationModal', () => ({
-        isOpen: false,
-        isLoading: false,
-        isSubmitting: false,
-        showGuide: false,
-        updateUrl: '',
-        
-        record: {
-            id: null,
-            name: '',
-            typeBadge: '',
-            isNewSystem: false,
-            alpha: 0, telat: 0, izin: 0, sakit: 0,
-            ytd_alpha: 0, ytd_telat: 0, ytd_izin: 0, ytd_sakit: 0, ytd_months: 0
-        },
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('evaluationModal', () => ({
+            isOpen: false,
+            isLoading: false,
+            isSubmitting: false,
+            showGuide: false,
+            updateUrl: '',
 
-        get absenceItems() {
-            return [
-                { key: 'alpha', label: 'Alpha',  value: this.record.alpha, ytd: this.record.ytd_alpha,
-                  borderClass: 'border-rose-200',    valueClass: 'text-rose-600',   ytdClass: this.record.ytd_alpha  > 0 ? 'text-rose-600'   : 'text-slate-400' },
-                { key: 'telat', label: 'Telat',  value: this.record.telat, ytd: this.record.ytd_telat,
-                  borderClass: 'border-amber-200',   valueClass: 'text-amber-600',  ytdClass: this.record.ytd_telat  > 0 ? 'text-amber-600'  : 'text-slate-400' },
-                { key: 'izin',  label: 'Izin',   value: this.record.izin,  ytd: this.record.ytd_izin,
-                  borderClass: 'border-sky-200',     valueClass: 'text-sky-600',    ytdClass: this.record.ytd_izin   > 0 ? 'text-sky-600'    : 'text-slate-400' },
-                { key: 'sakit', label: 'Sakit',  value: this.record.sakit, ytd: this.record.ytd_sakit,
-                  borderClass: 'border-indigo-200',  valueClass: 'text-indigo-600', ytdClass: this.record.ytd_sakit  > 0 ? 'text-indigo-600' : 'text-slate-400' },
-            ];
-        },
-        
-        form: {},
-        errors: {},
-        
-        newFieldsConfig: {
-            'kemampuan_kerja': 'Kemampuan Kerja',
-            'kecerdasan_kerja': 'Kecerdasan Kerja',
-            'qualitas_kerja': 'Kualitas Kerja',
-            'disiplin_kerja': 'Disiplin Kerja',
-            'kepatuhan_kerja': 'Kepatuhan Kerja',
-            'lembur': 'Lembur',
-            'efektifitas_kerja': 'Efektifitas Kerja',
-            'relawan': 'Ringan Tangan',
-            'integritas': 'Integritas'
-        },
-        
-        oldFieldsConfig: {
-            'kerajinan_kerja': 'Kinerja Kerja',
-            'kerapian_kerja': 'Kerapian',
-            'prestasi': 'Prestasi',
-            'loyalitas': 'Loyalitas',
-            'perilaku_kerja': 'Etika & Kesopanan'
-        },
+            record: {
+                id: null,
+                name: '',
+                typeBadge: '',
+                isNewSystem: false,
+                alpha: 0,
+                telat: 0,
+                izin: 0,
+                sakit: 0,
+                ytd_alpha: 0,
+                ytd_telat: 0,
+                ytd_izin: 0,
+                ytd_sakit: 0,
+                ytd_months: 0
+            },
 
-        openModal(fetchUrl, updateUrl) {
-            this.isOpen = true;
-            this.isLoading = true;
-            this.updateUrl = updateUrl;
-            this.form = {};
-            this.errors = {};
-            
-            // Lock body scroll
-            document.body.style.overflow = 'hidden';
+            get absenceItems() {
+                return [{
+                        key: 'alpha',
+                        label: 'Alpha',
+                        value: this.record.alpha,
+                        ytd: this.record.ytd_alpha,
+                        borderClass: 'border-rose-200',
+                        valueClass: 'text-rose-600',
+                        ytdClass: this.record.ytd_alpha > 0 ? 'text-rose-600' :
+                            'text-slate-400'
+                    },
+                    {
+                        key: 'telat',
+                        label: 'Telat',
+                        value: this.record.telat,
+                        ytd: this.record.ytd_telat,
+                        borderClass: 'border-amber-200',
+                        valueClass: 'text-amber-600',
+                        ytdClass: this.record.ytd_telat > 0 ? 'text-amber-600' :
+                            'text-slate-400'
+                    },
+                    {
+                        key: 'izin',
+                        label: 'Izin',
+                        value: this.record.izin,
+                        ytd: this.record.ytd_izin,
+                        borderClass: 'border-sky-200',
+                        valueClass: 'text-sky-600',
+                        ytdClass: this.record.ytd_izin > 0 ? 'text-sky-600' :
+                            'text-slate-400'
+                    },
+                    {
+                        key: 'sakit',
+                        label: 'Sakit',
+                        value: this.record.sakit,
+                        ytd: this.record.ytd_sakit,
+                        borderClass: 'border-indigo-200',
+                        valueClass: 'text-indigo-600',
+                        ytdClass: this.record.ytd_sakit > 0 ? 'text-indigo-600' :
+                            'text-slate-400'
+                    },
+                ];
+            },
 
-            axios.get(fetchUrl)
-                .then(({ data }) => {
-                    // Populate headers
-                    this.record.name  = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';
-                    this.record.alpha = data.Alpha ?? 0;
-                    this.record.telat = data.Telat ?? 0;
-                    this.record.izin  = data.Izin  ?? 0;
-                    this.record.sakit = data.Sakit ?? 0;
+            form: {},
+            errors: {},
 
-                    // YTD attendance totals
-                    this.record.ytd_alpha  = data.ytd_alpha  ?? 0;
-                    this.record.ytd_telat  = data.ytd_telat  ?? 0;
-                    this.record.ytd_izin   = data.ytd_izin   ?? 0;
-                    this.record.ytd_sakit  = data.ytd_sakit  ?? 0;
-                    this.record.ytd_months = data.ytd_months ?? 0;
+            newFieldsConfig: {
+                'kemampuan_kerja': 'Kemampuan Kerja',
+                'kecerdasan_kerja': 'Kecerdasan Kerja',
+                'qualitas_kerja': 'Kualitas Kerja',
+                'disiplin_kerja': 'Disiplin Kerja',
+                'kepatuhan_kerja': 'Kepatuhan Kerja',
+                'lembur': 'Lembur',
+                'efektifitas_kerja': 'Efektifitas Kerja',
+                'relawan': 'Ringan Tangan',
+                'integritas': 'Integritas'
+            },
 
-                    const scheme = data.karyawan?.employment_scheme ?? '';
-                    this.record.isNewSystem = scheme.includes('YAYASAN') || scheme.includes('MAGANG');
-                    this.record.typeBadge = this.record.isNewSystem ? scheme : 'Regular';
+            oldFieldsConfig: {
+                'kerajinan_kerja': 'Kinerja Kerja',
+                'kerapian_kerja': 'Kerapian',
+                'prestasi': 'Prestasi',
+                'loyalitas': 'Loyalitas',
+                'perilaku_kerja': 'Etika & Kesopanan'
+            },
 
-                    // Populate forms
-                    const fields = this.record.isNewSystem ? Object.keys(this.newFieldsConfig) : Object.keys(this.oldFieldsConfig);
-                    fields.forEach(f => {
-                        this.form[f] = data[f] ?? '';
+            openModal(fetchUrl, updateUrl) {
+                this.isOpen = true;
+                this.isLoading = true;
+                this.updateUrl = updateUrl;
+                this.form = {};
+                this.errors = {};
+
+                // Lock body scroll
+                document.body.style.overflow = 'hidden';
+
+                axios.get(fetchUrl)
+                    .then(({
+                        data
+                    }) => {
+                        // Populate headers
+                        this.record.name = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';
+                        this.record.alpha = data.Alpha ?? 0;
+                        this.record.telat = data.Telat ?? 0;
+                        this.record.izin = data.Izin ?? 0;
+                        this.record.sakit = data.Sakit ?? 0;
+
+                        // YTD attendance totals
+                        this.record.ytd_alpha = data.ytd_alpha ?? 0;
+                        this.record.ytd_telat = data.ytd_telat ?? 0;
+                        this.record.ytd_izin = data.ytd_izin ?? 0;
+                        this.record.ytd_sakit = data.ytd_sakit ?? 0;
+                        this.record.ytd_months = data.ytd_months ?? 0;
+
+                        const scheme = data.karyawan?.employment_scheme ?? '';
+                        this.record.isNewSystem = scheme.includes('YAYASAN') || scheme.includes(
+                            'MAGANG');
+                        this.record.typeBadge = this.record.isNewSystem ? scheme : 'Regular';
+
+                        // Populate forms
+                        const fields = this.record.isNewSystem ? Object.keys(this
+                            .newFieldsConfig) : Object.keys(this.oldFieldsConfig);
+                        fields.forEach(f => {
+                            this.form[f] = data[f] ?? '';
+                        });
+
+                        this.isLoading = false;
+                    })
+                    .catch((err) => {
+                        this.isOpen = false;
+                        document.body.style.overflow = '';
+                        window.dispatchEvent(new CustomEvent('toast', {
+                            detail: {
+                                title: 'Gagal Memuat Data',
+                                message: 'Terjadi kesalahan saat mengambil evaluasi.',
+                                type: 'error'
+                            }
+                        }));
                     });
+            },
 
-                    this.isLoading = false;
-                })
-                .catch((err) => {
-                    this.isOpen = false;
-                    document.body.style.overflow = '';
+            closeModal() {
+                this.isOpen = false;
+                // Restore body scroll
+                document.body.style.overflow = '';
+            },
+
+            validateInput(field) {
+                let val = this.form[field] || '';
+                val = val.toUpperCase().replace(/[^A-E]/g, '');
+                this.form[field] = val;
+
+                this.errors[field] = !/^[A-E]$/.test(val);
+            },
+
+            submitForm() {
+                if (this.isSubmitting) return;
+
+                // Validate all current fields
+                const fields = this.record.isNewSystem ? Object.keys(this.newFieldsConfig) : Object
+                    .keys(this.oldFieldsConfig);
+                let isValid = true;
+
+                fields.forEach(f => {
+                    this.validateInput(f);
+                    if (this.errors[f]) isValid = false;
+                });
+
+                if (!isValid) return;
+
+                this.isSubmitting = true;
+
+                // Build Form Data matching backend expectation
+                const formData = new FormData();
+                fields.forEach(f => {
+                    formData.append(f, this.form[f]);
+                });
+
+                axios.post(this.updateUrl, formData, {
+                    headers: {
+                        'X-HTTP-Method-Override': 'PUT'
+                    }
+                }).then(({
+                    data
+                }) => {
+                    this.isSubmitting = false;
+                    this.closeModal();
+
                     window.dispatchEvent(new CustomEvent('toast', {
                         detail: {
-                            title: 'Gagal Memuat Data',
-                            message: 'Terjadi kesalahan saat mengambil evaluasi.',
+                            title: 'Berhasil',
+                            message: data.message ||
+                                'Nilai evaluasi berhasil disimpan.',
+                            type: 'success'
+                        }
+                    }));
+
+                    // Reload the visible DataTable & update status chips defined in index.blade.php
+                    if (typeof window.reloadEvaluationTables === 'function') {
+                        window.reloadEvaluationTables();
+                    } else {
+                        document.querySelectorAll('table.dataTable').forEach(t => {
+                            const dtInstance = typeof $.fn?.dataTable?.Api ===
+                                'function' ? new $.fn.dataTable.Api(t) : null;
+                            if (dtInstance) dtInstance.ajax.reload(null, false);
+                        });
+                    }
+                }).catch(err => {
+                    this.isSubmitting = false;
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: {
+                            title: 'Gagal Menyimpan',
+                            message: 'Terjadi kesalahan saat menyimpan nilai. Silahkan coba lagi.',
                             type: 'error'
                         }
                     }));
                 });
-        },
-
-        closeModal() {
-            this.isOpen = false;
-            // Restore body scroll
-            document.body.style.overflow = '';
-        },
-        
-        validateInput(field) {
-            let val = this.form[field] || '';
-            val = val.toUpperCase().replace(/[^A-E]/g, '');
-            this.form[field] = val;
-            
-            this.errors[field] = !/^[A-E]$/.test(val);
-        },
-
-        submitForm() {
-            if (this.isSubmitting) return;
-            
-            // Validate all current fields
-            const fields = this.record.isNewSystem ? Object.keys(this.newFieldsConfig) : Object.keys(this.oldFieldsConfig);
-            let isValid = true;
-            
-            fields.forEach(f => {
-                this.validateInput(f);
-                if (this.errors[f]) isValid = false;
-            });
-            
-            if (!isValid) return;
-
-            this.isSubmitting = true;
-            
-            // Build Form Data matching backend expectation
-            const formData = new FormData();
-            fields.forEach(f => {
-                formData.append(f, this.form[f]);
-            });
-
-            axios.post(this.updateUrl, formData, {
-                headers: { 'X-HTTP-Method-Override': 'PUT' }
-            }).then(({ data }) => {
-                this.isSubmitting = false;
-                this.closeModal();
-                
-                window.dispatchEvent(new CustomEvent('toast', {
-                    detail: {
-                        title: 'Berhasil',
-                        message: data.message || 'Nilai evaluasi berhasil disimpan.',
-                        type: 'success'
-                    }
-                }));
-
-                // Reload the visible DataTable & update status chips defined in index.blade.php
-                if (typeof window.reloadEvaluationTables === 'function') {
-                    window.reloadEvaluationTables();
-                } else {
-                    document.querySelectorAll('table.dataTable').forEach(t => {
-                        const dtInstance = typeof $.fn?.dataTable?.Api === 'function' ? new $.fn.dataTable.Api(t) : null;
-                        if (dtInstance) dtInstance.ajax.reload(null, false);
-                    });
-                }
-            }).catch(err => {
-                this.isSubmitting = false;
-                window.dispatchEvent(new CustomEvent('toast', {
-                    detail: {
-                        title: 'Gagal Menyimpan',
-                        message: 'Terjadi kesalahan saat menyimpan nilai. Silahkan coba lagi.',
-                        type: 'error'
-                    }
-                }));
-            });
-        }
-    }));
-});
+            }
+        }));
+    });
 </script>

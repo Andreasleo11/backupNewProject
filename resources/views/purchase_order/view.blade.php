@@ -251,8 +251,10 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                         @include('partials.file-attachments', [
                             'files' => $files,
-                            'showDelete' => $user->id === $purchaseOrder->creator_id || $user->specification?->name === 'PURCHASER',
-                            'title' => 'Related Documents'
+                            'showDelete' =>
+                                $user->id === $purchaseOrder->creator_id ||
+                                $user->specification?->name === 'PURCHASER',
+                            'title' => 'Related Documents',
                         ])
                     </div>
                 </section>

@@ -1,8 +1,10 @@
 <div data-step-first>
     <!-- Status chip -->
     <div wire:ignore x-data="{ dirty: false, saved: @js($isSaved), ts: @js($savedAt) }" x-init="const root = $el.closest('[data-step-first]');
-    const markDirty = () => { dirty = true;
-        saved = false };
+    const markDirty = () => {
+        dirty = true;
+        saved = false
+    };
     
     if (root) {
         root.addEventListener('input', markDirty, { capture: true });
@@ -118,8 +120,10 @@
 
     <div class="text-end">
         <button type="button" class="btn btn-outline-primary" wire:click="saveStep" wire:loading.attr="disabled"
-            x-data="{ justSaved: false }" x-init="Livewire.on('firstInspectionSaved', () => { justSaved = true;
-                setTimeout(() => justSaved = false, 1500) })">
+            x-data="{ justSaved: false }" x-init="Livewire.on('firstInspectionSaved', () => {
+                justSaved = true;
+                setTimeout(() => justSaved = false, 1500)
+            })">
             <span wire:loading.remove>
                 <span x-show="!justSaved">Save First Inspection</span>
                 <span x-show="justSaved"><i class="bi bi-check2-circle me-1"></i> Saved</span>

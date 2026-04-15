@@ -3,14 +3,11 @@
 namespace App\DataTables\Admin;
 
 use App\Models\EvaluationData;
-use Yajra\DataTables\Html\Button;
-use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Services\DataTable;
-use Yajra\DataTables\Html\Editor\Fields;
-use Yajra\DataTables\Html\Editor\Editor;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
-use Carbon\Carbon;
+use Yajra\DataTables\Html\Column;
+use Yajra\DataTables\Services\DataTable;
 
 class EvaluationDataManagementDataTable extends DataTable
 {
@@ -18,7 +15,6 @@ class EvaluationDataManagementDataTable extends DataTable
      * Build DataTable class.
      *
      * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -35,10 +31,12 @@ class EvaluationDataManagementDataTable extends DataTable
                 if ($record->total == 0) {
                     return '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">Pending</span>';
                 }
+
                 return '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Graded</span>';
             })
             ->addColumn('action', function (EvaluationData $record) {
                 $deleteUrl = route('admin.evaluation-data.destroy', $record->id);
+
                 return '
                     <button type="button" 
                             onclick="deleteRow(\'' . $deleteUrl . '\')"
@@ -53,9 +51,6 @@ class EvaluationDataManagementDataTable extends DataTable
 
     /**
      * Get query source of dataTable.
-     *
-     * @param \App\Models\EvaluationData $model
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(EvaluationData $model): \Illuminate\Database\Eloquent\Builder
     {
@@ -92,14 +87,12 @@ class EvaluationDataManagementDataTable extends DataTable
                         'next' => '<i class="bx bx-chevron-right"></i>',
                         'previous' => '<i class="bx bx-chevron-left"></i>',
                     ],
-                ]
+                ],
             ]);
     }
 
     /**
      * Get columns.
-     *
-     * @return array
      */
     protected function getColumns(): array
     {
@@ -115,10 +108,10 @@ class EvaluationDataManagementDataTable extends DataTable
             Column::make('Sakit')->title('S')->searchable(false)->addClass('text-center font-bold text-indigo-500'),
             Column::make('status')->title('Status')->searchable(false)->addClass('text-center'),
             Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->width(60)
-                  ->addClass('text-center'),
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center'),
         ];
     }
 }

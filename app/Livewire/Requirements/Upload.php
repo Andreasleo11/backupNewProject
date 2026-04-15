@@ -27,7 +27,7 @@ class Upload extends Component
     #[On('open-upload')]
     public function open($reqId = null, $deptId = null): void
     {
-        \Illuminate\Support\Facades\Log::info("Upload modal triggered via event.", ['reqId' => $reqId, 'deptId' => $deptId]);
+        \Illuminate\Support\Facades\Log::info('Upload modal triggered via event.', ['reqId' => $reqId, 'deptId' => $deptId]);
         // Handle Alpine JS object payload or direct Livewire positional args
         if (is_array($reqId)) {
             $this->requirementId = $reqId['reqId'] ?? null;
@@ -41,7 +41,7 @@ class Upload extends Component
         $this->resetValidation();
         $this->file = null;
         $this->valid_from = now()->toDateString();
-        
+
         if ($departmentId) {
             $this->department = Department::findOrFail($departmentId);
         }

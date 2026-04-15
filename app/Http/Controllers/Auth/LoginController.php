@@ -41,15 +41,14 @@ class LoginController extends Controller
     /**
      * The user has been authenticated.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
+     * @param mixed $user
      * @return mixed
      */
     protected function authenticated(\Illuminate\Http\Request $request, $user)
     {
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             auth()->logout();
-            
+
             return redirect('/login')
                 ->withInput($request->only($this->username(), 'remember'))
                 ->withErrors([

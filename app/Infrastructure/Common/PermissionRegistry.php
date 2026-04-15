@@ -12,8 +12,6 @@ class PermissionRegistry
     /**
      * Get all registered modules.
      * In the future, this can dynamically load from module config files.
-     * 
-     * @return array
      */
     public static function getModules(): array
     {
@@ -30,6 +28,10 @@ class PermissionRegistry
                 'roles' => [
                     'super-admin' => ['*'],
                     'staff' => ['dashboard.view'],
+                    'department-head' => ['dashboard.view'],
+                    'general-manager' => ['dashboard.view'],
+                    'verificator' => ['dashboard.view'],
+                    'director' => ['dashboard.view'],
                 ],
             ],
             'Purchase Request' => [
@@ -39,12 +41,12 @@ class PermissionRegistry
                     'pr.admin', // Full bypass for PR logic
                 ],
                 'roles' => [
-                    'staff'              => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print'],
-                    'department-head'    => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.reject'],
-                    'verificator'        => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject'],
-                    'general-manager'    => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.auto-approve'],
-                    'director'           => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve'],
-                    'purchaser'          => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve'],
+                    'staff' => ['pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.print'],
+                    'department-head' => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve'],
+                    'verificator' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve'],
+                    'general-manager' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.auto-approve', 'pr.batch-approve'],
+                    'director' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve'],
+                    'purchaser' => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve'],
                     'purchasing-manager' => ['pr.view', 'pr.batch-approve', 'approval.view-log', 'pr.admin'],
                     'accounting-officer' => ['pr.view', 'pr.print'],
                 ],
@@ -52,7 +54,7 @@ class PermissionRegistry
             'Approval Engine' => [
                 'permissions' => [
                     'approval.view-log', 'approval.manage-rules',
-                ]
+                ],
             ],
             'Evaluation & Discipline' => [
                 'permissions' => [
@@ -69,11 +71,11 @@ class PermissionRegistry
                     'overtime.view', 'overtime.view-all', 'overtime.create', 'overtime.delete', 'overtime.export', 'overtime.review', 'overtime.approve', 'overtime.push-to-payroll',
                 ],
                 'roles' => [
-                    'verificator'     => ['overtime.view-all', 'overtime.review', 'overtime.approve', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
-                    'director'        => ['overtime.view', 'overtime.approve', 'overtime.export'],
+                    'verificator' => ['overtime.review', 'overtime.approve', 'overtime.export', 'overtime.delete', 'overtime.push-to-payroll'],
+                    'director' => ['overtime.view', 'overtime.approve', 'overtime.export'],
                     'general-manager' => ['overtime.view', 'overtime.approve', 'overtime.export'],
                     'department-head' => ['overtime.view', 'overtime.approve'],
-                    'staff'           => ['overtime.view', 'overtime.create'],
+                    'staff' => ['overtime.view', 'overtime.create'],
                 ],
             ],
             'Inventory & Assets' => [
@@ -161,8 +163,6 @@ class PermissionRegistry
 
     /**
      * Fetch a flat list of all permissions across all modules.
-     * 
-     * @return array
      */
     public static function allPermissions(): array
     {
@@ -172,14 +172,12 @@ class PermissionRegistry
                 $all = array_merge($all, $data['permissions']);
             }
         }
-        
+
         return array_values(array_unique($all));
     }
 
     /**
      * Fetch a consolidated mapping of role => [permissions].
-     * 
-     * @return array
      */
     public static function allRolesWithPermissions(): array
     {
@@ -203,8 +201,6 @@ class PermissionRegistry
 
     /**
      * Get a list of permissions that inherently require a digital signature (approvals/creations).
-     * 
-     * @return array
      */
     public static function getSignatureRequiredPermissions(): array
     {

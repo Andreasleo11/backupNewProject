@@ -9,15 +9,19 @@
         {{-- View Selector --}}
         <div class="flex justify-end">
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold inline-flex items-center gap-2">
+                <button @click="open = !open" type="button"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold inline-flex items-center gap-2">
                     <span id="viewSelectorBtn">Select View</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-10">
-                    <a class="block px-4 py-2 text-slate-700 hover:bg-slate-100 view-option" data-value="1" href="#" @click="open = false">Dashboard</a>
-                    <a class="block px-4 py-2 text-slate-700 hover:bg-slate-100 view-option" data-value="2" href="#" @click="open = false">Dashboard HRIS</a>
+                <div x-show="open" @click.outside="open = false" x-transition
+                    class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-10">
+                    <a class="block px-4 py-2 text-slate-700 hover:bg-slate-100 view-option" data-value="1" href="#"
+                        @click="open = false">Dashboard</a>
+                    <a class="block px-4 py-2 text-slate-700 hover:bg-slate-100 view-option" data-value="2" href="#"
+                        @click="open = false">Dashboard HRIS</a>
                 </div>
             </div>
         </div>
@@ -43,7 +47,8 @@
                             </a>
                             <a href="{{ route('director.qaqc.index') }}" class="block">
                                 <x-card title="Rejected" :content="$reportCounts['rejected']" color="red" titleColor="text-red-600"
-                                    contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                    contentColor="text-slate-600"
+                                    icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>
                         </div>
                     </div>
@@ -67,7 +72,8 @@
                             </a>
                             <a href="{{ route('director.pr.index') }}" class="block">
                                 <x-card title="Rejected" :content="$purchaseRequestCounts['rejected']" color="red" titleColor="text-red-600"
-                                    contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                    contentColor="text-slate-600"
+                                    icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>
                         </div>
                     </div>
@@ -93,7 +99,8 @@
                             </a>
                             <a href="{{ route('monthly.budget.report.index') }}" class="block">
                                 <x-card title="Rejected" :content="$monthlyBudgetReportsCounts['rejected']" color="red" titleColor="text-red-600"
-                                    contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                    contentColor="text-slate-600"
+                                    icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>
                         </div>
                     </div>
@@ -117,7 +124,8 @@
                             </a>
                             <a href="{{ route('monthly-budget-summary.index') }}" class="block">
                                 <x-card title="Rejected" :content="$monthlyBudgetSummaryReportsCounts['rejected']" color="red" titleColor="text-red-600"
-                                    contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                    contentColor="text-slate-600"
+                                    icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>
                         </div>
                     </div>
@@ -142,7 +150,8 @@
                         </a>
                         <a href="{{ route('po.dashboard') }}" class="block">
                             <x-card title="Rejected" :content="$poCounts['rejected']" color="red" titleColor="text-red-600"
-                                contentColor="text-slate-600" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                contentColor="text-slate-600"
+                                icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                         </a>
                     </div>
                 </div>
@@ -154,8 +163,8 @@
             <x-employee-dashboard />
 
             <div class="mt-4">
-                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium" data-bs-toggle="modal"
-                    data-bs-target="#filteredEmployeesModal" id="viewFilteredEmployeesBtn">
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                    data-bs-toggle="modal" data-bs-target="#filteredEmployeesModal" id="viewFilteredEmployeesBtn">
                     View Filtered Employees
                 </button>
 
@@ -165,7 +174,7 @@
         </div>
     </div>
 
-        {{-- 
+    {{-- 
             <!-- Modal -->
             <div class="modal fade" id="filteredEmployeesModal" tabindex="-1" aria-labelledby="filteredEmployeesModalLabel"
                 aria-hidden="true">

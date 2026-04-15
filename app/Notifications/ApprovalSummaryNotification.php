@@ -31,12 +31,14 @@ class ApprovalSummaryNotification extends Notification implements ShouldQueue
             ->subject("Daily Approval Summary: {$count} Pending Requests")
             ->greeting("Hello, {$notifiable->name}")
             ->line("You have {$count} requests awaiting your approval across the system.")
-            ->line("Below is a summary of your pending tasks:");
+            ->line('Below is a summary of your pending tasks:');
 
         // Build a simple list of the requests
         foreach ($this->pendingRequests as $request) {
             $approvable = $request->approvable;
-            if (!$approvable) continue;
+            if (! $approvable) {
+                continue;
+            }
 
             $type = $approvable->getApprovableTypeLabel();
             $id = $approvable->getApprovableIdentifier();

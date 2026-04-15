@@ -21,11 +21,11 @@ class ImportantDocController extends Controller
         $thresholdDays = $today->diffInDays($warningDate);
 
         $stats = [
-            'total'         => ImportantDoc::count(),
-            'active'        => ImportantDoc::where('expired_date', '>', $warningDate)->count(),
+            'total' => ImportantDoc::count(),
+            'active' => ImportantDoc::where('expired_date', '>', $warningDate)->count(),
             'expiring_soon' => ImportantDoc::whereBetween('expired_date', [$today, $warningDate])->count(),
-            'expired'       => ImportantDoc::where('expired_date', '<', $today)->count(),
-            'archived'      => ImportantDoc::onlyTrashed()->count(),
+            'expired' => ImportantDoc::where('expired_date', '<', $today)->count(),
+            'archived' => ImportantDoc::onlyTrashed()->count(),
             'action_needed' => ImportantDoc::where('expired_date', '<=', $warningDate)->count(),
         ];
 
@@ -55,20 +55,20 @@ class ImportantDocController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|max:255',
-            'type_id'     => 'required',
-            'expired_date'=> 'required',
-            'files.*'     => 'file|max:2048|nullable',
+            'name' => 'required|max:255',
+            'type_id' => 'required',
+            'expired_date' => 'required',
+            'files.*' => 'file|max:2048|nullable',
             'document_id' => 'string|max:255|nullable',
             'description' => 'string|max:255|nullable',
         ]);
 
         $importantDoc = ImportantDoc::create([
-            'name'         => $request->name,
-            'type_id'      => $request->type_id,
+            'name' => $request->name,
+            'type_id' => $request->type_id,
             'expired_date' => $request->expired_date,
-            'document_id'  => $request->document_id,
-            'description'  => $request->description,
+            'document_id' => $request->document_id,
+            'description' => $request->description,
         ]);
 
         if ($request->hasFile('files')) {
@@ -79,9 +79,9 @@ class ImportantDocController extends Controller
                 $file->storeAs('public/importantDocuments', $fileName);
 
                 $importantDoc->files()->create([
-                    'name'      => $fileName,
+                    'name' => $fileName,
                     'mime_type' => $file->getClientMimeType(),
-                    'data'      => $fileData,
+                    'data' => $fileData,
                 ]);
             }
         }
@@ -108,7 +108,7 @@ class ImportantDocController extends Controller
 
     public function edit($id)
     {
-        $types        = ImportantDocType::all()->reverse();
+        $types = ImportantDocType::all()->reverse();
         $importantDoc = ImportantDoc::with('type', 'files')->findOrFail($id);
         $threshold = 2; // Default for context
         $today = now()->startOfDay();
@@ -121,22 +121,22 @@ class ImportantDocController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name'         => 'required|max:255',
-            'type_id'      => 'required',
+            'name' => 'required|max:255',
+            'type_id' => 'required',
             'expired_date' => 'required',
-            'document_id'  => 'nullable|string|max:255',
-            'description'  => 'nullable|string|max:255',
-            'files.*'      => 'nullable|file|max:2048',
+            'document_id' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'files.*' => 'nullable|file|max:2048',
         ]);
 
         $importantDoc = ImportantDoc::findOrFail($id);
 
         $importantDoc->update([
-            'name'         => $request->name,
-            'type_id'      => $request->type_id,
+            'name' => $request->name,
+            'type_id' => $request->type_id,
             'expired_date' => $request->expired_date,
-            'document_id'  => $request->document_id,
-            'description'  => $request->description,
+            'document_id' => $request->document_id,
+            'description' => $request->description,
         ]);
 
         // Append any newly uploaded files
@@ -148,9 +148,9 @@ class ImportantDocController extends Controller
                 $file->storeAs('public/importantDocuments', $fileName);
 
                 $importantDoc->files()->create([
-                    'name'      => $fileName,
+                    'name' => $fileName,
                     'mime_type' => $file->getClientMimeType(),
-                    'data'      => $fileData,
+                    'data' => $fileData,
                 ]);
             }
         }
@@ -202,7 +202,7 @@ class ImportantDocController extends Controller
      */
     public function forceDelete($id)
     {
-        $doc = ImportantDoc::withTrashed()->with(['files' => function($q) {
+        $doc = ImportantDoc::withTrashed()->with(['files' => function ($q) {
             $q->withTrashed();
         }])->findOrFail($id);
 

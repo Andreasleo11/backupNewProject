@@ -1,8 +1,10 @@
 <div data-header>
     <!-- Status chip -->
     <div wire:ignore x-data="{ dirty: false, saved: @js($isSaved), ts: @js($savedAt) }" x-init="const root = $el.closest('[data-header]');
-    const markDirty = () => { dirty = true;
-        saved = false };
+    const markDirty = () => {
+        dirty = true;
+        saved = false
+    };
     
     if (root) {
         root.addEventListener('input', markDirty, { capture: true });

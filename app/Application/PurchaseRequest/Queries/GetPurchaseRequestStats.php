@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Application\PurchaseRequest\Queries;
 
 use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class GetPurchaseRequestStats
 {
@@ -17,6 +20,9 @@ class GetPurchaseRequestStats
         private readonly PurchaseRequestQueryBuilder $queryBuilder
     ) {}
 
+    /**
+     * Get PR statistics for the current user
+     */
     /**
      * Get PR statistics for the current user
      */
@@ -30,26 +36,75 @@ class GetPurchaseRequestStats
         $userId = $user->id;
         $cacheKey = "pr_stats_user_{$userId}";
 
-        // Lower cache duration to 2 minutes for better responsiveness while protecting DB
         return Cache::remember($cacheKey, now()->addMinutes(2), function () use ($user) {
-            return [
+            $isStrategic = $user->hasAnyRole(['director', 'super-admin', 'purchasing-manager']);
+            $isVerificator = $user->hasRole('verificator');
+
+            // 1. Always show Pending My Approval (Workload)
+            $stats = [
                 'pending_my_approval' => $this->getPendingMyApproval($user),
-                'in_review' => $this->getInReview($user),
-                'approved_this_month' => $this->getApprovedThisMonth($user),
-                'total_value_pending' => $this->getTotalValuePending($user),
             ];
+
+            if ($isStrategic) {
+                // Strategic roles see global metrics
+                $stats['in_review'] = $this->getInReview($user);
+                $stats['approved_this_month'] = $this->getApprovedThisMonth($user);
+                $stats['total_value_pending'] = $this->getTotalValuePending($user);
+            } else {
+                // Operational roles see contextual metrics
+                $stats['my_active'] = $this->getMyActiveCount($user);
+
+                if (! $isVerificator) {
+                    $stats['dept_active'] = $this->getDeptActiveCount($user);
+                }
+
+                $stats['drafts'] = $this->getDraftsCount($user);
+            }
+
+            return $stats;
         });
     }
 
     /**
      * Get count of PRs pending current user's approval
      */
-    private function getPendingMyApproval(User $user): int
+    private function getPendingMyApproval($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical MyApprovalFilter
         (new MyApprovalFilter($user))->apply($query);
+
+        return $query->count();
+    }
+
+    /**
+     * Get count of PRs created by the user that are currently in review
+     */
+    private function getMyActiveCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new MyActiveRequestsFilter($user))->apply($query);
+
+        return $query->count();
+    }
+
+    /**
+     * Get count of PRs in the user's department that are currently in review
+     */
+    private function getDeptActiveCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new DeptActiveRequestsFilter($user))->apply($query);
+
+        return $query->count();
+    }
+
+    /**
+     * Get count of drafts created by the user
+     */
+    private function getDraftsCount($user): int
+    {
+        $query = $this->queryBuilder->forUser($user);
+        (new DraftsFilter($user))->apply($query);
 
         return $query->count();
     }
@@ -57,12 +112,10 @@ class GetPurchaseRequestStats
     /**
      * Get count of all PRs in review visible to this user
      */
-    private function getInReview(User $user): int
+    private function getInReview($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical InReviewFilter
-        (new InReviewFilter())->apply($query);
+        (new InReviewFilter)->apply($query);
 
         return $query->count();
     }
@@ -70,12 +123,10 @@ class GetPurchaseRequestStats
     /**
      * Get count of PRs approved this month visible to this user
      */
-    private function getApprovedThisMonth(User $user): int
+    private function getApprovedThisMonth($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        
-        // Use the canonical ApprovedThisMonthFilter
-        (new ApprovedThisMonthFilter())->apply($query);
+        (new ApprovedThisMonthFilter)->apply($query);
 
         return $query->count();
     }
@@ -83,35 +134,24 @@ class GetPurchaseRequestStats
     /**
      * Get total value of pending PRs grouped by currency visible to this user
      */
-    private function getTotalValuePending(User $user): array
+    private function getTotalValuePending($user): array
     {
-        $totals = [];
+        // Build the base query for visibility scoping
+        $baseQuery = $this->queryBuilder->forUser($user);
+        (new InReviewFilter)->apply($baseQuery);
 
-        $query = $this->queryBuilder->forUser($user);
-        
-        // Only count In-Review PRs for value pending
-        (new InReviewFilter())->apply($query);
+        // Get the IDs of visible PRs first
+        $prIds = $baseQuery->pluck('purchase_requests.id');
 
-        $prs = $query->with('items')->get();
+        // Now do the aggregation on a fresh query
+        $totals = DB::table('detail_purchase_requests')
+            ->whereIn('purchase_request_id', $prIds)
+            ->selectRaw('UPPER(COALESCE(currency, \'IDR\')) as currency, SUM(COALESCE(quantity, 0) * COALESCE(price, 0)) as total_value')
+            ->groupBy('currency')
+            ->pluck('total_value', 'currency')
+            ->toArray();
 
-        foreach ($prs as $pr) {
-            foreach ($pr->items as $item) {
-                $currency = strtoupper($item->currency ?? 'IDR');
-                $value = ($item->quantity ?? 0) * ($item->price ?? 0);
-
-                if (! isset($totals[$currency])) {
-                    $totals[$currency] = 0.0;
-                }
-                $totals[$currency] += $value;
-            }
-        }
-
-        // Ensure IDR: 0 is returned if nothing exists
-        if (empty($totals)) {
-            return ['IDR' => 0];
-        }
-
-        return $totals;
+        return ! empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
     }
 
     /**

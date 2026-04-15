@@ -23,9 +23,12 @@
                             <table class="w-full text-sm text-center divide-y divide-slate-200">
                                 <thead class="bg-slate-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">No</th>
-                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Name</th>
-                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Expired Date</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                            No</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                            Name</th>
+                                        <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                            Expired Date</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">

@@ -89,10 +89,10 @@
         @include('partials.reject-project-tracker', ['id' => $project->id])
         <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal" data-bs-target="#rejectModal">Revision</button>
         <!-- <form action="{{ route('pt.updaterevision', $project->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <button type="submit" class="btn btn-primary">Need Revision</button>
-            </form> -->
+                    @csrf
+                    @method('PUT')
+                    <button type="submit" class="btn btn-primary">Need Revision</button>
+                </form> -->
 
         <form action="{{ route('pt.updateaccept', $project->id) }}" method="POST">
             @csrf

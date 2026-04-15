@@ -12,6 +12,7 @@ class TicketResolved
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Ticket $ticket;
+
     public int $timeToResolveMinutes;
 
     public function __construct(Ticket $ticket, int $timeToResolveMinutes)

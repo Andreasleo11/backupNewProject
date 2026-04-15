@@ -5,7 +5,6 @@ namespace App\Livewire\DailyReports;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -106,24 +105,26 @@ class Index extends Component
     public function getTeamStatsProperty(): array
     {
         $today = now()->toDateString();
-        
+
         $totalEmployees = count($this->validNiks);
-        if ($totalEmployees === 0) return [
-            'submitted' => 0,
-            'total' => 0,
-            'rate' => 0
-        ];
+        if ($totalEmployees === 0) {
+            return [
+                'submitted' => 0,
+                'total' => 0,
+                'rate' => 0,
+            ];
+        }
 
         $submittedToday = EmployeeDailyReport::whereIn('employee_id', $this->validNiks)
             ->whereDate('work_date', $today)
-            ->whereHas('employee', fn($q) => $q->whereNull('end_date'))
+            ->whereHas('employee', fn ($q) => $q->whereNull('end_date'))
             ->distinct('employee_id')
             ->count();
 
         return [
             'submitted' => $submittedToday,
             'total' => $totalEmployees,
-            'rate' => round(($submittedToday / $totalEmployees) * 100)
+            'rate' => round(($submittedToday / $totalEmployees) * 100),
         ];
     }
 
@@ -140,10 +141,10 @@ class Index extends Component
                 $term = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($term) {
                     $w->where('nik', 'like', $term)
-                      ->orWhere('name', 'like', $term)
-                      ->orWhereHas('dailyReports', function ($sub) use ($term) {
-                          $sub->where('work_description', 'like', $term);
-                      });
+                        ->orWhere('name', 'like', $term)
+                        ->orWhereHas('dailyReports', function ($sub) use ($term) {
+                            $sub->where('work_description', 'like', $term);
+                        });
                 });
             })
             // Date filtering via subquery existence or relationship filter
@@ -158,10 +159,10 @@ class Index extends Component
         // Optimization: Sort by latest report presence and date
         $query->leftJoin('employee_daily_reports as dr', function ($join) {
             $join->on('employees.nik', '=', 'dr.employee_id')
-                 ->whereRaw('dr.id = (select id from employee_daily_reports where employee_id = employees.nik order by sort_datetime desc limit 1)');
+                ->whereRaw('dr.id = (select id from employee_daily_reports where employee_id = employees.nik order by sort_datetime desc limit 1)');
         })
-        ->select('employees.*', 'dr.sort_datetime as latest_dt')
-        ->orderByDesc('latest_dt');
+            ->select('employees.*', 'dr.sort_datetime as latest_dt')
+            ->orderByDesc('latest_dt');
 
         $employees = $query->paginate(15);
 

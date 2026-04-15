@@ -91,7 +91,7 @@
                     @endcan
 
                     {{-- Approve / Reject (approvers) --}}
-                    @if ($report->status === 'IN_REVIEW') 
+                    @if ($report->status === 'IN_REVIEW')
                         <div class="mb-2">
                             <label class="form-label">Remarks (optional)</label>
                             <textarea rows="2" class="form-control" wire:model.live.defer="remarks" placeholder="Reason / note"></textarea>

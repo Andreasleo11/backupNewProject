@@ -58,13 +58,13 @@ class PurchaseRequestPolicy
             $isApprover = $pr->approvalRequest->steps()
                 ->where(function ($q) use ($user) {
                     $q->where('acted_by', $user->id)
-                      ->orWhere(function ($aq) use ($user) {
-                          $aq->where('approver_type', 'user')->where('approver_id', $user->id);
-                      })
-                      ->orWhere(function ($aq) use ($user) {
-                          $roleNames = $user->getRoleNames()->toArray();
-                          $aq->where('approver_type', 'role')->whereIn('approver_id', $roleNames);
-                      });
+                        ->orWhere(function ($aq) use ($user) {
+                            $aq->where('approver_type', 'user')->where('approver_id', $user->id);
+                        })
+                        ->orWhere(function ($aq) use ($user) {
+                            $roleNames = $user->getRoleNames()->toArray();
+                            $aq->where('approver_type', 'role')->whereIn('approver_id', $roleNames);
+                        });
                 })
                 ->exists();
 
@@ -89,7 +89,7 @@ class PurchaseRequestPolicy
      */
     public function update(User $user, PurchaseRequest $pr): bool
     {
-        if (!$user->can('pr.edit')) {
+        if (! $user->can('pr.edit')) {
             return false;
         }
 
@@ -101,12 +101,12 @@ class PurchaseRequestPolicy
      */
     public function delete(User $user, PurchaseRequest $pr): bool
     {
-        if (!$user->can('pr.delete')) {
+        if (! $user->can('pr.delete')) {
             return false;
         }
 
         // Only creators can delete, and only in DRAFT mode
-        return $user->id === (int) $pr->user_id_create && 
+        return $user->id === (int) $pr->user_id_create &&
                strtoupper($pr->workflow_status ?? 'DRAFT') === 'DRAFT';
     }
 
@@ -115,7 +115,7 @@ class PurchaseRequestPolicy
      */
     public function cancel(User $user, PurchaseRequest $pr): bool
     {
-        if (!$user->can('pr.cancel')) {
+        if (! $user->can('pr.cancel')) {
             return false;
         }
 
@@ -135,7 +135,7 @@ class PurchaseRequestPolicy
      */
     public function autoApprove(User $user, PurchaseRequest $pr): bool
     {
-        return $user->can('pr.auto-approve') || 
+        return $user->can('pr.auto-approve') ||
                $this->security->canAutoApprove($pr, $user);
     }
 

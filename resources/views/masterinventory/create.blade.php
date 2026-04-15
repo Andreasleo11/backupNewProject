@@ -15,10 +15,7 @@
             </div>
         @endif
 
-        <form method="POST"
-              action="{{ route('masterinventory.store') }}"
-              enctype="multipart/form-data"
-              class="space-y-6">
+        <form method="POST" action="{{ route('masterinventory.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             {{-- Master Inventory Card --}}
@@ -34,12 +31,8 @@
                             <label for="ip_address" class="block text-sm font-medium text-gray-700">
                                 IP Address
                             </label>
-                            <input type="text"
-                                   name="ip_address"
-                                   id="ip_address"
-                                   value="{{ old('ip_address') }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <input type="text" name="ip_address" id="ip_address" value="{{ old('ip_address') }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                           px-3 py-2 bg-gray-50
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('ip_address')
@@ -52,12 +45,8 @@
                             <label for="username" class="block text-sm font-medium text-gray-700">
                                 Username
                             </label>
-                            <input type="text"
-                                   name="username"
-                                   id="username"
-                                   value="{{ old('username') }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <input type="text" name="username" id="username" value="{{ old('username') }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                           px-3 py-2 bg-gray-50
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('username')
@@ -71,10 +60,8 @@
                         <label for="position_image" class="block text-sm font-medium text-gray-700">
                             Position Image
                         </label>
-                        <input type="file"
-                               name="position_image"
-                               id="position_image"
-                               class="mt-1 block w-full text-sm text-gray-700
+                        <input type="file" name="position_image" id="position_image"
+                            class="mt-1 block w-full text-sm text-gray-700
                                       file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2
                                       file:text-sm file:font-medium file:text-gray-700
                                       hover:file:bg-gray-200">
@@ -89,9 +76,8 @@
                             <label for="dept" class="block text-sm font-medium text-gray-700">
                                 Department
                             </label>
-                            <select name="dept"
-                                    id="dept"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <select name="dept" id="dept"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                            px-3 py-2 bg-gray-50
                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                 @foreach ($depts as $dept)
@@ -110,9 +96,8 @@
                             <label for="type" class="block text-sm font-medium text-gray-700">
                                 Type
                             </label>
-                            <select name="type"
-                                    id="type"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <select name="type" id="type"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                            px-3 py-2 bg-gray-50
                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="PC" {{ old('type') == 'PC' ? 'selected' : '' }}>PC</option>
@@ -131,12 +116,8 @@
                             <label for="purpose" class="block text-sm font-medium text-gray-700">
                                 Purpose
                             </label>
-                            <input type="text"
-                                   name="purpose"
-                                   id="purpose"
-                                   value="{{ old('purpose') }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <input type="text" name="purpose" id="purpose" value="{{ old('purpose') }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                           px-3 py-2 bg-gray-50
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('purpose')
@@ -149,12 +130,8 @@
                             <label for="brand" class="block text-sm font-medium text-gray-700">
                                 Brand
                             </label>
-                            <input type="text"
-                                   name="brand"
-                                   id="brand"
-                                   value="{{ old('brand') }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <input type="text" name="brand" id="brand" value="{{ old('brand') }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                           px-3 py-2 bg-gray-50
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('brand')
@@ -167,12 +144,8 @@
                             <label for="os" class="block text-sm font-medium text-gray-700">
                                 OS
                             </label>
-                            <input type="text"
-                                   name="os"
-                                   id="os"
-                                   value="{{ old('os') }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            <input type="text" name="os" id="os" value="{{ old('os') }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                           px-3 py-2 bg-gray-50
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('os')
@@ -186,12 +159,8 @@
                         <label for="description" class="block text-sm font-medium text-gray-700">
                             Description
                         </label>
-                        <input type="text"
-                               name="description"
-                               id="description"
-                               value="{{ old('description') }}"
-                               required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
+                        <input type="text" name="description" id="description" value="{{ old('description') }}" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm
                                       px-3 py-2 bg-gray-50
                                       focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                         @error('description')
@@ -209,8 +178,8 @@
                             Hardwares
                         </h2>
                         <button type="button"
-                                class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                id="add-hardware">
+                            class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            id="add-hardware">
                             Add Hardware
                         </button>
                     </div>
@@ -242,8 +211,8 @@
                             Softwares
                         </h2>
                         <button type="button"
-                                class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                id="add-software">
+                            class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            id="add-software">
                             Add Software
                         </button>
                     </div>
@@ -271,7 +240,7 @@
             {{-- Submit --}}
             <div class="flex justify-end">
                 <button type="submit"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                     Create Inventory
                 </button>
             </div>
@@ -286,15 +255,15 @@
 
                 // Normalize data dari PHP (bisa array atau object keyed)
                 const hardwareTypesRaw = @json($hardwares);
-                const softwareTypesRaw  = @json($softwares);
+                const softwareTypesRaw = @json($softwares);
 
-                const hardwareTypes = Array.isArray(hardwareTypesRaw)
-                    ? hardwareTypesRaw
-                    : Object.values(hardwareTypesRaw || {});
+                const hardwareTypes = Array.isArray(hardwareTypesRaw) ?
+                    hardwareTypesRaw :
+                    Object.values(hardwareTypesRaw || {});
 
-                const softwareTypes = Array.isArray(softwareTypesRaw)
-                    ? softwareTypesRaw
-                    : Object.values(softwareTypesRaw || {});
+                const softwareTypes = Array.isArray(softwareTypesRaw) ?
+                    softwareTypesRaw :
+                    Object.values(softwareTypesRaw || {});
 
                 const getHardwareLabel = (type) =>
                     type.name ?? type.hardware_type ?? type.label ?? '';
@@ -437,4 +406,3 @@
         </script>
     @endpush
 @endsection
-

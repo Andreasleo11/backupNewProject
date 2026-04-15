@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Models\OvertimeForm;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

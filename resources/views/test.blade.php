@@ -54,7 +54,7 @@
             page-break-before: always;
         }
 
-       .signature-container {
+        .signature-container {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
@@ -177,11 +177,11 @@
             <div class="page-break">
                 <!-- <h2>Evaluasi Yayasan {{ now()->format('F Y') }}</h2> Add this line -->
                 <div class="employee-info">
-                @if ($magang == 1 || $magang === null)
-                    <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
-                @else
-                    <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
-                @endif
+                    @if ($magang == 1 || $magang === null)
+                        <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
+                    @else
+                        <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
+                    @endif
 
 
                     <div class="row">
@@ -437,7 +437,7 @@
                     </table>
                 </div>
 
-                 
+
                 <div class="signature-container">
                     <div class="signature-box">
                         <p>Dept Head</p>
@@ -459,7 +459,7 @@
 
             </div>
 
-           
+
     </div>
 
     @if (!$loop->last)

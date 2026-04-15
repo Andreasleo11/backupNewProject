@@ -659,7 +659,7 @@
             @include('partials.file-attachments', [
                 'files' => $files,
                 'showDelete' => $report->pelapor === $authUser->name || $report->status_laporan === 2,
-                'title' => 'Related Documents'
+                'title' => 'Related Documents',
             ])
         </div>
     </div>

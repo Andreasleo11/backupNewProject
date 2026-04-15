@@ -16,9 +16,9 @@ class KpiDashboard extends Component
         // For the Admin Dashboard, we calculate metrics for all IT PICs.
         // In a real app, this would be scoped by a role, e.g., Spatie's Role::whereName('IT Support')->get()
         // Here we just grab all users who have tickets assigned to them to demonstrate.
-        
+
         $pics = User::whereHas('assignedTickets')->get();
-        
+
         foreach ($pics as $pic) {
             $this->picMetrics[] = $calculator->execute($pic);
         }

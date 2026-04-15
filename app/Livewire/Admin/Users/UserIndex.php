@@ -89,30 +89,41 @@ class UserIndex extends Component
 
     public function mount(): void
     {
-        $this->availableRoles    = Role::query()->orderBy('name')->pluck('name')->toArray();
-        $this->roleDescriptions  = config('permission_groups.role_descriptions', []);
+        $this->availableRoles = Role::query()->orderBy('name')->pluck('name')->toArray();
+        $this->roleDescriptions = config('permission_groups.role_descriptions', []);
     }
 
     // Reset page when search/filter changes
-    public function updatedSearch(): void    { $this->resetPage(); }
-    public function updatedOnlyActive(): void { $this->resetPage(); }
-    public function updatedPerPage(): void   { $this->resetPage(); }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedOnlyActive(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
 
     /** Grouped permissions for the Direct Permissions tab in the user modal. */
     public function getGroupedPermissionsProperty(): array
     {
-        $all    = Permission::orderBy('name')->get();
+        $all = Permission::orderBy('name')->get();
         $groups = [];
-        $used   = [];
+        $used = [];
 
         foreach (config('permission_groups.groups', []) as $label => $prefixes) {
             $prefixes = (array) $prefixes;
-            $matched  = $all->filter(fn ($p) =>
-                collect($prefixes)->contains(fn ($px) => str_starts_with($p->name, $px))
+            $matched = $all->filter(
+                fn ($p) => collect($prefixes)->contains(fn ($px) => str_starts_with($p->name, $px))
             );
             if ($matched->isNotEmpty()) {
                 $groups[$label] = $matched->values();
-                $used           = array_merge($used, $matched->pluck('name')->toArray());
+                $used = array_merge($used, $matched->pluck('name')->toArray());
             }
         }
 
@@ -133,10 +144,10 @@ class UserIndex extends Component
 
         foreach ($allModules as $moduleName => $data) {
             $moduleRoles = array_keys($data['roles'] ?? []);
-            if (!empty($moduleRoles)) {
+            if (! empty($moduleRoles)) {
                 // Filter to only included roles that actually exist in availableRoles
                 $validRoles = array_intersect($moduleRoles, $this->availableRoles);
-                if (!empty($validRoles)) {
+                if (! empty($validRoles)) {
                     $grouped[$moduleName] = $validRoles;
                     $assignedRoles = array_merge($assignedRoles, $validRoles);
                 }
@@ -145,7 +156,7 @@ class UserIndex extends Component
 
         // Catch-all for roles not defined in modules
         $others = array_diff($this->availableRoles, $assignedRoles);
-        if (!empty($others)) {
+        if (! empty($others)) {
             $grouped['Other'] = array_values($others);
         }
 
@@ -186,7 +197,7 @@ class UserIndex extends Component
         $this->authorize('user.update');
 
         $toggleUserStatus->execute($userId);
-        
+
         $this->dispatch('toast', message: 'User status updated.', type: 'success');
     }
 
@@ -196,9 +207,9 @@ class UserIndex extends Component
             'employeeId', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
             'selectedDirectPermissions', 'modalTab', 'editingId']);
 
-        $this->active    = true;
+        $this->active = true;
         $this->selectedRoles = [];
-        $this->modalTab  = 'roles';
+        $this->modalTab = 'roles';
     }
 
     public function updatedEmployeeSearch(SearchEmployees $searchEmployees): void
@@ -302,9 +313,21 @@ class UserIndex extends Component
     public function updatedShowModal($value)
     {
         if (! $value) {
-            $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active',
-                'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel',
-                'selectedDirectPermissions', 'modalTab', 'editingId');
+            $this->reset(
+                'name',
+                'email',
+                'password',
+                'password_confirmation',
+                'employeeId',
+                'active',
+                'selectedRoles',
+                'employeeSearch',
+                'employeeOptions',
+                'selectedEmployeeLabel',
+                'selectedDirectPermissions',
+                'modalTab',
+                'editingId'
+            );
             $this->resetValidation();
         }
 
@@ -350,8 +373,9 @@ class UserIndex extends Component
         $this->showModal = false;
         $this->resetForm();
 
-        $this->dispatch('toast', 
-            message: $isCreating ? 'User created successfully.' : 'User updated successfully.', 
+        $this->dispatch(
+            'toast',
+            message: $isCreating ? 'User created successfully.' : 'User updated successfully.',
             type: 'success'
         );
     }
@@ -359,7 +383,7 @@ class UserIndex extends Component
     public function savePassword(ChangeUserPassword $changeUserPassword): void
     {
         $this->authorize('user.update');
-        
+
         $this->validate($this->passwordRules());
         $changeUserPassword->execute($this->passwordUserId, $this->newPassword);
 
@@ -378,7 +402,7 @@ class UserIndex extends Component
         $users = $listUsers->execute($filter);
 
         return view('livewire.admin.users.user-index', [
-            'users'              => $users,
+            'users' => $users,
             'groupedPermissions' => $this->groupedPermissions,
         ])->layout('new.layouts.app');
     }

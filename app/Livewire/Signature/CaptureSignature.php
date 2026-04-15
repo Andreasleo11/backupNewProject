@@ -9,9 +9,9 @@ use App\Application\Signature\UseCases\CreateSignature;
 use App\Domain\Signature\ValueObjects\SignatureKind;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\WithFileUploads;
-use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 final class CaptureSignature extends Component
 {
@@ -71,10 +71,10 @@ final class CaptureSignature extends Component
             $kind = SignatureKind::UPLOADED;
             $extension = $this->signatureImage->getClientOriginalExtension();
             $pngPath = $dir . '/' . Str::uuid() . '.' . $extension;
-            
+
             // Store the file directly to private disk
             $this->signatureImage->storeAs(path: $dir, name: basename($pngPath), options: 'private');
-            
+
             // Get raw bytes for hashing
             $bytes = file_get_contents($this->signatureImage->getRealPath());
         }

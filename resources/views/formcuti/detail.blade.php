@@ -50,18 +50,13 @@
                     <div class="mt-2 sm:mt-0 text-xs text-slate-700" id="autographuser1"></div>
                 </div>
 
-                @if (
-                    Auth::check() &&
-                    Auth::user()->department &&
-                    Auth::user()->is_head == 1 &&
-                    Auth::user()->department == $formcuti->department)
+                @if (Auth::check() &&
+                        Auth::user()->department &&
+                        Auth::user()->is_head == 1 &&
+                        Auth::user()->department == $formcuti->department)
                     <div class="mt-4">
-                        <button
-                            id="btn1"
-                            type="button"
-                            onclick="addAutograph(1, {{ $formcuti->id }})"
-                            class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                        >
+                        <button id="btn1" type="button" onclick="addAutograph(1, {{ $formcuti->id }})"
+                            class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
                             Acc Dept Head
                         </button>
                     </div>

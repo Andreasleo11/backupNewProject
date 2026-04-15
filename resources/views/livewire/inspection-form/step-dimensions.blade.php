@@ -1,8 +1,10 @@
 <div data-step-dimensions>
     <!-- Status chip -->
     <div wire:ignore x-data="{ dirty: false, saved: @js($this->isSaved), ts: @js($savedAt) }" x-init="const root = $el.closest('[data-step-dimensions]');
-    const markDirty = () => { dirty = true;
-        saved = false };
+    const markDirty = () => {
+        dirty = true;
+        saved = false
+    };
     
     if (root) {
         root.addEventListener('input', markDirty, { capture: true });
@@ -15,9 +17,11 @@
         ts = e?.savedAt ?? ts ?? new Date().toISOString();
     });
     
-    Livewire.on('dimensionsReset', () => { dirty = false;
+    Livewire.on('dimensionsReset', () => {
+        dirty = false;
         saved = false;
-        ts = null; });" aria-live="polite" class="mb-2">
+        ts = null;
+    });" aria-live="polite" class="mb-2">
         <template x-if="dirty">
             <span class="badge rounded-pill bg-warning text-dark">
                 <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes
