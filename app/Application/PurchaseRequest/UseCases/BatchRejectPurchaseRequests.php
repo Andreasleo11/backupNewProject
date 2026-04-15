@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\PurchaseRequest\UseCases;
 
-use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Jobs\ProcessPurchaseRequestRejection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Use Case: Batch reject multiple purchase requests synchronously.
@@ -68,6 +67,7 @@ final class BatchRejectPurchaseRequests
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+
             return [
                 'success' => false,
                 'message' => 'Batch rejection failed: ' . $e->getMessage(),

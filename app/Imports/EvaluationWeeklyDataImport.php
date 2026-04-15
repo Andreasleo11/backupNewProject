@@ -2,24 +2,23 @@
 
 namespace App\Imports;
 
-use App\Models\EvaluationDataWeekly;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\EvaluationDataWeekly;
+use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Carbon\Carbon;
 
-class EvaluationWeeklyDataImport implements ToModel, WithHeadingRow, SkipsEmptyRows
+class EvaluationWeeklyDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
 {
     /**
-     * @param array $row
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function model(array $row)
     {
         $nik = trim($row['nik'] ?? $row['NIK'] ?? $row['employee_id'] ?? '');
         if (empty($nik)) {
-            return null;
+            return;
         }
 
         // Parse month/date
@@ -54,19 +53,20 @@ class EvaluationWeeklyDataImport implements ToModel, WithHeadingRow, SkipsEmptyR
             ->first();
 
         $data = [
-            'NIK'   => $nik,
-            'dept'  => $dept,
+            'NIK' => $nik,
+            'dept' => $dept,
             'Month' => $month,
-            'Telat' => (int)($row['telat'] ?? $row['T'] ?? $row['terlambat'] ?? 0),
-            'Alpha' => (int)($row['alpha'] ?? $row['A'] ?? 0),
-            'Izin'  => (int)($row['izin'] ?? $row['I'] ?? 0),
-            'Sakit' => (int)($row['sakit'] ?? $row['S'] ?? 0)
+            'Telat' => (int) ($row['telat'] ?? $row['T'] ?? $row['terlambat'] ?? 0),
+            'Alpha' => (int) ($row['alpha'] ?? $row['A'] ?? 0),
+            'Izin' => (int) ($row['izin'] ?? $row['I'] ?? 0),
+            'Sakit' => (int) ($row['sakit'] ?? $row['S'] ?? 0),
         ];
 
         if ($existing) {
             // Manual update or use updateOrCreate
             $existing->update($data);
-            return null;
+
+            return;
         }
 
         return new EvaluationDataWeekly($data);

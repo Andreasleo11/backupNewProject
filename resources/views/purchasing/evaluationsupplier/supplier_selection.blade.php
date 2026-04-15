@@ -9,7 +9,8 @@
                 <div>
                     <h1 class="h4 mb-1">Supplier Evaluation</h1>
                     <p class="text-muted small mb-0">
-                        Pilih supplier dan periode penilaian untuk menghitung hasil evaluasi, lalu lihat riwayat hasil yang sudah pernah dihitung.
+                        Pilih supplier dan periode penilaian untuk menghitung hasil evaluasi, lalu lihat riwayat hasil yang
+                        sudah pernah dihitung.
                     </p>
                 </div>
             </div>
@@ -23,10 +24,8 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('purchasing.evaluationsupplier.calculate') }}"
-                          method="POST"
-                          class="row g-3 align-items-end"
-                          id="evaluation-form">
+                    <form action="{{ route('purchasing.evaluationsupplier.calculate') }}" method="POST"
+                        class="row g-3 align-items-end" id="evaluation-form">
                         @csrf
 
                         {{-- SUPPLIER --}}
@@ -195,8 +194,7 @@
                                             <td>{{ $head->status }}</td>
                                             <td class="text-center">
                                                 <a href="{{ route('purchasing.evaluationsupplier.details', ['id' => $head->id]) }}"
-                                                   target="_blank"
-                                                   class="btn btn-sm btn-outline-primary">
+                                                    target="_blank" class="btn btn-sm btn-outline-primary">
                                                     View Details
                                                 </a>
                                             </td>
@@ -213,7 +211,6 @@
 @endsection
 
 @push('scripts')
-
     <script>
         // Supplier -> Tahun
         const supplierYears = @json($supplierData);
@@ -221,7 +218,7 @@
         $('#supplier').on('change', function() {
             const supplier = $(this).val();
             const $startYear = $('#start_year');
-            const $endYear   = $('#end_year');
+            const $endYear = $('#end_year');
 
             $startYear.empty().append('<option value="">Year</option>');
             $endYear.empty().append('<option value="">Year</option>');
@@ -252,20 +249,20 @@
 
         function validateDateRange() {
             const startMonthName = $('#start_month').val();
-            const endMonthName   = $('#end_month').val();
-            const startYear      = parseInt($('#start_year').val());
-            const endYear        = parseInt($('#end_year').val());
+            const endMonthName = $('#end_month').val();
+            const startYear = parseInt($('#start_year').val());
+            const endYear = parseInt($('#end_year').val());
 
             if (startMonthName && endMonthName && startYear && endYear) {
                 const startMonth = monthMap[startMonthName];
-                const endMonth   = monthMap[endMonthName];
+                const endMonth = monthMap[endMonthName];
 
                 if (!startMonth || !endMonth) {
                     return true; // kalau mapping gagal, jangan blok form
                 }
 
                 const startDate = new Date(startYear, startMonth - 1, 1);
-                const endDate   = new Date(endYear, endMonth - 1, 1);
+                const endDate = new Date(endYear, endMonth - 1, 1);
 
                 if (startDate > endDate) {
                     alert('Start period tidak boleh lebih besar dari end period.');

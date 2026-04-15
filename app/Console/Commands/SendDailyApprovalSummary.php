@@ -31,7 +31,7 @@ class SendDailyApprovalSummary extends Command
             ->orWhereNotNull('notification_preferences')
             ->get();
 
-        $this->info("Scanning " . $users->count() . " potential users for daily summaries.");
+        $this->info('Scanning ' . $users->count() . ' potential users for daily summaries.');
 
         foreach ($users as $user) {
             // 2. Fetch all requests where it is currently this user's turn to take action
@@ -43,22 +43,22 @@ class SendDailyApprovalSummary extends Command
                     $roleNames = $user->getRoleNames()->toArray();
 
                     $sq->whereColumn('sequence', 'approval_requests.current_step')
-                       ->where(function ($match) use ($user, $roleIds, $roleNames) {
-                           $match->where(function ($uMatch) use ($user) {
-                               $uMatch->where('approver_type', 'user')
-                                      ->where('approver_id', $user->id);
-                           })->orWhere(function ($rMatch) use ($roleIds, $roleNames) {
-                               $rMatch->where('approver_type', 'role')
-                                      ->where(function ($q) use ($roleIds, $roleNames) {
-                                          if (!empty($roleIds)) {
-                                              $q->whereIn('approver_id', $roleIds);
-                                          }
-                                          if (!empty($roleNames)) {
-                                              $q->orWhereIn('approver_id', $roleNames);
-                                          }
-                                      });
-                           });
-                       });
+                        ->where(function ($match) use ($user, $roleIds, $roleNames) {
+                            $match->where(function ($uMatch) use ($user) {
+                                $uMatch->where('approver_type', 'user')
+                                    ->where('approver_id', $user->id);
+                            })->orWhere(function ($rMatch) use ($roleIds, $roleNames) {
+                                $rMatch->where('approver_type', 'role')
+                                    ->where(function ($q) use ($roleIds, $roleNames) {
+                                        if (! empty($roleIds)) {
+                                            $q->whereIn('approver_id', $roleIds);
+                                        }
+                                        if (! empty($roleNames)) {
+                                            $q->orWhereIn('approver_id', $roleNames);
+                                        }
+                                    });
+                            });
+                        });
                 })
                 ->get();
 
@@ -66,21 +66,24 @@ class SendDailyApprovalSummary extends Command
             $scopingManager = app(\App\Infrastructure\Approval\Services\ApprovalScopingManager::class);
 
             $summaryRequests = $allActionable->filter(function ($request) use ($user, $scopingManager) {
-                if (!$request->approvable) return false;
+                if (! $request->approvable) {
+                    return false;
+                }
 
                 // 1. Jurisdictional Scoping
                 // Verify the user has the right to approve THIS specific request based on department boundaries.
                 $step = $request->steps->firstWhere('sequence', (int) $request->current_step);
-                
+
                 if ($step && $step->approver_type === 'role') {
                     $roleSlug = $step->approver_snapshot_role_slug;
                     if (! $scopingManager->isUserEligible($user, $roleSlug, $request->approvable)) {
                         return false;
                     }
                 }
-                
+
                 // 2. Personal Notification Preferences Check
                 $moduleClass = get_class($request->approvable);
+
                 return $scopingManager->wantsNotification($user, $moduleClass, 'daily_summary');
             });
 
@@ -90,6 +93,6 @@ class SendDailyApprovalSummary extends Command
             }
         }
 
-        $this->info("Daily approval summary process completed.");
+        $this->info('Daily approval summary process completed.');
     }
 }

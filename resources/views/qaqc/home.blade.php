@@ -31,7 +31,8 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-900 mb-4">Monthly Chart</h3>
             <div class="mb-4">
-                <select name="month" id="monthSelect" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                <select name="month" id="monthSelect"
+                    class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                     <option value="" disabled selected>--Select the month--</option>
                     @for ($month = 1; $month <= 12; $month++)
                         <option value="{{ $month }}">{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>

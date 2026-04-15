@@ -114,6 +114,7 @@ final class SupplierScoringService
             foreach ($details as $detail) {
                 $detail->update(['customer_stopline' => 10]);
             }
+
             return;
         }
 
@@ -121,7 +122,7 @@ final class SupplierScoringService
             $monthNumber = self::MONTH_MAPPING[$detail->month];
 
             $monthlyClaims = $claims->filter(
-                fn($claim) => Carbon::parse($claim->claim_start_date)->format('m') === $monthNumber
+                fn ($claim) => Carbon::parse($claim->claim_start_date)->format('m') === $monthNumber
             );
 
             if ($monthlyClaims->isEmpty()) {
@@ -163,6 +164,7 @@ final class SupplierScoringService
             foreach ($details as $detail) {
                 $detail->update(['ketepatan_kuantitas_barang' => 20]);
             }
+
             return;
         }
 
@@ -170,7 +172,7 @@ final class SupplierScoringService
             $monthNumber = self::MONTH_MAPPING[$detail->month];
 
             $monthlyAccuracyGoods = $accuracyGoods->filter(
-                fn($good) => Carbon::parse($good->incoming_date)->format('m') === $monthNumber
+                fn ($good) => Carbon::parse($good->incoming_date)->format('m') === $monthNumber
             );
 
             if ($monthlyAccuracyGoods->isEmpty()) {
@@ -203,6 +205,7 @@ final class SupplierScoringService
             foreach ($details as $detail) {
                 $detail->update(['ketepatan_waktu_pengiriman' => 20]);
             }
+
             return;
         }
 
@@ -210,7 +213,7 @@ final class SupplierScoringService
             $monthNumber = self::MONTH_MAPPING[$detail->month];
 
             $monthlyDeliveries = $ontimeDeliveries->filter(
-                fn($delivery) => Carbon::parse($delivery->actual_date)->format('m') === $monthNumber
+                fn ($delivery) => Carbon::parse($delivery->actual_date)->format('m') === $monthNumber
             );
 
             if ($monthlyDeliveries->isEmpty()) {
@@ -243,6 +246,7 @@ final class SupplierScoringService
             foreach ($details as $detail) {
                 $detail->update(['kerjasama_permintaan_mendadak' => 10]);
             }
+
             return;
         }
 
@@ -250,7 +254,7 @@ final class SupplierScoringService
             $monthNumber = self::MONTH_MAPPING[$detail->month];
 
             $monthlyRequests = $urgentRequests->filter(
-                fn($request) => Carbon::parse($request->request_date)->format('m') === $monthNumber
+                fn ($request) => Carbon::parse($request->request_date)->format('m') === $monthNumber
             );
 
             if ($monthlyRequests->isEmpty()) {
@@ -260,7 +264,7 @@ final class SupplierScoringService
                 $count = $monthlyRequests->count();
 
                 foreach ($monthlyRequests as $request) {
-                    $requestDate  = Carbon::parse($request->request_date);
+                    $requestDate = Carbon::parse($request->request_date);
                     $incomingDate = Carbon::parse($request->incoming_date);
 
                     if ($requestDate->eq($incomingDate)) {
@@ -299,7 +303,7 @@ final class SupplierScoringService
 
         // Group by sent year-month
         $monthlyClaimResponses = $claimResponses->groupBy(
-            fn($item) => Carbon::parse($item->cpar_sent_date)->format('Y-m')
+            fn ($item) => Carbon::parse($item->cpar_sent_date)->format('Y-m')
         );
 
         foreach ($monthlyClaimResponses as $yearMonth => $responses) {
@@ -353,17 +357,17 @@ final class SupplierScoringService
         $sertifikasiScore = 0; // default: no valid certification documents
 
         if (
-            !is_null($certificates->iatf_16949_doc) &&
+            ! is_null($certificates->iatf_16949_doc) &&
             trim($certificates->iatf_16949_doc) !== ''
         ) {
             $sertifikasiScore = 10;
         } elseif (
             (
-                !is_null($certificates->iso_9001_doc) &&
+                ! is_null($certificates->iso_9001_doc) &&
                 trim($certificates->iso_9001_doc) !== ''
             ) ||
             (
-                !is_null($certificates->iso_14001_doc) &&
+                ! is_null($certificates->iso_14001_doc) &&
                 trim($certificates->iso_14001_doc) !== ''
             )
         ) {
@@ -381,14 +385,15 @@ final class SupplierScoringService
     {
         $details = PurchasingDetailEvaluationSupplier::where('header_id', $headerId)->get();
 
-        $totalSum = $details->sum(fn ($detail) => $detail->kualitas_barang +
+        $totalSum = $details->sum(
+            fn ($detail) => $detail->kualitas_barang +
                 $detail->ketepatan_kuantitas_barang +
                 $detail->ketepatan_waktu_pengiriman +
                 $detail->kerjasama_permintaan_mendadak +
                 $detail->respon_klaim +
                 $detail->sertifikasi +
                 $detail->customer_stopline
-            );
+        );
 
         $count = $details->count();
         $averageScore = $count > 0 ? $totalSum / $count : 0;

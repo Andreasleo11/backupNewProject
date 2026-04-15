@@ -43,21 +43,17 @@
 
             <div class="hidden md:flex items-center gap-2">
                 <a href="{{ $vehicle ? route('vehicles.show', $vehicle) : route('vehicles.index') }}"
-                   class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
+                    class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
                     Cancel
                 </a>
-                <button
-                    type="button"
+                <button type="button"
                     class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
-                    wire:click="save"
-                    wire:loading.attr="disabled"
-                    wire:target="save">
+                    wire:click="save" wire:loading.attr="disabled" wire:target="save">
                     <span class="mr-1 inline-flex" wire:loading wire:target="save">
                         <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                         </svg>
                     </span>
                     <span wire:loading.remove wire:target="save">
@@ -83,9 +79,7 @@
                             class="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-2 text-slate-500">
                             <i class="bi bi-calendar3 text-[0.9rem]"></i>
                         </span>
-                        <input
-                            type="date"
-                            wire:model="service_date"
+                        <input type="date" wire:model="service_date"
                             class="block w-full py-2 px-3 rounded-r-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                    @error('service_date') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
                     </div>
@@ -104,12 +98,7 @@
                             class="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-2 text-slate-500">
                             <i class="bi bi-speedometer2 text-[0.9rem]"></i>
                         </span>
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            placeholder="0"
-                            wire:model.live="odometer"
+                        <input type="number" min="0" step="1" placeholder="0" wire:model.live="odometer"
                             class="block w-full py-2 px-3 rounded-r-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <span
                             class="ml-2 inline-flex items-center rounded-md border border-slate-300 bg-slate-50 px-2 text-xs text-slate-600">
@@ -128,10 +117,7 @@
                             class="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-2 text-slate-500">
                             <i class="bi bi-shop text-[0.9rem]"></i>
                         </span>
-                        <input
-                            type="text"
-                            placeholder="Internal / Vendor name"
-                            wire:model.live="workshop"
+                        <input type="text" placeholder="Internal / Vendor name" wire:model.live="workshop"
                             class="block w-full py-2 px-3 rounded-r-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                 </div>
@@ -146,12 +132,7 @@
                             class="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-2 text-slate-500">
                             <i class="bi bi-percent text-[0.9rem]"></i>
                         </span>
-                        <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="0.01"
-                            placeholder="e.g. 11"
+                        <input type="number" min="0" max="100" step="0.01" placeholder="e.g. 11"
                             wire:model.live="global_tax_rate"
                             class="block w-full py-2 px-3 rounded-r-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                    @error('global_tax_rate') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -170,10 +151,7 @@
                 <label class="block text-xs font-medium text-slate-700 mb-1">
                     Notes
                 </label>
-                <textarea
-                    rows="2"
-                    wire:model.live="notes"
-                    placeholder="Optional notes"
+                <textarea rows="2" wire:model.live="notes" placeholder="Optional notes"
                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
             </div>
         </div>
@@ -186,9 +164,7 @@
             <span class="text-sm font-semibold text-slate-800">
                 Service Items / Checks
             </span>
-            <button
-                type="button"
-                wire:click="addItem"
+            <button type="button" wire:click="addItem"
                 class="inline-flex items-center rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
                 <i class="bi bi-plus-lg mr-1 text-[0.8rem]"></i>
                 Add Item
@@ -198,7 +174,8 @@
         {{-- Table --}}
         <div class="px-3 py-3 overflow-x-auto">
             <table class="min-w-full text-xs text-slate-700">
-                <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+                <thead
+                    class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-2 py-2 text-left w-[22%]">
                             Part / Check <span class="text-rose-500">*</span>
@@ -217,23 +194,21 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($items as $i => $row)
                         @php
-                            $qty   = (float) ($items[$i]['qty'] ?? 0);
-                            $uc    = (float) ($items[$i]['unit_cost'] ?? 0);
-                            $disc  = max(0, min(100, (float) ($items[$i]['discount'] ?? 0)));
+                            $qty = (float) ($items[$i]['qty'] ?? 0);
+                            $uc = (float) ($items[$i]['unit_cost'] ?? 0);
+                            $disc = max(0, min(100, (float) ($items[$i]['discount'] ?? 0)));
                             $rowTr = $items[$i]['tax_rate'] ?? null;
                             $rowTr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
-                            $rate  = $rowTr ?? ($global_tax_rate ?? 0);
+                            $rate = $rowTr ?? ($global_tax_rate ?? 0);
 
                             $base = $qty * $uc * (1 - $disc / 100);
-                            $tax  = $base * ($rate / 100);
-                            $lt   = $base + $tax;
+                            $tax = $base * ($rate / 100);
+                            $lt = $base + $tax;
                         @endphp
                         <tr wire:key="svc-row-{{ $row['id'] ?? 'n' }}-{{ $i }}">
                             {{-- Part / Check --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Engine Oil"
+                                <input type="text" placeholder="e.g. Engine Oil"
                                     wire:model.live="items.{{ $i }}.part_name"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.part_name') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -244,8 +219,7 @@
 
                             {{-- Action --}}
                             <td class="px-2 py-2 align-top">
-                                <select
-                                    wire:model.live="items.{{ $i }}.action"
+                                <select wire:model.live="items.{{ $i }}.action"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.action') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
                                     <option value="checked">checked</option>
@@ -261,11 +235,7 @@
 
                             {{-- Qty --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0"
+                                <input type="number" min="0" step="0.01" placeholder="0"
                                     wire:model.live="items.{{ $i }}.qty"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.qty') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -276,9 +246,7 @@
 
                             {{-- UoM --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="text"
-                                    placeholder="L, pcs"
+                                <input type="text" placeholder="L, pcs"
                                     wire:model.live="items.{{ $i }}.uom"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.uom') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -294,11 +262,7 @@
                                         class="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-2 text-slate-500">
                                         Rp
                                     </span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="0"
+                                    <input type="number" min="0" step="0.01" placeholder="0"
                                         wire:model.live="items.{{ $i }}.unit_cost"
                                         class="block w-full py-2 px-3 rounded-r-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                                @error('items.' . $i . '.unit_cost') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -310,13 +274,8 @@
 
                             {{-- Discount --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    inputmode="decimal"
-                                    wire:model.live="items.{{ $i }}.discount"
+                                <input type="number" min="0" step="0.01" placeholder="0.00"
+                                    inputmode="decimal" wire:model.live="items.{{ $i }}.discount"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.discount') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
                                 @error('items.' . $i . '.discount')
@@ -326,13 +285,8 @@
 
                             {{-- Tax rate --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    placeholder="{{ (string) ($global_tax_rate ?? 0) }}"
-                                    inputmode="decimal"
+                                <input type="number" min="0" max="100" step="0.01"
+                                    placeholder="{{ (string) ($global_tax_rate ?? 0) }}" inputmode="decimal"
                                     wire:model.live="items.{{ $i }}.tax_rate"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.tax_rate') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -354,9 +308,7 @@
 
                             {{-- Remarks --}}
                             <td class="px-2 py-2 align-top">
-                                <input
-                                    type="text"
-                                    placeholder="Optional"
+                                <input type="text" placeholder="Optional"
                                     wire:model.live="items.{{ $i }}.remarks"
                                     class="block w-full py-2 px-3 rounded-md border-slate-300 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500
                                            @error('items.' . $i . '.remarks') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
@@ -367,9 +319,7 @@
 
                             {{-- Remove --}}
                             <td class="px-2 py-2 align-top text-right">
-                                <button
-                                    type="button"
-                                    wire:click="removeItem({{ $i }})"
+                                <button type="button" wire:click="removeItem({{ $i }})"
                                     class="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 p-1 text-rose-600 hover:bg-rose-100"
                                     title="Remove">
                                     <i class="bi bi-x-lg text-[0.8rem]"></i>
@@ -385,9 +335,7 @@
                                     <div class="text-[11px] mb-2">
                                         Click “Add Item” to start listing parts or checks.
                                     </div>
-                                    <button
-                                        type="button"
-                                        wire:click="addItem"
+                                    <button type="button" wire:click="addItem"
                                         class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
                                         <i class="bi bi-plus-lg mr-1 text-[0.8rem]"></i>
                                         Add Item
@@ -403,22 +351,22 @@
         {{-- Footer totals --}}
         @php
             $totBase = 0.0;
-            $totTax  = 0.0;
+            $totTax = 0.0;
 
             foreach ($items as $r) {
-                $qty   = (float) ($r['qty'] ?? 0);
-                $uc    = (float) ($r['unit_cost'] ?? 0);
-                $disc  = max(0, min(100, (float) ($r['discount'] ?? 0)));
+                $qty = (float) ($r['qty'] ?? 0);
+                $uc = (float) ($r['unit_cost'] ?? 0);
+                $disc = max(0, min(100, (float) ($r['discount'] ?? 0)));
 
                 $rowTr = $r['tax_rate'] ?? null;
-                $tr    = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
-                $rate  = $tr ?? ($global_tax_rate ?? 0);
+                $tr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
+                $rate = $tr ?? ($global_tax_rate ?? 0);
 
                 $base = $qty * $uc * (1 - $disc / 100);
-                $tax  = $base * ($rate / 100);
+                $tax = $base * ($rate / 100);
 
                 $totBase += round($base, 2);
-                $totTax  += round($tax, 2);
+                $totTax += round($tax, 2);
             }
 
             $grand = $totBase + $totTax;
@@ -461,21 +409,17 @@
                 {{-- Mobile actions + desktop fallback --}}
                 <div class="flex items-center gap-2">
                     <a href="{{ $vehicle ? route('vehicles.show', $vehicle) : route('vehicles.index') }}"
-                       class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
+                        class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
                         Cancel
                     </a>
-                    <button
-                        type="button"
-                        wire:click="save"
-                        wire:loading.attr="disabled"
-                        wire:target="save"
+                    <button type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save"
                         class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60">
                         <span class="mr-1 inline-flex" wire:loading wire:target="save">
                             <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                <circle class="opacity-25" cx="12" cy="12" r="10"
+                                    stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                </path>
                             </svg>
                         </span>
                         <span wire:loading.remove wire:target="save">

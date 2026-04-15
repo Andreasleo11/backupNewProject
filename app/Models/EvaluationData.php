@@ -10,34 +10,33 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- *
- * @property int         $id
- * @property string      $NIK
+ * @property int $id
+ * @property string $NIK
  * @property string|null $dept
- * @property string      $Month
- * @property int         $Alpha
- * @property int         $Telat
- * @property int         $Izin
- * @property int         $Sakit
- * @property string      $kerajinan_kerja
- * @property string      $kerapian_kerja
- * @property string      $prestasi
- * @property string      $loyalitas
- * @property string      $perilaku_kerja
- * @property string      $kemampuan_kerja
- * @property string      $kecerdasan_kerja
- * @property string      $qualitas_kerja
- * @property string      $disiplin_kerja
- * @property string      $kepatuhan_kerja
- * @property string      $lembur
- * @property string      $efektifitas_kerja
- * @property string      $relawan
- * @property string      $integritas
- * @property int         $total
+ * @property string $Month
+ * @property int $Alpha
+ * @property int $Telat
+ * @property int $Izin
+ * @property int $Sakit
+ * @property string $kerajinan_kerja
+ * @property string $kerapian_kerja
+ * @property string $prestasi
+ * @property string $loyalitas
+ * @property string $perilaku_kerja
+ * @property string $kemampuan_kerja
+ * @property string $kecerdasan_kerja
+ * @property string $qualitas_kerja
+ * @property string $disiplin_kerja
+ * @property string $kepatuhan_kerja
+ * @property string $lembur
+ * @property string $efektifitas_kerja
+ * @property string $relawan
+ * @property string $integritas
+ * @property int $total
  * @property string|null $pengawas
  * @property string|null $depthead
  * @property string|null $generalmanager
- * @property bool|null   $is_lock
+ * @property bool|null $is_lock
  * @property string|null $remark
  */
 /**
@@ -61,11 +60,11 @@ class EvaluationData extends Model
     public function getActivitylogOptions(): LogOptions
     {
         // For new system
-        $newFields = ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
-                      'kepatuhan_kerja','lembur','efektifitas_kerja','relawan','integritas'];
-        
+        $newFields = ['kemampuan_kerja', 'kecerdasan_kerja', 'qualitas_kerja', 'disiplin_kerja',
+            'kepatuhan_kerja', 'lembur', 'efektifitas_kerja', 'relawan', 'integritas'];
+
         // For old system
-        $oldFields = ['kerajinan_kerja','kerapian_kerja','prestasi','loyalitas','perilaku_kerja'];
+        $oldFields = ['kerajinan_kerja', 'kerapian_kerja', 'prestasi', 'loyalitas', 'perilaku_kerja'];
 
         return LogOptions::defaults()
             ->logOnly(array_merge(
@@ -125,12 +124,12 @@ class EvaluationData extends Model
 
     protected $casts = [
         'is_lock' => 'boolean',
-        'Month'   => 'date',
-        'total'   => 'integer',
-        'Alpha'   => 'integer',
-        'Telat'   => 'integer',
-        'Izin'    => 'integer',
-        'Sakit'   => 'integer',
+        'Month' => 'date',
+        'total' => 'integer',
+        'Alpha' => 'integer',
+        'Telat' => 'integer',
+        'Izin' => 'integer',
+        'Sakit' => 'integer',
     ];
 
     // ──────────────────────────────────────────────
@@ -231,8 +230,8 @@ class EvaluationData extends Model
 
         return match (true) {
             str_contains($scheme, 'YAYASAN') => 'yayasan',
-            str_contains($scheme, 'MAGANG')  => 'magang',
-            default                          => 'regular',
+            str_contains($scheme, 'MAGANG') => 'magang',
+            default => 'regular',
         };
     }
 

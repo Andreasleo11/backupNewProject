@@ -25,7 +25,7 @@ class MonthlyBudgetSummaryController extends Controller
     {
         $report = MonthlyBudgetSummaryReport::with('details')->find($id);
 
-        if (!$report) {
+        if (! $report) {
             abort(404);
         }
 
@@ -74,13 +74,14 @@ class MonthlyBudgetSummaryController extends Controller
 
         if ($incompleteItems->isNotEmpty()) {
             $itemNames = $incompleteItems->pluck('name')->unique()->implode(', ');
+
             return redirect()
                 ->back()
                 ->with('error', "Cannot submit: The following items are incomplete (missing supplier or cost): {$itemNames}. Please update them first.");
         }
 
         $this->approvals->submit($report, auth()->id(), [
-            'is_moulding' => (bool) $report->is_moulding
+            'is_moulding' => (bool) $report->is_moulding,
         ]);
 
         return redirect()->back()->with('success', 'Report submitted for approval successfully!');
@@ -107,12 +108,12 @@ class MonthlyBudgetSummaryController extends Controller
     public function exportToPdf($id)
     {
         $report = MonthlyBudgetSummaryReport::with('details', 'department', 'user')->findOrFail($id);
-        
+
         // Use the same grouping logic as in the show method or view
         $groupedDetails = collect($report->details)->groupBy('name')->map(function ($items, $name) {
             return [
                 'name' => $name,
-                'items' => $items->toArray()
+                'items' => $items->toArray(),
             ];
         })->values()->toArray();
 

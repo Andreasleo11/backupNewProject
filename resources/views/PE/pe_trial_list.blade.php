@@ -14,7 +14,7 @@
             </div>
 
             <a href="{{ route('pe.trial') }}"
-               class="inline-flex items-center justify-center rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm
+                class="inline-flex items-center justify-center rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm
                       hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1">
                 + Add Request Trial
             </a>
@@ -26,7 +26,8 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-left text-slate-700">
                         <thead>
-                            <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            <tr
+                                class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 <th class="px-3 py-2">ID</th>
                                 <th class="px-3 py-2">Customer</th>
                                 <th class="px-3 py-2">Part Name</th>
@@ -62,7 +63,7 @@
                                     {{-- Action --}}
                                     <td class="px-3 py-2 align-middle text-center">
                                         <a href="{{ route('trial.detail', ['id' => $report->id]) }}"
-                                           class="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5
+                                            class="inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5
                                                   text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50
                                                   focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
                                             View Details
@@ -73,10 +74,10 @@
                                     <td class="px-3 py-2 align-middle text-center">
                                         @if (
                                             $report->autograph_1 &&
-                                            $report->autograph_2 &&
-                                            $report->autograph_3 &&
-                                            $report->autograph_4 &&
-                                            $report->autograph_6)
+                                                $report->autograph_2 &&
+                                                $report->autograph_3 &&
+                                                $report->autograph_4 &&
+                                                $report->autograph_6)
                                             <span
                                                 class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1
                                                        text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">

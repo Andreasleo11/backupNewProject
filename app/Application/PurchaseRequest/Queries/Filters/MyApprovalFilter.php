@@ -24,8 +24,8 @@ final class MyApprovalFilter implements PurchaseRequestFilter
 
     public function apply(Builder $query): void
     {
-        $userId    = $this->user->id;
-        $roleIds   = $this->user->roles->pluck('id')->toArray();
+        $userId = $this->user->id;
+        $roleIds = $this->user->roles->pluck('id')->toArray();
         $roleNames = $this->user->getRoleNames()->toArray();
 
         $query->inReview()
@@ -35,22 +35,22 @@ final class MyApprovalFilter implements PurchaseRequestFilter
                     'sequence',
                     DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)')
                 )
-                ->whereNull('acted_at')
-                ->where(function ($q2) use ($userId, $roleIds, $roleNames) {
-                    // Directly assigned to this user
-                    $q2->where(function ($u) use ($userId) {
-                        $u->where('approver_type', 'user')
-                          ->where('approver_id', $userId);
-                    })
-                    // Or assigned to one of their roles (numeric ID or slug string)
-                    ->orWhere(function ($r) use ($roleIds, $roleNames) {
-                        $r->where('approver_type', 'role')
-                          ->where(function ($q) use ($roleIds, $roleNames) {
-                              $q->whereIn('approver_id', $roleIds)
-                                ->orWhereIn('approver_id', $roleNames);
-                          });
+                    ->whereNull('acted_at')
+                    ->where(function ($q2) use ($userId, $roleIds, $roleNames) {
+                        // Directly assigned to this user
+                        $q2->where(function ($u) use ($userId) {
+                            $u->where('approver_type', 'user')
+                                ->where('approver_id', $userId);
+                        })
+                        // Or assigned to one of their roles (numeric ID or slug string)
+                            ->orWhere(function ($r) use ($roleIds, $roleNames) {
+                                $r->where('approver_type', 'role')
+                                    ->where(function ($q) use ($roleIds, $roleNames) {
+                                        $q->whereIn('approver_id', $roleIds)
+                                            ->orWhereIn('approver_id', $roleNames);
+                                    });
+                            });
                     });
-                });
             });
     }
 }

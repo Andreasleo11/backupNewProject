@@ -15,6 +15,6 @@ final class MyActiveRequestsFilter implements PurchaseRequestFilter
     public function apply(Builder $query): void
     {
         $query->where('user_id_create', $this->user->id)
-              ->inReview();
+            ->inReview();
     }
 }

@@ -33,14 +33,8 @@
                         {{-- Pretty file input --}}
                         <div
                             class="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center hover:border-indigo-400 hover:bg-indigo-50/40 transition">
-                            <input
-                                id="file"
-                                type="file"
-                                name="file"
-                                accept=".xlsx,.xls"
-                                required
-                                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                            >
+                            <input id="file" type="file" name="file" accept=".xlsx,.xls" required
+                                class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
 
                             <div class="text-3xl mb-2">
                                 📄
@@ -58,19 +52,19 @@
                     {{-- Tips / info kecil --}}
                     <div class="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
                         <p class="text-[11px] sm:text-xs text-slate-500">
-                            ✅ Pastikan kolom dan format data sesuai dengan template actual overtime yang digunakan sistem.<br>
+                            ✅ Pastikan kolom dan format data sesuai dengan template actual overtime yang digunakan
+                            sistem.<br>
                             ✅ Jika terjadi error, cek kembali header kolom, format tanggal, dan numeric jam lembur.
                         </p>
                     </div>
 
                     <div class="flex items-center justify-end gap-2 pt-1">
                         <a href="{{ url()->previous() }}"
-                           class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                            class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
                             Batal
                         </a>
 
-                        <button
-                            type="submit"
+                        <button type="submit"
                             class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                             Upload
                         </button>

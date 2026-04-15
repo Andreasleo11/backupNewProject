@@ -11,8 +11,11 @@ class ApprovalsPage extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $filterType = '';
+
     public ?int $selectedId = null;
+
     public ?string $selectedType = null;
 
     protected $queryString = [
@@ -41,9 +44,9 @@ class ApprovalsPage extends Component
     public function render(DashboardService $dashboardService)
     {
         $query = $dashboardService->getPendingApprovalsQuery();
-        
+
         // Eager load total steps count to show "Level X of Y"
-        $query->with(['request' => function($q) {
+        $query->with(['request' => function ($q) {
             $q->withCount('steps');
         }]);
 
@@ -61,7 +64,7 @@ class ApprovalsPage extends Component
         }
 
         return view('livewire.approval.approvals-page', [
-            'approvals' => $query->paginate(10)
+            'approvals' => $query->paginate(10),
         ])->layout('new.layouts.app');
     }
 }

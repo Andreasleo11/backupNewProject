@@ -40,10 +40,10 @@
                         'title' => 'Sign Confirmation',
                         'body' => 'Are you sure you want to sign this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formCreatorAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Confirm
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formCreatorAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Confirm
+                                                                    </button>',
                     ])
 
                     {{-- OPEN MODAL BUTTON (Tailwind + Alpine, no Bootstrap data-bs-*) --}}
@@ -92,10 +92,10 @@
                         'title' => 'Approval Confirmation',
                         'body' => 'Are you sure you want to approve this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formDeptHeadAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Approve
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formDeptHeadAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Approve
+                                                                    </button>',
                     ])
 
                     <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-2')">
@@ -142,10 +142,10 @@
                         'title' => 'Approval Confirmation',
                         'body' => 'Are you sure you want to approve this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formPpicAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Approve
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formPpicAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Approve
+                                                                    </button>',
                     ])
 
                     <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-6')">
@@ -189,10 +189,10 @@
                         'title' => 'Sign Confirmation',
                         'body' => 'Are you sure you want to sign this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formAdminAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Confirm
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formAdminAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Confirm
+                                                                    </button>',
                     ])
 
                     <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-3')">
@@ -234,10 +234,10 @@
                         'title' => 'Sign Confirmation',
                         'body' => 'Are you sure you want to sign this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formPicAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Confirm
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formPicAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Confirm
+                                                                    </button>',
                     ])
 
                     <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-4')">
@@ -292,10 +292,10 @@
                         'title' => 'Approval Confirmation',
                         'body' => 'Are you sure you want to approve this report?',
                         'submitButton' => '<button type="button"
-                                                    onclick="document.getElementById(\'formApprovedAutograph\').submit()"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                                    Approve
-                                                </button>',
+                                                                        onclick="document.getElementById(\'formApprovedAutograph\').submit()"
+                                                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                                                        Approve
+                                                                    </button>',
                     ])
 
                     <button type="button" class="btn btn-success" @click="$dispatch('open-confirmation-5')">

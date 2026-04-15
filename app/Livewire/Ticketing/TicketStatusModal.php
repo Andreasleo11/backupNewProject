@@ -11,15 +11,20 @@ use Livewire\Component;
 class TicketStatusModal extends Component
 {
     public ?Ticket $ticket = null;
+
     public string $newStatus = '';
+
     public string $reason = '';
+
     public bool $isOpen = false;
-    
+
     #[\Livewire\Attributes\On('openStatusModal')]
     public function open($ticket)
     {
         $this->ticket = Ticket::find($ticket);
-        if (!$this->ticket) return;
+        if (! $this->ticket) {
+            return;
+        }
 
         $this->newStatus = $this->ticket->status->value;
         $this->reason = '';
@@ -34,9 +39,9 @@ class TicketStatusModal extends Component
         ]);
 
         $statusEnum = TicketStatus::from($this->newStatus);
-        
+
         $action->execute($this->ticket, $statusEnum, Auth::id(), $this->reason ?: null);
-        
+
         $this->isOpen = false;
         $this->dispatch('ticketUpdated');
     }

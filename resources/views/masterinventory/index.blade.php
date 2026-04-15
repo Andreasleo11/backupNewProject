@@ -7,7 +7,11 @@
         $currentPage = $datas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $datas->currentPage() : 1;
         $perPage = $datas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $datas->perPage() : $totalItems;
 
-        $showCreateButton = !auth()->user()->is_head && !auth()->user()->is_gm && auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin');
+        $showCreateButton =
+            (!auth()->user()->is_head &&
+                !auth()->user()->is_gm &&
+                auth()->user()->department?->name !== 'MANAGEMENT') ||
+            auth()->user()->hasRole('super-admin');
     @endphp
     {{-- END GLOBAL VARIABLE --}}
 
@@ -16,14 +20,13 @@
         <nav class="mb-4" aria-label="breadcrumb">
             <ol class="flex items-center gap-1 text-sm text-gray-500">
                 <li>
-                    <a href="{{ route('masterinventory.index') }}"
-                       class="font-medium text-gray-600 hover:text-indigo-600">
+                    <a href="{{ route('masterinventory.index') }}" class="font-medium text-gray-600 hover:text-indigo-600">
                         Master Inventory
                     </a>
                 </li>
                 <li>
-                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
+                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                 </li>
@@ -42,13 +45,13 @@
             <div class="flex flex-wrap gap-2 justify-start sm:justify-end">
                 @if ($showCreateButton)
                     <a href="{{ route('masterinventory.createpage') }}"
-                       class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                         New Inventory
                     </a>
                 @endif
 
                 <a href="{{ route('export.inventory') }}"
-                   class="inline-flex items-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
                     Export to Excel
                 </a>
             </div>
@@ -83,23 +86,25 @@
                             Per page
                         </label>
                         <select id="itemsPerPage"
-                                class="block w-28 rounded-md border-gray-300 shadow-sm text-sm
+                            class="block w-28 rounded-md border-gray-300 shadow-sm text-sm
                                        px-3 py-2
                                        focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="10" {{ request()->get('itemsPerPage') == 10 ? 'selected' : '' }}>10</option>
                             <option value="25" {{ request()->get('itemsPerPage') == 25 ? 'selected' : '' }}>25</option>
                             <option value="50" {{ request()->get('itemsPerPage') == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request()->get('itemsPerPage') == 100 ? 'selected' : '' }}>100</option>
-                            <option value="all" {{ request()->get('itemsPerPage') == 'all' ? 'selected' : '' }}>All</option>
+                            <option value="100" {{ request()->get('itemsPerPage') == 100 ? 'selected' : '' }}>100
+                            </option>
+                            <option value="all" {{ request()->get('itemsPerPage') == 'all' ? 'selected' : '' }}>All
+                            </option>
                         </select>
                     </div>
 
                     <div class="w-full sm:w-64">
                         <input type="text" id="filter-all"
-                               class="block w-full rounded-md border-gray-300 shadow-sm text-sm
+                            class="block w-full rounded-md border-gray-300 shadow-sm text-sm
                                       px-3 py-2
                                       focus:border-indigo-500 focus:ring-indigo-500"
-                               placeholder="Search..">
+                            placeholder="Search..">
                     </div>
                 </div>
 
@@ -108,7 +113,8 @@
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="sortable px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                <th
+                                    class="sortable px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
                                     No
                                 </th>
                                 <th class="sortable px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-600"
@@ -182,12 +188,12 @@
                                     <td class="px-3 py-2 whitespace-nowrap">
                                         <div class="flex flex-col gap-1">
                                             <a href="{{ route('masterinventory.detail', $data->id) }}"
-                                               class="inline-flex items-center justify-center rounded-md bg-slate-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-500">
+                                                class="inline-flex items-center justify-center rounded-md bg-slate-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-500">
                                                 Detail
                                             </a>
 
                                             <a href="{{ route('maintenance.inventory.create', ['id' => $data->id]) }}"
-                                               class="inline-flex items-center justify-center rounded-md border border-emerald-500 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                                class="inline-flex items-center justify-center rounded-md border border-emerald-500 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                                 Create Maintenance
                                             </a>
 
@@ -250,4 +256,3 @@
         });
     </script>
 @endsection
-

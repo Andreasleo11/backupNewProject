@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Domain\Overtime\Models\OvertimeForm;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OvertimeFormFactory extends Factory

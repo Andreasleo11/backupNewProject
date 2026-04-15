@@ -28,10 +28,8 @@
             </div>
         @endif
 
-        <form action="{{ route('masterinventory.update', $data->id) }}"
-              method="POST"
-              enctype="multipart/form-data"
-              class="space-y-6">
+        <form action="{{ route('masterinventory.update', $data->id) }}" method="POST" enctype="multipart/form-data"
+            class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -48,12 +46,9 @@
                             <label for="ip_address" class="block text-sm font-medium text-gray-700">
                                 IP Address
                             </label>
-                            <input type="text"
-                                   name="ip_address"
-                                   id="ip_address"
-                                   value="{{ old('ip_address', $data->ip_address) }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <input type="text" name="ip_address" id="ip_address"
+                                value="{{ old('ip_address', $data->ip_address) }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('ip_address')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -65,12 +60,9 @@
                             <label for="username" class="block text-sm font-medium text-gray-700">
                                 Username
                             </label>
-                            <input type="text"
-                                   name="username"
-                                   id="username"
-                                   value="{{ old('username', $data->username) }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <input type="text" name="username" id="username"
+                                value="{{ old('username', $data->username) }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('username')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -83,10 +75,8 @@
                         <label for="position_image" class="block text-sm font-medium text-gray-700">
                             Position Image
                         </label>
-                        <input type="file"
-                               name="position_image"
-                               id="position_image"
-                               class="mt-1 block w-full text-sm text-gray-700
+                        <input type="file" name="position_image" id="position_image"
+                            class="mt-1 block w-full text-sm text-gray-700
                                       file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2
                                       file:text-sm file:font-medium file:text-gray-700
                                       hover:file:bg-gray-200">
@@ -101,14 +91,11 @@
                             <label for="dept" class="block text-sm font-medium text-gray-700">
                                 Department
                             </label>
-                            <select name="dept"
-                                    id="dept"
-                                    required
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <select name="dept" id="dept" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                 @foreach ($depts as $dept)
-                                    <option value="{{ $dept->name }}"
-                                            @selected(old('dept', $data->dept) == $dept->name)>
+                                    <option value="{{ $dept->name }}" @selected(old('dept', $data->dept) == $dept->name)>
                                         {{ $dept->name }}
                                     </option>
                                 @endforeach
@@ -123,10 +110,8 @@
                             <label for="type" class="block text-sm font-medium text-gray-700">
                                 Type
                             </label>
-                            <select name="type"
-                                    id="type"
-                                    required
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <select name="type" id="type" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="PC" @selected(old('type', $data->type) == 'PC')>PC</option>
                                 <option value="Laptop" @selected(old('type', $data->type) == 'Laptop')>Laptop</option>
@@ -144,12 +129,9 @@
                             <label for="purpose" class="block text-sm font-medium text-gray-700">
                                 Purpose
                             </label>
-                            <input type="text"
-                                   name="purpose"
-                                   id="purpose"
-                                   value="{{ old('purpose', $data->purpose) }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <input type="text" name="purpose" id="purpose"
+                                value="{{ old('purpose', $data->purpose) }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('purpose')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -161,12 +143,9 @@
                             <label for="brand" class="block text-sm font-medium text-gray-700">
                                 Brand
                             </label>
-                            <input type="text"
-                                   name="brand"
-                                   id="brand"
-                                   value="{{ old('brand', $data->brand) }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <input type="text" name="brand" id="brand" value="{{ old('brand', $data->brand) }}"
+                                required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('brand')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -178,12 +157,8 @@
                             <label for="os" class="block text-sm font-medium text-gray-700">
                                 OS
                             </label>
-                            <input type="text"
-                                   name="os"
-                                   id="os"
-                                   value="{{ old('os', $data->os) }}"
-                                   required
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                            <input type="text" name="os" id="os" value="{{ old('os', $data->os) }}" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                             @error('os')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -196,12 +171,9 @@
                         <label for="description" class="block text-sm font-medium text-gray-700">
                             Description
                         </label>
-                        <input type="text"
-                               name="description"
-                               id="description"
-                               value="{{ old('description', $data->description) }}"
-                               required
-                               class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                        <input type="text" name="description" id="description"
+                            value="{{ old('description', $data->description) }}" required
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
                                       focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                         @error('description')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -217,9 +189,8 @@
                         <h2 class="text-sm font-semibold text-gray-900">
                             Hardwares
                         </h2>
-                        <button type="button"
-                                id="add-hardware"
-                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <button type="button" id="add-hardware"
+                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                             Add Hardware
                         </button>
                     </div>
@@ -240,43 +211,36 @@
                                     <tr data-index="{{ $index }}">
                                         <td class="px-3 py-2">
                                             <select name="hardwares[{{ $index }}][type]"
-                                                    class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                                 @foreach ($hardwareTypes as $type)
-                                                    <option value="{{ $type->id }}"
-                                                            @selected($hardware->hardware_id == $type->id)>
+                                                    <option value="{{ $type->id }}" @selected($hardware->hardware_id == $type->id)>
                                                         {{ $type->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="hardwares[{{ $index }}][brand]"
-                                                   value="{{ $hardware->brand }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="hardwares[{{ $index }}][brand]"
+                                                value="{{ $hardware->brand }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="hardwares[{{ $index }}][hardware_name]"
-                                                   value="{{ $hardware->hardware_name }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="hardwares[{{ $index }}][hardware_name]"
+                                                value="{{ $hardware->hardware_name }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="hardwares[{{ $index }}][remark]"
-                                                   value="{{ $hardware->remark }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="hardwares[{{ $index }}][remark]"
+                                                value="{{ $hardware->remark }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
                                             <button type="button"
-                                                    class="remove-hardware inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
+                                                class="remove-hardware inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
                                                 Remove
                                             </button>
                                         </td>
@@ -295,9 +259,8 @@
                         <h2 class="text-sm font-semibold text-gray-900">
                             Softwares
                         </h2>
-                        <button type="button"
-                                id="add-software"
-                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <button type="button" id="add-software"
+                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                             Add Software
                         </button>
                     </div>
@@ -319,51 +282,42 @@
                                     <tr data-index="{{ $index }}">
                                         <td class="px-3 py-2">
                                             <select name="softwares[{{ $index }}][type]"
-                                                    class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                                 @foreach ($softwareTypes as $type)
-                                                    <option value="{{ $type->id }}"
-                                                            @selected($software->software_id == $type->id)>
+                                                    <option value="{{ $type->id }}" @selected($software->software_id == $type->id)>
                                                         {{ $type->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="softwares[{{ $index }}][software_brand]"
-                                                   value="{{ $software->software_brand }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="softwares[{{ $index }}][software_brand]"
+                                                value="{{ $software->software_brand }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="softwares[{{ $index }}][software_name]"
-                                                   value="{{ $software->software_name }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="softwares[{{ $index }}][software_name]"
+                                                value="{{ $software->software_name }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="softwares[{{ $index }}][license]"
-                                                   value="{{ $software->license }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="softwares[{{ $index }}][license]"
+                                                value="{{ $software->license }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
-                                            <input type="text"
-                                                   name="softwares[{{ $index }}][remark]"
-                                                   value="{{ $software->remark }}"
-                                                   required
-                                                   class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
+                                            <input type="text" name="softwares[{{ $index }}][remark]"
+                                                value="{{ $software->remark }}" required
+                                                class="block w-full rounded-md border-gray-300 bg-slate-50 px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-3 py-2">
                                             <button type="button"
-                                                    class="remove-software inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
+                                                class="remove-software inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
                                                 Remove
                                             </button>
                                         </td>
@@ -378,7 +332,7 @@
             {{-- Submit --}}
             <div class="flex justify-end pt-2">
                 <button type="submit"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                     Update Inventory
                 </button>
             </div>

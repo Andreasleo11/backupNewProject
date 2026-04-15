@@ -44,4 +44,3 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-defects', fn ($user) => $user->hasRole('super-admin') || $user->can('manage-defects'));
     }
 }
-

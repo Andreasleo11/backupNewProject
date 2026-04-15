@@ -15,7 +15,9 @@ class SyncEmployeesJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $companyArea;
+
     protected int $year;
+
     protected ?int $importJobId;
 
     /**

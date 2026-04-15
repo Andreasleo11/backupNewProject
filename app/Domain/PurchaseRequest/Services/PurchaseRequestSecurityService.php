@@ -57,6 +57,7 @@ final class PurchaseRequestSecurityService
         // B. Jurisdictional Oversight (Purchasers/GMs/Admins/DeptHeads)
         if ($this->scoper->hasJurisdiction($user, $pr)) {
             $allowedForOversight = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
+
             return in_array($status, $allowedForOversight);
         }
 
@@ -154,6 +155,7 @@ final class PurchaseRequestSecurityService
     public function canUserSelectImportPath(User $user): bool
     {
         $dept = strtoupper(trim($user->department?->name ?? ''));
-        return ($dept === 'MOULDING' || $dept === 'MOLDING');
+
+        return $dept === 'MOULDING' || $dept === 'MOLDING';
     }
 }

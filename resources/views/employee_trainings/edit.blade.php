@@ -6,8 +6,7 @@
         <nav aria-label="Breadcrumb" class="text-sm">
             <ol class="flex flex-wrap gap-1 text-slate-500">
                 <li>
-                    <a href="{{ route('employee_trainings.index') }}"
-                       class="hover:text-slate-700">
+                    <a href="{{ route('employee_trainings.index') }}" class="hover:text-slate-700">
                         Employee Trainings
                     </a>
                 </li>
@@ -31,16 +30,8 @@
         {{-- Form card --}}
         <div class="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
             <div class="p-6">
-                <x-employee-training-form
-                    :action="route('employee_trainings.update', $training->id)"
-                    method="PUT"
-                    :employees="$employees"
-                    :employee-id="$training->employee_id"
-                    :description="$training->description"
-                    :last-training-at="$training->last_training_at"
-                    :evaluated="$training->evaluated"
-                    submit-label="Update"
-                />
+                <x-employee-training-form :action="route('employee_trainings.update', $training->id)" method="PUT" :employees="$employees" :employee-id="$training->employee_id"
+                    :description="$training->description" :last-training-at="$training->last_training_at" :evaluated="$training->evaluated" submit-label="Update" />
             </div>
         </div>
     </div>

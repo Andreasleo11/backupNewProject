@@ -7,12 +7,9 @@ use App\Application\Approval\DTOs\ApprovalInfo;
 use App\Application\Auth\UserRoles;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Domain\Approval\Contracts\RuleResolver;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
+use App\Domain\Signature\Repositories\UserSignatureRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalAction;
-use App\Infrastructure\Approval\Services\ApprovalScopingManager;
-use App\Domain\Signature\Repositories\UserSignatureRepository;
 use App\Notifications\ApprovalActionRequired;
 use App\Notifications\ReportApprovedNotification;
 use App\Notifications\ReportRejectedNotification;
@@ -28,7 +25,7 @@ final class ApprovalEngine implements Approvals
         private UserRoles $userRoles,
         private UserSignatureRepository $userSignatures
     ) {
-        $this->scopingManager = new ApprovalScopingManager();
+        $this->scopingManager = new ApprovalScopingManager;
     }
 
     private function toInfo(?ApprovalRequest $req): ?ApprovalInfo
@@ -286,7 +283,7 @@ final class ApprovalEngine implements Approvals
         $approvable = $req->approvable;
 
         if (! $approvable) {
-             return;
+            return;
         }
 
         // Use unified scoping methods from Approvable interface
@@ -298,7 +295,7 @@ final class ApprovalEngine implements Approvals
 
             if ($step->approver_type === 'user') {
                 $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($step->approver_id);
-                
+
                 // Even if directly assigned, respect their opt-out preferences
                 if ($user && $this->scopingManager->wantsNotification($user, get_class($approvable), 'immediate')) {
                     $usersToNotify->push($user);
@@ -328,7 +325,6 @@ final class ApprovalEngine implements Approvals
             }
         }
     }
-
 
     private function notifyFinalApproval(ApprovalRequest $req): void
     {

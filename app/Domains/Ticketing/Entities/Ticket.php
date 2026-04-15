@@ -6,7 +6,6 @@ use App\Domains\Ticketing\Enums\TicketPriority;
 use App\Domains\Ticketing\Enums\TicketStatus;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

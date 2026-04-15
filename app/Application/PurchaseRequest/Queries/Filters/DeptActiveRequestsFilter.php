@@ -15,7 +15,7 @@ final class DeptActiveRequestsFilter implements PurchaseRequestFilter
     public function apply(Builder $query): void
     {
         $dept = (string) ($this->user->department?->name ?? $this->user->employee?->department?->name);
-        
+
         if ($dept) {
             $query->where('to_department', $dept)->inReview();
         } else {

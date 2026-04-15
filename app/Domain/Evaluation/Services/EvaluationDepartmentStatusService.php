@@ -80,7 +80,7 @@ class EvaluationDepartmentStatusService
         $records = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($q) use ($cutoffDate) {
                 $q->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
-                  ->where('start_date', '<', $cutoffDate);
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('Month', $month)
             ->whereYear('Month', $year)
@@ -89,7 +89,9 @@ class EvaluationDepartmentStatusService
         $result = [];
         foreach ($records as $record) {
             $nik = $record->karyawan?->nik;
-            if (! $nik) continue;
+            if (! $nik) {
+                continue;
+            }
 
             $result[$nik] ??= ['employee_id' => $nik, 'nilai_A' => 0, 'nilai_B' => 0];
 

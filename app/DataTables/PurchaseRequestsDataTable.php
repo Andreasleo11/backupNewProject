@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -43,7 +42,7 @@ class PurchaseRequestsDataTable extends DataTable
                 $date = Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta');
                 $absolute = $date->format('d-m-Y');
                 $relative = $date->diffForHumans();
-                
+
                 return "<div><div class='font-medium text-slate-700'>{$relative}</div><div class='text-[10px] text-slate-400'>{$absolute}</div></div>";
             })
             ->editColumn('approved_at', function ($pr) {
@@ -97,9 +96,10 @@ class PurchaseRequestsDataTable extends DataTable
                 ";
             })
             ->editColumn('supplier', function ($pr) {
-                if (!$pr->supplier) {
+                if (! $pr->supplier) {
                     return '<span class="text-slate-400 italic text-xs">Not Specified</span>';
                 }
+
                 return '<div class="truncate max-w-[200px] text-sm text-slate-700" title="' . e($pr->supplier) . '">' . e($pr->supplier) . '</div>';
             })
             ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'items_routing', 'supplier', 'date_pr'])
@@ -171,7 +171,7 @@ class PurchaseRequestsDataTable extends DataTable
                 ->printable(false)
                 ->addClass('text-center align-middle')
                 ->width('100px'),
-            
+
             // Hidden data columns for searchability
             Column::make('po_number')->visible(false),
             Column::make('branch')->visible(false),

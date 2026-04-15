@@ -8,7 +8,6 @@ use App\Infrastructure\Approval\Services\ApprovalEngine;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,7 +17,9 @@ class ApprovalHub extends Component
     use WithPagination;
 
     public array $selectedPackKeys = [];
+
     public array $expandedGroups = [];
+
     public array $insights = [];
 
     /**
@@ -27,7 +28,7 @@ class ApprovalHub extends Component
      */
     public function getGroupsProperty()
     {
-        $builder = new ApprovalHubQueryBuilder();
+        $builder = new ApprovalHubQueryBuilder;
         $items = $builder->build(Auth::user())->get();
 
         return $items->groupBy(function ($item) {
@@ -35,13 +36,14 @@ class ApprovalHub extends Component
             if ($date instanceof \DateTimeInterface) {
                 $date = $date->format('Y-m-d');
             }
+
             return $item->user_id . '-' . $item->dept_id . '-' . ($date ?: 'unknown');
         });
     }
 
     public function toggleGroup(string $groupKey): void
     {
-        $this->expandedGroups[$groupKey] = !($this->expandedGroups[$groupKey] ?? false);
+        $this->expandedGroups[$groupKey] = ! ($this->expandedGroups[$groupKey] ?? false);
 
         if ($this->expandedGroups[$groupKey]) {
             $this->loadInsightsForGroup($groupKey);
@@ -51,9 +53,11 @@ class ApprovalHub extends Component
     private function loadInsightsForGroup(string $groupKey): void
     {
         $group = $this->groups->get($groupKey);
-        if (!$group) return;
+        if (! $group) {
+            return;
+        }
 
-        $niks = $group->flatMap(fn($h) => $h->details->pluck('NIK'))->unique()->toArray();
+        $niks = $group->flatMap(fn ($h) => $h->details->pluck('NIK'))->unique()->toArray();
         $date = \Carbon\Carbon::parse($group[0]->first_overtime_date);
 
         $repo = app(EmployeeRepository::class);
@@ -65,7 +69,9 @@ class ApprovalHub extends Component
     public function approvePack(string $groupKey): void
     {
         $group = $this->groups->get($groupKey);
-        if (!$group) return;
+        if (! $group) {
+            return;
+        }
 
         $ids = $group->pluck('id')->toArray();
         $this->processBulkApproval($ids);
@@ -83,6 +89,7 @@ class ApprovalHub extends Component
 
         if (empty($allIds)) {
             $this->dispatch('flash', type: 'error', message: 'No items selected.');
+
             return;
         }
 
@@ -101,7 +108,9 @@ class ApprovalHub extends Component
         try {
             foreach ($ids as $id) {
                 $form = \App\Domain\Overtime\Models\OvertimeForm::find($id);
-                if (!$form) continue;
+                if (! $form) {
+                    continue;
+                }
 
                 try {
                     $engine->approve($form, $user->id, 'Bulk approved via Hub');
@@ -112,12 +121,14 @@ class ApprovalHub extends Component
             }
 
             DB::commit();
-            
+
             $msg = "Successfully approved {$successCount} requests.";
-            if ($failCount > 0) $msg .= " Failed to approve {$failCount} items (likely permission/state mismatch).";
-            
+            if ($failCount > 0) {
+                $msg .= " Failed to approve {$failCount} items (likely permission/state mismatch).";
+            }
+
             $this->dispatch('flash', type: $failCount > 0 ? 'warning' : 'success', message: $msg);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('flash', type: 'error', message: 'Core approval process failed: ' . $e->getMessage());

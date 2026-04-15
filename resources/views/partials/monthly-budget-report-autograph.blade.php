@@ -28,7 +28,8 @@
 }" x-cloak class="mb-6">
     {{-- GRID 3 KOLOM: Dibuat / Diketahui / Disetujui --}}
     <div class="max-w-6xl mx-auto px-4">
-        <div class="grid grid-cols-1 {{ $report->department->name === 'PLASTIC INJECTION' ? 'md:grid-cols-2' : 'md:grid-cols-3' }}  gap-4">
+        <div
+            class="grid grid-cols-1 {{ $report->department->name === 'PLASTIC INJECTION' ? 'md:grid-cols-2' : 'md:grid-cols-3' }}  gap-4">
 
             {{-- ========== DIBUAT ========== --}}
             <div class="flex flex-col items-center">
@@ -316,7 +317,7 @@
                     var fileKey = autographs['autograph_' + i];
                     var url = '/autographs/' + fileKey;
 
-                    autographBox.style.backgroundImage = "url('" + url ;
+                    autographBox.style.backgroundImage = "url('" + url;
                     var autographName = fileKey.split('.')[0];
                     autographNameBox.textContent = autographName;
                     autographNameBox.style.display = 'block';

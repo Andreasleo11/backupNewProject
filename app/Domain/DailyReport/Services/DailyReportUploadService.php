@@ -17,7 +17,7 @@ final class DailyReportUploadService
      */
     public function processExcelUpload($file): array
     {
-        $spreadsheets = Excel::toArray(new \stdClass(), $file);
+        $spreadsheets = Excel::toArray(new \stdClass, $file);
         $data = $spreadsheets[0] ?? [];
 
         if (count($data) < 2) {
@@ -75,7 +75,7 @@ final class DailyReportUploadService
                 if ($isDuplicate) {
                     $logEntry['status'] = 'Duplikat';
                     $logEntry['message'] = 'Data sudah ada, dilewati.';
-                    
+
                     activity('daily_report')
                         ->withProperties(['data' => $logEntry, 'batch' => $batchId])
                         ->log("Duplicate report skipped for {$row['employee_id']}");
@@ -83,13 +83,13 @@ final class DailyReportUploadService
                     EmployeeDailyReport::create($criteria);
                     $logEntry['status'] = 'Berhasil';
                     $logEntry['message'] = null;
-                    
+
                     // Note: EmployeeDailyReport creation is already logged via model trait
                 }
             } catch (\Exception $e) {
                 $logEntry['status'] = 'Gagal';
                 $logEntry['message'] = $e->getMessage();
-                
+
                 activity('daily_report')
                     ->withProperties(['data' => $logEntry, 'error' => $e->getMessage(), 'batch' => $batchId])
                     ->log("Failed to upload report for {$row['employee_id']}");
@@ -234,7 +234,7 @@ final class DailyReportUploadService
             if (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $endTime, $matches)) {
                 $timePart = $matches[0] . ':00';
             }
-        } 
+        }
         // Handle "HH:MM"
         elseif (preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9]/', $time, $matches)) {
             $timePart = $matches[0] . ':00';

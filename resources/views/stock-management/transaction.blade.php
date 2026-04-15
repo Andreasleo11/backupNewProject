@@ -263,8 +263,7 @@
         }) {
             return {
                 items: initialItems.length ?
-                    initialItems :
-                    [{
+                    initialItems : [{
                         id: Date.now(),
                         name: '',
                         suggestions: [],

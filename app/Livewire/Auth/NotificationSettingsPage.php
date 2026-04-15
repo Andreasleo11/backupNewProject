@@ -9,7 +9,9 @@ use Livewire\Component;
 class NotificationSettingsPage extends Component
 {
     public string $global_mode = 'immediate';
+
     public array $module_preferences = [];
+
     public array $available_modules = [];
 
     public function mount(ApprovableModuleScanner $scanner)
@@ -23,7 +25,7 @@ class NotificationSettingsPage extends Component
     public function save()
     {
         $user = Auth::user();
-        
+
         $user->update([
             'email_notification_mode' => $this->global_mode,
             'notification_preferences' => $this->module_preferences,

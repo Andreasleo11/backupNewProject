@@ -118,11 +118,11 @@ final class BudgetSummaryService
         $reports = MonthlyBudgetReport::with('details')
             ->whereYear('report_date', $year)
             ->whereMonth('report_date', $month)
-            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED')) // Only approved reports
-            ->when($summary->is_moulding, function($q) {
+            ->whereHas('approvalRequest', fn ($q) => $q->where('status', 'APPROVED')) // Only approved reports
+            ->when($summary->is_moulding, function ($q) {
                 return $q->where('dept_no', '363');
             })
-            ->when(!$summary->is_moulding, function($q) {
+            ->when(! $summary->is_moulding, function ($q) {
                 return $q->where('dept_no', '!=', '363');
             })
             ->get()

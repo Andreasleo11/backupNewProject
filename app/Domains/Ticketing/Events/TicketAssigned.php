@@ -12,7 +12,9 @@ class TicketAssigned
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Ticket $ticket;
+
     public ?int $oldAssigneeId;
+
     public int $newAssigneeId;
 
     public function __construct(Ticket $ticket, ?int $oldAssigneeId, int $newAssigneeId)

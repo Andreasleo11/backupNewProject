@@ -3,14 +3,11 @@
 namespace App\DataTables\Admin;
 
 use App\Models\EvaluationDataWeekly;
-use Yajra\DataTables\Html\Button;
-use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Services\DataTable;
-use Yajra\DataTables\Html\Editor\Fields;
-use Yajra\DataTables\Html\Editor\Editor;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
-use Carbon\Carbon;
+use Yajra\DataTables\Html\Column;
+use Yajra\DataTables\Services\DataTable;
 
 class EvaluationDataWeeklyManagementDataTable extends DataTable
 {
@@ -18,7 +15,6 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
      * Build DataTable class.
      *
      * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -37,7 +33,7 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
                 // Let's pass the NIK instead and Month in query string if id is not reliable, but for Laravel resource destroy we usually need an ID.
                 $itemId = $record->id ?? ($record->NIK . '|' . $record->Month);
                 $deleteUrl = route('admin.evaluation-data-weekly.destroy', $itemId);
-                
+
                 return '
                     <button type="button" 
                             onclick="deleteRow(\'' . $deleteUrl . '\')"
@@ -52,9 +48,6 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
 
     /**
      * Get query source of dataTable.
-     *
-     * @param \App\Models\EvaluationDataWeekly $model
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(EvaluationDataWeekly $model): \Illuminate\Database\Eloquent\Builder
     {
@@ -91,14 +84,12 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
                         'next' => '<i class="bx bx-chevron-right"></i>',
                         'previous' => '<i class="bx bx-chevron-left"></i>',
                     ],
-                ]
+                ],
             ]);
     }
 
     /**
      * Get columns.
-     *
-     * @return array
      */
     protected function getColumns(): array
     {
@@ -113,10 +104,10 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
             Column::make('Izin')->title('I')->searchable(false)->addClass('text-center font-bold text-sky-500'),
             Column::make('Sakit')->title('S')->searchable(false)->addClass('text-center font-bold text-indigo-500'),
             Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->width(60)
-                  ->addClass('text-center'),
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center'),
         ];
     }
 }

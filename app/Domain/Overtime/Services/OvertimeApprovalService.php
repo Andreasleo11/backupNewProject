@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Overtime\Services;
 
 use App\Domain\Overtime\Models\OvertimeForm;
-use Illuminate\Support\Facades\Auth;
 
 final class OvertimeApprovalService
 {
@@ -25,10 +24,10 @@ final class OvertimeApprovalService
 
         try {
             app(\App\Application\Approval\Contracts\Approvals::class)->approve($form, auth()->id());
-            
+
             // Update form status based on approval flow
             $this->updateFormStatus($form);
-            
+
             return [
                 'success' => true,
                 'message' => 'Form signed successfully',
@@ -57,7 +56,7 @@ final class OvertimeApprovalService
 
         try {
             app(\App\Application\Approval\Contracts\Approvals::class)->reject($form, auth()->id(), $description);
-            
+
             $form->update([
                 'description' => $description,
                 'status' => 'rejected',
@@ -123,4 +122,3 @@ final class OvertimeApprovalService
         ];
     }
 }
-

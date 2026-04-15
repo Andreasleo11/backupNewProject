@@ -9,13 +9,13 @@
 
             <!-- Status Dropdown -->
             <!-- <div class="form-group">
-                    <label for="status">Select Status:</label>
-                    <select id="status" name="status" class="form-control">
-                        @foreach ($statuses as $status)
+                        <label for="status">Select Status:</label>
+                        <select id="status" name="status" class="form-control">
+                            @foreach ($statuses as $status)
     <option value="{{ $status }}">{{ $status }}</option>
     @endforeach
-                    </select>
-                </div> -->
+                        </select>
+                    </div> -->
 
             <div class="form-group">
                 <label for="dept">Select dept:</label>
@@ -28,15 +28,15 @@
 
             <!-- Month Selection -->
             <!-- <div class="form-group">
-                    <label for="month">Select Month:</label>
-                    <select id="month" name="month" class="form-control">
-                        @foreach (range(1, 12) as $m)
+                        <label for="month">Select Month:</label>
+                        <select id="month" name="month" class="form-control">
+                            @foreach (range(1, 12) as $m)
     <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}">
-                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
-                            </option>
+                                    {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                </option>
     @endforeach
-                    </select>
-                </div> -->
+                        </select>
+                    </div> -->
 
             <!-- Year Selection -->
             <div class="form-group">

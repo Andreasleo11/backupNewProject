@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Overtime;
 
-use App\Domain\Overtime\Services\OvertimeApprovalService;
-use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Models\OvertimeForm;
-
+use App\Domain\Overtime\Models\OvertimeFormDetail;
+use App\Domain\Overtime\Services\OvertimeApprovalService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -14,11 +13,14 @@ use Livewire\Component;
 class Detail extends Component
 {
     public OvertimeForm $form;
+
     public int $formId;
 
     // Reject modal state
     public bool $showRejectModal = false;
+
     public string $rejectReason = '';
+
     public ?int $rejectApprovalId = null;
 
     protected OvertimeApprovalService $approvalService;
@@ -101,8 +103,9 @@ class Detail extends Component
         $result = $service->pushSingleDetail($detail);
 
         $this->loadForm();
-        $this->dispatch('flash', 
-            type: $result['success'] ? 'success' : 'error', 
+        $this->dispatch(
+            'flash',
+            type: $result['success'] ? 'success' : 'error',
             message: $result['message']
         );
     }
@@ -116,8 +119,9 @@ class Detail extends Component
         $result = $service->removeSingleDetail($detail);
 
         $this->loadForm();
-        $this->dispatch('flash', 
-            type: $result['success'] ? 'success' : 'error', 
+        $this->dispatch(
+            'flash',
+            type: $result['success'] ? 'success' : 'error',
             message: $result['message']
         );
     }
@@ -146,13 +150,12 @@ class Detail extends Component
         $result = $service->pushAllDetails($this->formId);
 
         $this->loadForm();
-        $this->dispatch('flash', 
-            type: $result['success'] ? 'success' : 'error', 
+        $this->dispatch(
+            'flash',
+            type: $result['success'] ? 'success' : 'error',
             message: $result['message'] . " ({$result['total_success']} ok, {$result['total_failed']} failed)"
         );
     }
-
-
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -162,7 +165,7 @@ class Detail extends Component
     public function getTimelineProperty(): array
     {
         $req = $this->form->approvalRequest;
-        
+
         $timeline = [];
 
         // 1. Prepend the Creator (Requester) as the first step
@@ -195,7 +198,7 @@ class Detail extends Component
                 'approved' => 'approved',
                 'rejected' => 'rejected',
                 'canceled' => 'rejected', // treat cancelled as rejected visually
-                default    => 'pending',
+                default => 'pending',
             };
 
             $isCurrent = $req->current_step === $step->sequence && $req->status === 'IN_REVIEW';
@@ -205,17 +208,17 @@ class Detail extends Component
             $signedAt = in_array($status, ['approved', 'rejected']) ? $step->acted_at : null;
 
             return [
-                'step_order'     => $step->sequence,
-                'role_slug'      => $roleSlug,
-                'label'          => $step->approver_label ?? ucwords(str_replace(['-', '_'], ' ', $roleSlug)),
-                'status'         => $status,
-                'is_current'     => $isCurrent,
-                'approver_name'  => $step->approver_name,
-                'signed_at'      => $signedAt,
+                'step_order' => $step->sequence,
+                'role_slug' => $roleSlug,
+                'label' => $step->approver_label ?? ucwords(str_replace(['-', '_'], ' ', $roleSlug)),
+                'status' => $status,
+                'is_current' => $isCurrent,
+                'approver_name' => $step->approver_name,
+                'signed_at' => $signedAt,
                 'signature_path' => $step->signature_url,
-                'approval_id'    => $step->id,
-                'step_id'        => $step->id,
-                'can_sign'       => $isCurrent && Auth::user()->can('approve', $this->form),
+                'approval_id' => $step->id,
+                'step_id' => $step->id,
+                'can_sign' => $isCurrent && Auth::user()->can('approve', $this->form),
             ];
         });
 
@@ -225,11 +228,10 @@ class Detail extends Component
     public function render()
     {
         return view('livewire.overtime.detail', [
-            'timeline'  => $this->timeline,
-            'user'      => Auth::user(),
-            'canPush'   => Auth::user()->can('pushToPayroll', $this->form),
+            'timeline' => $this->timeline,
+            'user' => Auth::user(),
+            'canPush' => Auth::user()->can('pushToPayroll', $this->form),
             'canReview' => Auth::user()->can('reviewDetail', $this->form),
         ]);
     }
 }
-

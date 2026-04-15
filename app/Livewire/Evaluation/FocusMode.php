@@ -13,36 +13,40 @@ class FocusMode extends Component
 {
     // Filter State (Passed from Alpine)
     public $type = 'regular';
+
     public $month;
+
     public $year;
 
     // Component Scope State
     public $employeeIds = []; // Ordering array: ungraded first, then graded
+
     public $currentIndex = 0;
-    
+
     // Grading Form State
     public $form = [];
+
     public $isNewSystem = true;
-    
+
     // Grading Configuration (Mirrored from Modals)
     public $newFieldsConfig = [
-        'kemampuan_kerja'   => 'Kemampuan',
-        'kecerdasan_kerja'  => 'Kecerdasan',
-        'qualitas_kerja'    => 'Kualitas',
-        'disiplin_kerja'    => 'Disiplin',
-        'kepatuhan_kerja'   => 'Kepatuhan',
-        'lembur'            => 'Lembur',
+        'kemampuan_kerja' => 'Kemampuan',
+        'kecerdasan_kerja' => 'Kecerdasan',
+        'qualitas_kerja' => 'Kualitas',
+        'disiplin_kerja' => 'Disiplin',
+        'kepatuhan_kerja' => 'Kepatuhan',
+        'lembur' => 'Lembur',
         'efektifitas_kerja' => 'Efektifitas',
-        'relawan'           => 'Relawan',
-        'integritas'        => 'Integritas',
+        'relawan' => 'Relawan',
+        'integritas' => 'Integritas',
     ];
 
     public $oldFieldsConfig = [
         'kerajinan_kerja' => 'Kerajinan',
-        'kerapian_kerja'  => 'Kerapian',
-        'prestasi'        => 'Prestasi',
-        'loyalitas'       => 'Loyalitas',
-        'perilaku_kerja'  => 'Perilaku',
+        'kerapian_kerja' => 'Kerapian',
+        'prestasi' => 'Prestasi',
+        'loyalitas' => 'Loyalitas',
+        'perilaku_kerja' => 'Perilaku',
     ];
 
     /**
@@ -65,7 +69,7 @@ class FocusMode extends Component
         $this->month = $month;
         $this->year = $year;
         $this->isNewSystem = in_array($type, ['yayasan', 'magang']);
-        
+
         $this->loadEligibleEmployees();
     }
 
@@ -80,11 +84,12 @@ class FocusMode extends Component
         try {
             $employees = match ($this->type) {
                 'yayasan' => $resolver->resolveYayasanForUser($user),
-                'magang'  => $resolver->resolveMagangForUser($user),
-                default   => $resolver->resolveForUser($user),
+                'magang' => $resolver->resolveMagangForUser($user),
+                default => $resolver->resolveForUser($user),
             };
         } catch (\Throwable) {
             $this->employeeIds = [];
+
             return;
         }
 
@@ -103,12 +108,12 @@ class FocusMode extends Component
 
         // Sort both arrays by employee name
         $nameSortMap = $employees->pluck('name', 'nik');
-        usort($ungradedNiks, fn($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
-        usort($gradedNiks, fn($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
+        usort($ungradedNiks, fn ($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
+        usort($gradedNiks, fn ($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
 
         $this->employeeIds = array_merge($ungradedNiks, $gradedNiks); // $employeeIds actually stores NIKs now
         $this->currentIndex = 0;
-        
+
         $this->loadCurrentEmployeeData();
     }
 
@@ -118,13 +123,15 @@ class FocusMode extends Component
     public function loadCurrentEmployeeData()
     {
         $this->reset('form');
-        
-        if (empty($this->employeeIds) || !isset($this->employeeIds[$this->currentIndex])) {
+
+        if (empty($this->employeeIds) || ! isset($this->employeeIds[$this->currentIndex])) {
             return;
         }
 
         $record = $this->getCurrentRecordProperty();
-        if (!$record) return;
+        if (! $record) {
+            return;
+        }
 
         if ($this->isNewSystem) {
             foreach (array_keys($this->newFieldsConfig) as $field) {
@@ -172,24 +179,26 @@ class FocusMode extends Component
      */
     public function getCurrentRecordProperty()
     {
-        if (empty($this->employeeIds) || !isset($this->employeeIds[$this->currentIndex])) {
-            return null;
+        if (empty($this->employeeIds) || ! isset($this->employeeIds[$this->currentIndex])) {
+            return;
         }
 
         $nik = $this->employeeIds[$this->currentIndex];
-        
+
         $employee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::with('department')
             ->where('nik', $nik)->first();
-            
-        if (!$employee) return null;
+
+        if (! $employee) {
+            return;
+        }
 
         $record = EvaluationData::with('karyawan.department')
             ->where('NIK', $nik)
             ->whereMonth('Month', $this->month)
             ->whereYear('Month', $this->year)
             ->first();
-            
-        if (!$record) {
+
+        if (! $record) {
             $record = new EvaluationData([
                 'NIK' => $nik,
                 'Month' => \Carbon\Carbon::create($this->year, $this->month, 1)->format('Y-m-d'),
@@ -210,25 +219,28 @@ class FocusMode extends Component
     public function saveGrade()
     {
         $record = $this->getCurrentRecordProperty();
-        
-        if (!$record) return;
+
+        if (! $record) {
+            return;
+        }
 
         // Strip non-A-E inputs and standardize to uppercase
         $cleanForm = [];
         $validChars = ['A', 'B', 'C', 'D', 'E'];
-        
+
         $fieldsToProcess = $this->isNewSystem ? array_keys($this->newFieldsConfig) : array_keys($this->oldFieldsConfig);
-        
+
         foreach ($fieldsToProcess as $field) {
             $val = strtoupper($this->form[$field] ?? '');
-            if (!in_array($val, $validChars)) {
+            if (! in_array($val, $validChars)) {
                 $this->addError("form.$field", 'Harus A, B, C, D, atau E.');
+
                 return; // halt and show error
             }
             $cleanForm[$field] = $val;
         }
 
-        if (!$record->exists) {
+        if (! $record->exists) {
             $record->department_id = $record->karyawan->department->id ?? null;
             $record->level = $record->karyawan->level ?? 5;
             $record->evaluation_type = $this->type;

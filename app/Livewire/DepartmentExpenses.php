@@ -43,7 +43,7 @@ class DepartmentExpenses extends Component
         // initial options (no signer yet)
         $listMonths = app(ListAvailableMonths::class);
         $options = $listMonths->execute(null, 24);
-        
+
         $this->month = $options[0]['value'] ?? now()->format('Y-m'); // latest with data, else today
 
         // compare defaults
@@ -136,6 +136,7 @@ class DepartmentExpenses extends Component
     public function totals()
     {
         $totalsDto = app(GetDepartmentTotals::class)->execute($this->month, $this->prSigner);
+
         return collect($totalsDto)
             ->map(fn (DepartmentTotal $d) => (object) [
                 'dept_id' => $d->deptId,

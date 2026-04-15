@@ -6,8 +6,7 @@
         <nav aria-label="Breadcrumb" class="text-sm">
             <ol class="flex flex-wrap gap-1 text-slate-500">
                 <li>
-                    <a href="{{ route('employee_trainings.index') }}"
-                       class="hover:text-slate-700">
+                    <a href="{{ route('employee_trainings.index') }}" class="hover:text-slate-700">
                         Employee Trainings
                     </a>
                 </li>
@@ -30,7 +29,7 @@
             </div>
 
             <a href="{{ route('employee_trainings.create') }}"
-               class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                 Add New Training
             </a>
         </div>
@@ -38,9 +37,12 @@
         {{-- DataTable --}}
         <div class="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
             <div class="p-3">
-                {{ $dataTable->table([
-                    'class' => 'min-w-full text-sm text-left text-slate-700',
-                ], true) }}
+                {{ $dataTable->table(
+                    [
+                        'class' => 'min-w-full text-sm text-left text-slate-700',
+                    ],
+                    true,
+                ) }}
             </div>
         </div>
     </div>

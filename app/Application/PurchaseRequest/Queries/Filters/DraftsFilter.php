@@ -15,9 +15,9 @@ final class DraftsFilter implements PurchaseRequestFilter
     public function apply(Builder $query): void
     {
         $query->where('user_id_create', $this->user->id)
-              ->where(function($q) {
-                  $q->whereDoesntHave('approvalRequest')
-                    ->orWhereHas('approvalRequest', fn($aq) => $aq->where('status', 'DRAFT'));
-              });
+            ->where(function ($q) {
+                $q->whereDoesntHave('approvalRequest')
+                    ->orWhereHas('approvalRequest', fn ($aq) => $aq->where('status', 'DRAFT'));
+            });
     }
 }

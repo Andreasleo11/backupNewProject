@@ -11,12 +11,12 @@ class HideSignedFilter implements OvertimeFilter
 
     public function apply(Builder $query): void
     {
-        if ($this->hideSigned && !Auth::user()->hasRole('super-admin')) {
+        if ($this->hideSigned && ! Auth::user()->hasRole('super-admin')) {
             $query->where(function ($q) {
                 $q->where('status', '!=', 'IN_REVIEW')
-                  ->orWhereDoesntHave('approvalRequest.steps', function ($stepQuery) {
-                      $stepQuery->where('acted_by', Auth::id());
-                  });
+                    ->orWhereDoesntHave('approvalRequest.steps', function ($stepQuery) {
+                        $stepQuery->where('acted_by', Auth::id());
+                    });
             });
         }
     }

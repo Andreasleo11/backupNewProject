@@ -3,31 +3,25 @@
 namespace App\Domains\Operations\Actions;
 
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
-use App\Support\ApprovalFlowResolver; // Assuming this is the new conditional resolver
+use App\Models\ApprovalFlow; // Assuming this is the new conditional resolver
+use App\Support\ApprovalFlowResolver;
 use Illuminate\Support\Facades\DB;
-use App\Models\ApprovalFlow;
 
 class CreateDeliveryNote
 {
-    /**
-     * @param array $data
-     * @param array $destinations
-     * @param bool $isDraft
-     * @return DeliveryNote
-     */
     public function execute(array $data, array $destinations, bool $isDraft): DeliveryNote
     {
         return DB::transaction(function () use ($data, $destinations, $isDraft) {
-            
+
             // Calculate total costs for the approval context
             $totalCost = $this->calculateTotalCost($destinations);
-            
+
             // Dynamically resolve Approval Flow
             // We use the delivery note attributes for evaluation
             $context = array_merge($data, [
                 'total_cost' => $totalCost,
                 'is_design' => false,
-                'dept_id' => null,   
+                'dept_id' => null,
             ]);
             $flowSlug = ApprovalFlowResolver::for($context);
             $approvalFlow = ApprovalFlow::where('slug', $flowSlug)->first();
@@ -39,7 +33,7 @@ class CreateDeliveryNote
             ]));
 
             unset($note->total_cost); // Don't try to insert non-existent column
-            
+
             foreach ($destinations as $dest) {
                 $destination = $note->destinations()->create([
                     'destination' => $dest['destination'] ?? null,
@@ -52,9 +46,9 @@ class CreateDeliveryNote
                     'balikan_cost_currency' => $dest['balikan_cost_currency'] ?? 'IDR',
                 ]);
 
-                if (!empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
+                if (! empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
                     foreach ($dest['delivery_order_numbers'] as $doNumber) {
-                        if (!empty(trim($doNumber))) {
+                        if (! empty(trim($doNumber))) {
                             $destination->deliveryOrders()->create([
                                 'delivery_order_number' => trim($doNumber),
                             ]);
@@ -75,6 +69,7 @@ class CreateDeliveryNote
             $total += (float) ($dest['kenek_cost'] ?? 0);
             $total += (float) ($dest['balikan_cost'] ?? 0);
         }
+
         return $total;
     }
 }

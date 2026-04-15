@@ -17,4 +17,3 @@ class OvertimeStatusChanged
         public readonly OvertimeForm $form,
     ) {}
 }
-

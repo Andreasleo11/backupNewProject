@@ -158,4 +158,3 @@ class DepartmentEmployeeResolver
         return in_array($user->id, config('evaluation.special_access_ids', []), true);
     }
 }
-

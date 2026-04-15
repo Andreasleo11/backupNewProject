@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Models\OvertimeForm;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +21,12 @@ class OvertimeFormService
         return DB::transaction(function () use ($data) {
             $isPlanned = self::determineIsPlanned($data);
             $headerData = [
-                'user_id'       => Auth::id(),
-                'dept_id'       => $data->get('dept_id'),
-                'branch'        => $data->get('branch'),
-                'is_design'     => $data->get('is_design'),
-                'is_export'     => 0,
-                'is_planned'    => $isPlanned,
+                'user_id' => Auth::id(),
+                'dept_id' => $data->get('dept_id'),
+                'branch' => $data->get('branch'),
+                'is_design' => $data->get('is_design'),
+                'is_export' => 0,
+                'is_planned' => $isPlanned,
                 'is_after_hour' => $data->get('is_after_hour'),
             ];
 
@@ -47,8 +47,8 @@ class OvertimeFormService
             // Submit to Unified Approval Engine
             $context = [
                 'department_id' => (int) $header->dept_id,
-                'branch'        => $header->branch,
-                'is_design'     => (bool) $header->is_design,
+                'branch' => $header->branch,
+                'is_design' => (bool) $header->is_design,
             ];
 
             try {
@@ -56,7 +56,7 @@ class OvertimeFormService
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Overtime Approval Engine Error: ' . $e->getMessage());
                 throw ValidationException::withMessages([
-                    'items' => ["Sistem tidak dapat menentukan alur persetujuan: " . $e->getMessage()],
+                    'items' => ['Sistem tidak dapat menentukan alur persetujuan: ' . $e->getMessage()],
                 ]);
             }
 
@@ -82,23 +82,28 @@ class OvertimeFormService
             ->filter(fn ($i) => ! empty($i['nik']) && ! empty($i['overtime_date']))
             ->map(function ($i) {
                 $start = Carbon::parse(trim(($i['start_date'] ?? '') . ' ' . ($i['start_time'] ?? '00:00')));
-                $end   = Carbon::parse(trim(($i['end_date'] ?? '') . ' ' . ($i['end_time'] ?? '00:00')));
+                $end = Carbon::parse(trim(($i['end_date'] ?? '') . ' ' . ($i['end_time'] ?? '00:00')));
 
-                if ($end->lt($start)) return null;
+                if ($end->lt($start)) {
+                    return;
+                }
 
                 $i['_start'] = $start;
-                $i['_end']   = $end;
-                $i['break']  = (int) ($i['break'] ?? 0);
+                $i['_end'] = $end;
+                $i['break'] = (int) ($i['break'] ?? 0);
+
                 return $i;
             })
             ->filter();
 
-        if ($rows->isEmpty()) return 0;
+        if ($rows->isEmpty()) {
+            return 0;
+        }
 
         // TIRED CONFLICT GUARD: Perform final check against local database before bulk insert
         // This handles cases where two users might submit similar entries simultaneously
         $pairs = $rows->map(fn ($i) => [$i['nik'], $i['overtime_date']])->unique()->values();
-        
+
         $existing = OvertimeFormDetail::query()
             ->whereIn('NIK', $pairs->pluck(0))
             ->whereIn('overtime_date', $pairs->pluck(1))
@@ -110,28 +115,33 @@ class OvertimeFormService
         $inserts = [];
         foreach ($rows as $i) {
             $key = $i['nik'] . '|' . $i['overtime_date'];
-            if (in_array($key, $existing, true)) continue;
+            if (in_array($key, $existing, true)) {
+                continue;
+            }
 
             $inserts[] = [
-                'header_id'     => $headerId,
-                'NIK'           => $i['nik'],
-                'name'          => $i['name'] ?? null,
+                'header_id' => $headerId,
+                'NIK' => $i['nik'],
+                'name' => $i['name'] ?? null,
                 'overtime_date' => $i['overtime_date'],
-                'job_desc'      => $i['job_desc'] ?? null,
-                'start_date'    => $i['_start']->toDateString(),
-                'start_time'    => $i['_start']->format('H:i:s'),
-                'end_date'      => $i['_end']->toDateString(),
-                'end_time'      => $i['_end']->format('H:i:s'),
-                'break'         => $i['break'] ?? 0,
-                'remarks'       => $i['remarks'] ?? null,
-                'created_at'    => now(),
-                'updated_at'    => now(),
+                'job_desc' => $i['job_desc'] ?? null,
+                'start_date' => $i['_start']->toDateString(),
+                'start_time' => $i['_start']->format('H:i:s'),
+                'end_date' => $i['_end']->toDateString(),
+                'end_time' => $i['_end']->format('H:i:s'),
+                'break' => $i['break'] ?? 0,
+                'remarks' => $i['remarks'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
         }
 
-        if (empty($inserts)) return 0;
+        if (empty($inserts)) {
+            return 0;
+        }
 
         OvertimeFormDetail::insert($inserts);
+
         return count($inserts);
     }
 }

@@ -436,53 +436,53 @@ class NavigationService
                         'permission' => ['evaluation.view-any', 'evaluation.view-department'],
                     ],
                     [
-                        'label'  => 'Export JPayroll',
-                        'route'  => 'evaluation.jpayroll.select',
-                        'icon'   => 'arrow-down-tray',
+                        'label' => 'Export JPayroll',
+                        'route' => 'evaluation.jpayroll.select',
+                        'icon' => 'arrow-down-tray',
                         'active' => request()->routeIs('evaluation.jpayroll.*'),
-                        'permission' => ['evaluation.export-jpayroll']
+                        'permission' => ['evaluation.export-jpayroll'],
                     ],
                 ],
             ],
             [
-                'type'     => 'group',
-                'label'    => 'Compliance & Documentation',
-                'icon'     => 'shield-check',
+                'type' => 'group',
+                'label' => 'Compliance & Documentation',
+                'icon' => 'shield-check',
                 'permission' => 'compliance.view',
                 'priority' => 60,
                 'children' => [
                     [
-                        'label'  => 'Dashboard',
-                        'route'  => 'compliance.dashboard',
-                        'icon'   => 'chart-bar',
+                        'label' => 'Dashboard',
+                        'route' => 'compliance.dashboard',
+                        'icon' => 'chart-bar',
                         'active' => request()->routeIs('compliance.dashboard'),
                         'permission' => 'compliance.view',
                     ],
                     [
-                        'label'  => 'Departments',
-                        'route'  => 'departments.index',
-                        'icon'   => 'building-office-2',
+                        'label' => 'Departments',
+                        'route' => 'departments.index',
+                        'icon' => 'building-office-2',
                         'active' => request()->routeIs('departments.*'),
                         'permission' => 'compliance.view',
                     ],
                     [
-                        'label'  => 'Requirements',
-                        'route'  => 'requirements.index',
-                        'icon'   => 'clipboard-document-list',
+                        'label' => 'Requirements',
+                        'route' => 'requirements.index',
+                        'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('requirements.*'),
                         'permission' => 'compliance.view',
                     ],
                     [
-                        'label'      => 'Review Uploads',
-                        'route'      => 'requirement-uploads.review',
-                        'icon'       => 'inbox-arrow-down',
-                        'active'     => request()->routeIs('requirement-uploads.review'),
+                        'label' => 'Review Uploads',
+                        'route' => 'requirement-uploads.review',
+                        'icon' => 'inbox-arrow-down',
+                        'active' => request()->routeIs('requirement-uploads.review'),
                         'permission' => 'compliance.review-uploads',
                     ],
                     [
-                        'label'  => 'File Library',
-                        'route'  => 'files.index',
-                        'icon'   => 'folder-open',
+                        'label' => 'File Library',
+                        'route' => 'files.index',
+                        'icon' => 'folder-open',
                         'active' => request()->routeIs('files.*'),
                         'permission' => 'compliance.view',
                     ],
@@ -528,7 +528,7 @@ class NavigationService
             return collect($menu)->map(function ($item) {
                 if ($item['type'] === 'single' && isset($item['route'])) {
                     // Item active state is already pre-calculated in getBaseMenuStructure
-                    
+
                 }
                 if (isset($item['children'])) {
                     $item['children'] = collect($item['children'])->map(function ($child) {
@@ -550,12 +550,14 @@ class NavigationService
                 if (is_array($item['permission'])) {
                     return $user->hasAnyPermission($item['permission']);
                 }
+
                 return $user->can($item['permission']);
             }
             if (isset($item['roles'])) {
                 if (in_array('all', $item['roles'], true)) {
                     return true;
                 }
+
                 return $user->hasAnyRole($item['roles']);
             }
 
@@ -839,7 +841,7 @@ class NavigationService
                         'params' => $child['params'] ?? [],
                         'icon' => $child['icon'] ?? 'circle',
                         'active' => $child['active'] ?? false,
-                        'parent_label' => $item['label']
+                        'parent_label' => $item['label'],
                     ];
                 }
             }

@@ -2,14 +2,13 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\EmployeeWarningLog;
 use App\Models\EvaluationData;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Employee extends Authenticatable
 {

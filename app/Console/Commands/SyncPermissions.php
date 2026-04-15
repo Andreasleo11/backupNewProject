@@ -36,7 +36,7 @@ class SyncPermissions extends Command
         // 2. Create/Update Permissions
         $permissions = PermissionRegistry::allPermissions();
         $this->info('Syncing ' . count($permissions) . ' permissions...');
-        
+
         foreach ($permissions as $permissionName) {
             Permission::findOrCreate($permissionName, 'web');
         }
@@ -47,14 +47,14 @@ class SyncPermissions extends Command
 
         foreach ($rolesWithPerms as $roleName => $perms) {
             $role = Role::findOrCreate($roleName, 'web');
-            
+
             // If the role has '*', it gets all permissions
             if (in_array('*', $perms, true)) {
                 $role->syncPermissions(Permission::all());
                 $this->line(" - Role [{$roleName}]: Assigned All Permissions (*)");
             } else {
                 $role->syncPermissions($perms);
-                $this->line(" - Role [{$roleName}]: Assigned " . count($perms) . " permissions");
+                $this->line(" - Role [{$roleName}]: Assigned " . count($perms) . ' permissions');
             }
         }
 
@@ -62,14 +62,14 @@ class SyncPermissions extends Command
         // These roles are often variants of 'purchaser' and should inherit its core permissions
         $purchaserPerms = $rolesWithPerms['purchaser'] ?? [];
         $subPurchaserRoles = Role::where('name', 'like', 'purchaser-%')->get();
-        
+
         foreach ($subPurchaserRoles as $subRole) {
             $subRole->syncPermissions($purchaserPerms);
             $this->line(" - Sub-Role [{$subRole->name}]: Synced with 'purchaser' permissions");
         }
 
         $this->info('Permission Sync Completed Successfully!');
-        
+
         return self::SUCCESS;
     }
 }

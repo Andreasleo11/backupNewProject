@@ -19,7 +19,7 @@ class ApprovalScopingManager
     public function getEligibleDepartments(User $user): array
     {
         $baseDeptName = $user->employee?->department?->name ?? '';
-        $linkedDepts  = config('approvals.department_links.' . $baseDeptName, []);
+        $linkedDepts = config('approvals.department_links.' . $baseDeptName, []);
 
         return array_filter(array_merge([$baseDeptName], $linkedDepts));
     }
@@ -65,7 +65,7 @@ class ApprovalScopingManager
             }
 
             // check for specialized sub-roles (e.g. purchaser-moulding)
-            $targetRole = 'purchaser-'.Str::slug($approvable->to_department->label());
+            $targetRole = 'purchaser-' . Str::slug($approvable->to_department->label());
             $hasSpecializedRole = $user->hasRole($targetRole) || $user->hasRole(str_replace('purchaser-', '', $targetRole));
 
             if ($hasSpecializedRole) {
@@ -124,15 +124,18 @@ class ApprovalScopingManager
             if (str_starts_with($role, 'purchaser-')) {
                 $slug = str_replace('purchaser-', '', $role);
                 $dept = \App\Enums\ToDepartment::tryFromSlug($slug);
-                if ($dept) $targetDepartments[] = $dept->value;
+                if ($dept) {
+                    $targetDepartments[] = $dept->value;
+                }
             }
         }
+
         return $targetDepartments;
     }
 
     /**
      * Apply jurisdiction-based query scoping for a user.
-     * 
+     *
      * Refactored: Dispatch to module-specific scoping methods for better context isolation.
      */
     public function applyVisibilityScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
@@ -163,15 +166,15 @@ class ApprovalScopingManager
             // A. Purchaser Role (Category Isolation)
             // Skip role-scoping if they already have global module access
             $hasWidePrAccess = $user->can('pr.admin') || $user->can('pr.view-all') || $user->can('system.admin');
-            
-            if ($user->can('pr.view') && $user->hasRole('purchaser') && !$hasWidePrAccess) {
+
+            if ($user->can('pr.view') && $user->hasRole('purchaser') && ! $hasWidePrAccess) {
                 $depts = $this->getPurchaserSpecializedDepartments($user);
                 $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED', 'CANCELED'];
-                
+
                 $q->orWhere(function ($sub) use ($depts, $targetStatuses) {
                     $sub->whereIn('status', $targetStatuses)
                         ->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($aq) use ($depts) {
-                            if (!empty($depts)) {
+                            if (! empty($depts)) {
                                 $aq->whereIn('to_department', $depts);
                             }
                         });
@@ -179,7 +182,7 @@ class ApprovalScopingManager
             }
 
             // B. Dept Head / Supervisor (Internal PR Isolation)
-            if ($user->can('pr.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && !$hasWidePrAccess) {
+            if ($user->can('pr.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && ! $hasWidePrAccess) {
                 $eligibleDepts = $this->getEligibleDepartments($user);
                 $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
 
@@ -193,7 +196,7 @@ class ApprovalScopingManager
             }
 
             // C. General Manager (Branch Isolation)
-            if ($user->can('pr.view') && $user->hasRole('general-manager') && !$hasWidePrAccess) {
+            if ($user->can('pr.view') && $user->hasRole('general-manager') && ! $hasWidePrAccess) {
                 $userBranch = $user->employee?->branch ?? '';
                 if ($userBranch) {
                     $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
@@ -219,12 +222,12 @@ class ApprovalScopingManager
             $hasWideOvertimeAccess = $user->can('overtime.view-all') || $user->can('system.admin');
 
             // A. Dept Head / Supervisor (Department ID Isolation)
-            if ($user->can('overtime.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && !$hasWideOvertimeAccess) {
+            if ($user->can('overtime.view') && ($user->hasRole('department-head') || $user->hasRole('supervisor')) && ! $hasWideOvertimeAccess) {
                 $eligibleDepts = $this->getEligibleDepartments($user);
                 $eligibleDeptIds = \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $eligibleDepts)
                     ->pluck('id')
                     ->toArray();
-                
+
                 $targetStatuses = $statuses ?? ['APPROVED', 'REJECTED'];
                 $q->orWhere(function ($sub) use ($eligibleDeptIds, $targetStatuses) {
                     $sub->whereIn('status', $targetStatuses)
@@ -235,7 +238,7 @@ class ApprovalScopingManager
             }
 
             // B. General Manager (Branch Name Matching)
-            if ($user->can('overtime.view') && $user->hasRole('general-manager') && !$hasWideOvertimeAccess) {
+            if ($user->can('overtime.view') && $user->hasRole('general-manager') && ! $hasWideOvertimeAccess) {
                 $userBranch = $user->employee?->branch ?? '';
                 if ($userBranch) {
                     $targetStatuses = $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED'];
@@ -267,8 +270,8 @@ class ApprovalScopingManager
      */
     private function applyGlobalOversightScope(\Illuminate\Database\Eloquent\Builder $query, User $user, ?array $statuses = null): void
     {
-        $canGlobalView = $user->can('approval.view-all') || 
-                         $user->can('overtime.view-all') || 
+        $canGlobalView = $user->can('approval.view-all') ||
+                         $user->can('overtime.view-all') ||
                          $user->can('pr.view-all');
 
         if ($canGlobalView) {
@@ -276,7 +279,7 @@ class ApprovalScopingManager
                 // Director sees everything in index views
                 if ($user->hasRole('director')) {
                     $q->orWhereIn('status', $statuses ?? ['IN_REVIEW', 'APPROVED', 'REJECTED']);
-                } 
+                }
                 // Verificator and other non-director global viewers only see finalized results
                 else {
                     $q->orWhereIn('status', $statuses ?? ['APPROVED', 'REJECTED']);
@@ -284,7 +287,7 @@ class ApprovalScopingManager
             });
         }
     }
-    
+
     /**
      * Determine if a user has jurisdictional authority over a specific approvable entity.
      * This is the "Single Source of Truth" for detail-view access and action-level oversight.

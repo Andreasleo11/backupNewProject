@@ -2,24 +2,23 @@
 
 namespace App\Imports;
 
-use App\Models\EvaluationData;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\EvaluationData;
+use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Carbon\Carbon;
 
-class EvaluationDataImport implements ToModel, WithHeadingRow, SkipsEmptyRows
+class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
 {
     /**
-     * @param array $row
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function model(array $row)
     {
         $nik = trim($row['nik'] ?? $row['NIK'] ?? $row['employee_id'] ?? '');
         if (empty($nik)) {
-            return null;
+            return;
         }
 
         // Parse month
@@ -55,20 +54,21 @@ class EvaluationDataImport implements ToModel, WithHeadingRow, SkipsEmptyRows
             ->first();
 
         $data = [
-            'NIK'   => $nik,
-            'dept'  => $dept,
+            'NIK' => $nik,
+            'dept' => $dept,
             'Month' => $month,
-            'Telat' => (int)($row['telat'] ?? $row['T'] ?? $row['terlambat'] ?? 0),
-            'Alpha' => (int)($row['alpha'] ?? $row['A'] ?? 0),
-            'Izin'  => (int)($row['izin'] ?? $row['I'] ?? 0),
-            'Sakit' => (int)($row['sakit'] ?? $row['S'] ?? 0),
+            'Telat' => (int) ($row['telat'] ?? $row['T'] ?? $row['terlambat'] ?? 0),
+            'Alpha' => (int) ($row['alpha'] ?? $row['A'] ?? 0),
+            'Izin' => (int) ($row['izin'] ?? $row['I'] ?? 0),
+            'Sakit' => (int) ($row['sakit'] ?? $row['S'] ?? 0),
             'approval_status' => 'pending',
             'total' => 0,
         ];
 
         if ($existing) {
             $existing->update($data);
-            return null; // Return null so Maatwebsite doesn't try to "insert" it as a new row
+
+            return; // Return null so Maatwebsite doesn't try to "insert" it as a new row
         }
 
         return new EvaluationData($data);

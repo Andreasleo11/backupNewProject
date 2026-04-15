@@ -60,4 +60,3 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
         ];
     }
 }
-

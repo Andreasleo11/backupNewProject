@@ -50,10 +50,10 @@ final class DefaultRuleResolver implements RuleResolver
                 $baseKey = substr($k, 0, -3);
                 $ctxVal = $ctx[$baseKey] ?? null;
                 $allowedValues = (array) $v;
-                
+
                 if (is_string($ctxVal)) {
-                    $normalizedAllowedValues = array_map(fn($val) => is_string($val) ? strtoupper((string)$val) : $val, $allowedValues);
-                    if (! in_array(strtoupper((string)$ctxVal), $normalizedAllowedValues, true)) {
+                    $normalizedAllowedValues = array_map(fn ($val) => is_string($val) ? strtoupper((string) $val) : $val, $allowedValues);
+                    if (! in_array(strtoupper((string) $ctxVal), $normalizedAllowedValues, true)) {
                         return false;
                     }
                 } else {
@@ -70,8 +70,8 @@ final class DefaultRuleResolver implements RuleResolver
                 $blockedValues = (array) $v;
 
                 if (is_string($ctxVal)) {
-                    $normalizedBlockedValues = array_map(fn($val) => is_string($val) ? strtoupper((string)$val) : $val, $blockedValues);
-                    if (in_array(strtoupper((string)$ctxVal), $normalizedBlockedValues, true)) {
+                    $normalizedBlockedValues = array_map(fn ($val) => is_string($val) ? strtoupper((string) $val) : $val, $blockedValues);
+                    if (in_array(strtoupper((string) $ctxVal), $normalizedBlockedValues, true)) {
                         return false;
                     }
                 } else {
@@ -85,7 +85,7 @@ final class DefaultRuleResolver implements RuleResolver
             if (! in_array($k, ['amount_gt', 'amount_gte', 'amount_lte', 'any_tags'])) {
                 $ctxVal = $ctx[$k] ?? null;
                 if (is_string($ctxVal) && is_string($v)) {
-                    if (strtoupper((string)$ctxVal) != strtoupper((string)$v)) {
+                    if (strtoupper((string) $ctxVal) != strtoupper((string) $v)) {
                         return false;
                     }
                 } else {

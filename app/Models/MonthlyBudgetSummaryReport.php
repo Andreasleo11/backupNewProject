@@ -4,14 +4,11 @@ namespace App\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
 use App\Infrastructure\Approval\Concerns\HasApproval;
-use App\Notifications\MonthlyBudgetSummaryReportCreated;
-use App\Notifications\MonthlyBudgetSummaryReportUpdated;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -135,10 +132,11 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
     public function getWorkflowStepAttribute(): ?string
     {
         $approval = $this->approvalRequest;
-        if (!$approval || $approval->status !== 'IN_REVIEW') {
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
             return null;
         }
         $currentStep = $approval->steps()->where('sequence', $approval->current_step)->first();
+
         return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
     }
 
@@ -147,7 +145,7 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
      */
     public function getWorkflowSignaturesAttribute(): array
     {
-        if (!$this->approvalRequest) {
+        if (! $this->approvalRequest) {
             return [];
         }
 
@@ -160,18 +158,18 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
                     'APPROVED' => 'signed',
                     'REJECTED' => 'rejected',
                     'CANCELED' => 'canceled',
-                    default   => 'pending',
+                    default => 'pending',
                 };
 
                 return [
-                    'step_code'  => $step->approver_label ?? 'Approver',
-                    'user'       => $step->actedUser,
-                    'name'       => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
-                    'image'      => $step->signature_url,
-                    'at'         => $step->acted_at,
-                    'status'     => $uiStatus,
+                    'step_code' => $step->approver_label ?? 'Approver',
+                    'user' => $step->actedUser,
+                    'name' => $step->approver_name ?? ($step->actedUser?->name ?? 'Waiting...'),
+                    'image' => $step->signature_url,
+                    'at' => $step->acted_at,
+                    'status' => $uiStatus,
                     'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',
-                    'source'     => 'approval_system',
+                    'source' => 'approval_system',
                 ];
             })
             ->toArray();
@@ -204,7 +202,7 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
                         $aq->where(function ($sub) {
                             $sub->where('status', 'IN_REVIEW')->where('current_step', 1);
                         })->orWhere(function ($sub) {
-                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
+                            $sub->whereHas('steps', fn ($stepQ) => $stepQ->where('sequence', 1)->whereNotNull('acted_at'));
                         })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
                     });
                 });
@@ -214,10 +212,10 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
             if ($isDirector) {
                 $q->orWhere(function ($dq) {
                     $dq->whereHas('approvalRequest', function ($aq) {
-                         $aq->where(function ($sub) {
+                        $aq->where(function ($sub) {
                             $sub->where('status', 'IN_REVIEW')->where('current_step', 2);
                         })->orWhere(function ($sub) {
-                            $sub->whereHas('steps', fn($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
+                            $sub->whereHas('steps', fn ($stepQ) => $stepQ->where('sequence', 2)->whereNotNull('acted_at'));
                         })->orWhereIn('status', ['APPROVED', 'REJECTED', 'CANCELED']);
                     });
                 });
@@ -231,6 +229,7 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
     public function isDraft(): bool
     {
         $status = $this->workflow_status;
+
         return $status === 'DRAFT' || $status === 'RETURNED';
     }
 
@@ -268,5 +267,4 @@ class MonthlyBudgetSummaryReport extends Model implements Approvable
     {
         return route('monthly-budget-summary.show', $this->id);
     }
-
 }

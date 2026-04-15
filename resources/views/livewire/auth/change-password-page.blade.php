@@ -33,7 +33,7 @@
                     Current password <span class="text-red-500">*</span>
                 </label>
                 <input type="password" wire:model.defer="current_password"
-                       class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 @error('current_password')
                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                 @enderror
@@ -46,7 +46,7 @@
                         New password <span class="text-red-500">*</span>
                     </label>
                     <input type="password" wire:model.defer="password"
-                           class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     @error('password')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -56,13 +56,13 @@
                         Confirm password <span class="text-red-500">*</span>
                     </label>
                     <input type="password" wire:model.defer="password_confirmation"
-                           class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 </div>
             </div>
 
             <div class="flex items-center justify-end border-t border-slate-100 pt-3">
                 <button type="submit"
-                        class="inline-flex items-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-black focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-black focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-1">
                     Update password
                 </button>
             </div>

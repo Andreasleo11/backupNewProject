@@ -44,7 +44,7 @@ class ReportRejectedNotification extends Notification implements ShouldQueue
     {
         $type = $this->approvable->getApprovableTypeLabel();
         $id = $this->approvable->getApprovableIdentifier();
-        $reason = $this->remarks ? " Reason: {$this->remarks}" : "";
+        $reason = $this->remarks ? " Reason: {$this->remarks}" : '';
 
         return [
             'title' => "{$type} Rejected",

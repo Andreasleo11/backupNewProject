@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\EvaluationData;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\EvaluationDataImport;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\EvaluationData;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationDataManagementController extends Controller
 {
@@ -37,25 +36,27 @@ class EvaluationDataManagementController extends Controller
         try {
             // Read data as simple array/collection for scanning
             $data = Excel::toCollection(new EvaluationDataImport, $file)->first();
-            
+
             $report = [
                 'new' => 0,
                 'updates' => 0,
                 'errors' => [],
                 'total' => count($data),
-                'temp_path' => $path
+                'temp_path' => $path,
             ];
 
             foreach ($data as $index => $row) {
                 $nik = trim($row['nik'] ?? $row['NIK'] ?? $row['employee_id'] ?? '');
                 $monthInput = $row['month'] ?? $row['Month'] ?? $row['periode'] ?? $row['Periode'] ?? null;
-                
-                if (empty($nik)) continue;
+
+                if (empty($nik)) {
+                    continue;
+                }
 
                 // Integrity Check: Employee Existence
                 $employee = Employee::where('nik', $nik)->first();
-                if (!$employee) {
-                    $report['errors'][] = "Row " . ($index + 2) . ": NIK '$nik' not found in Employee database.";
+                if (! $employee) {
+                    $report['errors'][] = 'Row ' . ($index + 2) . ": NIK '$nik' not found in Employee database.";
                     continue;
                 }
 
@@ -73,10 +74,11 @@ class EvaluationDataManagementController extends Controller
                             }
                         }
                     }
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
 
-                if (!$month) {
-                    $report['errors'][] = "Row " . ($index + 2) . ": Invalid month format ($monthInput). Use YYYY-MM.";
+                if (! $month) {
+                    $report['errors'][] = 'Row ' . ($index + 2) . ": Invalid month format ($monthInput). Use YYYY-MM.";
                     continue;
                 }
 
@@ -92,11 +94,12 @@ class EvaluationDataManagementController extends Controller
             return response()->json([
                 'success' => true,
                 'report' => $report,
-                'message' => 'Integrity scan complete.'
+                'message' => 'Integrity scan complete.',
             ]);
 
         } catch (\Exception $e) {
             Storage::delete($path);
+
             return response()->json(['success' => false, 'message' => 'Scan failed: ' . $e->getMessage()], 422);
         }
     }
@@ -107,7 +110,7 @@ class EvaluationDataManagementController extends Controller
     public function commit(Request $request)
     {
         $path = $request->temp_path;
-        if (!$path || !Storage::exists($path)) {
+        if (! $path || ! Storage::exists($path)) {
             return response()->json(['success' => false, 'message' => 'Temporary file not found or expired.'], 422);
         }
 
@@ -138,6 +141,7 @@ class EvaluationDataManagementController extends Controller
     public function truncate()
     {
         EvaluationData::truncate();
+
         return response()->json(['success' => true, 'message' => 'Seluruh data berhasil dihapus.']);
     }
 }

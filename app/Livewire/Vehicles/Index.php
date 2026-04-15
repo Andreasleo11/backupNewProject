@@ -3,8 +3,8 @@
 namespace App\Livewire\Vehicles;
 
 use App\Enums\VehicleStatus;
-use App\Models\ServiceRecord;
 use App\Infrastructure\Persistence\Eloquent\Models\Vehicle;
+use App\Models\ServiceRecord;
 use Illuminate\Database\QueryException;
 use Livewire\Attributes\Url;
 use Livewire\Component;

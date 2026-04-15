@@ -57,7 +57,7 @@ class PurchaseRequestFactory extends Factory
             'workflow_status' => 'IN_REVIEW',
             'status' => 1,
             'type' => $type,
-        ])->afterCreating(function (PurchaseRequest $pr) use ($currentStep, $type, $approverId) {
+        ])->afterCreating(function (PurchaseRequest $pr) use ($currentStep, $type) {
             $totalSteps = $this->getTotalSteps($type);
 
             $approval = ApprovalRequest::factory()->create([

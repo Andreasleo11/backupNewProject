@@ -28,4 +28,3 @@ class OvertimeDetailSheet implements FromView
         return view('formovertime.export_detail', compact('details'));
     }
 }
-

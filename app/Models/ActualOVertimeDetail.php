@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Domain\Overtime\Models\OvertimeFormDetail;
 
 class ActualOvertimeDetail extends Model
 {
@@ -31,4 +31,3 @@ class ActualOvertimeDetail extends Model
         return $this->belongsTo(OvertimeFormDetail::class, 'key', 'id');
     }
 }
-

@@ -1,7 +1,4 @@
-@props([
-    'label',
-    'value' => '-',
-])
+@props(['label', 'value' => '-'])
 
 <div class="space-y-1.5">
     <span class="block text-xs font-semibold text-slate-700">

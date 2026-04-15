@@ -6,10 +6,10 @@ use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
 use App\Application\PurchaseRequest\Queries\Filters\BranchFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DateRangeFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DepartmentFilter;
-use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
-use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Application\PurchaseRequest\Queries\Filters\PurchaseRequestFilter;
 use App\Application\PurchaseRequest\Queries\Filters\StatusFilter;
@@ -56,13 +56,13 @@ final class PurchaseRequestQueryBuilder
             // Creator always sees their own PRs
             $q->where('user_id_create', $user->id)
               // Department Heads see everything in their department
-              ->orWhere(function ($dq) use ($user) {
-                  if ($user->hasRole('department-head') && $user->department_name) {
-                      $dq->where('from_department', $user->department_name);
-                  }
-              })
+                ->orWhere(function ($dq) use ($user) {
+                    if ($user->hasRole('department-head') && $user->department_name) {
+                        $dq->where('from_department', $user->department_name);
+                    }
+                })
               // Everything else: centralised approval visibility
-              ->orWhereHas('approvalRequest', fn ($aq) => $aq->forUser($user));
+                ->orWhereHas('approvalRequest', fn ($aq) => $aq->forUser($user));
         });
     }
 
@@ -87,7 +87,7 @@ final class PurchaseRequestQueryBuilder
      */
     public function fromRequest(User $user, Request $request): Builder
     {
-        $query   = $this->forUser($user);
+        $query = $this->forUser($user);
         $filters = $this->resolveFilters($user, $request);
 
         return $this->withFilters($query, $filters);
@@ -123,13 +123,13 @@ final class PurchaseRequestQueryBuilder
         // ── Top-Card / URL Preset Filters ─────────────────────────────────────
         if ($request->filled('filter')) {
             $preset = match ($request->input('filter')) {
-                'my_approval'    => new MyApprovalFilter($user),
-                'in_review'      => new InReviewFilter(),
-                'approved_month' => new ApprovedThisMonthFilter(),
-                'my_active'      => new MyActiveRequestsFilter($user),
-                'dept_active'    => new DeptActiveRequestsFilter($user),
-                'drafts'         => new DraftsFilter($user),
-                default          => null,
+                'my_approval' => new MyApprovalFilter($user),
+                'in_review' => new InReviewFilter,
+                'approved_month' => new ApprovedThisMonthFilter,
+                'my_active' => new MyActiveRequestsFilter($user),
+                'dept_active' => new DeptActiveRequestsFilter($user),
+                'drafts' => new DraftsFilter($user),
+                default => null,
             };
 
             if ($preset !== null) {

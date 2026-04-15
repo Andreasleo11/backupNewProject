@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Detail;
 use App\Domain\Overtime\Models\OvertimeForm;
-use App\Observers\DetailObserver;
 use App\Domain\Overtime\Observers\OvertimeFormObserver;
+use App\Models\Detail;
+use App\Observers\DetailObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -84,4 +84,3 @@ class AppServiceProvider extends ServiceProvider
         Builder::useVite();
     }
 }
-

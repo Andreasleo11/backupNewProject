@@ -11,7 +11,7 @@ class EnsureUserHasSignature
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -25,9 +25,9 @@ class EnsureUserHasSignature
 
         // 2. Skip for signature-related or logout routes to prevent loops
         // We use both route names and paths for maximum robustness
-        if ($request->routeIs(['signatures.*', 'logout', 'livewire.update']) || 
+        if ($request->routeIs(['signatures.*', 'logout', 'livewire.update']) ||
             $request->is('settings/signatures*', 'signatures*', 'logout', 'livewire/*') ||
-            $request->hasHeader('X-Livewire') || 
+            $request->hasHeader('X-Livewire') ||
             $request->ajax()) {
             return $next($request);
         }

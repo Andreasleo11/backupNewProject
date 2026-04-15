@@ -7,7 +7,6 @@ use App\Domains\Ticketing\Entities\TicketActivity;
 use App\Domains\Ticketing\Enums\ActivityType;
 use App\Domains\Ticketing\Enums\TicketStatus;
 use App\Domains\Ticketing\Events\TicketResolved;
-use Carbon\Carbon;
 
 class TransitionTicketStatus
 {
@@ -37,7 +36,7 @@ class TransitionTicketStatus
 
         // 3. Mark resolution
         if ($newStatus === TicketStatus::RESOLVED || $newStatus === TicketStatus::CLOSED) {
-            if (!$ticket->resolved_at) {
+            if (! $ticket->resolved_at) {
                 $ticket->resolved_at = now();
             }
         }

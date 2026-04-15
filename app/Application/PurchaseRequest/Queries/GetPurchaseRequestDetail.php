@@ -6,8 +6,8 @@ use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\Services\PurchaseRequestDetailCalculator;
 use App\Application\PurchaseRequest\ViewModels\PurchaseRequestDetailVM;
 use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
@@ -55,7 +55,7 @@ final class GetPurchaseRequestDetail
 
         // Security: Sensitive Data (Prices)
         $canSeePrices = $this->security->canViewSensitiveData($actor, $pr);
-        if (!$canSeePrices) {
+        if (! $canSeePrices) {
             foreach ($filtered as $d) {
                 $d->price = 0;
             }
@@ -81,7 +81,7 @@ final class GetPurchaseRequestDetail
         }
 
         $totals = $this->calc->totals($pr, $filtered);
-        if (!$canSeePrices) {
+        if (! $canSeePrices) {
             $totals['total'] = 0;
             $totals['currency'] = null;
         }
@@ -89,7 +89,7 @@ final class GetPurchaseRequestDetail
         // files (you used doc_num before)
         $files = File::query()->where('doc_id', $pr->doc_num)->get();
 
-        return Cache::remember("pr_detail_{$prId}_{$actor->id}", 60, function() use ($pr, $departments, $files, $filtered, $approval, $fromDeptNo, $totals, $flags) {
+        return Cache::remember("pr_detail_{$prId}_{$actor->id}", 60, function () use ($pr, $departments, $files, $filtered, $approval, $fromDeptNo, $totals, $flags) {
             return new PurchaseRequestDetailVM(
                 purchaseRequest: $pr,
                 departments: $departments,
@@ -107,7 +107,7 @@ final class GetPurchaseRequestDetail
     }
 
     /**
-     * Build UI capability flags using Laravel Policies (Infrastructure) 
+     * Build UI capability flags using Laravel Policies (Infrastructure)
      * and specialized services.
      */
     private function buildFlags(User $user, PurchaseRequest $pr): array

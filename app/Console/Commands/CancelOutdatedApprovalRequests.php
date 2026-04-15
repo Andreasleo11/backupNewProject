@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -31,7 +31,7 @@ class CancelOutdatedApprovalRequests extends Command
     public function handle()
     {
         $year = $this->option('year') ?? now()->year;
-        
+
         $this->info("Scanning for active unified Approval Requests submitted prior to year: {$year}...");
 
         $requests = ApprovalRequest::whereYear('submitted_at', '<', $year)
@@ -40,16 +40,18 @@ class CancelOutdatedApprovalRequests extends Command
             ->get();
 
         if ($requests->isEmpty()) {
-            $this->info("No outdated active Approval Requests found. The queue is clean!");
+            $this->info('No outdated active Approval Requests found. The queue is clean!');
+
             return static::SUCCESS;
         }
 
         $count = $requests->count();
         $this->warn("Found {$count} active Approval Request(s) from before {$year}.");
-        $this->warn("These requests will be cancelled, removing them from all pending queues system-wide.");
+        $this->warn('These requests will be cancelled, removing them from all pending queues system-wide.');
 
-        if (!$this->option('force') && !$this->confirm('Do you want to proceed and cancel them now?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to proceed and cancel them now?')) {
             $this->info('Operation manually cancelled.');
+
             return static::SUCCESS;
         }
 
@@ -86,12 +88,12 @@ class CancelOutdatedApprovalRequests extends Command
 
                     // Auto-detect workflow state fields and close them
                     if (Schema::hasColumn($table, 'workflow_status')) {
-                        $updates['workflow_status'] = 'CANCELED'; 
+                        $updates['workflow_status'] = 'CANCELED';
                     } elseif (Schema::hasColumn($table, 'status')) {
                         $updates['status'] = 'CANCELED';
                     }
 
-                    if (!empty($updates)) {
+                    if (! empty($updates)) {
                         $approvable->update($updates);
                     }
                 }

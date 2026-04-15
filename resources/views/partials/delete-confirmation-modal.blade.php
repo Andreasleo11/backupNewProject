@@ -5,11 +5,9 @@
     $push = $push ?? false;
 @endphp
 
-<div x-data="{ open: false }" 
-     x-effect="document.body.style.overflow = open ? 'hidden' : ''"
-     class="inline-block">
+<div x-data="{ open: false }" x-effect="document.body.style.overflow = open ? 'hidden' : ''" class="inline-block">
     {{-- Trigger button --}}
-    @if(isset($iconOnly) && $iconOnly)
+    @if (isset($iconOnly) && $iconOnly)
         <button type="button" @click="open = true"
             class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all active:scale-95"
             title="{{ $buttonLabel }}">
@@ -27,13 +25,14 @@
     <template x-teleport="body">
         <div>
             {{-- Backdrop --}}
-            <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm" @click="open = false"
-                @keydown.escape.window="open = false" x-cloak></div>
+            <div x-show="open" x-transition.opacity class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm"
+                @click="open = false" @keydown.escape.window="open = false" x-cloak></div>
 
             {{-- Modal --}}
-            <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4" role="dialog"
-                aria-modal="true" x-cloak>
-                <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden transform transition-all">
+            <div x-show="open" x-transition class="fixed inset-0 z-[110] flex items-center justify-center px-4"
+                role="dialog" aria-modal="true" x-cloak>
+                <div
+                    class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden transform transition-all">
                     <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
                         <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <i class="bx bx-error-circle text-rose-500"></i>

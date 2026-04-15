@@ -4,7 +4,6 @@ namespace App\Infrastructure\Approval\Services;
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
 /**
  * Centralized "Source of Truth" for determining which users see which approval requests.
@@ -20,14 +19,14 @@ class ApprovalVisibilityScoper
         $manager = new ApprovalScopingManager;
 
         // --- LAYER 1: GLOBAL OVERRIDES (No Scoping) ---
-        
+
         // 1. Admins with global bypass always see everything
         if ($user->can('system.admin') || $user->can('pr.admin')) {
             return;
         }
 
         // 2. Specialized 'View-All' Permissions
-        // Note: Non-Admin View-All permissions are handled 
+        // Note: Non-Admin View-All permissions are handled
         // inside the ApprovalScopingManager to allow for state-restricted oversight.
 
         $query->where(function ($groupedQuery) use ($user, $manager) {
@@ -44,16 +43,16 @@ class ApprovalVisibilityScoper
                 // Determine if this user's turn matches must be restricted by jurisdiction (Branch/Dept)
                 // General Managers and Dept Heads are strictly local to their branches.
                 // We skip this restriction if they have ANY module-specific "view-all" or "admin" permission.
-                $isBranchScoped = $user->hasAnyRole(config('approvals.jurisdiction_scoped_roles', ['department-head', 'supervisor', 'general-manager'])) 
-                                  && !$user->can('system.admin') 
-                                  && !$user->can('pr.admin')
-                                  && !$user->can('pr.view-all')
-                                  && !$user->can('overtime.view-all')
-                                  && !$user->can('approval.view-all');
+                $isBranchScoped = $user->hasAnyRole(config('approvals.jurisdiction_scoped_roles', ['department-head', 'supervisor', 'general-manager']))
+                                  && ! $user->can('system.admin')
+                                  && ! $user->can('pr.admin')
+                                  && ! $user->can('pr.view-all')
+                                  && ! $user->can('overtime.view-all')
+                                  && ! $user->can('approval.view-all');
 
                 $roleIds = $user->roles->pluck('id')->toArray();
                 $roleNames = $user->getRoleNames()->toArray();
-                
+
                 // Identify the specific 'purchaser' role to exclude it from the global 'match-all'
                 $purchaserRole = $user->roles->firstWhere('name', 'purchaser');
                 $otherRoleIds = $purchaserRole ? array_diff($roleIds, [$purchaserRole->id]) : $roleIds;
@@ -64,47 +63,47 @@ class ApprovalVisibilityScoper
                         // 1. Must match the User, or one of their Roles
                         $matchGroup->whereHas('steps', function ($sq) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
                             $sq->whereColumn('sequence', 'approval_requests.current_step')
-                               ->where(function ($matchQuery) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
-                                   // 1. User-specific match
-                                   $matchQuery->where('approver_type', 'user')
-                                              ->where('approver_id', $user->id);
-                                   
-                                   // 2. Role-specific match with dynamic "Strict Filtering" for purchasers
-                                   if (!empty($otherRoleIds) || $purchaserRole) {
-                                       $matchQuery->orWhere(function($rq) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
-                                           $rq->where('approver_type', 'role')
-                                              ->where(function($q) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
-                                                  // A. Standard Match: Non-purchaser roles match globally as usual
-                                                  if (!empty($otherRoleNames)) {
-                                                      $q->orWhereIn('approver_id', $otherRoleNames)
-                                                        ->orWhereIn('approver_id', $otherRoleIds);
-                                                  }
+                                ->where(function ($matchQuery) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
+                                    // 1. User-specific match
+                                    $matchQuery->where('approver_type', 'user')
+                                        ->where('approver_id', $user->id);
 
-                                                  // B. Dynamic Match: 'purchaser' role is filtered by category specialization
-                                                  if ($purchaserRole) {
-                                                      $q->orWhere(function ($pq) use ($user, $manager, $purchaserRole) {
-                                                          // Matches logical name, slug, or the specific ID
-                                                          $pq->where(function($fq) use ($purchaserRole) {
-                                                              $fq->whereIn('approver_id', ['purchaser', $purchaserRole->id])
-                                                                 ->orWhere('approver_snapshot_role_slug', 'purchaser');
-                                                          });
+                                    // 2. Role-specific match with dynamic "Strict Filtering" for purchasers
+                                    if (! empty($otherRoleIds) || $purchaserRole) {
+                                        $matchQuery->orWhere(function ($rq) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
+                                            $rq->where('approver_type', 'role')
+                                                ->where(function ($q) use ($user, $otherRoleIds, $otherRoleNames, $purchaserRole, $manager) {
+                                                    // A. Standard Match: Non-purchaser roles match globally as usual
+                                                    if (! empty($otherRoleNames)) {
+                                                        $q->orWhereIn('approver_id', $otherRoleNames)
+                                                            ->orWhereIn('approver_id', $otherRoleIds);
+                                                    }
 
-                                                          $specialDepts = $manager->getPurchaserSpecializedDepartments($user);
-                                                          if (!empty($specialDepts)) {
-                                                              // STRICT: Only show PRs that match their categories
-                                                              $pq->whereHas('request', function ($q) use ($specialDepts) {
-                                                                  $q->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($query) use ($specialDepts) {
-                                                                      $query->whereIn('to_department', $specialDepts);
-                                                                  });
-                                                              });
-                                                          }
-                                                          // Note: If no specialDepts exist, they remain a "Global Purchaser"
-                                                      });
-                                                  }
-                                              });
-                                       });
-                                   }
-                               });
+                                                    // B. Dynamic Match: 'purchaser' role is filtered by category specialization
+                                                    if ($purchaserRole) {
+                                                        $q->orWhere(function ($pq) use ($user, $manager, $purchaserRole) {
+                                                            // Matches logical name, slug, or the specific ID
+                                                            $pq->where(function ($fq) use ($purchaserRole) {
+                                                                $fq->whereIn('approver_id', ['purchaser', $purchaserRole->id])
+                                                                    ->orWhere('approver_snapshot_role_slug', 'purchaser');
+                                                            });
+
+                                                            $specialDepts = $manager->getPurchaserSpecializedDepartments($user);
+                                                            if (! empty($specialDepts)) {
+                                                                // STRICT: Only show PRs that match their categories
+                                                                $pq->whereHas('request', function ($q) use ($specialDepts) {
+                                                                    $q->whereHasMorph('approvable', [\App\Models\PurchaseRequest::class], function ($query) use ($specialDepts) {
+                                                                        $query->whereIn('to_department', $specialDepts);
+                                                                    });
+                                                                });
+                                                            }
+                                                            // Note: If no specialDepts exist, they remain a "Global Purchaser"
+                                                        });
+                                                    }
+                                                });
+                                        });
+                                    }
+                                });
                         });
 
                         // 2. AND if branch-scoped, MUST also match the jurisdiction
@@ -112,24 +111,26 @@ class ApprovalVisibilityScoper
                         if ($isBranchScoped) {
                             $verificatorRole = $user->roles->firstWhere('name', 'verificator');
                             $verifIds = ['verificator'];
-                            if ($verificatorRole) $verifIds[] = $verificatorRole->id;
+                            if ($verificatorRole) {
+                                $verifIds[] = $verificatorRole->id;
+                            }
 
                             $matchGroup->where(function ($branchGroup) use ($user, $manager, $verifIds) {
                                 // A. User ID direct assignment override
                                 $branchGroup->whereHas('steps', function ($sq) use ($user) {
                                     $sq->whereColumn('sequence', 'approval_requests.current_step')
-                                       ->where('approver_type', 'user')
-                                       ->where('approver_id', $user->id);
+                                        ->where('approver_type', 'user')
+                                        ->where('approver_id', $user->id);
                                 });
 
                                 // B. Verificator Role override (always global)
                                 $branchGroup->orWhereHas('steps', function ($sq) use ($verifIds) {
                                     $sq->whereColumn('sequence', 'approval_requests.current_step')
-                                       ->where('approver_type', 'role')
-                                       ->where(function ($fq) use ($verifIds) {
-                                           $fq->whereIn('approver_id', $verifIds)
-                                              ->orWhere('approver_snapshot_role_slug', 'verificator');
-                                       });
+                                        ->where('approver_type', 'role')
+                                        ->where(function ($fq) use ($verifIds) {
+                                            $fq->whereIn('approver_id', $verifIds)
+                                                ->orWhere('approver_snapshot_role_slug', 'verificator');
+                                        });
                                 });
 
                                 // C. Strict Jurisdiction Scoping

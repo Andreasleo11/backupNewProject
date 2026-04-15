@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Overtime\Models\OvertimeForm;
+use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Services\OvertimeApprovalService;
 use App\Domain\Overtime\Services\OvertimeExportService;
 use App\Domain\Overtime\Services\OvertimeImportService;
 use App\Domain\Overtime\Services\OvertimeJPayrollService;
 use App\Domain\Overtime\Services\OvertimeSummaryService;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Domain\Overtime\Models\OvertimeForm;
 use Illuminate\Http\Request;
 
 class FormOvertimeController extends Controller
@@ -212,8 +212,7 @@ class FormOvertimeController extends Controller
         ]);
 
         $this->pushAllDetailsToJPayroll($id);
-        
+
         return redirect()->back()->with('success', 'Reapproved successfully !');
     }
 }
-

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\ApprovalFlowStep;
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 
@@ -25,8 +24,9 @@ class OvertimePolicy
         if ($user->hasRole('super-admin')) {
             // Do not bypass these methods so their workflow status locks still run.
             if (in_array($ability, ['update', 'delete'])) {
-                return null; 
+                return null;
             }
+
             return true;
         }
 
@@ -103,6 +103,7 @@ class OvertimePolicy
         }
 
         $roleSlug = $step->approver_snapshot_role_slug ?? $step->role_slug ?? '';
+
         return $user->hasRole($roleSlug) || $user->can('overtime.approve-all');
     }
 
@@ -146,4 +147,3 @@ class OvertimePolicy
         return $user->can('overtime.push-to-payroll');
     }
 }
-

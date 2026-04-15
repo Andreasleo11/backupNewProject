@@ -17,23 +17,23 @@
 
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('qaqc.summarymonth') }}"
-                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     Summary Per Month
                 </a>
 
                 <a href="{{ route('export.formadjusts') }}"
-                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     Export Form Adjust
                 </a>
 
                 <a href="{{ route('export.reports') }}"
-                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                     Export All
                 </a>
 
                 <!-- Should implement permission guard -->
                 <a href="{{ route('qaqc.report.create') }}"
-                   class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                     <i class='bx bx-plus mr-1 text-base'></i>
                     <span>Add Report</span>
                 </a>
@@ -44,14 +44,13 @@
         <nav class="mb-4" aria-label="breadcrumb">
             <ol class="flex items-center gap-1 text-sm text-gray-500">
                 <li>
-                    <a href="{{ route('qaqc') }}"
-                       class="font-medium text-gray-600 hover:text-indigo-600">
+                    <a href="{{ route('qaqc') }}" class="font-medium text-gray-600 hover:text-indigo-600">
                         Home
                     </a>
                 </li>
                 <li>
-                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
+                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                 </li>
@@ -78,21 +77,19 @@
                         <div class="relative">
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 
-                                             2v9a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 
-                                             00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 
-                                             00-1-1zM4 8h12v7H4V8z" />
+                                    <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2
+                                                 2v9a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0
+                                                 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0
+                                                 00-1-1zM4 8h12v7H4V8z" />
                                 </svg>
                             </div>
-                            <input type="text"
-                                   id="monthPicker"
-                                   class="block w-40 sm:w-48 rounded-md border-gray-300 bg-slate-50 pl-9 pr-3 py-2 text-xs sm:text-sm shadow-sm
+                            <input type="text" id="monthPicker"
+                                class="block w-40 sm:w-48 rounded-md border-gray-300 bg-slate-50 pl-9 pr-3 py-2 text-xs sm:text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
-                                   placeholder="Select month">
+                                placeholder="Select month">
                         </div>
-                        <button type="button"
-                                id="clearMonth"
-                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300">
+                        <button type="button" id="clearMonth"
+                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300">
                             Reset
                         </button>
                     </div>
@@ -127,7 +124,7 @@
                         })
                     ],
                     onChange: function(selectedDates, dateStr) {
-                         if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                        if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
                             window.LaravelDataTables[tableId].draw();
                         }
                     }
@@ -154,7 +151,7 @@
                 if (!selectedMonth) return true;
 
                 // Index of rec_date column
-                const recDate = data[3]; 
+                const recDate = data[3];
                 if (!recDate) return true;
 
                 const d = new Date(recDate);

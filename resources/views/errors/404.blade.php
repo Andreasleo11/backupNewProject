@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 | Page Not Found</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -62,8 +64,13 @@
         }
 
         @keyframes move {
-            from { transform: translate(0, 0); }
-            to { transform: translate(100px, 150px); }
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(100px, 150px);
+            }
         }
 
         .container {
@@ -95,7 +102,7 @@
             background: linear-gradient(135deg, var(--text-primary) 0%, #cbd5e1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             letter-spacing: -0.05em;
         }
 
@@ -152,17 +159,33 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 0.2; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0.4; transform: translateX(-50%) scale(1.1); }
+            0% {
+                opacity: 0.2;
+                transform: translateX(-50%) scale(1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: translateX(-50%) scale(1.1);
+            }
         }
 
         @media (max-width: 640px) {
-            h1 { font-size: 6rem; }
-            h2 { font-size: 1.5rem; }
-            .container { padding: 2rem; }
+            h1 {
+                font-size: 6rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -175,4 +198,5 @@
         <a href="/" class="home-button">Return to Base</a>
     </div>
 </body>
+
 </html>

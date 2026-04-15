@@ -7,7 +7,6 @@ namespace App\Domain\MonthlyBudget\Actions;
 use App\Application\Approval\Contracts\Approvals;
 use App\Models\MonthlyBudgetReport;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\Models\Activity;
 
 final class SubmitBudgetReportAction
 {
@@ -17,17 +16,13 @@ final class SubmitBudgetReportAction
 
     /**
      * Submit a budget report to the approval workflow.
-     *
-     * @param MonthlyBudgetReport $report
-     * @param int $userId
-     * @return array
      */
     public function execute(MonthlyBudgetReport $report, int $userId): array
     {
         try {
             // Allow resubmission if not submitted, REJECTED, or RETURNED
             $allowedStatuses = ['REJECTED', 'RETURNED'];
-            if ($report->approvalRequest && !in_array($report->approvalRequest->status, $allowedStatuses)) {
+            if ($report->approvalRequest && ! in_array($report->approvalRequest->status, $allowedStatuses)) {
                 return [
                     'success' => false,
                     'message' => 'Report is already submitted or in review.',

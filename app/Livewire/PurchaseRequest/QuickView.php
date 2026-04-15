@@ -6,14 +6,17 @@ use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class QuickView extends Component
 {
     public ?int $prId = null;
+
     public string $rejectReason = '';
+
     public bool $showRejectInput = false;
+
     public bool $isLoading = false;
 
     public function mount(?int $prId = null)
@@ -29,7 +32,7 @@ class QuickView extends Component
         $this->showRejectInput = false;
         $this->rejectReason = '';
         $this->isLoading = true;
-        
+
         // Dispatch browser event to open the drawer/modal if needed
         $this->dispatch('open-quick-view-drawer');
     }
@@ -55,7 +58,7 @@ class QuickView extends Component
 
     public function toggleRejectInput()
     {
-        $this->showRejectInput = !$this->showRejectInput;
+        $this->showRejectInput = ! $this->showRejectInput;
         $this->rejectReason = '';
     }
 
@@ -105,7 +108,7 @@ class QuickView extends Component
         }
 
         $this->isLoading = false;
-        
+
         return view('livewire.purchase-request.quick-view', $viewData);
     }
 }

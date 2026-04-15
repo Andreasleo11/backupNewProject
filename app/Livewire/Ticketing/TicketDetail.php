@@ -4,7 +4,6 @@ namespace App\Livewire\Ticketing;
 
 use App\Domains\Ticketing\Actions\AssignTicketToPIC;
 use App\Domains\Ticketing\Entities\Ticket;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -32,9 +31,9 @@ class TicketDetail extends Component
     public function postComment(\App\Domains\Ticketing\Actions\AddTicketComment $action)
     {
         $this->validate(['newComment' => 'required|string']);
-        
+
         $action->execute($this->ticket, Auth::id(), $this->newComment);
-        
+
         $this->newComment = '';
         $this->ticket->refresh();
     }

@@ -99,7 +99,7 @@
                                             <input type="text"
                                                 class="form-control form-control-sm @error('items.' . $activeItem . '.defects.' . $d . '.name') is-invalid @enderror"
                                                 wire:model.live="items.{{ $activeItem }}.defects.{{ $d }}.name"
-                                            x-on:focus-field.window="
+                                                x-on:focus-field.window="
                                                     if ($event.detail.key === 'items.{{ $activeItem }}.defects.{{ $d }}.name') $el.focus()
                                                 ">
                                             @error('items.' . $activeItem . '.defects.' . $d . '.name')

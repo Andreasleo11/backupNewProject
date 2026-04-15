@@ -19,7 +19,7 @@ class MonthlyBudgetReportController extends Controller
     public function show($id)
     {
         $report = MonthlyBudgetReport::with('details', 'department', 'approvalRequest.steps.actedUser')->findOrFail($id);
-        
+
         // Use unified approval service to check if user can act
         $canApprove = $this->approvals->canAct($report, auth()->id());
         $currentApproval = $this->approvals->currentRequest($report);
@@ -68,7 +68,7 @@ class MonthlyBudgetReportController extends Controller
 
     public function cancel(Request $request, $id)
     {
-        $result = $this->reportService->cancelReport((int)$id, $request->description);
+        $result = $this->reportService->cancelReport((int) $id, $request->description);
 
         return redirect()->back()->with(
             $result['success'] ? 'success' : 'error',
@@ -79,7 +79,7 @@ class MonthlyBudgetReportController extends Controller
     public function submit($id)
     {
         $report = MonthlyBudgetReport::findOrFail($id);
-        $result = $this->submitAction->execute($report, (int)auth()->id());
+        $result = $this->submitAction->execute($report, (int) auth()->id());
 
         return redirect()->back()->with(
             $result['success'] ? 'success' : 'error',

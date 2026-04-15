@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Application\PurchaseRequest\Queries;
 
 use App\Application\PurchaseRequest\Queries\Filters\ApprovedThisMonthFilter;
-use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
-use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
-use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DeptActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
+use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +42,7 @@ class GetPurchaseRequestStats
 
             // 1. Always show Pending My Approval (Workload)
             $stats = [
-                'pending_my_approval' => $this->getPendingMyApproval($user)
+                'pending_my_approval' => $this->getPendingMyApproval($user),
             ];
 
             if ($isStrategic) {
@@ -54,11 +53,11 @@ class GetPurchaseRequestStats
             } else {
                 // Operational roles see contextual metrics
                 $stats['my_active'] = $this->getMyActiveCount($user);
-                
+
                 if (! $isVerificator) {
                     $stats['dept_active'] = $this->getDeptActiveCount($user);
                 }
-                
+
                 $stats['drafts'] = $this->getDraftsCount($user);
             }
 
@@ -73,6 +72,7 @@ class GetPurchaseRequestStats
     {
         $query = $this->queryBuilder->forUser($user);
         (new MyApprovalFilter($user))->apply($query);
+
         return $query->count();
     }
 
@@ -83,6 +83,7 @@ class GetPurchaseRequestStats
     {
         $query = $this->queryBuilder->forUser($user);
         (new MyActiveRequestsFilter($user))->apply($query);
+
         return $query->count();
     }
 
@@ -93,6 +94,7 @@ class GetPurchaseRequestStats
     {
         $query = $this->queryBuilder->forUser($user);
         (new DeptActiveRequestsFilter($user))->apply($query);
+
         return $query->count();
     }
 
@@ -103,6 +105,7 @@ class GetPurchaseRequestStats
     {
         $query = $this->queryBuilder->forUser($user);
         (new DraftsFilter($user))->apply($query);
+
         return $query->count();
     }
 
@@ -112,7 +115,8 @@ class GetPurchaseRequestStats
     private function getInReview($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        (new InReviewFilter())->apply($query);
+        (new InReviewFilter)->apply($query);
+
         return $query->count();
     }
 
@@ -122,7 +126,8 @@ class GetPurchaseRequestStats
     private function getApprovedThisMonth($user): int
     {
         $query = $this->queryBuilder->forUser($user);
-        (new ApprovedThisMonthFilter())->apply($query);
+        (new ApprovedThisMonthFilter)->apply($query);
+
         return $query->count();
     }
 
@@ -133,7 +138,7 @@ class GetPurchaseRequestStats
     {
         // Build the base query for visibility scoping
         $baseQuery = $this->queryBuilder->forUser($user);
-        (new InReviewFilter())->apply($baseQuery);
+        (new InReviewFilter)->apply($baseQuery);
 
         // Get the IDs of visible PRs first
         $prIds = $baseQuery->pluck('purchase_requests.id');
@@ -146,7 +151,7 @@ class GetPurchaseRequestStats
             ->pluck('total_value', 'currency')
             ->toArray();
 
-        return !empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
+        return ! empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
     }
 
     /**

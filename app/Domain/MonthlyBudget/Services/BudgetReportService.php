@@ -139,7 +139,7 @@ final class BudgetReportService
             ];
         }
 
-        if (!$report->isDraft()) {
+        if (! $report->isDraft()) {
             return [
                 'success' => false,
                 'message' => 'Only reports in Draft state can be deleted.',
@@ -154,6 +154,7 @@ final class BudgetReportService
             'message' => 'Monthly Budget Report successfully deleted',
         ];
     }
+
     /**
      * Cancel budget report.
      */

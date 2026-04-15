@@ -9,7 +9,8 @@
     {{-- Page header --}}
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-3">
-            <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
+            <div
+                class="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
                 <i class="bx bx-buildings text-white text-2xl"></i>
             </div>
             <div>
@@ -48,9 +49,7 @@
         {{-- Search --}}
         <div class="relative flex-1 min-w-[180px]">
             <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-            <input type="text"
-                wire:model.live.debounce.300ms="search"
-                placeholder="Search by name or code…"
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name or code…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
 
@@ -102,12 +101,12 @@
                     $p = $row['percent'];
                     $statusColor = $p >= 100 ? 'emerald' : ($p < 50 ? 'rose' : 'amber');
                 @endphp
-                <a href="{{ route('departments.compliance', $row['dept']) }}"
-                    wire:key="dept-{{ $row['dept']->id }}"
+                <a href="{{ route('departments.compliance', $row['dept']) }}" wire:key="dept-{{ $row['dept']->id }}"
                     class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/70 transition-colors group">
 
                     {{-- Avatar --}}
-                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center shrink-0 font-bold text-indigo-600 text-sm group-hover:scale-105 transition-transform">
+                    <div
+                        class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center shrink-0 font-bold text-indigo-600 text-sm group-hover:scale-105 transition-transform">
                         {{ strtoupper(mb_substr($row['dept']->name, 0, 2)) }}
                     </div>
 
@@ -127,13 +126,15 @@
                     </div>
 
                     {{-- Status badge --}}
-                    <span class="shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+                    <span
+                        class="shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
                         bg-{{ $statusColor }}-100 text-{{ $statusColor }}-700">
                         {{ $row['status'] }}
                     </span>
 
                     {{-- Arrow --}}
-                    <i class="bx bx-chevron-right text-slate-300 group-hover:text-indigo-400 transition-colors text-xl shrink-0"></i>
+                    <i
+                        class="bx bx-chevron-right text-slate-300 group-hover:text-indigo-400 transition-colors text-xl shrink-0"></i>
                 </a>
             @empty
                 <div class="py-16 text-center">

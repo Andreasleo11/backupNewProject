@@ -21,13 +21,16 @@
         </div>
 
         <div class="grid gap-4 md:grid-cols-3">
-            <a href="{{ route('header.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
+            <a href="{{ route('header.create') }}"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
                 Verification Report
             </a>
-            <a href="{{ route('report.view') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
+            <a href="{{ route('report.view') }}"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
                 View Report
             </a>
-            <a href="{{ route('pe.landing') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
+            <a href="{{ route('pe.landing') }}"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-center transition">
                 PE Project
             </a>
         </div>

@@ -13,13 +13,13 @@
             <ol class="flex items-center gap-1 text-sm text-gray-500">
                 <li>
                     <a href="{{ route('maintenance.inventory.index') }}"
-                       class="font-medium text-gray-600 hover:text-indigo-600">
+                        class="font-medium text-gray-600 hover:text-indigo-600">
                         Maintenance Inventory Reports
                     </a>
                 </li>
                 <li>
-                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
+                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                 </li>
@@ -50,7 +50,8 @@
                         <h2 class="text-sm font-semibold text-gray-900">
                             Header
                         </h2>
-                        <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                        <span
+                            class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                             ID: {{ $report->id }}
                         </span>
                     </div>
@@ -61,13 +62,12 @@
                             <label for="masterSelect" class="block text-sm font-medium text-gray-700">
                                 Select Master Inventory <span class="text-red-500">*</span>
                             </label>
-                            <select id="masterSelect"
-                                    name="master_id"
-                                    required
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm
+                            <select id="masterSelect" name="master_id" required
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm
                                            focus:bg-white focus:border-indigo-500 focus:ring-indigo-500
                                            @error('master_id') border-red-500 focus:border-red-500 focus:ring-red-500 @enderror">
-                                <option value="" disabled {{ old('master_id', $report->master_id) ? '' : 'selected' }}>
+                                <option value="" disabled
+                                    {{ old('master_id', $report->master_id) ? '' : 'selected' }}>
                                     -- Select a master inventory --
                                 </option>
                                 @foreach ($masters as $master)
@@ -87,11 +87,9 @@
                             <label for="revisionDate" class="block text-sm font-medium text-gray-700">
                                 Revision Date
                             </label>
-                            <input type="date"
-                                   name="revision_date"
-                                   id="revisionDate"
-                                   value="{{ old('revision_date', $report->revision_date) }}"
-                                   class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm
+                            <input type="date" name="revision_date" id="revisionDate"
+                                value="{{ old('revision_date', $report->revision_date) }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm
                                           focus:bg-white focus:border-indigo-500 focus:ring-indigo-500
                                           @error('revision_date') border-red-500 focus:border-red-500 focus:ring-red-500 @enderror">
                             @error('revision_date')
@@ -115,19 +113,16 @@
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-2 sm:justify-end">
-                            <button type="button"
-                                    onclick="checkAll()"
-                                    class="inline-flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                            <button type="button" onclick="checkAll()"
+                                class="inline-flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                 Check All
                             </button>
-                            <button type="button"
-                                    onclick="setAllGood()"
-                                    class="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            <button type="button" onclick="setAllGood()"
+                                class="inline-flex items-center rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
                                 All Good Condition
                             </button>
-                            <button type="button"
-                                    onclick="setCheckedByMe()"
-                                    class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                            <button type="button" onclick="setCheckedByMe()"
+                                class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-1 focus:ring-sky-500">
                                 Checked by Me
                             </button>
                         </div>
@@ -140,9 +135,8 @@
                                     <h3 class="text-sm font-semibold text-gray-900">
                                         {{ $groupName }}
                                     </h3>
-                                    <button type="button"
-                                            onclick="addItem('{{ Str::slug($groupName) }}')"
-                                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                    <button type="button" onclick="addItem('{{ Str::slug($groupName) }}')"
+                                        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                                         Add Item
                                     </button>
                                 </div>
@@ -156,22 +150,20 @@
                                                 <div class="flex items-start gap-2">
                                                     <input
                                                         class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 item-checkbox @error('items') border-red-500 @enderror"
-                                                        type="checkbox"
-                                                        name="items[]"
-                                                        value="{{ $item->id }}"
+                                                        type="checkbox" name="items[]" value="{{ $item->id }}"
                                                         id="item{{ $item->id }}">
                                                     <label for="item{{ $item->id }}"
-                                                           class="text-sm font-medium text-gray-800">
+                                                        class="text-sm font-medium text-gray-800">
                                                         {{ $item->name ?? $item->typecategory->name }}
                                                     </label>
                                                 </div>
 
                                                 {{-- Right side fields --}}
-                                                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-end sm:gap-3 mt-2 sm:mt-0">
+                                                <div
+                                                    class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-end sm:gap-3 mt-2 sm:mt-0">
                                                     {{-- Condition --}}
                                                     <div class="sm:w-40">
-                                                        <select
-                                                            name="conditions[{{ $item->id }}]"
+                                                        <select name="conditions[{{ $item->id }}]"
                                                             id="condition{{ $item->id }}"
                                                             class="block w-full rounded-md border-gray-300 bg-white px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                                    focus:border-indigo-500 focus:ring-indigo-500
@@ -196,11 +188,7 @@
 
                                                     {{-- Remark --}}
                                                     <div class="sm:w-56">
-                                                        <textarea
-                                                            name="remarks[{{ $item->id }}]"
-                                                            id="remark{{ $item->id }}"
-                                                            rows="1"
-                                                            placeholder="Remark"
+                                                        <textarea name="remarks[{{ $item->id }}]" id="remark{{ $item->id }}" rows="1" placeholder="Remark"
                                                             class="block w-full rounded-md border-gray-300 bg-white px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                                    focus:border-indigo-500 focus:ring-indigo-500
                                                                    @error('remarks.' . $item->id) border-red-500 focus:border-red-500 focus:ring-red-500 @enderror">{{ old('remarks.' . $item->id, $item->remark ?? '') }}</textarea>
@@ -211,8 +199,7 @@
 
                                                     {{-- Checked by --}}
                                                     <div class="sm:w-40">
-                                                        <select
-                                                            name="checked_by[{{ $item->id }}]"
+                                                        <select name="checked_by[{{ $item->id }}]"
                                                             id="checkedBy{{ $item->id }}"
                                                             class="block w-full rounded-md border-gray-300 bg-white px-2 py-1.5 text-xs sm:text-sm shadow-sm
                                                                    focus:border-indigo-500 focus:ring-indigo-500
@@ -236,8 +223,8 @@
                                                     {{-- Remove --}}
                                                     <div class="flex sm:self-center">
                                                         <button type="button"
-                                                                onclick="removeItem({{ $item->id }}, true)"
-                                                                class="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
+                                                            onclick="removeItem({{ $item->id }}, true)"
+                                                            class="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500">
                                                             Remove
                                                         </button>
                                                     </div>
@@ -254,10 +241,8 @@
 
             {{-- Submit --}}
             <div class="flex gap-2">
-                <button type="submit"
-                        name="action"
-                        value="update"
-                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                <button type="submit" name="action" value="update"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                     Update
                 </button>
             </div>
@@ -339,9 +324,9 @@
             }
 
             function removeItem(itemId, isExistingItem) {
-                const item = isExistingItem
-                    ? document.getElementById(`item-${itemId}`)
-                    : document.getElementById(`newItem${itemId}`);
+                const item = isExistingItem ?
+                    document.getElementById(`item-${itemId}`) :
+                    document.getElementById(`newItem${itemId}`);
 
                 if (item) {
                     item.remove();

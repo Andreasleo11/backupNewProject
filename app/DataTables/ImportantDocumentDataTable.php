@@ -6,7 +6,6 @@ use App\Models\hrd\ImportantDoc;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -18,8 +17,11 @@ class ImportantDocumentDataTable extends DataTable
      * @var int
      */
     public $thresholdDays = 60;
+
     public $threshold = 2;
+
     public $today;
+
     public $tab = 'all';
 
     /**
@@ -30,26 +32,27 @@ class ImportantDocumentDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('document', function($doc) {
+            ->addColumn('document', function ($doc) {
                 $idLine = $doc->document_id ? '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">' . e($doc->document_id) . '</div>' : '';
-                return '<div>' . 
-                            '<div class="font-bold text-slate-900 text-sm">' . e($doc->name) . '</div>' . 
-                            $idLine . 
+
+                return '<div>' .
+                            '<div class="font-bold text-slate-900 text-sm">' . e($doc->name) . '</div>' .
+                            $idLine .
                        '</div>';
             })
             ->editColumn(
                 'action',
-                function($row) {
+                function ($row) {
                     if ($row->trashed()) {
                         return '<div class="flex items-center justify-center gap-1.5">
-                                    <form method="POST" action="'.route('hrd.importantDocs.restore', $row->id).'" onsubmit="return confirm(\'Restore this document?\')">
-                                        '.csrf_field().'
+                                    <form method="POST" action="' . route('hrd.importantDocs.restore', $row->id) . '" onsubmit="return confirm(\'Restore this document?\')">
+                                        ' . csrf_field() . '
                                         <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Restore">
                                             <i class="bx bx-undo text-lg"></i>
                                         </button>
                                     </form>
-                                    <form method="POST" action="'.route('hrd.importantDocs.forceDelete', $row->id).'" onsubmit="return confirm(\'Permanently delete this? This cannot be undone.\')">
-                                        '.csrf_field().' '.method_field('DELETE').'
+                                    <form method="POST" action="' . route('hrd.importantDocs.forceDelete', $row->id) . '" onsubmit="return confirm(\'Permanently delete this? This cannot be undone.\')">
+                                        ' . csrf_field() . ' ' . method_field('DELETE') . '
                                         <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Permanent Delete">
                                             <i class="bx bx-trash-alt text-lg"></i>
                                         </button>
@@ -58,11 +61,11 @@ class ImportantDocumentDataTable extends DataTable
                     }
 
                     return '<div class="flex items-center justify-center gap-1.5">
-                        <button type="button" @click="$store.docLibrary.openDetail('.$row->id.')"
+                        <button type="button" @click="$store.docLibrary.openDetail(' . $row->id . ')"
                             class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
                             <i class="bx bx-show text-lg"></i>
                         </button>
-                        <a href="'.route('hrd.importantDocs.edit', $row->id).'"
+                        <a href="' . route('hrd.importantDocs.edit', $row->id) . '"
                             class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
                             <i class="bx bx-edit text-lg"></i>
                         </a>
@@ -85,8 +88,8 @@ class ImportantDocumentDataTable extends DataTable
                                             <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action can be undone by an administrator.</div>
                                             <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
                                                 <button type="button" @click="open = false" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
-                                                <form method="POST" action="'.route('hrd.importantDocs.delete', $row->id).'">
-                                                    '.csrf_field().' '.method_field('DELETE').'
+                                                <form method="POST" action="' . route('hrd.importantDocs.delete', $row->id) . '">
+                                                    ' . csrf_field() . ' ' . method_field('DELETE') . '
                                                     <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
                                                         <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
                                                     </button>
@@ -100,26 +103,35 @@ class ImportantDocumentDataTable extends DataTable
                     </div>';
                 }
             )
-            ->filterColumn('document', function($query, $keyword) {
+            ->filterColumn('document', function ($query, $keyword) {
                 $query->where('name', 'like', "%{$keyword}%")
-                      ->orWhere('document_id', 'like', "%{$keyword}%");
+                    ->orWhere('document_id', 'like', "%{$keyword}%");
             })
-            ->filterColumn('type', function($query, $keyword) {
-                if (empty($keyword)) return;
-                $query->whereHas('type', function($q) use ($keyword) {
+            ->filterColumn('type', function ($query, $keyword) {
+                if (empty($keyword)) {
+                    return;
+                }
+                $query->whereHas('type', function ($q) use ($keyword) {
                     $q->where('name', $keyword);
                 });
             })
-            ->addColumn('status_type', function($row) {
-                if ($row->trashed()) return 'archived';
+            ->addColumn('status_type', function ($row) {
+                if ($row->trashed()) {
+                    return 'archived';
+                }
                 $today = $this->today ? $this->today->startOfDay() : now()->startOfDay();
                 $diffDays = $today->diffInDays($row->expired_date, false);
 
-                if ($diffDays < 0) return 'expired';
-                if ($diffDays <= ($this->thresholdDays ?? 60)) return 'expiring';
+                if ($diffDays < 0) {
+                    return 'expired';
+                }
+                if ($diffDays <= ($this->thresholdDays ?? 60)) {
+                    return 'expiring';
+                }
+
                 return 'active';
             })
-            ->filterColumn('status_type', function($query, $keyword) {
+            ->filterColumn('status_type', function ($query, $keyword) {
                 $today = now()->startOfDay();
                 $threshold = $this->threshold ?? 2;
                 $warningDate = now()->addMonths($threshold)->endOfDay();
@@ -138,8 +150,6 @@ class ImportantDocumentDataTable extends DataTable
 
     /**
      * Get query source of dataTable.
-     *
-     * @param ImportantDoc $model
      */
     public function query(ImportantDoc $model): QueryBuilder
     {

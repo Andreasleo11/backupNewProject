@@ -12,10 +12,10 @@ class EvaluationLegacyApprovalService
      * Approve evaluation records for a department by the department head.
      * Works for all employee types (Regular, Yayasan, Magang).
      *
-     * @param string   $deptNo   Department code
-     * @param int      $month    Month number
-     * @param int      $year     Year
-     * @param bool     $lockData Whether to also lock the records (Regular flow)
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int $year Year
+     * @param bool $lockData Whether to also lock the records (Regular flow)
      * @return int Number of records approved
      */
     public function approveDeptHead(
@@ -42,9 +42,9 @@ class EvaluationLegacyApprovalService
     /**
      * Approve evaluation records as General Manager (Magang flow).
      *
-     * @param string   $deptNo Department code
-     * @param int      $month  Month number
-     * @param int|null $year   Year (optional)
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int|null $year Year (optional)
      * @return int Number of records approved
      */
     public function approveGeneralManager(
@@ -66,9 +66,9 @@ class EvaluationLegacyApprovalService
      * Approve evaluation records as HRD (Yayasan final approval step).
      * Semantically the same as GM approval but named clearly for the Yayasan flow.
      *
-     * @param string   $deptNo Department code
-     * @param int      $month  Month number
-     * @param int|null $year   Year (optional)
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int|null $year Year (optional)
      * @return int Number of records approved
      */
     public function approveHrd(
@@ -82,9 +82,9 @@ class EvaluationLegacyApprovalService
     /**
      * Reject evaluation records as the department head.
      *
-     * @param string      $deptNo Department code
-     * @param int         $month  Month number
-     * @param int         $year   Year
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int $year Year
      * @param string|null $remark Rejection note
      * @return int Number of records rejected
      */
@@ -112,9 +112,9 @@ class EvaluationLegacyApprovalService
     /**
      * Reject evaluation records as HRD (resets both depthead and GM fields).
      *
-     * @param string      $deptNo Department code
-     * @param int         $month  Month number
-     * @param int         $year   Year
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int $year Year
      * @param string|null $remark Rejection note
      * @return int Number of records rejected
      */
@@ -127,7 +127,7 @@ class EvaluationLegacyApprovalService
         $employees = $this->getEmployeesByDept($deptNo, $month, $year);
 
         foreach ($employees as $employee) {
-            $employee->depthead     = 'rejected';
+            $employee->depthead = 'rejected';
             $employee->generalmanager = 'rejected';
 
             if ($remark) {
@@ -153,7 +153,7 @@ class EvaluationLegacyApprovalService
             $evaluationData->depthead === 'rejected'
         ) {
             $evaluationData->update([
-                'depthead'       => null,
+                'depthead' => null,
                 'generalmanager' => null,
             ]);
 
@@ -167,9 +167,9 @@ class EvaluationLegacyApprovalService
      * Get evaluation records by department + month (and optionally year).
      * Type-neutral: does not filter by employment_scheme — works for all employee types.
      *
-     * @param string   $deptNo Department code
-     * @param int      $month  Month number
-     * @param int|null $year   Year (optional)
+     * @param string $deptNo Department code
+     * @param int $month Month number
+     * @param int|null $year Year (optional)
      */
     private function getEmployeesByDept(
         string $deptNo,
@@ -186,4 +186,3 @@ class EvaluationLegacyApprovalService
         return $query->get();
     }
 }
-

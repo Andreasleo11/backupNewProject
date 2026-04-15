@@ -21,22 +21,22 @@ final class SupplierEvaluationService
     public function createEvaluation(array $data): array
     {
         $monthMapping = [
-            'January'   => 1,
-            'February'  => 2,
-            'March'     => 3,
-            'April'     => 4,
-            'May'       => 5,
-            'June'      => 6,
-            'July'      => 7,
-            'August'    => 8,
+            'January' => 1,
+            'February' => 2,
+            'March' => 3,
+            'April' => 4,
+            'May' => 5,
+            'June' => 6,
+            'July' => 7,
+            'August' => 8,
             'September' => 9,
-            'October'   => 10,
-            'November'  => 11,
-            'December'  => 12,
+            'October' => 10,
+            'November' => 11,
+            'December' => 12,
         ];
 
         // ── Validation (you can keep Laravel validator or do manual checks)
-        if (!isset($data['supplier'], $data['start_month'], $data['start_year'], $data['end_month'], $data['end_year'])) {
+        if (! isset($data['supplier'], $data['start_month'], $data['start_year'], $data['end_month'], $data['end_year'])) {
             return [
                 'success' => false,
                 'message' => 'Missing required fields',
@@ -56,7 +56,7 @@ final class SupplierEvaluationService
         [$supplierName, $supplierCode] = $supplierParts;
 
         $startMonthNum = $monthMapping[$data['start_month']] ?? null;
-        $endMonthNum   = $monthMapping[$data['end_month']]   ?? null;
+        $endMonthNum = $monthMapping[$data['end_month']] ?? null;
 
         if ($startMonthNum === null || $endMonthNum === null) {
             return [
@@ -66,7 +66,7 @@ final class SupplierEvaluationService
         }
 
         $startDate = Carbon::create($data['start_year'], $startMonthNum, 1)->startOfMonth();
-        $endDate   = Carbon::create($data['end_year'],   $endMonthNum,   1)->endOfMonth();
+        $endDate = Carbon::create($data['end_year'], $endMonthNum, 1)->endOfMonth();
 
         if ($startDate->greaterThan($endDate)) {
             return [
@@ -78,7 +78,7 @@ final class SupplierEvaluationService
         // Find supplier by CODE (most reliable/unique identifier)
         $supplier = PurchasingListPo::where('supplier_code', $supplierCode)->first();
 
-        if (!$supplier) {
+        if (! $supplier) {
             return [
                 'success' => false,
                 'message' => 'Supplier not found',
@@ -95,15 +95,15 @@ final class SupplierEvaluationService
 
         // Create header
         $header = PurchasingHeaderEvaluationSupplier::create([
-            'doc_num'     => $this->generateDocNum(),
+            'doc_num' => $this->generateDocNum(),
             'vendor_code' => $supplier->supplier_code,   // ← from DB, more trustworthy
             'vendor_name' => $supplierName,
             'start_month' => $data['start_month'],
-            'year'        => $data['start_year'],
-            'end_month'   => $data['end_month'],
-            'year_end'    => $data['end_year'],
-            'grade'       => null,
-            'status'      => null,
+            'year' => $data['start_year'],
+            'end_month' => $data['end_month'],
+            'year_end' => $data['end_year'],
+            'grade' => null,
+            'status' => null,
         ]);
 
         // Continue with monthly details + scoring (same as your Code 2)
@@ -120,7 +120,7 @@ final class SupplierEvaluationService
         return [
             'success' => true,
             'message' => 'Supplier evaluation created successfully',
-            'header'  => $header,
+            'header' => $header,
         ];
     }
 

@@ -136,10 +136,10 @@
             </x-sidebar.group>
         @endif
 
-        
+
         {{-- Store --}}
         <x-sidebar.group id="storeGroup" icon="bx bxs-component" title="Store" :open="$groupOpen['storeGroup'] ?? false">
-           
+
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('delivery-notes.index')" icon="bx bx-file" :active="request()->routeIs('delivery-notes.*')">Delivery
                     Notes</x-sidebar.link>
@@ -153,8 +153,7 @@
         </x-sidebar.group>
 
         {{-- Employee Evaluation --}}
-        <x-sidebar.group id="employeeEvaluationGroup" icon="bx bx-file" title="Employee Evaluation"
-            :open="$groupOpen['employeeEvaluationGroup'] ?? false">
+        <x-sidebar.group id="employeeEvaluationGroup" icon="bx bx-file" title="Employee Evaluation" :open="$groupOpen['employeeEvaluationGroup'] ?? false">
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('discipline.index')" icon="bx bx-file" :active="request()->routeIs('discipline.*')">All</x-sidebar.link>
             </li>

@@ -45,7 +45,8 @@
                         <td>@include('partials.source-chip', [
                             'source' => $r->default_source?->value ?? $r->default_source,
                         ])</td>
-                        <td class="text-end">{{ rtrim(rtrim(number_format($r->default_quantity, 4, '.', ''), '0'), '.') }}
+                        <td class="text-end">
+                            {{ rtrim(rtrim(number_format($r->default_quantity, 4, '.', ''), '0'), '.') }}
                         </td>
                         <td>
                             <span

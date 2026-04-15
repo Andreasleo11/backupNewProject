@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
@@ -43,7 +42,6 @@ class PurchaseRequestController extends Controller
         private \App\Domain\PurchaseRequest\Services\PurchaseRequestSecurityService $securityService,
     ) {}
 
-
     public function create()
     {
         $items = MasterDataPr::get();
@@ -60,7 +58,7 @@ class PurchaseRequestController extends Controller
                 'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
                 'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
                 'isOwner' => true,
-            ]
+            ],
         ]);
     }
 
@@ -88,7 +86,7 @@ class PurchaseRequestController extends Controller
                 'userCanEverSelectImport' => $this->securityService->canUserSelectImportPath($user),
                 'targetDepartmentPurchasing' => \App\Enums\ToDepartment::PURCHASING->value,
                 'isOwner' => (int) $user->id === (int) $purchaseRequest->user_id_create,
-            ]
+            ],
         ]);
     }
 
@@ -170,7 +168,6 @@ class PurchaseRequestController extends Controller
         ]);
     }
 
-
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
@@ -236,8 +233,8 @@ class PurchaseRequestController extends Controller
                 ->with('success', 'Purchase request updated, signed, and submitted.');
         }
 
-        $msg = ($purchaseRequest->workflow_status === 'DRAFT') 
-            ? 'Purchase request saved as draft.' 
+        $msg = ($purchaseRequest->workflow_status === 'DRAFT')
+            ? 'Purchase request saved as draft.'
             : 'Purchase request changes saved successfully.';
 
         if ($request->input('submit_action') === 'save_and_setup_signature') {
@@ -283,7 +280,7 @@ class PurchaseRequestController extends Controller
         $defaultSig = $this->getDefaultSignature->execute($userId);
         abort_unless($defaultSig !== null, 422, 'You must set up a signature before submitting.');
 
-        // NOTE: We no longer save the MAKER signature to the legacy 'purchase_request_signatures' table 
+        // NOTE: We no longer save the MAKER signature to the legacy 'purchase_request_signatures' table
         // for new PRs. It is only kept for legacy data compatibility.
         // The requester is now tracked via $approvals->submit() into 'approval_requests.submitted_by'.
 
@@ -329,7 +326,7 @@ class PurchaseRequestController extends Controller
     public function exportToPdf(int $id, GetPurchaseRequestDetail $query)
     {
         $user = Auth::user();
-        
+
         // Use the centralized view model to fetch the exact same data structure as the 'show' detail page
         $vm = $query->handle($id, $user);
 
@@ -458,11 +455,13 @@ class PurchaseRequestController extends Controller
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 403);
             }
+
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException|\RuntimeException $e) {
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
             }
+
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
@@ -474,7 +473,6 @@ class PurchaseRequestController extends Controller
             return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
         }
     }
-
 
     public function reject(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
@@ -504,11 +502,13 @@ class PurchaseRequestController extends Controller
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 403);
             }
+
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException|\RuntimeException $e) {
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
             }
+
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
@@ -605,7 +605,7 @@ class PurchaseRequestController extends Controller
     public function batchStatus(Request $request): \Illuminate\Http\JsonResponse
     {
         $this->authorize('batch-approve', PurchaseRequest::class);
-        
+
         $ids = $request->input('ids', []);
         $statuses = [];
 

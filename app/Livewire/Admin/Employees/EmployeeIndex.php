@@ -4,32 +4,40 @@ namespace App\Livewire\Admin\Employees;
 
 use App\Application\Employee\DTOs\EmployeeFilter;
 use App\Application\Employee\UseCases\ListEmployees;
-use App\Models\ImportJob;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
-
-use Livewire\Attributes\Computed;
 
 class EmployeeIndex extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $branch = '';
+
     public ?string $deptCode = '';
+
     public ?string $employmentType = '';
+
     public int $perPage = 10;
+
     public bool $showAdvancedFilters = false;
 
     public string $sortBy = 'name';
+
     public string $sortDirection = 'asc';
 
     public ?array $previewData = null;
+
     public ?array $activeLog = null;
+
     public string $previewTab = 'summary';
+
     public string $previewSearch = '';
 
     public ?string $selectedNik = null;
+
     public ?\App\Infrastructure\Persistence\Eloquent\Models\Employee $selectedEmployee = null;
 
     protected $queryString = [
@@ -139,7 +147,10 @@ class EmployeeIndex extends Component
 
     public function sort_icon(string $field): string
     {
-        if ($this->sortBy !== $field) return '⇅';
+        if ($this->sortBy !== $field) {
+            return '⇅';
+        }
+
         return $this->sortDirection === 'asc' ? '↑' : '↓';
     }
 
@@ -164,6 +175,7 @@ class EmployeeIndex extends Component
     public function globalStats(): array
     {
         $repo = app(\App\Domain\Employee\Repositories\EmployeeRepository::class);
+
         return $repo->getGlobalStats();
     }
 

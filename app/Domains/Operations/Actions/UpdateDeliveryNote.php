@@ -3,25 +3,18 @@
 namespace App\Domains\Operations\Actions;
 
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
+use App\Models\ApprovalFlow;
 use App\Support\ApprovalFlowResolver;
 use Illuminate\Support\Facades\DB;
-use App\Models\ApprovalFlow;
 
 class UpdateDeliveryNote
 {
-    /**
-     * @param DeliveryNote $note
-     * @param array $data
-     * @param array $destinations
-     * @param bool $isDraft
-     * @return DeliveryNote
-     */
     public function execute(DeliveryNote $note, array $data, array $destinations, bool $isDraft): DeliveryNote
     {
         return DB::transaction(function () use ($note, $data, $destinations, $isDraft) {
 
             $totalCost = $this->calculateTotalCost($destinations);
-            
+
             $context = array_merge($data, [
                 'total_cost' => $totalCost,
                 'is_design' => false,
@@ -37,7 +30,7 @@ class UpdateDeliveryNote
 
             // Prevent syncing complexity by recreating destinations (existing approach in Livewire)
             $note->destinations()->each(function ($dest) {
-                $dest->deliveryOrders()->delete(); 
+                $dest->deliveryOrders()->delete();
                 $dest->delete();
             });
 
@@ -53,9 +46,9 @@ class UpdateDeliveryNote
                     'balikan_cost_currency' => $dest['balikan_cost_currency'] ?? 'IDR',
                 ]);
 
-                if (!empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
+                if (! empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
                     foreach ($dest['delivery_order_numbers'] as $doNumber) {
-                        if (!empty(trim($doNumber))) {
+                        if (! empty(trim($doNumber))) {
                             $destination->deliveryOrders()->create([
                                 'delivery_order_number' => trim($doNumber),
                             ]);
@@ -76,6 +69,7 @@ class UpdateDeliveryNote
             $total += (float) ($dest['kenek_cost'] ?? 0);
             $total += (float) ($dest['balikan_cost'] ?? 0);
         }
+
         return $total;
     }
 }

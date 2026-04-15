@@ -24,7 +24,7 @@ final class DateRangeFilter implements PurchaseRequestFilter
 
         return new self(
             from: trim($parts[0]),
-            to:   isset($parts[1]) ? trim($parts[1]) : null,
+            to: isset($parts[1]) ? trim($parts[1]) : null,
         );
     }
 

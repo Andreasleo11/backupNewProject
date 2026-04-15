@@ -7,8 +7,8 @@ namespace App\Livewire\Signature;
 use App\Application\Signature\UseCases\RevokeSignature;
 use App\Application\Signature\UseCases\SetDefaultSignature;
 use App\Domain\Signature\Repositories\UserSignatureRepository;
-use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Component;
 
 final class ManageSignatures extends Component
 {
@@ -45,7 +45,7 @@ final class ManageSignatures extends Component
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
-        
+
         $this->loadData(app(UserSignatureRepository::class));
     }
 

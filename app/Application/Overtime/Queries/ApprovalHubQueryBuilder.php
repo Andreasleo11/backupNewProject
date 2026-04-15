@@ -5,7 +5,6 @@ namespace App\Application\Overtime\Queries;
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class ApprovalHubQueryBuilder
 {
@@ -19,10 +18,10 @@ class ApprovalHubQueryBuilder
         // We use the same permission scoping as the standard Index.
         $query = OvertimeForm::query()
             ->select([
-                'header_form_overtime.id', 
-                'header_form_overtime.user_id', 
-                'header_form_overtime.dept_id', 
-                'header_form_overtime.branch', 
+                'header_form_overtime.id',
+                'header_form_overtime.user_id',
+                'header_form_overtime.dept_id',
+                'header_form_overtime.branch',
                 'header_form_overtime.status',
                 'header_form_overtime.is_planned',
             ])
@@ -33,7 +32,7 @@ class ApprovalHubQueryBuilder
             ])
             ->whereHas('approvalRequest', function ($q) use ($user) {
                 $q->where('status', 'IN_REVIEW')
-                  ->forUser($user);
+                    ->forUser($user);
             });
 
         // 2. Precompute first overtime date for grouping
@@ -42,19 +41,19 @@ class ApprovalHubQueryBuilder
                 ->selectRaw('MIN(d.start_date)')
                 ->whereColumn('d.header_id', 'header_form_overtime.id');
         }, 'first_overtime_date');
-        
+
         // 3. Filtering: Only items where the user is the current active approver
         // This logic is critical to ensure the "Approve All" button doesn't hit authorization errors.
-        $query->where(function($q) use ($user) {
-            $q->whereHas('approvalRequest.steps', function($sq) use ($user) {
+        $query->where(function ($q) use ($user) {
+            $q->whereHas('approvalRequest.steps', function ($sq) use ($user) {
                 $sq->whereColumn('sequence', 'approval_requests.current_step')
-                   ->where('status', 'PENDING');
-                
+                    ->where('status', 'PENDING');
+
                 // Permission-based (User or Role)
-                $sq->where(function($per) use ($user) {
-                    $per->where(function($u) use ($user) {
+                $sq->where(function ($per) use ($user) {
+                    $per->where(function ($u) use ($user) {
                         $u->where('approver_type', 'user')->where('approver_id', $user->id);
-                    })->orWhere(function($r) use ($user) {
+                    })->orWhere(function ($r) use ($user) {
                         $r->where('approver_type', 'role')->whereIn('approver_id', $user->roles->pluck('id'));
                     });
                 });

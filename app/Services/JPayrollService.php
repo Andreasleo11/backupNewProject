@@ -64,7 +64,7 @@ final class JPayrollService
             $progress->error($e->getMessage());
             Log::error('Sync failed', ['error' => $e->getMessage()]);
 
-            return ['success' => false, 'message' => "Sync failed: " . $e->getMessage()];
+            return ['success' => false, 'message' => 'Sync failed: ' . $e->getMessage()];
         }
     }
 
@@ -78,11 +78,12 @@ final class JPayrollService
         try {
             $employees = $this->client->getMasterEmployees($companyArea);
             $preview = $this->employeeSync->preview($employees);
-            
+
             return array_merge(['success' => true], $preview);
         } catch (Throwable $e) {
             Log::error('Preview failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'message' => "Preview failed: " . $e->getMessage()];
+
+            return ['success' => false, 'message' => 'Preview failed: ' . $e->getMessage()];
         }
     }
 
@@ -90,6 +91,7 @@ final class JPayrollService
     {
         $f = $from instanceof CarbonImmutable ? $from : ($from ? CarbonImmutable::parse($from, $tz) : now($tz)->startOfMonth()->toImmutable());
         $t = $to instanceof CarbonImmutable ? $to : ($to ? CarbonImmutable::parse($to, $tz) : now($tz)->subDay()->endOfDay()->toImmutable());
+
         return ['from' => $f, 'to' => $t];
     }
 
@@ -100,7 +102,7 @@ final class JPayrollService
             $rangeEnd = $cursor->endOfWeek(\Carbon\CarbonInterface::SUNDAY)->min($to->endOfDay());
             $batch = $this->client->getAttendance($area, $cursor, $rangeEnd, null);
             $this->attendanceSync->sync($batch);
-            
+
             $progress->phase('attendance', count($batch), null, "{$cursor->toDateString()} → {$rangeEnd->toDateString()}");
             $cursor = $cursor->addWeek();
         }

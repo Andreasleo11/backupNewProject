@@ -58,7 +58,7 @@ return [
         // 'catur' sees Store (330) + Logistic (331)
         'catur' => ['330', '331'],
         // 'yuli' sees QC (340) + QA (341)
-        'yuli'  => ['340', '341'],
+        'yuli' => ['340', '341'],
     ],
 
     /*
@@ -72,11 +72,11 @@ return [
     |
     */
     'scoring_system' => [
-        'YAYASAN'          => 'new',
+        'YAYASAN' => 'new',
         'YAYASAN KARAWANG' => 'new',
-        'MAGANG'           => 'new',
-        'KONTRAK'          => 'old',
-        'TETAP'            => 'old',
+        'MAGANG' => 'new',
+        'KONTRAK' => 'old',
+        'TETAP' => 'old',
     ],
 
 ];

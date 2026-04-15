@@ -63,4 +63,3 @@ class OvertimeRejectedSheet implements FromCollection, WithHeadings
         ];
     }
 }
-
