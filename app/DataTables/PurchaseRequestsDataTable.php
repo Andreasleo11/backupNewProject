@@ -124,7 +124,8 @@ class PurchaseRequestsDataTable extends DataTable
             ->setTableId('purchaserequests-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom('frtip')
+            ->dom('rtip')
+            ->pageLength(25)
             ->orderBy(1);
     }
 

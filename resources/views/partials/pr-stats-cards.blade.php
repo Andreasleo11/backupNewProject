@@ -48,14 +48,14 @@
 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
     @foreach($stats as $key => $value)
         @if(isset($cardConfigs[$key]))
-            @php 
+            @php
                 $config = $cardConfigs[$key];
                 $color = $config['color'];
-                $isActive = request('filter') === $config['filter'];
+                $isActive = $preset === $config['filter'];
             @endphp
 
-            <a href="{{ route('purchase-requests.index') }}?filter={{ $config['filter'] }}"
-               class="group relative overflow-hidden rounded-2xl bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border {{ $isActive ? "border-{$color}-400 shadow-md shadow-{$color}-100/50 ring-1 ring-{$color}-400/20" : "border-slate-100 shadow-sm hover:border-{$color}-300" }}">
+            <button @click="$wire.setPreset('{{ $config['filter'] }}')"
+                    class="w-full text-left group relative overflow-hidden rounded-2xl bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border {{ $isActive ? "border-{$color}-400 shadow-md shadow-{$color}-100/50 ring-1 ring-{$color}-400/20" : "border-slate-100 shadow-sm hover:border-{$color}-300" }}">
                 
                 {{-- Dynamic Gradient Background --}}
                 <div class="absolute inset-0 bg-gradient-to-br from-{{ $color }}-50/40 via-white to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 {{ $isActive ? 'opacity-100' : '' }}"></div>
@@ -79,10 +79,10 @@
 
                 {{-- Progress Indicator Decoration --}}
                 <div class="absolute bottom-0 left-0 h-1 w-full bg-slate-50/50">
-                    <div class="h-full bg-gradient-to-r from-{{ $color }}-400 to-{{ $color }}-600 transition-all duration-1000 ease-out" 
+                    <div class="h-full bg-gradient-to-r from-{{ $color }}-400 to-{{ $color }}-600 transition-all duration-1000 ease-out"
                          style="width: {{ min((is_array($value) ? count($value) : $value) * 10, 100) }}%"></div>
                 </div>
-            </a>
+            </button>
         @elseif($key === 'total_value_pending')
             {{-- Strategic Est Value Card --}}
             <div class="group relative overflow-hidden rounded-2xl bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-slate-100 shadow-sm hover:border-indigo-300">

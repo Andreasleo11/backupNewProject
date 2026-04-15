@@ -15,7 +15,6 @@ use App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest;
 use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
-use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Requests\ApprovePurchaseRequest;
 use App\Http\Requests\RejectPurchaseRequest;
@@ -44,56 +43,6 @@ class PurchaseRequestController extends Controller
         private \App\Domain\PurchaseRequest\Services\PurchaseRequestSecurityService $securityService,
     ) {}
 
-    public function index(
-        Request $request,
-        PurchaseRequestsDataTable $dataTable,
-        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery
-    ) {
-        // Check if reset is requested
-        if ($request->has('reset')) {
-            // Clear session filters
-            $request->session()->forget(['start_date', 'end_date', 'status', 'branch']);
-
-            // Redirect with 'all' filter to avoid auto-redirect back to my_approval
-            return redirect()->route('purchase-requests.index', ['filter' => 'all']);
-        }
-
-        // Automate 'My Approval' filter for high-level oversight roles (GM, Verificator, Director)
-        // Only trigger if no explicit filter or custom status is provided.
-        if (!$request->has('filter') && !$request->has('custom_status')) {
-            $user = auth()->user();
-            if ($user && $user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
-                return redirect()->route('purchase-requests.index', ['filter' => 'my_approval']);
-            }
-        }
-
-        // Apply filters from request or session
-        $startDate = $request->start_date ?: $request->session()->get('start_date');
-        $endDate = $request->end_date ?: $request->session()->get('end_date');
-        $status = $request->status ?: $request->session()->get('status');
-        $branch = $request->branch ?: $request->session()->get('branch');
-        
-        if ($startDate && $endDate) {
-            $request->session()->put('start_date', $startDate);
-            $request->session()->put('end_date', $endDate);
-        }
-
-        if ($status) {
-            $request->session()->put('status', $status);
-        }
-
-        if ($branch) {
-            $request->session()->put('branch', $branch);
-        }
-
-        // Get stats for dashboard
-        $stats = $statsQuery->execute();
-
-        // Determine if the user can batch-approve/reject PRs (separate from individual pr.approve)
-        $canBatchApprove = Auth::user()->can('pr.batch-approve');
-
-        return $dataTable->render('purchase-requests.index', compact('stats', 'canBatchApprove'));
-    }
 
     public function create()
     {

@@ -13,6 +13,7 @@ use App\Application\PurchaseRequest\Queries\Filters\DraftsFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class GetPurchaseRequestStats
 {
@@ -130,25 +131,22 @@ class GetPurchaseRequestStats
      */
     private function getTotalValuePending($user): array
     {
-        $totals = [];
-        $query = $this->queryBuilder->forUser($user);
-        (new InReviewFilter())->apply($query);
+        // Build the base query for visibility scoping
+        $baseQuery = $this->queryBuilder->forUser($user);
+        (new InReviewFilter())->apply($baseQuery);
 
-        $prs = $query->with('items')->get();
+        // Get the IDs of visible PRs first
+        $prIds = $baseQuery->pluck('purchase_requests.id');
 
-        foreach ($prs as $pr) {
-            foreach ($pr->items as $item) {
-                $currency = strtoupper($item->currency ?? 'IDR');
-                $value = ($item->quantity ?? 0) * ($item->price ?? 0);
+        // Now do the aggregation on a fresh query
+        $totals = DB::table('detail_purchase_requests')
+            ->whereIn('purchase_request_id', $prIds)
+            ->selectRaw('UPPER(COALESCE(currency, \'IDR\')) as currency, SUM(COALESCE(quantity, 0) * COALESCE(price, 0)) as total_value')
+            ->groupBy('currency')
+            ->pluck('total_value', 'currency')
+            ->toArray();
 
-                if (! isset($totals[$currency])) {
-                    $totals[$currency] = 0.0;
-                }
-                $totals[$currency] += $value;
-            }
-        }
-
-        return !empty($totals) ? $totals : ['IDR' => 0];
+        return !empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
+use Illuminate\Support\Facades\Cache;
 
 final class GetPurchaseRequestDetail
 {
@@ -88,19 +89,21 @@ final class GetPurchaseRequestDetail
         // files (you used doc_num before)
         $files = File::query()->where('doc_id', $pr->doc_num)->get();
 
-        return new PurchaseRequestDetailVM(
-            purchaseRequest: $pr,
-            departments: $departments,
-            files: $files,
-            filteredItemDetail: $filtered,
-            approval: $approval,
-            fromDeptNo: $fromDeptNo,
-            totals: $totals,
-            flags: $flags,
-            meta: [
-                'userCreatedBy' => $pr->createdBy,
-            ],
-        );
+        return Cache::remember("pr_detail_{$prId}_{$actor->id}", 60, function() use ($pr, $departments, $files, $filtered, $approval, $fromDeptNo, $totals, $flags) {
+            return new PurchaseRequestDetailVM(
+                purchaseRequest: $pr,
+                departments: $departments,
+                files: $files,
+                filteredItemDetail: $filtered,
+                approval: $approval,
+                fromDeptNo: $fromDeptNo,
+                totals: $totals,
+                flags: $flags,
+                meta: [
+                    'userCreatedBy' => $pr->createdBy,
+                ],
+            );
+        });
     }
 
     /**

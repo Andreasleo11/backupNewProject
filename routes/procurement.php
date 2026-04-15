@@ -13,6 +13,7 @@ use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
+use App\Livewire\PurchaseRequest\PurchaseRequestIndex;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,7 +39,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     // Purchase Requests
     Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames'])->name('purchase-requests.get-item-names');
-    Route::get('purchase-requests', [PurchaseRequestController::class, 'index'])->name('purchase-requests.index');
+    Route::get('purchase-requests', PurchaseRequestIndex::class)->name('purchase-requests.index');
     Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
     Route::post('purchase-requests', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
     Route::get('purchase-requests/{id}/edit', [PurchaseRequestController::class, 'edit'])->name('purchase-requests.edit');

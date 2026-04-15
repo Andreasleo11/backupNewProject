@@ -44,11 +44,8 @@ final class PurchaseRequestQueryBuilder
         $query = ($query ?? PurchaseRequest::query())
             ->withCount('items')
             ->with([
-                'files',
-                'createdBy',
-                'approvalRequest' => fn ($q) => $q
-                    ->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step')
-                    ->with('steps'),
+                'createdBy:id,name',
+                'approvalRequest:id,approvable_id,approvable_type,status,current_step',
             ]);
 
         if ($user->hasRole('super-admin')) {
@@ -58,6 +55,12 @@ final class PurchaseRequestQueryBuilder
         return $query->where(function ($q) use ($user) {
             // Creator always sees their own PRs
             $q->where('user_id_create', $user->id)
+              // Department Heads see everything in their department
+              ->orWhere(function ($dq) use ($user) {
+                  if ($user->hasRole('department-head') && $user->department_name) {
+                      $dq->where('from_department', $user->department_name);
+                  }
+              })
               // Everything else: centralised approval visibility
               ->orWhereHas('approvalRequest', fn ($aq) => $aq->forUser($user));
         });

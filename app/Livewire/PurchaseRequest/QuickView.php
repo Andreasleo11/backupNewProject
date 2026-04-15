@@ -7,16 +7,29 @@ use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class QuickView extends Component
 {
-    public int $prId;
+    public ?int $prId = null;
     public string $rejectReason = '';
     public bool $showRejectInput = false;
 
-    public function mount(int $prId)
+    public function mount(?int $prId = null)
     {
         $this->prId = $prId;
+    }
+
+    #[On('open-quick-view-modal')]
+    public function loadPR($id)
+    {
+        // Handle both object and primitive passing from Alpine
+        $this->prId = is_array($id) ? ($id['id'] ?? null) : $id;
+        $this->showRejectInput = false;
+        $this->rejectReason = '';
+        
+        // Dispatch browser event to open the drawer/modal if needed
+        $this->dispatch('open-quick-view-drawer');
     }
 
     public function approve(ApprovePR $useCase)
@@ -32,6 +45,7 @@ class QuickView extends Component
             $this->dispatch('toast', message: 'Purchase Request approved successfully!', type: 'success');
             $this->dispatch('close-quick-view-modal');
             $this->dispatch('refresh-dashboard'); // optional, to refresh counts
+            $this->dispatch('refresh-index'); // refresh the main index table
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
@@ -58,6 +72,7 @@ class QuickView extends Component
             $this->dispatch('toast', message: 'Purchase Request rejected.', type: 'success');
             $this->dispatch('close-quick-view-modal');
             $this->dispatch('refresh-dashboard');
+            $this->dispatch('refresh-index'); // refresh the main index table
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
@@ -65,16 +80,27 @@ class QuickView extends Component
 
     public function render(GetPurchaseRequestDetail $query)
     {
-        $vm = $query->handle($this->prId, auth()->user());
+        $viewData = [
+            'pr' => null,
+            'filteredItemDetail' => collect(),
+            'totals' => [],
+            'flags' => [],
+        ];
+
+        if ($this->prId) {
+            try {
+                $vm = $query->handle($this->prId, auth()->user());
+                $viewData = [
+                    'pr' => $vm->purchaseRequest,
+                    'filteredItemDetail' => $vm->filteredItemDetail,
+                    'totals' => $vm->totals,
+                    'flags' => $vm->flags,
+                ];
+            } catch (\Exception $e) {
+                // Silently fail or log, template handles null pr
+            }
+        }
         
-        // Authorization is handled via Policies in the PR module, similar to standard view
-        // We catch Auth exception or just let Laravel handle it
-        
-        return view('livewire.purchase-request.quick-view', [
-            'pr' => $vm->purchaseRequest,
-            'filteredItemDetail' => $vm->filteredItemDetail,
-            'totals' => $vm->totals,
-            'flags' => $vm->flags,
-        ]);
+        return view('livewire.purchase-request.quick-view', $viewData);
     }
 }
