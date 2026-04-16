@@ -406,8 +406,8 @@
                                         :class="integrityResults.local === 'passed' ? 'bx-data text-emerald-500 text-xl' : (
                                             integrityResults.local === 'failed' ?
                                             'bx-error-alt text-rose-500 text-xl' : 'bx-data text-slate-400 text-xl')"></i>
-                                    <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Internal
-                                        duplicate guard</p>
+                                    <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Data &
+                                        conflict integrity guard</p>
                                 </div>
                                 <span class="text-[8px] font-black uppercase"
                                     :class="integrityResults.local === 'passed' ? 'text-emerald-600' : 'text-slate-400'"
