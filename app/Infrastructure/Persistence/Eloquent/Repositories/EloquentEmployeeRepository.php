@@ -138,6 +138,29 @@ class EloquentEmployeeRepository implements EmployeeRepository
         ];
     }
 
+    /**
+     * Get approval insights for employees on a given date.
+     * Returns array keyed by NIK with monthly_hours and streak_days.
+     */
+    public function getApprovalInsights(array $niks, \Carbon\Carbon $date): array
+    {
+        if (empty($niks)) {
+            return [];
+        }
+
+        // Placeholder implementation - returns empty insights
+        // In real implementation, query overtime approvals for the month and streaks
+        $insights = [];
+        foreach ($niks as $nik) {
+            $insights[$nik] = [
+                'monthly_hours' => 0,
+                'streak_days' => 0,
+            ];
+        }
+
+        return $insights;
+    }
+
     private function toEntity(EmployeeModel $model): EmployeeEntity
     {
         return new EmployeeEntity(

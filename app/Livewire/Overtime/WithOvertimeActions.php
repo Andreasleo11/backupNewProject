@@ -19,7 +19,7 @@ trait WithOvertimeActions
             'id' => null, 'nik' => '', 'name' => '',
             'overtime_date' => $this->global_overtime_date,
             'job_desc' => $this->global_job_desc,
-            'start_date' => $this->global_overtime_date,
+            'start_date' => $this->global_start_date ?: $this->global_overtime_date,
             'start_time' => $this->global_start_time,
             'end_date' => $endDate,
             'end_time' => $this->global_end_time,

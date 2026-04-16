@@ -1,25 +1,24 @@
   {{-- Roster Area --}}
-  <div class="space-y-6" x-data="{
-      showOverride: {},
-      formatDateRange(startDate, endDate) {
-          if (!startDate || !endDate) return '';
-          if (startDate === endDate) return startDate;
-          return startDate + ' → ' + endDate;
-      }
-  }">
-
+<div class="space-y-6" x-data="{
+    showOverride: {},
+    formatDateRange(startDate, endDate) {
+        if (!startDate || !endDate) return '';
+        if (startDate === endDate) return startDate;
+        return startDate + ' → ' + endDate;
+    }
+}">
       {{-- UNIFIED ROSTER TOOLBAR --}}
       <div class="bg-white rounded-3xl border border-slate-200/60 shadow-sm px-6 py-4 flex items-center justify-between">
           <div class="flex items-center gap-4">
-              <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg"><i
-                      class='bx bx-group text-xl'></i></div>
-              <div>
-                  <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">3. Employee Roster</h2>
-                  <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5"
-                      :class="$wire.stagedRosterData.length > 0 ? 'text-indigo-500' : 'text-slate-400'"
-                      x-text="$wire.stagedRosterData.length > 0 ? $wire.stagedRosterData.length + ' Staged · ' + items.length + ' Added' : items.length + ' Members added'">
-                  </p>
-              </div>
+                <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg"><i
+                      class='bx bx-group text-xl'></i>
+                </div>
+                <div>
+                    <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">3. Employee Roster</h2>
+                        <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5 text-slate-400"
+                        x-text="items.length + ' Members added'">
+                    </p>
+                </div>
           </div>
           <div class="flex items-center gap-3">
               <button type="button" @click="$wire.set('showBulkTray', !$wire.showBulkTray)"
@@ -36,203 +35,89 @@
           </div>
       </div>
 
-      {{-- BULK UTILITY TRAY: auto-open when staged data is present --}}
-      <div x-show="$wire.showBulkTray || $wire.stagedRosterData.length > 0" x-collapse x-cloak>
+      {{-- BULK UTILITY TRAY --}}
+      <div x-show="$wire.showBulkTray" x-collapse x-cloak>
           <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl shadow-indigo-100/50">
               <div class="max-w-4xl mx-auto">
-                  {{-- HEADER & IMPORT --}}
-                  <div class="flex items-center justify-between mb-6">
-                      <div>
-                          <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight">Direct Multi-Selection
-                          </h3>
-                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Click to
-                              instantly add or remove members</p>
-                      </div>
+                {{-- HEADER & IMPORT --}}
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight">Direct Multi-Selection
+                        </h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Click to
+                        instantly add or remove members</p>
+                    </div>
+                </div>
+                  
+                {{-- SEARCH --}}
+                <div class="relative" x-data="{ q: '' }">
+                    <div class="relative mb-6">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class='bx bx-search text-slate-400 text-lg'></i>
+                        </div>
+                        <input type="text" x-model="q" placeholder="Search by name or NIK..."
+                            class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-3 pl-12 pr-6 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 placeholder-slate-300 transition-all">
+                    </div>
 
-                      <div class="flex items-center gap-2">
-                          <button type="button" wire:click="downloadRosterTemplate"
-                              class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 hover:text-slate-700 transition-all">
-                              <i class='bx bx-download text-lg'></i> Template
-                          </button>
-                          <div class="relative group">
-                              <input type="file" wire:model="rosterFile"
-                                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                  title="Upload Excel list of NIKs">
-                              <button type="button"
-                                  class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all pointer-events-none">
-                                  <div wire:loading wire:target="rosterFile" class="mr-1">
-                                      <i class='bx bx-loader-alt animate-spin text-sm'></i>
-                                  </div>
-                                  <div wire:loading.remove wire:target="rosterFile">
-                                      <i class='bx bx-import text-lg'></i>
-                                  </div>
-                                  Import NIK List
-                              </button>
-                          </div>
-                      </div>
-                  </div>
+                    {{-- FILTERED GRID --}}
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <template
+                            x-for="emp in employees.filter(e => (!q || e.name.toLowerCase().includes(q.toLowerCase()) || e.nik.includes(q)))"
+                            :key="emp.nik">
+                            <button type="button" @click="$wire.toggleEmployee(emp.nik)"
+                                wire:loading.class="opacity-50 pointer-events-none" wire:target="toggleEmployee"
+                                class="group relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left"
+                                :class="items.some(i => i.nik === emp.nik) ?
+                                    'border-indigo-600 bg-indigo-50/50 shadow-sm' :
+                                    'border-slate-50 hover:border-slate-200 hover:bg-slate-50/50'">
 
-                  @if (count($stagedRosterData) > 0)
-                      {{-- STAGING AREA --}}
-                      <div class="border-t border-slate-100 pt-6">
-                          <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-4">
-                              <div
-                                  class="flex items-center justify-between font-black uppercase tracking-widest text-[10px]">
-                                  <span class="text-slate-500">Staging Review</span>
-                                  <span class="text-indigo-600">{{ count($stagedRosterData) }} Entries Scanned</span>
-                              </div>
-                              <div
-                                  class="mt-4 max-h-[300px] overflow-y-auto custom-scrollbar bg-white rounded-xl border border-slate-100">
-                                  <table class="w-full text-left border-collapse">
-                                      <thead>
-                                          <tr class="bg-slate-50/50 border-b border-slate-100">
-                                              <th
-                                                  class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                                  Identity</th>
-                                              <th
-                                                  class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                                  Schedule Override</th>
-                                              <th
-                                                  class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                                  Task</th>
-                                              <th
-                                                  class="px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">
-                                                  Status</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody class="divide-y divide-slate-50">
-                                          @foreach ($stagedRosterData as $staged)
-                                              <tr class="hover:bg-slate-50/30 transition-colors">
-                                                  <td class="px-4 py-3 align-top">
-                                                      <p class="text-xs font-black text-slate-900">{{ $staged['name'] }}
-                                                      </p>
-                                                      <p class="text-[10px] font-mono font-bold text-slate-500 mt-0.5">
-                                                          {{ $staged['nik'] }}</p>
-                                                  </td>
-                                                  <td class="px-4 py-3 align-top">
-                                                      <p
-                                                          class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                                                          {{ $staged['overtime_date'] }}</p>
-                                                      <div
-                                                          class="flex items-center gap-1 text-[10px] font-mono font-black text-slate-900 bg-slate-100 px-2 py-1 rounded w-fit">
-                                                          <span>{{ $staged['start_time'] }}</span>
-                                                          <i
-                                                              class='bx bx-right-arrow-alt text-slate-400 text-[8px]'></i>
-                                                          <span>{{ $staged['end_time'] }}</span>
-                                                      </div>
-                                                  </td>
-                                                  <td class="px-4 py-3 align-top">
-                                                      <p class="text-[10px] font-medium text-slate-600 leading-relaxed max-w-xs break-words line-clamp-2"
-                                                          title="{{ $staged['job_desc'] }}">
-                                                          {{ $staged['job_desc'] ?: '—' }}</p>
-                                                  </td>
-                                                  <td class="px-4 py-3 text-right align-top">
-                                                      @if ($staged['is_valid'])
-                                                          <span
-                                                              class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-                                                              <i class='bx bx-check'></i> Ready
-                                                          </span>
-                                                      @else
-                                                          <div class="flex flex-col items-end">
-                                                              <span
-                                                                  class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-rose-600 bg-rose-50 px-2 py-1 rounded">
-                                                                  <i class='bx bx-x'></i> Invalid
-                                                              </span>
-                                                              <span
-                                                                  class="text-[8px] font-bold text-rose-400 mt-1 uppercase tracking-wider">{{ implode(', ', $staged['errors']) }}</span>
-                                                          </div>
-                                                      @endif
-                                                  </td>
-                                              </tr>
-                                          @endforeach
-                                      </tbody>
-                                  </table>
-                              </div>
-                          </div>
+                                <div class="relative flex-shrink-0">
+                                    <div class="h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all"
+                                        :class="items.some(i => i.nik === emp.nik) ?
+                                            'bg-indigo-600 border-indigo-600 text-white' :
+                                            'border-slate-200 bg-white group-hover:border-slate-300'">
+                                        <i class='bx bx-check text-xs'
+                                            x-show="items.some(i => i.nik === emp.nik)" wire:loading.remove
+                                            wire:target="toggleEmployee"></i>
+                                        <i class='bx bx-loader-alt animate-spin text-[10px]' wire:loading
+                                            wire:target="toggleEmployee"></i>
+                                    </div>
+                                </div>
 
-                          <div class="flex items-center justify-end gap-3">
-                              <button type="button" wire:click="cancelStagedRoster"
-                                  class="h-10 px-6 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest transition-all">
-                                  Cancel
-                              </button>
-                              <button type="button" wire:click="commitStagedRoster"
-                                  class="h-10 px-6 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 text-[10px] font-black uppercase tracking-widest shadow-md shadow-indigo-100 transition-all flex items-center gap-2">
-                                  <i class='bx bx-check-double text-sm'></i> Commit Valid Members
-                              </button>
-                          </div>
-                      </div>
-                  @else
-                      {{-- SEARCH --}}
-                      <div class="relative" x-data="{ q: '' }">
-                          <div class="relative mb-6">
-                              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                  <i class='bx bx-search text-slate-400 text-lg'></i>
-                              </div>
-                              <input type="text" x-model="q" placeholder="Search by name or NIK..."
-                                  class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-3 pl-12 pr-6 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 placeholder-slate-300 transition-all">
-                          </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[11px] font-black text-slate-900 truncate" x-text="emp.name">
+                                    </p>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <p class="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest"
+                                            x-text="emp.nik"></p>
+                                        <template x-if="items.some(i => i.nik === emp.nik)">
+                                            <span
+                                                class="text-[7px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-1 py-0.5 rounded">In
+                                                Roster</span>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div
+                                    class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all transition-transform group-active:scale-95">
+                                    <i class='bx bx-user'></i>
+                                </div>
+                            </button>
+                        </template>
 
-                          {{-- FILTERED GRID --}}
-                          <div
-                              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                              <template
-                                  x-for="emp in employees.filter(e => (!q || e.name.toLowerCase().includes(q.toLowerCase()) || e.nik.includes(q)))"
-                                  :key="emp.nik">
-                                  <button type="button" @click="$wire.toggleEmployee(emp.nik)"
-                                      wire:loading.class="opacity-50 pointer-events-none" wire:target="toggleEmployee"
-                                      class="group relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left"
-                                      :class="items.some(i => i.nik === emp.nik) ?
-                                          'border-indigo-600 bg-indigo-50/50 shadow-sm' :
-                                          'border-slate-50 hover:border-slate-200 hover:bg-slate-50/50'">
-
-                                      <div class="relative flex-shrink-0">
-                                          <div class="h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all"
-                                              :class="items.some(i => i.nik === emp.nik) ?
-                                                  'bg-indigo-600 border-indigo-600 text-white' :
-                                                  'border-slate-200 bg-white group-hover:border-slate-300'">
-                                              <i class='bx bx-check text-xs'
-                                                  x-show="items.some(i => i.nik === emp.nik)" wire:loading.remove
-                                                  wire:target="toggleEmployee"></i>
-                                              <i class='bx bx-loader-alt animate-spin text-[10px]' wire:loading
-                                                  wire:target="toggleEmployee"></i>
-                                          </div>
-                                      </div>
-
-                                      <div class="flex-1 min-w-0">
-                                          <p class="text-[11px] font-black text-slate-900 truncate" x-text="emp.name">
-                                          </p>
-                                          <div class="flex items-center gap-1.5 mt-0.5">
-                                              <p class="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest"
-                                                  x-text="emp.nik"></p>
-                                              <template x-if="items.some(i => i.nik === emp.nik)">
-                                                  <span
-                                                      class="text-[7px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-100 px-1 py-0.5 rounded">In
-                                                      Roster</span>
-                                              </template>
-                                          </div>
-                                      </div>
-                                      <div
-                                          class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all transition-transform group-active:scale-95">
-                                          <i class='bx bx-user'></i>
-                                      </div>
-                                  </button>
-                              </template>
-
-                              {{-- EMPTY STATE FOR FILTER --}}
-                              <template
-                                  x-if="employees.filter(e => (!q || e.name.toLowerCase().includes(q.toLowerCase()) || e.nik.includes(q))).length === 0">
-                                  <div class="col-span-full py-20 text-center">
-                                      <div
-                                          class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                          <i class='bx bx-search-alt text-3xl'></i></div>
-                                      <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No
-                                          matching employees found</p>
-                                  </div>
-                              </template>
-                          </div>
-                      </div>
-                  @endif
+                        {{-- EMPTY STATE FOR FILTER --}}
+                        <template
+                            x-if="employees.filter(e => (!q || e.name.toLowerCase().includes(q.toLowerCase()) || e.nik.includes(q))).length === 0">
+                            <div class="col-span-full py-20 text-center">
+                                <div
+                                    class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                                    <i class='bx bx-search-alt text-3xl'></i></div>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No
+                                    matching employees found</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
               </div>
           </div>
       </div>
@@ -240,7 +125,7 @@
       {{-- THE ROSTER CONTENT --}}
       <div class="relative">
           {{-- QUICK START HERO (EMPTY STATE DISCOVERY) --}}
-          <template x-if="items.length === 0 && $wire.stagedRosterData.length === 0">
+          <template x-if="items.length === 0">
               <div
                   class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-8 text-center animate-in fade-in zoom-in duration-500">
                   <div
@@ -582,7 +467,7 @@
               </div>
 
               {{-- EMPTY STATE --}}
-              <template x-if="items.length === 0 && $wire.stagedRosterData.length === 0">
+              <template x-if="items.length === 0">
                   <div class="py-20 text-center">
                       <div
                           class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
@@ -595,3 +480,4 @@
               </template>
           </div>
       </div>
+</div>

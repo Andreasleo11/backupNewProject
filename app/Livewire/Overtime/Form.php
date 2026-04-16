@@ -55,8 +55,6 @@ class Form extends Component
     // Date Override Settings
     public bool $show_date_override = false;
 
-    public bool $excel_mode = false;
-
     public string $global_custom_end_date = '';
 
     // Detail rows
@@ -68,10 +66,6 @@ class Form extends Component
 
     // Bulk Management
     public bool $showBulkTray = false;
-
-    public $rosterFile;
-
-    public array $stagedRosterData = [];
 
     // Local State
     public bool $isIntegrityChecked = false;
@@ -349,18 +343,7 @@ class Form extends Component
 
     public function validateStep1(): bool
     {
-        // In Excel Mode, the schedule fields are not required —
-        // they will come from the uploaded file per-row.
-        if ($this->excel_mode) {
-            $this->validate([
-                'dept_id' => 'required|exists:departments,id',
-                'branch' => 'required|string',
-            ], [
-                'dept_id.required' => 'A department selection is required.',
-            ]);
 
-            return true;
-        }
 
         $rules = [
             'dept_id' => 'required|exists:departments,id',
@@ -397,178 +380,67 @@ class Form extends Component
 
         $this->validate($rules, $messages);
 
-        return true;
-    }
-
-    public function downloadRosterTemplate()
-    {
-        $headers = [
-            'NIK',
-            'Overtime Date (YYYY-MM-DD)',
-            'Start Date (YYYY-MM-DD)',
-            'Start Time (HH:MM)',
-            'End Date (YYYY-MM-DD)',
-            'End Time (HH:MM)',
-            'Break (Mins)',
-            'Task',
-            'Remarks',
-        ];
-
-        $callback = function () use ($headers) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers);
-            fputcsv($file, [
-                '12345',
-                now()->format('Y-m-d'),
-                now()->format('Y-m-d'),
-                '17:00',
-                now()->format('Y-m-d'),
-                '19:00',
-                '0',
-                'Optional Override Task',
-                '',
-            ]);
-            fputcsv($file, ['67890', '', '', '', '', '', '', '', 'Left blank implies using Global Settings']);
-            fclose($file);
-        };
-
-        return response()->streamDownload($callback, 'roster_import_template.csv', [
-            'Content-type' => 'text/csv',
-        ]);
-    }
-
-    public function updatedRosterFile()
-    {
-        $this->validate([
-            'rosterFile' => 'required|mimes:xlsx,xls,csv|max:5120',
-        ]);
-
-        $this->stagedRosterData = [];
-
+        // 2. Advanced structural validation (moved from runIntegrityCheck)
         try {
-            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new class {}, $this->rosterFile->getRealPath());
-            $rows = $data[0] ?? [];
+            $startDateTime = \Carbon\Carbon::parse($this->global_start_date . ' ' . $this->global_start_time);
+            $endDateTime = \Carbon\Carbon::parse(
+                ($this->show_date_override ? $this->global_custom_end_date : $this->global_start_date) . ' ' . $this->global_end_time
+            );
+            $overtimeDate = \Carbon\Carbon::parse($this->global_overtime_date);
 
-            // Skip the header if it says 'NIK'
-            if (isset($rows[0][0]) && strtoupper(trim($rows[0][0])) === 'NIK') {
-                $rows = array_slice($rows, 1);
+            // End time must be after start time (additional check for multi-day)
+            if ($endDateTime->lte($startDateTime)) {
+                $this->addError('global_end_time', 'End time must be after start time.');
             }
 
-            // Defaults
-            $defOvtDate = $this->global_overtime_date;
-            $defStartDate = $this->show_date_override && $this->global_start_date ? $this->global_start_date : $defOvtDate;
-            $defEndDate = $this->show_date_override && $this->global_custom_end_date ? $this->global_custom_end_date : $defOvtDate;
-
-            foreach ($rows as $index => $row) {
-                if (empty(array_filter($row))) {
-                    continue;
-                }
-
-                $rawNik = trim((string) ($row[0] ?? ''));
-                // Normalize to 5-digit zero-padded NIK (handles Excel float like 7073.0)
-                if (is_numeric($rawNik)) {
-                    $nik = str_pad((string) (int) $rawNik, 5, '0', STR_PAD_LEFT);
-                } else {
-                    $nik = str_pad($rawNik, 5, '0', STR_PAD_LEFT);
-                }
-                if (empty($nik) || $nik === '00000') {
-                    continue;
-                }
-
-                $isValid = true;
-                $errors = [];
-                $name = 'Unknown';
-
-                $emp = Employee::where('nik', $nik)->first();
-                if (! $emp) {
-                    $isValid = false;
-                    $errors[] = 'NIK not found';
-                } else {
-                    $name = $emp->name;
-                    if (collect($this->items)->contains('nik', $nik)) {
-                        $isValid = false;
-                        $errors[] = 'Already in roster';
-                    }
-                }
-
-                $this->stagedRosterData[] = [
-                    'nik' => $nik,
-                    'name' => $name,
-                    'is_valid' => $isValid,
-                    'errors' => $errors,
-
-                    // Specific Overrides fallback to global settings
-                    'overtime_date' => ! empty($row[1]) ? trim((string) $row[1]) : $defOvtDate,
-                    'start_date' => ! empty($row[2]) ? trim((string) $row[2]) : $defStartDate,
-                    'start_time' => ! empty($row[3]) ? trim((string) $row[3]) : $this->global_start_time,
-                    'end_date' => ! empty($row[4]) ? trim((string) $row[4]) : $defEndDate,
-                    'end_time' => ! empty($row[5]) ? trim((string) $row[5]) : $this->global_end_time,
-                    'break' => ! empty($row[6]) ? trim((string) $row[6]) : $this->global_break,
-                    'job_desc' => ! empty($row[7]) ? trim((string) $row[7]) : $this->global_job_desc,
-                    'remarks' => ! empty($row[8]) ? trim((string) $row[8]) : $this->global_remarks,
-                ];
+            // Work period should not exceed 24 hours
+            $duration = $startDateTime->diffInHours($endDateTime, false);
+            if ($duration > 24) {
+                $this->addError('global_end_time', 'Work period cannot exceed 24 hours.');
+            } elseif ($duration <= 0) {
+                $this->addError('global_end_time', 'Work period must be at least 1 hour.');
             }
 
-            $this->dispatch('flash', type: 'info', message: 'Staged ' . count($this->stagedRosterData) . ' potential roster members.');
+            // Overtime date should be within reasonable range of work dates
+            $workStartDate = \Carbon\Carbon::parse($this->global_start_date);
+            $workEndDate = $this->show_date_override ?
+                \Carbon\Carbon::parse($this->global_custom_end_date) :
+                $workStartDate;
 
-            // In Excel Mode: automatically signal the wizard to show Step 3
-            // The user still gets to review the staging panel before committing.
-            if ($this->excel_mode) {
-                $this->dispatch('excel-roster-staged');
+            // Overtime date should not be more than 30 days in the past or 7 days in the future
+            $today = \Carbon\Carbon::today();
+            if ($overtimeDate->lt($today->copy()->subDays(30))) {
+                $this->addError('global_overtime_date', 'Overtime date cannot be more than 30 days in the past.');
+            } elseif ($overtimeDate->gt($today->copy()->addDays(7))) {
+                $this->addError('global_overtime_date', 'Overtime date cannot be more than 7 days in the future.');
             }
 
-        } catch (\Throwable $e) {
-            $this->dispatch('flash', type: 'error', message: 'Failed to process roster file: ' . $e->getMessage());
+            // Overtime date should be within work period ± 3 days
+            if ($overtimeDate->lt($workStartDate->copy()->subDays(3)) ||
+                $overtimeDate->gt($workEndDate->copy()->addDays(3))) {
+                $this->addError('global_overtime_date', 'Overtime date should be within 3 days of work dates.');
+            }
+
+            // Break time validation
+            if (isset($this->global_break) && $this->global_break !== '') {
+                $breakHours = floatval($this->global_break);
+                if ($breakHours < 0) {
+                    $this->addError('global_break', 'Break time cannot be negative.');
+                } elseif ($breakHours >= $duration) {
+                    $this->addError('global_break', 'Break time must be less than total work hours.');
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->addError('global_start_time', 'Invalid date/time format.');
         }
 
-        $this->rosterFile = null;
-    }
-
-    public function commitStagedRoster()
-    {
-        $addedCount = 0;
-
-        foreach ($this->stagedRosterData as $staged) {
-            if ($staged['is_valid']) {
-                if (count($this->items) === 1 && empty($this->items[0]['nik'])) {
-                    $this->items[0]['nik'] = $staged['nik'];
-                    $this->items[0]['name'] = $staged['name'];
-                    $this->items[0]['overtime_date'] = $staged['overtime_date'];
-                    $this->items[0]['start_date'] = $staged['start_date'];
-                    $this->items[0]['start_time'] = $staged['start_time'];
-                    $this->items[0]['end_date'] = $staged['end_date'];
-                    $this->items[0]['end_time'] = $staged['end_time'];
-                    $this->items[0]['break'] = $staged['break'];
-                    $this->items[0]['job_desc'] = $staged['job_desc'];
-                    $this->items[0]['remarks'] = $staged['remarks'];
-                } else {
-                    $this->items[] = [
-                        'id' => null,
-                        'nik' => $staged['nik'],
-                        'name' => $staged['name'],
-                        'overtime_date' => $staged['overtime_date'],
-                        'start_date' => $staged['start_date'],
-                        'start_time' => $staged['start_time'],
-                        'end_date' => $staged['end_date'],
-                        'end_time' => $staged['end_time'],
-                        'break' => $staged['break'],
-                        'job_desc' => $staged['job_desc'],
-                        'remarks' => $staged['remarks'],
-                        'payroll_status' => 'pending',
-                    ];
-                }
-                $addedCount++;
-            }
+        // Check if any errors were added during advanced validation
+        if ($this->getErrorBag()->isNotEmpty()) {
+            return false;
         }
 
-        $this->stagedRosterData = [];
-        $this->resetIntegrity();
-        $this->dispatch('flash', type: 'success', message: "Added $addedCount members successfully.");
-    }
-
-    public function cancelStagedRoster()
-    {
-        $this->stagedRosterData = [];
+        return true;
     }
 
     public function toggleEmployee(string $nik): void
@@ -641,47 +513,206 @@ class Form extends Component
         $this->integrityResults = [];
     }
 
+    /**
+     * Run comprehensive integrity checks on the overtime form
+     *
+     * Checks performed:
+     * 1. Structural validation (employee selection + individual row data validation)
+     * 2. Local conflicts (within-form duplicates/overlaps, database conflicts)
+     * 3. Payroll system conflicts
+     */
     public function runIntegrityCheck(): void
     {
         $this->isIntegrityChecked = false;
+
+        // Clear previous validation errors
+        $this->resetErrorBag();
+
         $this->integrityResults = [
             'structural' => 'loading',
             'local' => 'pending',
             'payroll' => 'pending',
         ];
 
-        // 1. Structural Check
+        // 1. Structural Check - Roster data validation
+        $hasStructuralErrors = false;
         foreach ($this->items as $i => $item) {
+            // Basic employee selection
             if (empty($item['nik'])) {
-                $this->addError("items.$i.nik", 'Selection Required');
+                $this->addError("items.$i.nik", 'Employee selection required.');
+                $hasStructuralErrors = true;
+                continue;
+            }
+
+            // Individual row structural validation (dates, times, breaks)
+            try {
+                $startDateTime = \Carbon\Carbon::parse($item['start_date'] . ' ' . $item['start_time']);
+                $endDateTime = \Carbon\Carbon::parse($item['end_date'] . ' ' . $item['end_time']);
+                $overtimeDate = \Carbon\Carbon::parse($item['overtime_date']);
+
+                // End time must be after start time
+                if ($endDateTime->lte($startDateTime)) {
+                    $this->addError("items.$i.nik", 'End time must be after start time.');
+                    $hasStructuralErrors = true;
+                }
+
+                // Work period should not exceed 24 hours
+                $duration = $startDateTime->diffInHours($endDateTime, false);
+                if ($duration > 24) {
+                    $this->addError("items.$i.nik", 'Work period cannot exceed 24 hours.');
+                    $hasStructuralErrors = true;
+                } elseif ($duration <= 0) {
+                    $this->addError("items.$i.nik", 'Work period must be at least 1 hour.');
+                    $hasStructuralErrors = true;
+                }
+
+                // Overtime date should be within reasonable range of work dates
+                $workStartDate = \Carbon\Carbon::parse($item['start_date']);
+                $workEndDate = \Carbon\Carbon::parse($item['end_date']);
+
+                // Overtime date should not be more than 30 days in the past or 7 days in the future
+                $today = \Carbon\Carbon::today();
+                if ($overtimeDate->lt($today->copy()->subDays(30))) {
+                    $this->addError("items.$i.nik", 'Overtime date cannot be more than 30 days in the past.');
+                    $hasStructuralErrors = true;
+                } elseif ($overtimeDate->gt($today->copy()->addDays(7))) {
+                    $this->addError("items.$i.nik", 'Overtime date cannot be more than 7 days in the future.');
+                    $hasStructuralErrors = true;
+                }
+
+                // Overtime date should be within work period ± 3 days
+                if ($overtimeDate->lt($workStartDate->copy()->subDays(3)) ||
+                    $overtimeDate->gt($workEndDate->copy()->addDays(3))) {
+                    $this->addError("items.$i.nik", 'Overtime date should be within 3 days of work dates.');
+                    $hasStructuralErrors = true;
+                }
+
+                // Break time validation
+                if (isset($item['break']) && $item['break'] !== '' && $item['break'] !== null) {
+                    $breakHours = floatval($item['break']);
+                    if ($breakHours < 0) {
+                        $this->addError("items.$i.nik", 'Break time cannot be negative.');
+                        $hasStructuralErrors = true;
+                    } elseif ($breakHours >= $duration) {
+                        $this->addError("items.$i.nik", 'Break time must be less than total work hours.');
+                        $hasStructuralErrors = true;
+                    }
+                }
+
+            } catch (\Exception $e) {
+                $this->addError("items.$i.nik", 'Invalid date/time format.');
+                $hasStructuralErrors = true;
             }
         }
 
-        try {
-            $this->validate();
-            $this->integrityResults['structural'] = 'passed';
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        if ($hasStructuralErrors) {
             $this->integrityResults['structural'] = 'failed';
-            $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted errors before submitting.');
-
+            $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted data errors before submitting.');
             return;
         }
 
-        // 2. Local Duplicate Check (Proposed entries not yet pushed)
+        $this->integrityResults['structural'] = 'passed';
+
+        // 2. Local Conflict Check - Within-form and database conflicts
         $this->integrityResults['local'] = 'loading';
         $hasLocalConflict = false;
 
+        // 2a. Check for exact time period duplicates within this form
+        $timeSignatures = [];
         foreach ($this->items as $i => $item) {
-            $exists = OvertimeFormDetail::query()
+            if (empty($item['nik']) || empty($item['start_date']) || empty($item['start_time']) || empty($item['end_date']) || empty($item['end_time'])) {
+                continue;
+            }
+
+            $timeSig = $item['nik'] . '|' . $item['start_date'] . '|' . $item['start_time'] . '|' . $item['end_date'] . '|' . $item['end_time'];
+
+            if (isset($timeSignatures[$timeSig])) {
+                $this->addError("items.$i.nik", 'Duplicate time period for this employee within this form.');
+                $hasLocalConflict = true;
+            } else {
+                $timeSignatures[$timeSig] = true;
+            }
+        }
+
+
+
+        // 2b. Check for overlapping time periods for the same employee within this form
+        $byNik = collect($this->items)->groupBy('nik');
+        foreach ($byNik as $nik => $rows) {
+            if ($rows->count() < 2) {
+                continue;
+            }
+
+            // Sort by start time
+            $sorted = $rows->sortBy(fn ($r) => $r['start_date'] . ' ' . $r['start_time']);
+            $prev = null;
+
+            foreach ($sorted as $currentIndex => $current) {
+                if ($prev) {
+                    try {
+                        $prevEnd = \Carbon\Carbon::parse($prev['end_date'] . ' ' . $prev['end_time']);
+                        $currStart = \Carbon\Carbon::parse($current['start_date'] . ' ' . $current['start_time']);
+
+                        if ($currStart->lt($prevEnd)) {
+                            // Find the actual index in $this->items by comparing key fields
+                            foreach ($this->items as $idx => $item) {
+                                if ($item['nik'] === $current['nik'] &&
+                                    $item['start_date'] === $current['start_date'] &&
+                                    $item['start_time'] === $current['start_time'] &&
+                                    $item['end_date'] === $current['end_date'] &&
+                                    $item['end_time'] === $current['end_time']) {
+                                    $this->addError("items.$idx.nik", 'Overlapping time period with another entry for this employee.');
+                                    $hasLocalConflict = true;
+                                    break 2; // Break out of both inner loops
+                                }
+                            }
+                            break; // Only report once per employee
+                        }
+                    } catch (\Exception $e) {
+                        // Skip invalid date parsing
+                        continue;
+                    }
+                }
+                $prev = $current;
+            }
+        }
+
+        // 2c. Check against existing database records for conflicts
+        foreach ($this->items as $i => $item) {
+            // 2c.i Check for exact overtime_date match (existing logic)
+            $existsExact = OvertimeFormDetail::query()
                 ->where('NIK', $item['nik'])
                 ->where('overtime_date', $item['overtime_date'])
                 ->whereNull('payroll_voucher_id') // Not yet pushed
                 ->when($this->formId, fn ($q) => $q->where('header_id', '!=', $this->formId)) // Edit Mode Safety
                 ->exists();
 
-            if ($exists) {
+            if ($existsExact) {
                 $this->addError("items.$i.nik", 'Already proposed in another draft/local form.');
                 $hasLocalConflict = true;
+                continue; // Skip the overlap check if we already have an exact match
+            }
+
+            // 2c.ii Check for time overlaps with existing records (same employee, overlapping work periods)
+            try {
+                $newStart = \Carbon\Carbon::parse($item['start_date'] . ' ' . $item['start_time']);
+                $newEnd = \Carbon\Carbon::parse($item['end_date'] . ' ' . $item['end_time']);
+
+                $overlaps = OvertimeFormDetail::query()
+                    ->where('NIK', $item['nik'])
+                    ->whereNull('payroll_voucher_id') // Not yet pushed
+                    ->when($this->formId, fn ($q) => $q->where('header_id', '!=', $this->formId)) // Edit Mode Safety
+                    ->whereRaw('? < CONCAT(end_date, " ", end_time)', [$newStart->format('Y-m-d H:i:s')])
+                    ->whereRaw('CONCAT(start_date, " ", start_time) < ?', [$newEnd->format('Y-m-d H:i:s')])
+                    ->exists();
+
+                if ($overlaps) {
+                    $this->addError("items.$i.nik", 'Work hours overlap with existing overtime records for this employee.');
+                    $hasLocalConflict = true;
+                }
+            } catch (\Exception $e) {
+                // Skip overlap check if date parsing fails
+                continue;
             }
         }
 
@@ -693,7 +724,7 @@ class Form extends Component
         }
         $this->integrityResults['local'] = 'passed';
 
-        // 3. Payroll (External) Check
+        // 3. Payroll System Check - External validation against JPayroll
         $this->integrityResults['payroll'] = 'loading';
         $this->checkPayrollStatus(silent: true);
 

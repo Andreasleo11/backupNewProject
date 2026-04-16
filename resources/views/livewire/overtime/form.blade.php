@@ -167,71 +167,24 @@
                     <div class="p-6 space-y-6" x-show="stage === 1" x-collapse>
                         <div class="flex items-center justify-center pb-4 border-b border-slate-100">
                             <div class="flex items-center gap-1 bg-slate-100 rounded-2xl p-1">
-                                <button type="button" @click="excel_mode = false; show_date_override = false"
+                                <button type="button" @click="show_date_override = false"
                                     class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                    :class="!excel_mode && !show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
+                                    :class="!show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
                                         'text-slate-500 hover:text-slate-700'">
                                     <i class='bx bx-calendar-event mr-2'></i>Same Day
                                 </button>
-                                <button type="button" @click="excel_mode = false; show_date_override = true"
+                                <button type="button" @click="show_date_override = true"
                                     class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                    :class="!excel_mode && show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
+                                    :class="show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
                                         'text-slate-500 hover:text-slate-700'">
                                     <i class='bx bx-calendar-week mr-2'></i>Multi-Day
-                                </button>
-                                <button type="button" @click="excel_mode = true"
-                                    class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                    :class="excel_mode ? 'bg-indigo-600 text-white shadow-lg' :
-                                        'text-slate-500 hover:text-slate-700'">
-                                    <i class='bx bx-table mr-2'></i>Excel Template
                                 </button>
                             </div>
                         </div>
 
-                        @if ($excel_mode)
-                            <div class="text-center space-y-8">
-                                <div>
-                                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.15em] mb-4">
-                                        Per-row schedule from spreadsheet</p>
-                                    <p class="text-xs text-slate-400 font-medium max-w-sm mx-auto leading-relaxed">
-                                        Upload an Excel file with NIK and optional per-row schedule overrides. Each row
-                                        defines its own date, time, task and break.
-                                    </p>
-                                </div>
 
-                                <div class="flex items-center justify-center gap-4">
-                                    <button type="button" wire:click="downloadRosterTemplate"
-                                        class="inline-flex items-center gap-2 h-12 px-6 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-lg hover:-translate-y-0.5 transition-all">
-                                        <i class='bx bx-download text-lg'></i> Download Template
-                                    </button>
-                                </div>
 
-                                <div class="relative group border-2 border-dashed border-slate-200 rounded-3xl py-12 px-8 hover:border-indigo-300 transition-colors flex flex-col items-center justify-center text-center min-h-[160px]"
-                                    x-data="{ uploading: false }" x-on:livewire-upload-start="uploading = true"
-                                    x-on:livewire-upload-finish="uploading = false">
-                                    <input type="file" wire:model="rosterFile"
-                                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                    <div x-show="!uploading" class="pointer-events-none">
-                                        <i class='bx bx-cloud-upload text-4xl text-slate-300 mb-3'></i>
-                                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Drop
-                                            your file here or click to browse</p>
-                                        <p class="text-[10px] text-slate-300 mt-2">Accepts .xlsx, .xls, .csv — Column A
-                                            must be NIK</p>
-                                    </div>
-                                    <div x-show="uploading" x-cloak
-                                        class="flex flex-col items-center justify-center text-center p-6 animate-pulse">
-                                        <i class='bx bx-loader-alt animate-spin text-5xl text-indigo-600 mb-4'></i>
-                                        <p class="text-sm font-black text-indigo-600 uppercase tracking-widest">Parsing
-                                            Spreadsheet...</p>
-                                        <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">
-                                            Please wait while we process the roster</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div x-show="!show_date_override && !excel_mode" x-transition class="space-y-6">
+                        <div x-show="!show_date_override" x-transition class="space-y-6">
                             <div class="text-center mb-4">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Single
                                     day overtime schedule</span>
@@ -276,7 +229,7 @@
                             </div>
                         </div>
 
-                        <div x-show="show_date_override && !excel_mode" x-transition class="space-y-6">
+                        <div x-show="show_date_override" x-transition class="space-y-6">
                             <div class="text-center mb-4">
                                 <span
                                     class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.15em]">Multi-day
@@ -343,7 +296,7 @@
                             </div>
                         </div>
 
-                        <div x-show="!$wire.excel_mode" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-3">
                                 <label
                                     class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Break
@@ -369,8 +322,7 @@
                             </div>
                         </div>
 
-                        <div x-show="!$wire.excel_mode"
-                            class="flex items-center justify-end border-t border-slate-50 pt-8"
+                        <div class="flex items-center justify-end border-t border-slate-50 pt-8"
                             x-data="{ validating: false }">
                             <button type="button"
                                 @click="validating = true; $wire.validateStep1().then(ok => { validating = false; if(ok) { stage = 2; window.scrollTo({top: 0, behavior: 'smooth'}); } })"
@@ -382,14 +334,7 @@
                             </button>
                         </div>
 
-                        <div x-show="$wire.excel_mode"
-                            class="flex items-center justify-center border-t border-slate-50 pt-8">
-                            <p
-                                class="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                                <i class='bx bx-info-circle text-sm'></i>
-                                Upload a file above to automatically proceed to Step 3
-                            </p>
-                        </div>
+
                     </div>
                 </div>
             </section>
@@ -461,8 +406,8 @@
                                         :class="integrityResults.local === 'passed' ? 'bx-data text-emerald-500 text-xl' : (
                                             integrityResults.local === 'failed' ?
                                             'bx-error-alt text-rose-500 text-xl' : 'bx-data text-slate-400 text-xl')"></i>
-                                    <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Internal
-                                        duplicate guard</p>
+                                    <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Data &
+                                        conflict integrity guard</p>
                                 </div>
                                 <span class="text-[8px] font-black uppercase"
                                     :class="integrityResults.local === 'passed' ? 'text-emerald-600' : 'text-slate-400'"
@@ -535,21 +480,6 @@
                 integrityResults: $wire.entangle('integrityResults', true),
 
                 init() {
-                    window.addEventListener('excel-imported', () => {
-                        this.stage = 2;
-                        this.excel = false;
-                        this.excel_file_loaded = true;
-                    });
-
-                    // Excel Mode: auto-advance to Roster (Stage 2) after file is staged
-                    window.addEventListener('excel-roster-staged', () => {
-                        this.stage = 2;
-                        window.scrollTo({
-                            top: 0,
-                            behavior: 'smooth'
-                        });
-                    });
-
                     if (this.dept_id && this.branch) {
                         if (this.items.length > 0) this.stage = 2;
                         else this.stage = 1;
@@ -562,7 +492,7 @@
                 global_end_t: $wire.entangle('global_end_time', true),
                 global_break: $wire.entangle('global_break', true),
                 show_date_override: $wire.entangle('show_date_override', true),
-                excel_mode: $wire.entangle('excel_mode', true),
+
                 global_start_date: $wire.entangle('global_start_date', true),
                 global_custom_end_date: $wire.entangle('global_custom_end_date', true),
 
