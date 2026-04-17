@@ -343,7 +343,6 @@ class Form extends Component
     public function validateStep1(): bool
     {
 
-
         $rules = [
             'dept_id' => 'required|exists:departments,id',
             'branch' => 'required|string',
@@ -422,11 +421,11 @@ class Form extends Component
 
             // Break time validation
             if (isset($this->global_break) && $this->global_break !== '') {
-                $breakHours = floatval($this->global_break);
-                if ($breakHours < 0) {
+                $breakMinutes = floatval($this->global_break);
+                if ($breakMinutes < 0) {
                     $this->addError('global_break', 'Break time cannot be negative.');
-                } elseif ($breakHours >= $duration) {
-                    $this->addError('global_break', 'Break time must be less than total work hours.');
+                } elseif ($breakMinutes >= $duration * 60) {
+                    $this->addError('global_break', 'Break time must be less than total work time.');
                 }
             }
 
@@ -588,12 +587,12 @@ class Form extends Component
 
                 // Break time validation
                 if (isset($item['break']) && $item['break'] !== '' && $item['break'] !== null) {
-                    $breakHours = floatval($item['break']);
-                    if ($breakHours < 0) {
+                    $breakMinutes = floatval($item['break']);
+                    if ($breakMinutes < 0) {
                         $this->addError("items.$i.nik", 'Break time cannot be negative.');
                         $hasStructuralErrors = true;
-                    } elseif ($breakHours >= $duration) {
-                        $this->addError("items.$i.nik", 'Break time must be less than total work hours.');
+                    } elseif ($breakMinutes >= $duration * 60) {
+                        $this->addError("items.$i.nik", 'Break time must be less than total work time.');
                         $hasStructuralErrors = true;
                     }
                 }
@@ -607,6 +606,7 @@ class Form extends Component
         if ($hasStructuralErrors) {
             $this->integrityResults['structural'] = 'failed';
             $this->dispatch('flash', type: 'error', message: 'Please fix the highlighted data errors before submitting.');
+
             return;
         }
 
@@ -632,8 +632,6 @@ class Form extends Component
                 $timeSignatures[$timeSig] = true;
             }
         }
-
-
 
         // 2b. Check for overlapping time periods for the same employee within this form
         $byNik = collect($this->items)->groupBy('nik');
