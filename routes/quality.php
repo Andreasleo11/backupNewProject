@@ -104,12 +104,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', CatalogEdit::class)->name('create');
             Route::get('/{id}/edit', CatalogEdit::class)->name('edit');
         });
-
-    // Inspection Reports
-    Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
-    Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
-    Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 });
+
+// Inspection Reports
+Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
+Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 
 // Department-specific QA/QC routes
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {

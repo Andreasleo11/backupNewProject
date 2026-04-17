@@ -132,6 +132,7 @@ final class GetPurchaseRequestDetail
             'canEdit' => $user->can('update', $pr),
             'canAutoApprove' => $user->can('autoApprove', $pr),
             'canSignAndSubmit' => $canSignAndSubmit,
+            'canUpload' => true,
             'isOwner' => $this->security->isOwner($pr, $user),
             'canViewAuditLog' => $user->can('approval.view-log'),
             'showImportToggle' => $this->security->canSelectImportPath($pr->from_department, $pr->to_department?->value),

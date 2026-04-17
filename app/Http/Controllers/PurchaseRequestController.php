@@ -121,6 +121,7 @@ class PurchaseRequestController extends Controller
         /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
         $user = auth()->user();
         $vm = $query->handle($id, $user);
+        $canUpload = $vm->flags['canUpload'];
 
         // Explicit Policy Check
         $this->authorize('view', $vm->purchaseRequest);

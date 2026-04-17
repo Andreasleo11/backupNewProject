@@ -15,9 +15,6 @@ final class SupplierEvaluationService
         private readonly SupplierScoringService $scoringService
     ) {}
 
-    /**
-     * Create supplier evaluation with header and details.
-     */
     public function createEvaluation(array $data): array
     {
         $monthMapping = [
@@ -43,14 +40,9 @@ final class SupplierEvaluationService
             ];
         }
 
-        // Parse supplier input: "Name - Code"
         $supplierParts = array_map('trim', explode(' - ', $data['supplier']));
-
         if (count($supplierParts) !== 2) {
-            return [
-                'success' => false,
-                'message' => 'Invalid supplier format. Expected: "Name - Code"',
-            ];
+            return ['success' => false, 'message' => 'Invalid supplier format. Expected: "Name - Code"'];
         }
 
         [$supplierName, $supplierCode] = $supplierParts;
@@ -59,23 +51,16 @@ final class SupplierEvaluationService
         $endMonthNum = $monthMapping[$data['end_month']] ?? null;
 
         if ($startMonthNum === null || $endMonthNum === null) {
-            return [
-                'success' => false,
-                'message' => 'Invalid month name',
-            ];
+            return ['success' => false, 'message' => 'Invalid month name'];
         }
 
         $startDate = Carbon::create($data['start_year'], $startMonthNum, 1)->startOfMonth();
         $endDate = Carbon::create($data['end_year'], $endMonthNum, 1)->endOfMonth();
 
         if ($startDate->greaterThan($endDate)) {
-            return [
-                'success' => false,
-                'message' => 'Start date cannot be later than end date',
-            ];
+            return ['success' => false, 'message' => 'Start date cannot be later than end date'];
         }
 
-        // Find supplier by CODE (most reliable/unique identifier)
         $supplier = PurchasingListPo::where('supplier_code', $supplierCode)->first();
 
         if (! $supplier) {
@@ -85,15 +70,10 @@ final class SupplierEvaluationService
             ];
         }
 
-        // Optional: safety check that name roughly matches (prevents typos/mismatches)
         if (strtolower(trim($supplier->supplier_name)) !== strtolower(trim($supplierName))) {
-            return [
-                'success' => false,
-                'message' => 'Supplier name does not match the provided code',
-            ];
+            return ['success' => false, 'message' => 'Supplier name does not match the provided code'];
         }
 
-        // Create header
         $header = PurchasingHeaderEvaluationSupplier::create([
             'doc_num' => $this->generateDocNum(),
             'vendor_code' => $supplier->supplier_code,   // ← from DB, more trustworthy
@@ -106,15 +86,24 @@ final class SupplierEvaluationService
             'status' => null,
         ]);
 
-        // Continue with monthly details + scoring (same as your Code 2)
-        $this->createMonthlyDetails($header->id, $supplierName, $startDate, $endDate);
+        // Ambil bulan yang benar-benar ada PO-nya
+        $validMonths = PurchasingListPo::where('supplier_name', $supplierName)
+            ->whereBetween('posting_date', [$startDate, $endDate])
+            ->get()
+            ->map(fn($p) => Carbon::parse($p->posting_date)->format('Y-m'))
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $this->createMonthlyDetails($header->id, $startDate, $endDate, $validMonths);
 
         $this->scoringService->calculateAllCriteria(
             $header->id,
             $supplierName,
             $supplier->supplier_code,
             $startDate,
-            $endDate
+            $endDate,
+            $validMonths
         );
 
         return [
@@ -124,80 +113,59 @@ final class SupplierEvaluationService
         ];
     }
 
-    /**
-     * Create detail records for each month in the evaluation period.
-     */
     private function createMonthlyDetails(
         int $headerId,
-        string $supplierName,
         Carbon $startDate,
-        Carbon $endDate
+        Carbon $endDate,
+        array $validMonths
     ): void {
-        $matchingPurchasingList = PurchasingListPo::where('supplier_name', $supplierName)
-            ->whereBetween('posting_date', [$startDate, $endDate])
-            ->orderBy('posting_date')
-            ->get()
-            ->groupBy(fn ($item) => Carbon::parse($item->posting_date)->format('Y-m'));
+        $current = $startDate->copy()->startOfMonth();
 
-        foreach ($matchingPurchasingList as $monthGroup) {
-            $firstRecord = $monthGroup->first();
-            $postingDate = Carbon::parse($firstRecord->posting_date);
+        while ($current->lte($endDate)) {
+            $monthKey = $current->format('Y-m');
+            $hasPo    = in_array($monthKey, $validMonths);
 
             PurchasingDetailEvaluationSupplier::create([
-                'header_id' => $headerId,
-                'month' => $postingDate->format('F'),
-                'year' => $postingDate->format('Y'),
-                'kualitas_barang' => null,
-                'ketepatan_kuantitas_barang' => null,
-                'ketepatan_waktu_pengiriman' => null,
-                'kerjasama_permintaan_mendadak' => null,
-                'respon_klaim' => null,
-                'sertifikasi' => null,
-                'customer_stopline' => null,
+                'header_id'                     => $headerId,
+                'month'                         => $current->format('F'),
+                'year'                          => $current->format('Y'),
+                // Kalau tidak ada PO — semua null, tidak di-scoring
+                'kualitas_barang'               => $hasPo ? null : null,
+                'ketepatan_kuantitas_barang'    => $hasPo ? null : null,
+                'ketepatan_waktu_pengiriman'    => $hasPo ? null : null,
+                'kerjasama_permintaan_mendadak' => $hasPo ? null : null,
+                'respon_klaim'                  => $hasPo ? null : null,
+                'sertifikasi'                   => $hasPo ? null : null,
+                'customer_stopline'             => $hasPo ? null : null,
+                'has_po'                        => $hasPo, // flag biar gampang filter
             ]);
+
+            $current->addMonth();
         }
     }
 
-    /**
-     * Generate unique document number.
-     */
     private function generateDocNum(): string
     {
         return 'DOC-' . now()->format('YmdHis');
     }
 
-    /**
-     * Get supplier data for index page.
-     */
     public function getSupplierData(): array
     {
         $supplierData = [];
 
-        $masters = PurchasingListPo::select(
-            'supplier_code',
-            'supplier_name',
-            'posting_date'
-        )->get();
-
-        // Group by both supplier_code and supplier_name
+        $masters = PurchasingListPo::select('supplier_code', 'supplier_name', 'posting_date')->get();
         $grouped = $masters->groupBy(['supplier_code', 'supplier_name']);
 
         foreach ($grouped as $supplier_code => $byName) {
             foreach ($byName as $supplier_name => $records) {
-                // Get unique years
-                $years = $records->map(function ($record) {
-                    return Carbon::parse($record->posting_date)->format('Y');
-                })->unique()->values()->toArray();
+                $years = $records->map(fn($r) => Carbon::parse($r->posting_date)->format('Y'))
+                    ->unique()->values()->toArray();
 
-                // Create the same key format as Code 1
-                $namePart = $supplier_name ?: 'Unknown';
-                $key = $namePart . ' - ' . $supplier_code;
-
+                $key = ($supplier_name ?: 'Unknown') . ' - ' . $supplier_code;
                 $supplierData[$key] = $years;
             }
         }
 
-        // Sort keys case-insensitively (same as ksort with SORT_STRING | SORT_FLAG_CASE)
         ksort($supplierData, SORT_STRING | SORT_FLAG_CASE);
 
         return $supplierData;
