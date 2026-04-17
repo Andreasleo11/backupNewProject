@@ -17,6 +17,6 @@ class EvaluationDataWeekly extends Model
 
     public function karyawan()
     {
-        return $this->belongsTo(Employee::class, 'NIK', 'nik');
+        return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\Employee::class, 'NIK', 'nik');
     }
 }

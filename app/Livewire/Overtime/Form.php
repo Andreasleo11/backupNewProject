@@ -196,8 +196,7 @@ class Form extends Component
         } else {
             $this->authorize('create', OvertimeForm::class);
             $user = auth()->user();
-            $this->dept_id = $user->employee->department->id;
-
+            $this->dept_id = $user->employee?->department?->id;
             $this->global_overtime_date = now()->format('Y-m-d');
             $this->global_start_date = now()->format('Y-m-d');
             $this->global_end_date = now()->format('Y-m-d');
