@@ -28,7 +28,7 @@ class ApprovalHubQueryBuilder
             ->with([
                 'user:id,name',
                 'department:id,name',
-                'details:id,header_id,NIK,name,overtime_date,start_time,end_time,break,job_desc',
+                'details:id,header_id,NIK,name,overtime_date,start_date,end_date,start_time,end_time,break,job_desc',
             ])
             ->whereHas('approvalRequest', function ($q) use ($user) {
                 $q->where('status', 'IN_REVIEW')
