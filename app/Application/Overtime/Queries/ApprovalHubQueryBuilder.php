@@ -10,7 +10,7 @@ class ApprovalHubQueryBuilder
 {
     /**
      * Build the query for Approval Hub "Packs".
-     * Groups forms by (Maker, Dept, Date) to reduce fragmented review.
+     * Groups forms by (Dept, Maker, Date) for department-first hierarchy.
      */
     public function build(User $user): Builder
     {
@@ -42,7 +42,20 @@ class ApprovalHubQueryBuilder
                 ->whereColumn('d.header_id', 'header_form_overtime.id');
         }, 'first_overtime_date');
 
-        // 3. Filtering: Only items where the user is the current active approver
+        // 3. Add aggregations for summary stats
+        $query->selectSub(function ($sub) {
+            $sub->from('detail_form_overtime as d')
+                ->selectRaw('COUNT(*)')
+                ->whereColumn('d.header_id', 'header_form_overtime.id');
+        }, 'total_details');
+
+        $query->selectSub(function ($sub) {
+            $sub->from('detail_form_overtime as d')
+                ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, CONCAT(d.start_date, \' \', d.start_time), CONCAT(d.end_date, \' \', d.end_time)) - IFNULL(d.break, 0)) / 60')
+                ->whereColumn('d.header_id', 'header_form_overtime.id');
+        }, 'total_hours');
+
+        // 4. Filtering: Only items where the user is the current active approver
         // This logic is critical to ensure the "Approve All" button doesn't hit authorization errors.
         $query->where(function ($q) use ($user) {
             $q->whereHas('approvalRequest.steps', function ($sq) use ($user) {
