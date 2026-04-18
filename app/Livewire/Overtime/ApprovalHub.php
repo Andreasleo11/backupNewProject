@@ -399,12 +399,6 @@ class ApprovalHub extends Component
             if ($date instanceof \DateTimeInterface) {
                 $date = $date->format('Y-m-d');
             }
-            return $date ?: 'unknown';
-        }) as $dateKey => $dateItems) {
-            $dateTotalForms = $dateItems->count();
-            $dateTotalDetails = $dateItems->sum('total_details');
-            $dateTotalHours = $dateItems->sum('total_hours');
-            $dateTotalEmployees = $dateItems->flatMap->details->pluck('NIK')->unique()->count();
 
             return $date ?: 'unknown';
         }) as $dateKey => $dateItems) {
