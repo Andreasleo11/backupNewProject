@@ -212,72 +212,85 @@
 
 @push('scripts')
     <script>
-        // Supplier -> Tahun
-        const supplierYears = @json($supplierData);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Supplier -> Tahun
+            const supplierData = @json($supplierData);
+            const supplierSelect = document.getElementById('supplier');
+            const startYearSelect = document.getElementById('start_year');
+            const endYearSelect = document.getElementById('end_year');
 
-        $('#supplier').on('change', function() {
-            const supplier = $(this).val();
-            const $startYear = $('#start_year');
-            const $endYear = $('#end_year');
+            if (supplierSelect) {
+                supplierSelect.addEventListener('change', function() {
+                    const supplier = this.value;
 
-            $startYear.empty().append('<option value="">Year</option>');
-            $endYear.empty().append('<option value="">Year</option>');
+                    startYearSelect.innerHTML = '<option value="">Year</option>';
+                    endYearSelect.innerHTML = '<option value="">Year</option>';
 
-            if (supplier && supplierYears[supplier]) {
-                supplierYears[supplier].forEach(function(year) {
-                    $startYear.append('<option value="' + year + '">' + year + '</option>');
-                    $endYear.append('<option value="' + year + '">' + year + '</option>');
+                    if (supplier && supplierData[supplier]) {
+                        supplierData[supplier].forEach(function(year) {
+                            startYearSelect.insertAdjacentHTML('beforeend', `<option value="${year}">${year}</option>`);
+                            endYearSelect.insertAdjacentHTML('beforeend', `<option value="${year}">${year}</option>`);
+                        });
+                    }
+                });
+            }
+
+            // Map nama bulan ke index untuk validasi
+            const monthMap = {
+                'January': 1,
+                'February': 2,
+                'March': 3,
+                'April': 4,
+                'May': 5,
+                'June': 6,
+                'July': 7,
+                'August': 8,
+                'September': 9,
+                'October': 10,
+                'November': 11,
+                'December': 12
+            };
+
+            function validateDateRange() {
+                const startMonthName = document.getElementById('start_month').value;
+                const endMonthName   = document.getElementById('end_month').value;
+                const startYear      = parseInt(startYearSelect.value);
+                const endYear        = parseInt(endYearSelect.value);
+
+                if (startMonthName && endMonthName && startYear && endYear) {
+                    const startMonth = monthMap[startMonthName];
+                    const endMonth   = monthMap[endMonthName];
+
+                    if (!startMonth || !endMonth) {
+                        return true; // kalau mapping gagal, jangan blok form
+                    }
+
+                    const startDate = new Date(startYear, startMonth - 1, 1);
+                    const endDate   = new Date(endYear, endMonth - 1, 1);
+
+                    if (startDate > endDate) {
+                        alert('Start period tidak boleh lebih besar dari end period.');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            const events = ['start_month', 'start_year', 'end_month', 'end_year'];
+            events.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', validateDateRange);
+            });
+
+            const form = document.getElementById('evaluation-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateDateRange()) {
+                        e.preventDefault();
+                    }
                 });
             }
         });
-
-        // Map nama bulan ke index untuk validasi
-        const monthMap = {
-            'January': 1,
-            'February': 2,
-            'March': 3,
-            'April': 4,
-            'May': 5,
-            'June': 6,
-            'July': 7,
-            'August': 8,
-            'September': 9,
-            'October': 10,
-            'November': 11,
-            'December': 12
-        };
-
-        function validateDateRange() {
-            const startMonthName = $('#start_month').val();
-            const endMonthName = $('#end_month').val();
-            const startYear = parseInt($('#start_year').val());
-            const endYear = parseInt($('#end_year').val());
-
-            if (startMonthName && endMonthName && startYear && endYear) {
-                const startMonth = monthMap[startMonthName];
-                const endMonth = monthMap[endMonthName];
-
-                if (!startMonth || !endMonth) {
-                    return true; // kalau mapping gagal, jangan blok form
-                }
-
-                const startDate = new Date(startYear, startMonth - 1, 1);
-                const endDate = new Date(endYear, endMonth - 1, 1);
-
-                if (startDate > endDate) {
-                    alert('Start period tidak boleh lebih besar dari end period.');
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        $('#start_month, #start_year, #end_month, #end_year').on('change', validateDateRange);
-
-        $('#evaluation-form').on('submit', function(e) {
-            if (!validateDateRange()) {
-                e.preventDefault();
-            }
-        });
     </script>
+
 @endpush

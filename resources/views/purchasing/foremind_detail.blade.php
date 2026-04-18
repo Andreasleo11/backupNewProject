@@ -90,7 +90,7 @@
                     class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-700 border border-slate-200">
                     Terakhir di update :
                     <span class="ml-1 font-medium text-slate-900">
-                        -
+                        {{$log->updated_at}}
                     </span>
                 </span>
             </div>

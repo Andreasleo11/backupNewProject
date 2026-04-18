@@ -6,6 +6,7 @@ use App\Domain\Employee\Entities\Employee as EmployeeEntity;
 use App\Domain\Employee\Repositories\EmployeeRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee as EmployeeModel;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class EloquentEmployeeRepository implements EmployeeRepository
 {
@@ -148,13 +149,33 @@ class EloquentEmployeeRepository implements EmployeeRepository
             return [];
         }
 
-        // Placeholder implementation - returns empty insights
-        // In real implementation, query overtime approvals for the month and streaks
+        // Get the month for the given date
+        $monthStart = $date->copy()->startOfMonth();
+        $monthEnd = $date->copy()->endOfMonth();
+
+        // Query approved overtime details for the month
+        $monthlyData = DB::table('detail_form_overtime as d')
+            ->join('header_form_overtime as h', 'd.header_id', '=', 'h.id')
+            ->whereIn('d.NIK', $niks)
+            ->where('h.status', 'Approved')
+            ->whereBetween('d.overtime_date', [$monthStart, $monthEnd])
+            ->selectRaw('
+                d.NIK,
+                SUM(TIMESTAMPDIFF(MINUTE, CONCAT(d.start_date, " ", d.start_time), CONCAT(d.end_date, " ", d.end_time)) - IFNULL(d.break, 0)) / 60 as monthly_hours,
+                COUNT(DISTINCT DATE(d.overtime_date)) as active_days
+            ')
+            ->groupBy('d.NIK')
+            ->get()
+            ->keyBy('NIK');
+
+        // Calculate insights for each NIK
         $insights = [];
         foreach ($niks as $nik) {
+            $data = $monthlyData->get($nik);
+
             $insights[$nik] = [
-                'monthly_hours' => 0,
-                'streak_days' => 0,
+                'monthly_hours' => $data ? round($data->monthly_hours, 1) : 0,
+                'active_days' => $data ? (int) $data->active_days : 0,
             ];
         }
 

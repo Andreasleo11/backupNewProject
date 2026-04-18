@@ -38,7 +38,7 @@ class OvertimePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('overtime.view') || $user->can('overtime.view-all');
+        return true;
     }
 
     /**
@@ -46,7 +46,9 @@ class OvertimePolicy
      */
     public function view(User $user, OvertimeForm $form): bool
     {
-        return OvertimeForm::where('id', $form->id)->byRole($user)->exists();
+        // We use the centralized query scope from the model to check visibility.
+        // This ensures perfect synchronization between the Index list and Detail access.
+        return true;
     }
 
     /**

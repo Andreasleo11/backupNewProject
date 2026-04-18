@@ -108,12 +108,32 @@
                             "{{ $detail->job_desc }}"
                         </div>
 
-                        <div class="mt-2.5 text-xs font-mono text-indigo-700">
-                            @if ($detail->start_date === $detail->end_date)
-                                {{ date('M j H:i', strtotime($detail->start_time)) }} – {{ date('H:i', strtotime($detail->end_time)) }}
-                            @else
-                                {{ date('M j', strtotime($detail->start_date)) }} → {{ date('M j', strtotime($detail->end_date)) }}
-                            @endif
+                        <div class="mt-2.5 space-y-1">
+                            <div class="text-xs font-mono text-indigo-700">
+                                @if ($detail->start_date === $detail->end_date)
+                                    {{ date('M j', strtotime($detail->start_date)) }} {{ date('H:i', strtotime($detail->start_time)) }} – {{ date('H:i', strtotime($detail->end_time)) }}
+                                @else
+                                    {{ date('M j', strtotime($detail->start_date)) }} {{ date('H:i', strtotime($detail->start_time)) }} → {{ date('M j', strtotime($detail->end_date)) }} {{ date('H:i', strtotime($detail->end_time)) }}
+                                @endif
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] font-mono">
+                                @php
+                                    // Calculate net hours using same method as Index.php (Carbon-based)
+                                    try {
+                                        $start = \Carbon\Carbon::parse($detail->start_date . ' ' . $detail->start_time);
+                                        $end = \Carbon\Carbon::parse($detail->end_date . ' ' . $detail->end_time);
+                                        $totalMinutes = $start->diffInMinutes($end);
+                                        $breakMinutes = (int) ($detail->break ?? 0);
+                                        $netMinutes = max(0, $totalMinutes - $breakMinutes);
+                                        $netHours = round($netMinutes / 60, 1);
+                                    } catch (\Exception $e) {
+                                        $netHours = 0;
+                                        $breakMinutes = (int) ($detail->break ?? 0);
+                                    }
+                                @endphp
+                                <span class="text-slate-500">Break: {{ $breakMinutes }}m</span>
+                                <span class="text-emerald-600 font-medium">{{ $netHours }}h net</span>
+                            </div>
                         </div>
                     </a>
                 @endforeach
@@ -122,38 +142,74 @@
             <!-- LIST VIEW - Much tighter & cleaner -->
             <div x-show="viewMode === 'list'" class="space-y-2">
                 @foreach ($items->flatMap->details as $detail)
-                    <a href="{{ route('overtime.detail', $detail->header_id) }}"
-                    target="_blank"
-                    class="flex items-center gap-4 bg-white border border-slate-200 rounded-2xl px-4 py-3 hover:border-indigo-300 hover:shadow-sm transition-all">
-                        
-                        <div class="flex-1 min-w-0">
-                            <div class="font-semibold text-slate-900 truncate text-sm">{{ $detail->name }}</div>
-                            <div class="text-xs font-mono text-slate-500 flex items-center gap-2">
-                                {{ $detail->NIK }}
-                                @if ($detail->header_id)
-                                    <span class="text-amber-600">• #{{ $detail->header_id }}</span>
-                                @endif
+                    <div class="relative bg-white border border-slate-200 rounded-2xl hover:border-indigo-300 hover:shadow-sm transition-all group">
+                        <!-- Clickable area for detail view (everything except insights button) -->
+                        <a href="{{ route('overtime.detail', $detail->header_id) }}"
+                        target="_blank"
+                        class="block rounded-2xl p-4 -m-1 group-hover:p-[15px] transition-all"
+                        style="margin: 0; padding: 1rem;"></a>
+
+                        <!-- Content positioned absolutely over the link -->
+                        <div class="absolute inset-0 flex items-center gap-4 px-4 py-3 pointer-events-none">
+
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-slate-900 truncate text-sm">{{ $detail->name }}</div>
+                                <div class="text-xs font-mono text-slate-500 flex items-center gap-2">
+                                    {{ $detail->NIK }}
+                                    @if ($detail->header_id)
+                                        <span class="text-amber-600">• #{{ $detail->header_id }}</span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="flex-1 min-w-0 text-xs text-slate-600 italic line-clamp-1">
-                            "{{ $detail->job_desc }}"
-                        </div>
+                            <div class="flex-1 min-w-0 text-xs text-slate-600 italic line-clamp-1">
+                                "{{ $detail->job_desc }}"
+                            </div>
 
-                        <div class="font-mono text-xs text-indigo-700 whitespace-nowrap">
-                            @if ($detail->start_date === $detail->end_date)
-                                {{ date('H:i', strtotime($detail->start_time)) }}–{{ date('H:i', strtotime($detail->end_time)) }}
-                            @else
-                                {{ date('M j', strtotime($detail->start_date)) }} → {{ date('M j', strtotime($detail->end_date)) }}
+                            <div class="font-mono text-xs text-indigo-700 whitespace-nowrap">
+                                @if ($detail->start_date === $detail->end_date)
+                                    {{ date('M j', strtotime($detail->start_date)) }} {{ date('H:i', strtotime($detail->start_time)) }}–{{ date('H:i', strtotime($detail->end_time)) }}
+                                @else
+                                    {{ date('M j', strtotime($detail->start_date)) }} {{ date('H:i', strtotime($detail->start_time)) }} → {{ date('M j', strtotime($detail->end_date)) }} {{ date('H:i', strtotime($detail->end_time)) }}
+                                @endif
+                                @php
+                                    // Calculate net hours using same method as Index.php (Carbon-based)
+                                    try {
+                                        $start = \Carbon\Carbon::parse($detail->start_date . ' ' . $detail->start_time);
+                                        $end = \Carbon\Carbon::parse($detail->end_date . ' ' . $detail->end_time);
+                                        $totalMinutes = $start->diffInMinutes($end);
+                                        $breakMinutes = (int) ($detail->break ?? 0);
+                                        $netMinutes = max(0, $totalMinutes - $breakMinutes);
+                                        $netHours = round($netMinutes / 60, 1);
+                                    } catch (\Exception $e) {
+                                        $netHours = 0;
+                                        $breakMinutes = (int) ($detail->break ?? 0);
+                                    }
+                                @endphp
+                                <div class="text-[10px] text-slate-500 mt-0.5">
+                                    Break: {{ $breakMinutes }}m • Net: {{ number_format($netHours, 1) }}h
+                                </div>
+                            </div>
+
+                            @if ($insights[$detail->NIK] ?? null)
+                                @php
+                                    $insight = $insights[$detail->NIK];
+                                    $monthlyHours = $insight['monthly_hours'];
+                                    $activeDays = $insight['active_days'];
+                                @endphp
+                                <!-- Insights button with pointer events enabled -->
+                                <div class="pointer-events-auto">
+                                    <button type="button"
+                                        wire:click.prevent="showInsightDetails('{{ $detail->NIK }}', '{{ $detail->name }}')"
+                                        @click.prevent
+                                        class="text-xs font-medium px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg whitespace-nowrap transition-colors cursor-pointer border-0">
+                                        {{ $monthlyHours }}h / {{ $activeDays }}d
+                                        <i class='bx bx-chevron-down ml-1 text-[10px]'></i>
+                                    </button>
+                                </div>
                             @endif
                         </div>
-
-                        @if ($insights[$detail->NIK] ?? null)
-                            <div class="text-xs font-medium px-2 py-1 bg-rose-50 text-rose-700 rounded-lg whitespace-nowrap">
-                                {{ $insights[$detail->NIK]['monthly_hours'] }}h
-                            </div>
-                        @endif
-                    </a>
+                    </div>
                 @endforeach
             </div>
         </div>

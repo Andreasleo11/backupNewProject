@@ -9,7 +9,14 @@
                 <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
                     Purchase Order Detail
                 </h1>
-
+                <button type="button" @click="$dispatch('open-upload-modal')"
+                            class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md">
+                        <i class="bi bi-cloud-upload text-lg text-slate-400 group-hover:text-indigo-500"></i>
+                        Upload Files
+                </button>
+                @push('modals')
+            @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
+        @endpush
                 <nav class="mt-2" aria-label="Breadcrumb">
                     <ol class="flex items-center gap-1 text-sm text-slate-500">
                         <li>

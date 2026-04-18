@@ -1,7 +1,7 @@
 <div class="modal fade" id="edit-purchase-request-received-{{ $detail->id }}">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('purchase-requests.items.received-quantity.update', $detail->id) }}" method="post">
+            <form action="{{ route('purchase-requests.index') }}" method="post">
                 @csrf
                 <div class="modal-header">
                     <div class="modal-title h5">
