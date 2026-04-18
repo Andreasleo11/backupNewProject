@@ -66,7 +66,7 @@ class ApprovalHub extends Component
     {
         $this->groupingMode = $mode;
         $this->hasSelectedGroupingMode = true;
-        session(['overtime_grouping_mode' => $mode, 'overtime_grouping_mode_selected' => true]);
+          session(['overtime_grouping_mode' => $mode, 'overtime_grouping_mode_selected' => true]);
         $this->expandedGroups = []; // Reset expanded groups when switching grouping modes
         $this->selectedPackKeys = [];
         $this->bulkSelectionKey++;
@@ -399,6 +399,12 @@ class ApprovalHub extends Component
             if ($date instanceof \DateTimeInterface) {
                 $date = $date->format('Y-m-d');
             }
+            return $date ?: 'unknown';
+        }) as $dateKey => $dateItems) {
+            $dateTotalForms = $dateItems->count();
+            $dateTotalDetails = $dateItems->sum('total_details');
+            $dateTotalHours = $dateItems->sum('total_hours');
+            $dateTotalEmployees = $dateItems->flatMap->details->pluck('NIK')->unique()->count();
 
             return $date ?: 'unknown';
         }) as $dateKey => $dateItems) {
