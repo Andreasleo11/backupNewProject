@@ -309,22 +309,6 @@ class BulkImport extends Component
                 $otDate = strtotime($row['overtime_date']);
                 if ($otDate < $today - 30 * 24 * 3600) {
                     $errors[] = 'Overtime date cannot be more than 30 days in the past';
-                } elseif ($otDate > $today + 7 * 24 * 3600) {
-                    $errors[] = 'Overtime date cannot be more than 7 days in the future';
-                }
-
-                // Overtime date should be within 3 days of work dates
-                if ($row['start_date']) {
-                    $startDate = strtotime($row['start_date']);
-                    if (abs($otDate - $startDate) > 3 * 24 * 3600) {
-                        $errors[] = 'Overtime date must be within 3 days of start date';
-                    }
-                }
-                if ($row['end_date']) {
-                    $endDate = strtotime($row['end_date']);
-                    if (abs($otDate - $endDate) > 3 * 24 * 3600) {
-                        $errors[] = 'Overtime date must be within 3 days of end date';
-                    }
                 }
             }
 

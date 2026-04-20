@@ -409,14 +409,6 @@ class Form extends Component
             $today = \Carbon\Carbon::today();
             if ($overtimeDate->lt($today->copy()->subDays(30))) {
                 $this->addError('global_overtime_date', 'Overtime date cannot be more than 30 days in the past.');
-            } elseif ($overtimeDate->gt($today->copy()->addDays(7))) {
-                $this->addError('global_overtime_date', 'Overtime date cannot be more than 7 days in the future.');
-            }
-
-            // Overtime date should be within work period ± 3 days
-            if ($overtimeDate->lt($workStartDate->copy()->subDays(3)) ||
-                $overtimeDate->gt($workEndDate->copy()->addDays(3))) {
-                $this->addError('global_overtime_date', 'Overtime date should be within 3 days of work dates.');
             }
 
             // Break time validation
@@ -572,16 +564,6 @@ class Form extends Component
                 $today = \Carbon\Carbon::today();
                 if ($overtimeDate->lt($today->copy()->subDays(30))) {
                     $this->addError("items.$i.nik", 'Overtime date cannot be more than 30 days in the past.');
-                    $hasStructuralErrors = true;
-                } elseif ($overtimeDate->gt($today->copy()->addDays(7))) {
-                    $this->addError("items.$i.nik", 'Overtime date cannot be more than 7 days in the future.');
-                    $hasStructuralErrors = true;
-                }
-
-                // Overtime date should be within work period ± 3 days
-                if ($overtimeDate->lt($workStartDate->copy()->subDays(3)) ||
-                    $overtimeDate->gt($workEndDate->copy()->addDays(3))) {
-                    $this->addError("items.$i.nik", 'Overtime date should be within 3 days of work dates.');
                     $hasStructuralErrors = true;
                 }
 
