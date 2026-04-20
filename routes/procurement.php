@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\DetailPurchaseRequestController;
-use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\materialPredictionController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
@@ -54,19 +53,14 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
     Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->name('purchase-requests.return');
     Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
+
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
 
     // Batch approve / reject — requires 'pr.batch-approve' permission (director-level only)
-    Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-approve');
-    Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-reject');
-    Route::get('purchase-requests/batch-status', [PurchaseRequestController::class, 'batchStatus'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-status');
+    Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])->name('purchase-requests.batch-approve');
+    Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])->name('purchase-requests.batch-reject');
+    Route::get('purchase-requests/batch-status', [PurchaseRequestController::class, 'batchStatus'])->name('purchase-requests.batch-status');
 
     // Purchase Request Details
     Route::get('/purchaseRequestsDetail/{id}', [DetailPurchaseRequestController::class, 'detailpr'])->name('pr.detail');

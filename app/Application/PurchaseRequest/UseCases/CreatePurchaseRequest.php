@@ -29,6 +29,9 @@ final class CreatePurchaseRequest
     public function handle(CreatePurchaseRequestDTO $dto): PurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
+            // Authorization (Delegated to Policy)
+            \Illuminate\Support\Facades\Gate::authorize('create', PurchaseRequest::class);
+
             $header = $this->buildHeader($dto);
 
             // Generate Doc Num before create

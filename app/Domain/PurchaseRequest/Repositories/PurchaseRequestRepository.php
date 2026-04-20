@@ -36,4 +36,9 @@ interface PurchaseRequestRepository
      * Permanently delete a purchase request (cascades to items).
      */
     public function forceDelete(PurchaseRequest $pr): bool;
+
+    /**
+     * Update only the PO number on an approved Purchase Request
+     */
+    public function updatePoNumber(PurchaseRequest $pr, ?string $poNumber): bool;
 }

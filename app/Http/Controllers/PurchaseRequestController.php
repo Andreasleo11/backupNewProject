@@ -255,14 +255,7 @@ class PurchaseRequestController extends Controller
         PurchaseRequest $purchaseRequest,
         Approvals $approvals,
     ) {
-        // Only the creator can sign & submit their own DRAFT
-        if ((int) auth()->id() !== (int) $purchaseRequest->user_id_create) {
-            abort(403, 'Only the creator can sign and submit this request.');
-        }
-        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-        if (! in_array($purchaseRequest->workflow_status, $allowedStatuses)) {
-            abort(422, 'Only DRAFT, RETURNED, or REJECTED requests can be submitted.');
-        }
+        $this->authorize('submit', $purchaseRequest);
 
         $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals);
 
@@ -386,32 +379,6 @@ class PurchaseRequestController extends Controller
             \Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
 
             return redirect()->back()->with('error', 'Failed to cancel purchase request');
-        }
-    }
-
-    public function updatePoNumber(
-        Request $request,
-        $id,
-        \App\Application\PurchaseRequest\UseCases\UpdatePoNumber $useCase
-    ) {
-        try {
-            // Build DTO
-            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO(
-                purchaseRequestId: (int) $id,
-                poNumber: $request->po_number,
-                updatedByUserId: Auth::id()
-            );
-
-            // Execute UseCase
-            $useCase->handle($dto);
-
-            return redirect()
-                ->back()
-                ->with('success', 'Purchase request PO Number updated successfully!');
-        } catch (\DomainException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update PO Number');
         }
     }
 

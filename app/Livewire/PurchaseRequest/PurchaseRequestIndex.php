@@ -14,6 +14,7 @@ use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Application\PurchaseRequest\Queries\Filters\StatusFilter;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats;
 use App\Application\PurchaseRequest\Queries\PurchaseRequestQueryBuilder;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -76,7 +77,7 @@ class PurchaseRequestIndex extends Component
     public int $page = 1;
 
     // Allowed sort columns — centralised so sortBy() and queryRows() stay in sync
-    private const ALLOWED_SORTS = ['id', 'pr_no', 'doc_num', 'date_pr', 'created_at', 'supplier', 'from_department'];
+    private const ALLOWED_SORTS = ['id', 'pr_no', 'doc_num', 'date_pr', 'created_at', 'supplier', 'from_department', 'po_number'];
 
     public function mount(): void
     {
@@ -98,16 +99,19 @@ class PurchaseRequestIndex extends Component
 
     // FIX: updated() used `!in_array($name, ['page'])` which always returns true
     // because in_array expects an array as second arg. Fixed to strict string compare.
+    public function updatedPage(): void
+    {
+        $this->resetSelections();
+    }
+
     public function updated(string $name): void
     {
         $filterProps = ['search', 'status', 'department', 'dateRange', 'branch', 'preset', 'perPage', 'sortField', 'sortDirection'];
 
         if (in_array($name, $filterProps, true)) {
             $this->resetPage();
-            $this->selectedIds = [];
-            $this->dispatch('reset-selections');
+            $this->resetSelections();
         }
-        // Changing $page intentionally does NOT reset page or clear selections.
     }
 
     public function resetFilters(): void
@@ -119,8 +123,7 @@ class PurchaseRequestIndex extends Component
         $this->branch = '';
         $this->preset = 'all';
         $this->resetPage();
-        $this->selectedIds = [];
-        $this->dispatch('reset-selections');
+        $this->resetSelections();
     }
 
     public function clearFilters(): void
@@ -140,8 +143,7 @@ class PurchaseRequestIndex extends Component
             default => null,
         };
         $this->resetPage();
-        $this->selectedIds = [];
-        $this->dispatch('reset-selections');
+        $this->resetSelections();
     }
 
     public function setPreset(string $preset): void
@@ -237,6 +239,12 @@ class PurchaseRequestIndex extends Component
         return $statsFetcher->execute();
     }
 
+    private function resetSelections(): void
+    {
+        $this->selectedIds = [];
+        $this->dispatch('reset-selections');
+    }
+
     public function render()
     {
         $rows = $this->queryRows()->paginate($this->perPage);
@@ -301,7 +309,7 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-        GetPurchaseRequestStats::clearCache(auth()->id());
+
     }
 
     public function batchReject(
@@ -351,7 +359,7 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-        GetPurchaseRequestStats::clearCache(auth()->id());
+
     }
 
     /**
@@ -374,11 +382,101 @@ class PurchaseRequestIndex extends Component
     #[On('refresh-index')]
     public function refresh(): void
     {
-        // Triggers a re-render via the attribute listener.
+        // Clear stats cache since approval/rejection changes stats
+
+        // Force re-render of the component
+        $this->dispatch('$refresh');
     }
 
     public function refreshTable(): void
     {
         $this->dispatch('$refresh');
+    }
+
+    public function updatePoNumber(int $id, string $poNumber): void
+    {
+        Validator::make(
+            ['editingPoNumber' => $poNumber],
+            ['editingPoNumber' => 'nullable|string|max:255']
+        )->validate();
+
+        try {
+            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO(
+                purchaseRequestId: (int) $id,
+                poNumber: $poNumber,
+                updatedByUserId: (int) auth()->id()
+            );
+
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\UpdatePoNumber::class);
+            $useCase->handle($dto);
+
+            $this->dispatch('toast', message: 'PO Number updated successfully!', type: 'success');
+            $this->dispatch('close-edit-po-modal');
+
+
+            $this->dispatch('$refresh');
+
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function cancelPurchaseRequest(int $id, string $reason): void
+    {
+        if (empty($reason)) {
+            $this->dispatch('toast', message: 'Cancellation reason is required.', type: 'error');
+            return;
+        }
+
+        try {
+            $dto = new \App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO(
+                purchaseRequestId: $id,
+                cancelledByUserId: (int) auth()->id(),
+                reason: $reason
+            );
+
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest::class);
+            $useCase->handle($dto);
+
+            $this->dispatch('toast', message: 'Purchase request cancelled successfully.', type: 'success');
+            $this->dispatch('close-cancel-pr-modal');
+
+
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function deletePurchaseRequest(int $id): void
+    {
+        try {
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\DeletePurchaseRequest::class);
+            $useCase->handle($id, (int) auth()->id());
+
+            $this->dispatch('toast', message: 'Purchase request deleted successfully.', type: 'success');
+            $this->dispatch('close-delete-pr-modal');
+
+            $this->adjustPageIfEmpty();
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function deleteForeverPurchaseRequest(int $id): void
+    {
+        try {
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\DeleteForeverPurchaseRequest::class);
+            $useCase->handle($id, (int) auth()->id());
+
+            $this->dispatch('toast', message: 'Purchase request permanently deleted.', type: 'success');
+            $this->dispatch('close-delete-forever-pr-modal');
+
+            $this->adjustPageIfEmpty();
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
     }
 }

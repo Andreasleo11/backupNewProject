@@ -5,9 +5,9 @@ use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SyncProgressController;
 use App\Http\Controllers\UserHomeController;
-use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Departments\Overview as DepartmentsOverview;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
-    Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
+
     Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
 
     // Legacy Notification Redirections (Supporting old email links)
@@ -59,4 +59,3 @@ Route::middleware('auth')->group(function () {
     Route::redirect('/monthlybudgetreport/detail/{id}', '/monthly-budget-reports/{id}', 301);
     Route::redirect('/monthlybudgetsummary/detail/{id}', '/monthly-budget-summaries/{id}', 301);
 });
-

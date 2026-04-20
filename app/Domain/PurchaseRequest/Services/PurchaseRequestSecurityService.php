@@ -7,15 +7,10 @@ use App\Models\PurchaseRequest;
 
 /**
  * Domain Service for calculating business rules related to Purchase Request security.
- * This service is "Infrastructure-Ignorant" and focuses strictly on domain logic
- * (e.g., department rules, creator rules).
+ * This service focuses strictly on domain logic (e.g., status-based rules, department rules).
  */
 final class PurchaseRequestSecurityService
 {
-    public function __construct(
-        private readonly \App\Infrastructure\Approval\Services\ApprovalScopingManager $scoper
-    ) {}
-
     /**
      * Determine if a PR is eligible for auto-approval (using a digital autograph).
      */
@@ -26,12 +21,7 @@ final class PurchaseRequestSecurityService
             return true;
         }
 
-        // 2. GM logic (Delegated to jurisdiction engine)
-        if ($user->hasRole('general-manager') && $this->scoper->hasJurisdiction($user, $pr)) {
-            return true;
-        }
-
-        // 3. Special Department Rules (e.g., Moulding)
+        // 2. Special Department Rules (e.g., Moulding)
         if ($pr->from_department === 'MOULDING') {
             return true;
         }
@@ -40,65 +30,53 @@ final class PurchaseRequestSecurityService
     }
 
     /**
-     * Determine if a user can update the model based on business status.
+     * Determine if the PR status allows for data updates.
+     * Note: Jurisdiction is handled by the Policy layer.
      */
-    public function canUpdate(PurchaseRequest $pr, User $user): bool
+    public function isStatusEditable(PurchaseRequest $pr, bool $hasOversight = false): bool
     {
         $status = strtoupper($pr->workflow_status ?? 'DRAFT');
 
-        // A. Creator: Can edit only in draft-like or rejected states
-        if ($this->isOwner($pr, $user)) {
+        // Creators/Owners can only edit in "Initial" or "Returned" states
+        if (! $hasOversight) {
             $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED'];
-            if (in_array($status, $allowedForCreator)) {
-                return true;
-            }
+
+            return in_array($status, $allowedForCreator);
         }
 
-        // B. Jurisdictional Oversight (Purchasers/GMs/Admins/DeptHeads)
-        if ($this->scoper->hasJurisdiction($user, $pr)) {
-            $allowedForOversight = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
+        // Users with jurisdictional oversight can edit in almost any active state
+        $allowedForOversight = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
 
-            return in_array($status, $allowedForOversight);
-        }
-
-        return false;
+        return in_array($status, $allowedForOversight);
     }
 
     /**
-     * Determine if a user can cancel the model based on business status.
+     * Determine if the PR status allows for cancellation.
      */
-    public function canCancel(PurchaseRequest $pr, User $user): bool
+    public function isStatusCancellable(PurchaseRequest $pr): bool
     {
         $status = strtoupper($pr->workflow_status ?? 'DRAFT');
 
         // Cannot cancel if already finished or cancelled
-        if (in_array($status, ['APPROVED', 'CANCELED', 'REJECTED'])) {
-            return false;
-        }
+        return ! in_array($status, ['APPROVED', 'CANCELED', 'REJECTED']);
+    }
 
-        // 1. Creator can cancel their own
-        if ($this->isOwner($pr, $user)) {
-            return true;
-        }
+    /**
+     * Determine if the PR status allows for PO Number updates.
+     */
+    public function isStatusPoEditable(PurchaseRequest $pr): bool
+    {
+        $status = strtoupper($pr->workflow_status ?? 'DRAFT');
 
-        // 2. Jurisdictional Oversight
-        if ($this->scoper->hasJurisdiction($user, $pr)) {
-            return true;
-        }
-
-        return false;
+        // PO Number can only be updated for approved requests
+        return $status === 'APPROVED';
     }
 
     /**
      * Determine if a user can perform the initial "Sign & Submit" action.
      */
-    public function canSubmit(PurchaseRequest $pr, User $user): bool
+    public function canSubmit(PurchaseRequest $pr): bool
     {
-        // Only the creator can submit the initial draft
-        if (! $this->isOwner($pr, $user)) {
-            return false;
-        }
-
         $status = strtoupper($pr->workflow_status ?? 'DRAFT');
         $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
 
@@ -106,21 +84,11 @@ final class PurchaseRequestSecurityService
     }
 
     /**
-     * Determine if a user's role/attributes allow viewing sensitive data (like prices/master data).
+     * Determine if a user's role/attributes allow viewing sensitive data.
      */
-    public function canViewSensitiveData(User $user, PurchaseRequest $pr): bool
+    public function isSensitiveDataVisible(PurchaseRequest $pr, bool $hasJurisdiction = false, bool $isOwner = false): bool
     {
-        // 1. Jurisdictional Oversight (Admin, GM, Dept Head over this PR)
-        if ($this->scoper->hasJurisdiction($user, $pr)) {
-            return true;
-        }
-
-        // 2. Creators can see their own data
-        if ($this->isOwner($pr, $user)) {
-            return true;
-        }
-
-        return false;
+        return $hasJurisdiction || $isOwner;
     }
 
     /**
@@ -156,6 +124,6 @@ final class PurchaseRequestSecurityService
     {
         $dept = strtoupper(trim($user->department?->name ?? ''));
 
-        return $dept === 'MOULDING' || $dept === 'MOLDING';
+        return $dept === 'MOULDING';
     }
 }

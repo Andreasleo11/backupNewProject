@@ -8,6 +8,7 @@ use App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO;
 use App\Events\PurchaseRequestCancelled;
 use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 final class CancelPurchaseRequest
 {
@@ -24,24 +25,10 @@ final class CancelPurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Authorization: Only creator or super-admin can cancel
-            $user = \App\Models\User::find($dto->cancelledByUserId);
-            $isCreator = $pr->user_id_create === (int) $dto->cancelledByUserId;
-            $isSuperAdmin = $user && $user->hasRole('super-admin');
+            // Authorization & Validation (Delegated to Policy)
+            Gate::authorize('cancel', $pr);
 
-            if (! $isCreator && ! $isSuperAdmin) {
-                throw new \Illuminate\Auth\Access\AuthorizationException('You are not authorized to cancel this purchase request');
-            }
-
-            // Validate that PR can be cancelled (Cannot cancel if already approved or rejected)
-            if ($pr->workflow_status === 'APPROVED') {
-                throw new \DomainException('Cannot cancel an approved Purchase Request');
-            }
-
-            if ($pr->workflow_status === 'REJECTED') {
-                throw new \DomainException('Cannot cancel a rejected Purchase Request');
-            }
-
+            // Double Check: Ensure it wasn't already cancelled by another process
             if ($pr->is_cancel) {
                 throw new \DomainException('Purchase Request is already cancelled');
             }
@@ -50,7 +37,6 @@ final class CancelPurchaseRequest
             $pr->update([
                 'is_cancel' => true,
                 'description' => $dto->reason,
-                'updated_at' => now(),
             ]);
 
             // Cancel the approval workflow if present

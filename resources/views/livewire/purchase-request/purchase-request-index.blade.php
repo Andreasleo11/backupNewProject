@@ -35,7 +35,7 @@
     get isAllSelected() {
         const checkboxes = document.querySelectorAll('.row-checkbox');
         if (checkboxes.length === 0) return false;
-        return checkboxes.length === document.querySelectorAll('.row-checkbox:checked').length;
+        return checkboxes.length === this.selectedIds.length;
     },
 
     toggleAll() {
@@ -286,6 +286,14 @@
                                     class="bx bx-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1 text-indigo-500"></i>
                             @endif
                         </th>
+                        <th class="px-4 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors"
+                            wire:click="sortBy('po_number')">
+                            PO Number
+                            @if ($sortField === 'po_number')
+                                <i
+                                    class="bx bx-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ml-1 text-indigo-500"></i>
+                            @endif
+                        </th>
                         <th
                             class="px-4 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
                             Status</th>
@@ -350,6 +358,11 @@
                                     {{ $row->supplier ?: 'Not Specified' }}
                                 </div>
                             </td>
+                            <td class="px-4 py-3">
+                                <div class="text-xs text-slate-700 line-clamp-1" title="{{ $row->po_number }}">
+                                    {{ $row->po_number ?: '—' }}
+                                </div>
+                            </td>
                             <td class="px-4 py-3 text-center">
                                 @include('partials.workflow-status-badge', ['pr' => $row])
                             </td>
@@ -362,7 +375,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-20 text-center">
+                            <td colspan="8" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                     <div
                                         class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
@@ -491,7 +504,10 @@
 
     @push('modals')
         @livewire('purchase-request.quick-view')
-        @include('partials.edit-purchase-request-po-number-modal')
     @endpush
 
+    @include('partials.edit-purchase-request-po-number-modal')
+    @include('partials.cancel-pr-confirmation-modal')
+    @include('partials.delete-pr-modal')
+    @include('partials.delete-forever-pr-modal')
 </div>
