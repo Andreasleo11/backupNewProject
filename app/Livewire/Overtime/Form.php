@@ -660,12 +660,12 @@ class Form extends Component
         foreach ($this->items as $i => $item) {
             // 2c.i Check for exact overtime_date match with same is_after_hour (existing logic)
             $existsExact = OvertimeFormDetail::query()
-                ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
-                ->where('overtime_form_details.NIK', $item['nik'])
-                ->where('overtime_form_details.overtime_date', $item['overtime_date'])
-                ->where('overtime_forms.is_after_hour', $this->is_after_hour)
-                ->whereNull('overtime_form_details.payroll_voucher_id') // Not yet pushed
-                ->when($this->formId, fn ($q) => $q->where('overtime_form_details.header_id', '!=', $this->formId)) // Edit Mode Safety
+                ->join('header_form_overtime', 'detail_form_overtime.header_id', '=', 'header_form_overtime.id')
+                ->where('detail_form_overtime.NIK', $item['nik'])
+                ->where('detail_form_overtime.overtime_date', $item['overtime_date'])
+                ->where('header_form_overtime.is_after_hour', $this->is_after_hour)
+                ->whereNull('detail_form_overtime.payroll_voucher_id') // Not yet pushed
+                ->when($this->formId, fn ($q) => $q->where('detail_form_overtime.header_id', '!=', $this->formId)) // Edit Mode Safety
                 ->exists();
 
             if ($existsExact) {

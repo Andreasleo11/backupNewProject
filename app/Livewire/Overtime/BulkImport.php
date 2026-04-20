@@ -612,11 +612,11 @@ class BulkImport extends Component
         $dates = array_column($this->stagedData, 'overtime_date');
 
         $existing = OvertimeFormDetail::query()
-            ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
-            ->whereIn('overtime_form_details.NIK', $niks)
-            ->whereIn('overtime_form_details.overtime_date', $dates)
-            ->whereNull('overtime_form_details.payroll_voucher_id') // Only check local drafts/pending
-            ->get(['overtime_form_details.NIK', 'overtime_form_details.overtime_date', 'overtime_forms.is_after_hour'])
+            ->join('header_form_overtime', 'detail_form_overtime.header_id', '=', 'header_form_overtime.id')
+            ->whereIn('detail_form_overtime.NIK', $niks)
+            ->whereIn('detail_form_overtime.overtime_date', $dates)
+            ->whereNull('detail_form_overtime.payroll_voucher_id') // Only check local drafts/pending
+            ->get(['detail_form_overtime.NIK', 'detail_form_overtime.overtime_date', 'header_form_overtime.is_after_hour'])
             ->map(fn ($d) => $d->NIK . '|' . $d->overtime_date . '|' . $d->is_after_hour)
             ->toArray();
 
