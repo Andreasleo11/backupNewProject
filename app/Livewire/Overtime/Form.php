@@ -658,12 +658,14 @@ class Form extends Component
 
         // 2c. Check against existing database records for conflicts
         foreach ($this->items as $i => $item) {
-            // 2c.i Check for exact overtime_date match (existing logic)
+            // 2c.i Check for exact overtime_date match with same is_after_hour (existing logic)
             $existsExact = OvertimeFormDetail::query()
-                ->where('NIK', $item['nik'])
-                ->where('overtime_date', $item['overtime_date'])
-                ->whereNull('payroll_voucher_id') // Not yet pushed
-                ->when($this->formId, fn ($q) => $q->where('header_id', '!=', $this->formId)) // Edit Mode Safety
+                ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
+                ->where('overtime_form_details.NIK', $item['nik'])
+                ->where('overtime_form_details.overtime_date', $item['overtime_date'])
+                ->where('overtime_forms.is_after_hour', $this->is_after_hour)
+                ->whereNull('overtime_form_details.payroll_voucher_id') // Not yet pushed
+                ->when($this->formId, fn ($q) => $q->where('overtime_form_details.header_id', '!=', $this->formId)) // Edit Mode Safety
                 ->exists();
 
             if ($existsExact) {

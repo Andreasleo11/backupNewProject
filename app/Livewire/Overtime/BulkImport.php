@@ -612,18 +612,40 @@ class BulkImport extends Component
         $dates = array_column($this->stagedData, 'overtime_date');
 
         $existing = OvertimeFormDetail::query()
-            ->whereIn('NIK', $niks)
-            ->whereIn('overtime_date', $dates)
-            ->whereNull('payroll_voucher_id') // Only check local drafts/pending
-            ->get(['NIK', 'overtime_date'])
-            ->map(fn ($d) => $d->NIK . '|' . $d->overtime_date)
+            ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
+            ->whereIn('overtime_form_details.NIK', $niks)
+            ->whereIn('overtime_form_details.overtime_date', $dates)
+            ->whereNull('overtime_form_details.payroll_voucher_id') // Only check local drafts/pending
+            ->get(['overtime_form_details.NIK', 'overtime_form_details.overtime_date', 'overtime_forms.is_after_hour'])
+            ->map(fn ($d) => $d->NIK . '|' . $d->overtime_date . '|' . $d->is_after_hour)
             ->toArray();
 
         foreach ($this->stagedData as $index => &$row) {
-            $key = $row['nik'] . '|' . $row['overtime_date'];
+            $key = $row['nik'] . '|' . $row['overtime_date'] . '|' . $row['is_after_hour'];
             if (in_array($key, $existing)) {
                 $row['errors'][] = 'Already exists in a local Draft/Form.';
                 $hasLocalConflict = true;
+            }
+
+            // Check for time overlaps
+            try {
+                $newStart = \Carbon\Carbon::parse($row['start_date'] . ' ' . $row['start_time']);
+                $newEnd = \Carbon\Carbon::parse($row['end_date'] . ' ' . $row['end_time']);
+
+                $overlaps = OvertimeFormDetail::query()
+                    ->where('NIK', $row['nik'])
+                    ->whereNull('payroll_voucher_id')
+                    ->whereRaw('? < CONCAT(end_date, " ", end_time)', [$newStart->format('Y-m-d H:i:s')])
+                    ->whereRaw('CONCAT(start_date, " ", start_time) < ?', [$newEnd->format('Y-m-d H:i:s')])
+                    ->exists();
+
+                if ($overlaps) {
+                    $row['errors'][] = 'Work hours overlap with existing overtime records for this employee.';
+                    $hasLocalConflict = true;
+                }
+            } catch (\Exception $e) {
+                // Skip overlap check if date parsing fails
+                continue;
             }
         }
 

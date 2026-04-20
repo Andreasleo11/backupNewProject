@@ -105,10 +105,12 @@ class OvertimeFormService
         $pairs = $rows->map(fn ($i) => [$i['nik'], $i['overtime_date']])->unique()->values();
 
         $existing = OvertimeFormDetail::query()
-            ->whereIn('NIK', $pairs->pluck(0))
-            ->whereIn('overtime_date', $pairs->pluck(1))
-            ->where('header_id', '!=', $headerId) // Edit Mode Safety
-            ->get(['NIK', 'overtime_date'])
+            ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
+            ->whereIn('overtime_form_details.NIK', $pairs->pluck(0))
+            ->whereIn('overtime_form_details.overtime_date', $pairs->pluck(1))
+            ->where('overtime_form_details.header_id', '!=', $headerId) // Edit Mode Safety
+            ->where('overtime_forms.is_after_hour', $isAfterHour ? 1 : 0)
+            ->get(['overtime_form_details.NIK', 'overtime_form_details.overtime_date'])
             ->map(fn ($d) => $d['NIK'] . '|' . $d['overtime_date'])
             ->all();
 
@@ -116,6 +118,18 @@ class OvertimeFormService
         foreach ($rows as $i) {
             $key = $i['nik'] . '|' . $i['overtime_date'];
             if (in_array($key, $existing, true)) {
+                continue;
+            }
+
+            // Check for time overlaps
+            $overlaps = OvertimeFormDetail::query()
+                ->where('NIK', $i['nik'])
+                ->where('header_id', '!=', $headerId)
+                ->whereRaw('? < CONCAT(end_date, " ", end_time)', [$i['_start']->format('Y-m-d H:i:s')])
+                ->whereRaw('CONCAT(start_date, " ", start_time) < ?', [$i['_end']->format('Y-m-d H:i:s')])
+                ->exists();
+
+            if ($overlaps) {
                 continue;
             }
 
