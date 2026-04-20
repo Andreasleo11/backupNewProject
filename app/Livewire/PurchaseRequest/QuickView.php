@@ -48,11 +48,12 @@ class QuickView extends Component
             ));
 
             $this->dispatch('toast', message: 'Purchase Request approved successfully!', type: 'success');
+            $this->dispatch('flash', 'success', 'Purchase Request approved successfully!');
             $this->dispatch('close-quick-view-modal');
-            $this->dispatch('refresh-dashboard'); // optional, to refresh counts
             $this->dispatch('refresh-index'); // refresh the main index table
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            $this->dispatch('flash', 'error', $e->getMessage());
         }
     }
 
@@ -75,11 +76,12 @@ class QuickView extends Component
             ));
 
             $this->dispatch('toast', message: 'Purchase Request rejected.', type: 'success');
+            $this->dispatch('flash', 'success', 'Purchase Request rejected.');
             $this->dispatch('close-quick-view-modal');
-            $this->dispatch('refresh-dashboard');
             $this->dispatch('refresh-index'); // refresh the main index table
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            $this->dispatch('flash', 'error', $e->getMessage());
         }
     }
 

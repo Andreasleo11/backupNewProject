@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\DetailPurchaseRequestController;
-use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\materialPredictionController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
@@ -54,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
     Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->name('purchase-requests.return');
     Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
+
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
 

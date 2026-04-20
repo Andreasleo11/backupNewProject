@@ -107,4 +107,11 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
         // Then force delete the purchase request
         return $pr->forceDelete();
     }
+
+    public function updatePoNumber(PurchaseRequest $pr, ?string $poNumber): bool
+    {
+        return $pr->update([
+            'po_number' => $poNumber,
+        ]);
+    }
 }

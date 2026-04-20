@@ -389,32 +389,6 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function updatePoNumber(
-        Request $request,
-        $id,
-        \App\Application\PurchaseRequest\UseCases\UpdatePoNumber $useCase
-    ) {
-        try {
-            // Build DTO
-            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO(
-                purchaseRequestId: (int) $id,
-                poNumber: $request->po_number,
-                updatedByUserId: Auth::id()
-            );
-
-            // Execute UseCase
-            $useCase->handle($dto);
-
-            return redirect()
-                ->back()
-                ->with('success', 'Purchase request PO Number updated successfully!');
-        } catch (\DomainException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update PO Number');
-        }
-    }
-
     public function exportExcel()
     {
         $authDepartment = ucwords(strtolower(auth()->user()->department->name));

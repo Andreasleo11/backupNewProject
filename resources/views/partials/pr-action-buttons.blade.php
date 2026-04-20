@@ -50,11 +50,17 @@
 
                 {{-- Administrative --}}
                 @can('update', $pr)
-                    @if (!$pr->is_cancel)
-                        <button type="button"
-                            @click="$dispatch('open-edit-po-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}', po: '{{ $pr->po_number }}' }); open = false;"
+                    @if (!$pr->is_cancel && $pr->workflow_status === 'APPROVED')
+                       <button 
+                            type="button"
+                            @click="$dispatch('open-edit-po-modal', { 
+                                id: {{ $pr->id }}, 
+                                doc: 'PR-{{ $pr->doc_num }}',
+                                po: '{{ addslashes($pr->po_number) }}'
+                            })"
                             class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors w-full text-left">
-                            <i class='bx bx-edit text-lg opacity-80'></i> Edit PO Number
+                            <i class='bx bx-edit text-lg opacity-80'></i> 
+                            Edit PO Number
                         </button>
                     @endif
                 @endcan
