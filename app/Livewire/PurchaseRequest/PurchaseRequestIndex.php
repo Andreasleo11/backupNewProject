@@ -98,16 +98,19 @@ class PurchaseRequestIndex extends Component
 
     // FIX: updated() used `!in_array($name, ['page'])` which always returns true
     // because in_array expects an array as second arg. Fixed to strict string compare.
+    public function updatedPage(): void
+    {
+        $this->resetSelections();
+    }
+
     public function updated(string $name): void
     {
         $filterProps = ['search', 'status', 'department', 'dateRange', 'branch', 'preset', 'perPage', 'sortField', 'sortDirection'];
 
         if (in_array($name, $filterProps, true)) {
             $this->resetPage();
-            $this->selectedIds = [];
-            $this->dispatch('reset-selections');
+            $this->resetSelections();
         }
-        // Changing $page intentionally does NOT reset page or clear selections.
     }
 
     public function resetFilters(): void
@@ -119,8 +122,7 @@ class PurchaseRequestIndex extends Component
         $this->branch = '';
         $this->preset = 'all';
         $this->resetPage();
-        $this->selectedIds = [];
-        $this->dispatch('reset-selections');
+        $this->resetSelections();
     }
 
     public function clearFilters(): void
@@ -140,8 +142,7 @@ class PurchaseRequestIndex extends Component
             default => null,
         };
         $this->resetPage();
-        $this->selectedIds = [];
-        $this->dispatch('reset-selections');
+        $this->resetSelections();
     }
 
     public function setPreset(string $preset): void
@@ -235,6 +236,12 @@ class PurchaseRequestIndex extends Component
         $statsFetcher = new GetPurchaseRequestStats($builder);
 
         return $statsFetcher->execute();
+    }
+
+    private function resetSelections(): void
+    {
+        $this->selectedIds = [];
+        $this->dispatch('reset-selections');
     }
 
     public function render()

@@ -35,7 +35,7 @@
     get isAllSelected() {
         const checkboxes = document.querySelectorAll('.row-checkbox');
         if (checkboxes.length === 0) return false;
-        return checkboxes.length === document.querySelectorAll('.row-checkbox:checked').length;
+        return checkboxes.length === this.selectedIds.length;
     },
 
     toggleAll() {

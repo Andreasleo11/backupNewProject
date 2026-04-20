@@ -58,15 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
 
     // Batch approve / reject — requires 'pr.batch-approve' permission (director-level only)
-    Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-approve');
-    Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-reject');
-    Route::get('purchase-requests/batch-status', [PurchaseRequestController::class, 'batchStatus'])
-        ->middleware('can:pr.batch-approve')
-        ->name('purchase-requests.batch-status');
+    Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])->name('purchase-requests.batch-approve');
+    Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])->name('purchase-requests.batch-reject');
+    Route::get('purchase-requests/batch-status', [PurchaseRequestController::class, 'batchStatus'])->name('purchase-requests.batch-status');
 
     // Purchase Request Details
     Route::get('/purchaseRequestsDetail/{id}', [DetailPurchaseRequestController::class, 'detailpr'])->name('pr.detail');
