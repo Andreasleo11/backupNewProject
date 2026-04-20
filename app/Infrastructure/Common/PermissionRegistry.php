@@ -113,9 +113,8 @@ class PermissionRegistry
                     'po.view-any', 'po.manage', 'purchasing.view', 'purchasing.forecast',
                 ],
                 'roles' => [
-                    'procurement' => ['po.view-any', 'po.manage', 'purchasing.view', 'purchasing.forecast'],
-                    'sales' => ['purchasing.forecast'],
-                    'manager' => ['po.view-any', 'purchasing.view'],
+                    'po.admin' => ['po.view-any', 'po.manage'],
+                    'purchasing' => ['purchasing.view', 'purchasing.forecast'],
                 ],
             ],
             'Finance & Budget' => [
