@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Domain\Admin\Services\PermissionAuditService;
 use App\Infrastructure\Common\PermissionRegistry;
+use App\Models\PermissionSyncLog;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -14,7 +16,9 @@ class SyncPermissions extends Command
      *
      * @var string
      */
-    protected $signature = 'permissions:sync {--force : Force the sync without asking}';
+    protected $signature = 'permissions:sync 
+                            {--force : Force the sync without asking}
+                            {--preview : Show what would change without applying}';
 
     /**
      * The console command description.
@@ -26,9 +30,43 @@ class SyncPermissions extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(PermissionAuditService $auditService)
     {
+        $isPreview = $this->option('preview');
+
+        if ($isPreview) {
+            $this->info('--- PREVIEW MODE: No changes will be saved ---');
+            $data = $auditService->getSyncState();
+            $managed = $data['managed'];
+
+            if (empty($managed)) {
+                $this->info('Managed roles are already in sync with the database.');
+            } else {
+                foreach ($managed as $role => $diff) {
+                    $this->line("<options=bold>Role: [{$role}]</>");
+                    foreach ($diff['added'] as $p) {
+                        $this->line(" <fg=green>+ {$p}</>");
+                    }
+                    foreach ($diff['removed'] as $p) {
+                        $this->line(" <fg=red>- {$p}</>");
+                    }
+                }
+            }
+
+            if (!empty($data['unmanaged'])) {
+                $this->warn("\n--- Unmanaged Roles (Database Only) ---");
+                foreach (array_keys($data['unmanaged']) as $role) {
+                    $this->line(" - {$role}");
+                }
+            }
+
+            return self::SUCCESS;
+        }
+
         $this->info('Starting Permission Sync...');
+
+        // Capture state before
+        $beforeState = $auditService->getCurrentState();
 
         // 1. Clear Cached Permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -59,13 +97,29 @@ class SyncPermissions extends Command
         }
 
         // 4. Special Case: Purchaser Sub-roles
-        // These roles are often variants of 'purchaser' and should inherit its core permissions
         $purchaserPerms = $rolesWithPerms['purchaser'] ?? [];
         $subPurchaserRoles = Role::where('name', 'like', 'purchaser-%')->get();
 
         foreach ($subPurchaserRoles as $subRole) {
             $subRole->syncPermissions($purchaserPerms);
             $this->line(" - Sub-Role [{$subRole->name}]: Synced with 'purchaser' permissions");
+        }
+
+        // Capture state after and log
+        $afterState = $auditService->getCurrentState();
+        $changes = $auditService->calculateDiff($beforeState, $afterState);
+
+        if (!empty($changes)) {
+            PermissionSyncLog::create([
+                'user_id' => null, // CLI
+                'snapshot' => $beforeState,
+                'after_snapshot' => $afterState,
+                'changes' => $changes,
+                'description' => 'Synchronized via CLI command',
+            ]);
+            $this->info('Created sync log entry.');
+        } else {
+            $this->info('No changes detected; no log entry created.');
         }
 
         $this->info('Permission Sync Completed Successfully!');

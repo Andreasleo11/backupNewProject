@@ -22,6 +22,10 @@ Route::middleware('auth')->group(function () {
                 ->name('roles.index')
                 ->middleware('can:role.view-any');
 
+            Route::get('/permission-sync', \App\Livewire\Admin\PermissionSyncManager::class)
+                ->name('permission-sync.index')
+                ->middleware('can:system.admin');
+
             Route::get('/approval-rules', RuleManager::class)
                 ->name('approval-rules.index')
                 ->middleware('can:approval.manage-rules');

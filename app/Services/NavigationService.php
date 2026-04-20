@@ -87,6 +87,13 @@ class NavigationService
                         'permission' => 'role.view-any',
                     ],
                     [
+                        'label' => 'Permission Sync',
+                        'route' => 'admin.permission-sync.index',
+                        'icon' => 'arrow-path',
+                        'active' => request()->routeIs('admin.permission-sync.index'),
+                        'permission' => 'system.admin',
+                    ],
+                    [
                         'label' => 'Approval Rules',
                         'route' => 'admin.approval-rules.index',
                         'icon' => 'clipboard-document-check',
