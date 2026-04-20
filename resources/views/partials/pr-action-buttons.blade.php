@@ -49,25 +49,23 @@
                 </a>
 
                 {{-- Administrative --}}
-                @can('update', $pr)
-                    @if (!$pr->is_cancel && $pr->workflow_status === 'APPROVED')
-                       <button 
-                            type="button"
-                            @click="$dispatch('open-edit-po-modal', { 
-                                id: {{ $pr->id }}, 
-                                doc: 'PR-{{ $pr->doc_num }}',
-                                po: '{{ addslashes($pr->po_number) }}'
-                            })"
-                            class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors w-full text-left">
-                            <i class='bx bx-edit text-lg opacity-80'></i> 
-                            Edit PO Number
-                        </button>
-                    @endif
+                @can('updatePo', $pr)
+                   <button 
+                        type="button"
+                        @click="$dispatch('open-edit-po-modal', { 
+                            id: {{ $pr->id }}, 
+                            doc: 'PR-{{ $pr->doc_num }}',
+                            po: '{{ addslashes($pr->po_number) }}'
+                        })"
+                        class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors w-full text-left">
+                        <i class='bx bx-edit text-lg opacity-80'></i> 
+                        Edit PO Number
+                    </button>
                 @endcan
 
                 {{-- Danger Zone --}}
                 @if (!$pr->is_cancel)
-                    @if (auth()->user()->can('cancel', $pr) || auth()->user()->can('delete', $pr))
+                    @if (Gate::any(['cancel', 'delete', 'forceDelete'], $pr))
                         <div class="h-px bg-slate-50 my-1"></div>
                         <div class="px-2 pb-1 mt-1">
                             <span
@@ -86,8 +84,16 @@
                         @can('delete', $pr)
                             <button type="button"
                                 @click="$dispatch('open-delete-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' }); open = false;"
-                                class="flex items-center gap-2.5 px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors w-full text-left font-medium">
-                                <i class='bx bx-trash-alt text-lg opacity-80'></i> Delete Forever
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors w-full text-left font-medium">
+                                <i class='bx bx-trash text-lg opacity-80'></i> Move to Trash
+                            </button>
+                        @endcan
+
+                        @can('forceDelete', $pr)
+                            <button type="button"
+                                @click="$dispatch('open-delete-forever-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' }); open = false;"
+                                class="flex items-center gap-2.5 px-3 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900 transition-colors w-full text-left font-black">
+                                <i class='bx bxs-trash-alt text-lg opacity-80'></i> Purge Forever
                             </button>
                         @endcan
                     @endif

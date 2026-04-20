@@ -8,7 +8,7 @@ use App\Events\PurchaseRequestDeleted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
-final class DeletePurchaseRequest
+final class DeleteForeverPurchaseRequest
 {
     public function __construct(
         private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo
@@ -17,20 +17,23 @@ final class DeletePurchaseRequest
     public function handle(int $purchaseRequestId, int $deletedByUserId): bool
     {
         return DB::transaction(function () use ($purchaseRequestId, $deletedByUserId) {
-            $pr = $this->repo->find($purchaseRequestId);
+            // Find PR including soft-deleted ones
+            $pr = \App\Models\PurchaseRequest::withTrashed()->find($purchaseRequestId);
 
             if (! $pr) {
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Authorization & Validation (Delegated to Policy)
-            Gate::authorize('delete', $pr);
+            // Authorization (Delegated to Policy)
+            Gate::authorize('forceDelete', $pr);
 
-            // Soft delete items first (cascade)
-            \App\Models\DetailPurchaseRequest::where('purchase_request_id', $purchaseRequestId)->delete();
+            // Force delete items first
+            \App\Models\DetailPurchaseRequest::withTrashed()
+                ->where('purchase_request_id', $purchaseRequestId)
+                ->forceDelete();
 
-            // Soft delete the PR
-            $deleted = $pr->delete();
+            // Force delete the PR
+            $deleted = $pr->forceDelete();
 
             if ($deleted) {
                 // Dispatch event

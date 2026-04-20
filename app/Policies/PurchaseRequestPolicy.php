@@ -41,18 +41,23 @@ class PurchaseRequestPolicy
      */
     public function view(User $user, PurchaseRequest $pr): bool
     {
-        // 1. Ownership: Always allowed
+        // 1. Global Bypass: View All
+        if ($user->can('pr.view-all')) {
+            return true;
+        }
+
+        // 2. Ownership: Always allowed
         if ($this->security->isOwner($pr, $user)) {
             return true;
         }
 
-        // 2. Jurisdictional Oversight (Unified Brain): GMs, Dept Heads, Purchasers, etc.
+        // 3. Jurisdictional Oversight (Unified Brain): GMs, Dept Heads, Purchasers, etc.
         // This engine ensures the Policy matches the DataTable (Scoper) perfectly.
         if ($this->scoper->hasJurisdiction($user, $pr)) {
             return true;
         }
 
-        // 3. Workflow Involvement: Anyone who has acted or is currently assigned to this PR.
+        // 4. Workflow Involvement: Anyone who has acted or is currently assigned to this PR.
         // This acts as a fallback for users without the broad 'pr.view' permission.
         if ($pr->approvalRequest) {
             $isApprover = $pr->approvalRequest->steps()
@@ -93,11 +98,45 @@ class PurchaseRequestPolicy
             return false;
         }
 
-        return $this->security->canUpdate($pr, $user);
+        // Determine Authority
+        $isOwner = $this->security->isOwner($pr, $user);
+        $hasOversight = $this->scoper->hasJurisdiction($user, $pr);
+
+        if (! $isOwner && ! $hasOversight) {
+            return false;
+        }
+
+        // Validate Business State
+        return $this->security->isStatusEditable($pr, $hasOversight);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine whether the user can update the PO number.
+     */
+    public function updatePo(User $user, PurchaseRequest $pr): bool
+    {
+        if (! $user->can('pr.edit')) {
+            return false;
+        }
+
+        if ($pr->is_cancel) {
+            return false;
+        }
+
+        // Determine Authority
+        $isOwner = $this->security->isOwner($pr, $user);
+        $hasOversight = $this->scoper->hasJurisdiction($user, $pr);
+
+        if (! $isOwner && ! $hasOversight) {
+            return false;
+        }
+
+        // Validate Business State
+        return $this->security->isStatusPoEditable($pr);
+    }
+
+    /**
+     * Determine whether the user can delete the model (Soft Delete).
      */
     public function delete(User $user, PurchaseRequest $pr): bool
     {
@@ -105,9 +144,16 @@ class PurchaseRequestPolicy
             return false;
         }
 
-        // Only creators can delete, and only in DRAFT mode
-        return $user->id === (int) $pr->user_id_create &&
-               strtoupper($pr->workflow_status ?? 'DRAFT') === 'DRAFT';
+        // Determine Authority
+        $isOwner = $this->security->isOwner($pr, $user);
+        $hasOversight = $this->scoper->hasJurisdiction($user, $pr);
+
+        if (! $isOwner && ! $hasOversight) {
+            return false;
+        }
+
+        // Validate Business State (Creators can delete drafts/rejected, oversight can delete almost anything active)
+        return $this->security->isStatusEditable($pr, $hasOversight);
     }
 
     /**
@@ -119,7 +165,51 @@ class PurchaseRequestPolicy
             return false;
         }
 
-        return $this->security->canCancel($pr, $user);
+        // Determine Authority
+        $isOwner = $this->security->isOwner($pr, $user);
+        $hasOversight = $this->scoper->hasJurisdiction($user, $pr);
+
+        if (! $isOwner && ! $hasOversight) {
+            return false;
+        }
+
+        // Validate Business State
+        return $this->security->isStatusCancellable($pr);
+    }
+
+    /**
+     * Determine if a user can perform the initial "Sign & Submit" action.
+     */
+    public function submit(User $user, PurchaseRequest $pr): bool
+    {
+        if (! $user->can('pr.create')) {
+            return false;
+        }
+
+        // Only the creator can submit the initial draft
+        if (! $this->security->isOwner($pr, $user)) {
+            return false;
+        }
+
+        // Validate Business State
+        return $this->security->canSubmit($pr);
+    }
+
+    /**
+     * Determine if the user can see sensitive pricing information.
+     */
+    public function viewPrices(User $user, PurchaseRequest $pr): bool
+    {
+        // 1. Module Bypass
+        if ($user->can('pr.view-prices') || $user->can('pr.admin')) {
+            return true;
+        }
+
+        // 2. Ownership & Oversight
+        $isOwner = $this->security->isOwner($pr, $user);
+        $hasOversight = $this->scoper->hasJurisdiction($user, $pr);
+
+        return $this->security->isSensitiveDataVisible($pr, $hasOversight, $isOwner);
     }
 
     /**
@@ -131,20 +221,27 @@ class PurchaseRequestPolicy
     }
 
     /**
+     * Determine if user can reject the PR.
+     */
+    public function reject(User $user, PurchaseRequest $pr): bool
+    {
+        return $user->can('pr.reject');
+    }
+
+    /**
+     * Determine if user can print the PR.
+     */
+    public function print(User $user, PurchaseRequest $pr): bool
+    {
+        return $user->can('pr.print') || $this->view($user, $pr);
+    }
+
+    /**
      * Determine if the user is eligible for auto-approval.
      */
     public function autoApprove(User $user, PurchaseRequest $pr): bool
     {
-        return $user->can('pr.auto-approve') ||
-               $this->security->canAutoApprove($pr, $user);
-    }
-
-    /**
-     * Determine if user can upload files (Merged with Edit permission).
-     */
-    public function uploadFiles(User $user, PurchaseRequest $pr): bool
-    {
-        return $this->update($user, $pr);
+        return $this->security->canAutoApprove($pr, $user);
     }
 
     /**
@@ -153,5 +250,13 @@ class PurchaseRequestPolicy
     public function batchApprove(User $user): bool
     {
         return $user->can('pr.batch-approve');
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete(User $user, PurchaseRequest $pr): bool
+    {
+        return $user->can('pr.delete-forever');
     }
 }

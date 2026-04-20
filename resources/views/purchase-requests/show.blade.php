@@ -14,7 +14,7 @@
         $prevCurrency = $totals['currency'] ?? null;
     @endphp
 
-    <div class="mx-auto max-w-7xl px-4 py-8">
+    <div>
 
         {{-- HEADER SECTION --}}
         <div class="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
@@ -34,12 +34,6 @@
 
                     {{-- Status Badge --}}
                     @include('partials.workflow-status-badge', ['record' => $purchaseRequest])
-
-                    <!-- @if ($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0)
-                             <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                                <i class="bi bi-pencil-square"></i> Draft
-                            </span>
-                        @endif -->
                 </div>
 
                 {{-- Metadata Strip --}}

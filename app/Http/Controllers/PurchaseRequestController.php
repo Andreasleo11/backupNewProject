@@ -255,14 +255,7 @@ class PurchaseRequestController extends Controller
         PurchaseRequest $purchaseRequest,
         Approvals $approvals,
     ) {
-        // Only the creator can sign & submit their own DRAFT
-        if ((int) auth()->id() !== (int) $purchaseRequest->user_id_create) {
-            abort(403, 'Only the creator can sign and submit this request.');
-        }
-        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-        if (! in_array($purchaseRequest->workflow_status, $allowedStatuses)) {
-            abort(422, 'Only DRAFT, RETURNED, or REJECTED requests can be submitted.');
-        }
+        $this->authorize('submit', $purchaseRequest);
 
         $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals);
 

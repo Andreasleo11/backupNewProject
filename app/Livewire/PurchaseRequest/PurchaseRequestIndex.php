@@ -309,7 +309,7 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-        GetPurchaseRequestStats::clearCache(auth()->id());
+
     }
 
     public function batchReject(
@@ -359,7 +359,7 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-        GetPurchaseRequestStats::clearCache(auth()->id());
+
     }
 
     /**
@@ -383,7 +383,7 @@ class PurchaseRequestIndex extends Component
     public function refresh(): void
     {
         // Clear stats cache since approval/rejection changes stats
-        GetPurchaseRequestStats::clearCache(auth()->id());
+
         // Force re-render of the component
         $this->dispatch('$refresh');
     }
@@ -413,9 +413,68 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: 'PO Number updated successfully!', type: 'success');
             $this->dispatch('close-edit-po-modal');
 
-            GetPurchaseRequestStats::clearCache(auth()->id());
+
             $this->dispatch('$refresh');
 
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function cancelPurchaseRequest(int $id, string $reason): void
+    {
+        if (empty($reason)) {
+            $this->dispatch('toast', message: 'Cancellation reason is required.', type: 'error');
+            return;
+        }
+
+        try {
+            $dto = new \App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO(
+                purchaseRequestId: $id,
+                cancelledByUserId: (int) auth()->id(),
+                reason: $reason
+            );
+
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest::class);
+            $useCase->handle($dto);
+
+            $this->dispatch('toast', message: 'Purchase request cancelled successfully.', type: 'success');
+            $this->dispatch('close-cancel-pr-modal');
+
+
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function deletePurchaseRequest(int $id): void
+    {
+        try {
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\DeletePurchaseRequest::class);
+            $useCase->handle($id, (int) auth()->id());
+
+            $this->dispatch('toast', message: 'Purchase request deleted successfully.', type: 'success');
+            $this->dispatch('close-delete-pr-modal');
+
+            $this->adjustPageIfEmpty();
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function deleteForeverPurchaseRequest(int $id): void
+    {
+        try {
+            $useCase = app(\App\Application\PurchaseRequest\UseCases\DeleteForeverPurchaseRequest::class);
+            $useCase->handle($id, (int) auth()->id());
+
+            $this->dispatch('toast', message: 'Purchase request permanently deleted.', type: 'success');
+            $this->dispatch('close-delete-forever-pr-modal');
+
+            $this->adjustPageIfEmpty();
+            $this->dispatch('$refresh');
         } catch (\Exception $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }

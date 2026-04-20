@@ -27,7 +27,7 @@ class PurchaseRequestItemPolicy
      */
     public function approve(User $user, DetailPurchaseRequest $item): bool
     {
-        return $this->canActOnItem($user, $item);
+        return $user->can('pr.approve') && $this->canActOnItem($user, $item);
     }
 
     /**
@@ -35,7 +35,7 @@ class PurchaseRequestItemPolicy
      */
     public function reject(User $user, DetailPurchaseRequest $item): bool
     {
-        return $this->canActOnItem($user, $item);
+        return $user->can('pr.reject') && $this->canActOnItem($user, $item);
     }
 
     /**

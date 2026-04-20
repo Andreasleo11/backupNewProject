@@ -8,6 +8,7 @@ use App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Events\PurchaseRequestPoNumberUpdated;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 final class UpdatePoNumber
 {
@@ -24,10 +25,8 @@ final class UpdatePoNumber
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Only allow PO number update if PR is approved
-            if ($pr->workflow_status !== 'APPROVED') {
-                throw new \DomainException('PO Number can only be updated for approved Purchase Requests');
-            }
+            // Authorization & Business Validation (Delegated to Policy)
+            Gate::authorize('updatePo', $pr);
 
             // Update PO number
             $this->repo->updatePoNumber($pr, $dto->poNumber);

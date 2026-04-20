@@ -28,6 +28,9 @@ final class UpdatePurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
+            // Authorization & Business Validation (Delegated to Policy)
+            \Illuminate\Support\Facades\Gate::authorize('update', $pr);
+
             // Build update data
             $updateData = [
                 'to_department' => $dto->toDepartment,

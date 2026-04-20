@@ -11,7 +11,7 @@ use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use Illuminate\Support\Facades\Cache;
+
 use Illuminate\Support\Facades\DB;
 
 class GetPurchaseRequestStats
@@ -23,9 +23,6 @@ class GetPurchaseRequestStats
     /**
      * Get PR statistics for the current user
      */
-    /**
-     * Get PR statistics for the current user
-     */
     public function execute(): array
     {
         $user = auth()->user();
@@ -33,36 +30,31 @@ class GetPurchaseRequestStats
             return [];
         }
 
-        $userId = $user->id;
-        $cacheKey = "pr_stats_user_{$userId}";
+        $isStrategic = $user->hasAnyRole(['director', 'super-admin', 'purchasing-manager']);
+        $isVerificator = $user->hasRole('verificator');
 
-        return Cache::remember($cacheKey, now()->addMinutes(2), function () use ($user) {
-            $isStrategic = $user->hasAnyRole(['director', 'super-admin', 'purchasing-manager']);
-            $isVerificator = $user->hasRole('verificator');
+        // 1. Always show Pending My Approval (Workload)
+        $stats = [
+            'pending_my_approval' => $this->getPendingMyApproval($user),
+        ];
 
-            // 1. Always show Pending My Approval (Workload)
-            $stats = [
-                'pending_my_approval' => $this->getPendingMyApproval($user),
-            ];
+        if ($isStrategic) {
+            // Strategic roles see global metrics
+            $stats['in_review'] = $this->getInReview($user);
+            $stats['approved_this_month'] = $this->getApprovedThisMonth($user);
+            $stats['total_value_pending'] = $this->getTotalValuePending($user);
+        } else {
+            // Operational roles see contextual metrics
+            $stats['my_active'] = $this->getMyActiveCount($user);
 
-            if ($isStrategic) {
-                // Strategic roles see global metrics
-                $stats['in_review'] = $this->getInReview($user);
-                $stats['approved_this_month'] = $this->getApprovedThisMonth($user);
-                $stats['total_value_pending'] = $this->getTotalValuePending($user);
-            } else {
-                // Operational roles see contextual metrics
-                $stats['my_active'] = $this->getMyActiveCount($user);
-
-                if (! $isVerificator) {
-                    $stats['dept_active'] = $this->getDeptActiveCount($user);
-                }
-
-                $stats['drafts'] = $this->getDraftsCount($user);
+            if (! $isVerificator) {
+                $stats['dept_active'] = $this->getDeptActiveCount($user);
             }
 
-            return $stats;
-        });
+            $stats['drafts'] = $this->getDraftsCount($user);
+        }
+
+        return $stats;
     }
 
     /**
@@ -154,14 +146,5 @@ class GetPurchaseRequestStats
         return ! empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
     }
 
-    /**
-     * Clear stats cache for a user
-     */
-    public static function clearCache(?int $userId = null): void
-    {
-        $userId = $userId ?? (int) auth()->id();
-        if ($userId) {
-            Cache::forget("pr_stats_user_{$userId}");
-        }
-    }
+
 }

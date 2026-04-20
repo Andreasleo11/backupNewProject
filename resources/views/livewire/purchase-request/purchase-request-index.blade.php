@@ -507,4 +507,7 @@
     @endpush
 
     @include('partials.edit-purchase-request-po-number-modal')
+    @include('partials.cancel-pr-confirmation-modal')
+    @include('partials.delete-pr-modal')
+    @include('partials.delete-forever-pr-modal')
 </div>

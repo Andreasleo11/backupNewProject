@@ -11,7 +11,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\Cache;
+
 
 final class GetPurchaseRequestDetail
 {
@@ -54,7 +54,7 @@ final class GetPurchaseRequestDetail
         $flags = $this->buildFlags($actor, $pr);
 
         // Security: Sensitive Data (Prices)
-        $canSeePrices = $this->security->canViewSensitiveData($actor, $pr);
+        $canSeePrices = $actor->can('viewPrices', $pr);
         if (! $canSeePrices) {
             foreach ($filtered as $d) {
                 $d->price = 0;
@@ -89,21 +89,19 @@ final class GetPurchaseRequestDetail
         // files (you used doc_num before)
         $files = File::query()->where('doc_id', $pr->doc_num)->get();
 
-        return Cache::remember("pr_detail_{$prId}_{$actor->id}", 60, function () use ($pr, $departments, $files, $filtered, $approval, $fromDeptNo, $totals, $flags) {
-            return new PurchaseRequestDetailVM(
-                purchaseRequest: $pr,
-                departments: $departments,
-                files: $files,
-                filteredItemDetail: $filtered,
-                approval: $approval,
-                fromDeptNo: $fromDeptNo,
-                totals: $totals,
-                flags: $flags,
-                meta: [
-                    'userCreatedBy' => $pr->createdBy,
-                ],
-            );
-        });
+        return new PurchaseRequestDetailVM(
+            purchaseRequest: $pr,
+            departments: $departments,
+            files: $files,
+            filteredItemDetail: $filtered,
+            approval: $approval,
+            fromDeptNo: $fromDeptNo,
+            totals: $totals,
+            flags: $flags,
+            meta: [
+                'userCreatedBy' => $pr->createdBy,
+            ],
+        );
     }
 
     /**
@@ -119,8 +117,8 @@ final class GetPurchaseRequestDetail
                           && $user->can('approve', $pr);
         }
 
-        // 2. Sign & Submit: Delegate to Security Service
-        $canSignAndSubmit = $this->security->canSubmit($pr, $user);
+        // 2. Sign & Submit: Delegate to Policy
+        $canSignAndSubmit = $user->can('submit', $pr);
 
         // 3. Signature Metadata
         $defaultSig = $canSignAndSubmit
@@ -130,13 +128,16 @@ final class GetPurchaseRequestDetail
         return [
             'canApprove' => $canApprove,
             'canEdit' => $user->can('update', $pr),
+            'canEditPo' => $user->can('updatePo', $pr),
+            'canDelete' => $user->can('delete', $pr),
+            'canCancel' => $user->can('cancel', $pr),
             'canAutoApprove' => $user->can('autoApprove', $pr),
             'canSignAndSubmit' => $canSignAndSubmit,
-            'canUpload' => true,
+            'canUpload' => $user->can('update', $pr),
             'isOwner' => $this->security->isOwner($pr, $user),
             'canViewAuditLog' => $user->can('approval.view-log'),
             'showImportToggle' => $this->security->canSelectImportPath($pr->from_department, $pr->to_department?->value),
-            'isImportType' => $this->security->canSelectImportPath($pr->from_department, $pr->to_department?->value),
+            'isImportType' => $pr->is_import,
             'hasDefaultSignature' => $defaultSig !== null,
             'defaultSignaturePath' => $defaultSig?->filePath,
         ];
