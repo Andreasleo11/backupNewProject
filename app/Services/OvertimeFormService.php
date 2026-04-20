@@ -105,12 +105,12 @@ class OvertimeFormService
         $pairs = $rows->map(fn ($i) => [$i['nik'], $i['overtime_date']])->unique()->values();
 
         $existing = OvertimeFormDetail::query()
-            ->join('overtime_forms', 'overtime_form_details.header_id', '=', 'overtime_forms.id')
-            ->whereIn('overtime_form_details.NIK', $pairs->pluck(0))
-            ->whereIn('overtime_form_details.overtime_date', $pairs->pluck(1))
-            ->where('overtime_form_details.header_id', '!=', $headerId) // Edit Mode Safety
-            ->where('overtime_forms.is_after_hour', $isAfterHour ? 1 : 0)
-            ->get(['overtime_form_details.NIK', 'overtime_form_details.overtime_date'])
+            ->join('header_form_overtime', 'detail_form_overtime.header_id', '=', 'header_form_overtime.id')
+            ->whereIn('detail_form_overtime.NIK', $pairs->pluck(0))
+            ->whereIn('detail_form_overtime.overtime_date', $pairs->pluck(1))
+            ->where('detail_form_overtime.header_id', '!=', $headerId) // Edit Mode Safety
+            ->where('header_form_overtime.is_after_hour', $isAfterHour ? 1 : 0)
+            ->get(['detail_form_overtime.NIK', 'detail_form_overtime.overtime_date'])
             ->map(fn ($d) => $d['NIK'] . '|' . $d['overtime_date'])
             ->all();
 
