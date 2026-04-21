@@ -6,8 +6,8 @@
 
     <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6">
         {{-- ═══════════════════════════════════════════════════════════════
-         HEADER — Period Selector & Title (Glass Card)
-    ═══════════════════════════════════════════════════════════════ --}}
+            HEADER — Period Selector & Title (Glass Card)
+        ═══════════════════════════════════════════════════════════════ --}}
         <div class="glass-card overflow-hidden pt-8 pb-6 px-6 relative">
             <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 pointer-events-none"></div>
             <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -84,8 +84,9 @@
         </div>
 
         {{-- ═══════════════════════════════════════════════════════════════
-         STATUS SUMMARY CHIPS (Metrics Dashboard)
-    ═══════════════════════════════════════════════════════════════ --}}
+            STATUS SUMMARY CHIPS (Metrics Dashboard)
+        ═══════════════════════════════════════════════════════════════ --}}
+        @if($canGrade)
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="status-summary-row">
             @php
                 $chips = [
@@ -122,11 +123,12 @@
                 </div>
             @endforeach
         </div>
+        @endif
 
         {{-- ═══════════════════════════════════════════════════════════════
          LEGEND & FORMULA PANELS
-         Values are pulled from EvaluationScoreCalculatorService — no hardcoding.
-    ═══════════════════════════════════════════════════════════════ --}}
+            Values are pulled from EvaluationScoreCalculatorService — no hardcoding.
+        ═══════════════════════════════════════════════════════════════ --}}
         @php
             use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService as Calc;
             $penalties = Calc::getPenalties();
@@ -172,6 +174,7 @@
         @endphp
 
         <div class="space-y-3" x-data="{ showLegend: false, showFormula: false }">
+            @if($canGrade)
             {{-- Legend toggle row --}}
             <div class="flex gap-2 flex-wrap">
                 <button type="button" @click="showLegend = !showLegend"
@@ -235,6 +238,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             {{-- Formula Panel --}}
             <div x-show="showFormula" x-transition class="glass-card p-5 border border-slate-200/60 space-y-5">
@@ -244,13 +248,12 @@
                 </h3>
 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {{-- Regular (old system) --}}
+                    {{-- Regular --}}
                     @if (in_array('regular', $allowedTabs))
                         <div>
                             <p class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
                                 <span
-                                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">Regular</span>
-                                Sistem Lama (5 Kriteria)
+                                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 ring-1 ring-inset ring-slate-500/10">Regular</span> (5 Kriteria)
                             </p>
                             <div class="text-xs text-slate-600 mb-2">
                                 <strong>Total = 40 (base)</strong> + Jumlah Kriteria − Penalti Kehadiran
@@ -289,14 +292,13 @@
                         </div>
                     @endif
 
-                    {{-- Yayasan/Magang (new system) --}}
+                    {{-- Yayasan/Magang --}}
                     @if (count(array_intersect(['yayasan', 'magang'], $allowedTabs)) > 0)
                         <div>
                             <p class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-2">
                                 <span
                                     class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 ring-1 ring-inset ring-indigo-500/10">Yayasan
-                                    / Magang</span>
-                                Sistem Baru (9 Kriteria)
+                                    / Magang</span> (9 Kriteria)
                             </p>
                             <div class="text-xs text-slate-600 mb-2">
                                 <strong>Total = Jumlah Kriteria</strong> − Penalti Kehadiran
@@ -339,8 +341,8 @@
         </div>
 
         {{-- ═══════════════════════════════════════════════════════════════
-         NO-DATA GUARD
-    ═══════════════════════════════════════════════════════════════ --}}
+                NO-DATA GUARD
+            ═══════════════════════════════════════════════════════════════ --}}
         @if (!$hasData)
             <div class="glass-card border border-amber-200 bg-amber-50/60 px-8 py-10 text-center space-y-4">
                 <div
@@ -375,10 +377,10 @@
             </div>
         @else
             {{-- ═══════════════════════════════════════════════════════════════
-         TABS & ACTION BAR
-    ═══════════════════════════════════════════════════════════════ --}}
+                TABS & ACTION BAR
+            ═══════════════════════════════════════════════════════════════ --}}
             <div class="glass-card overflow-hidden shadow-sm border border-slate-200/60 relative mb-6"
-                x-data="evalTabs()" x-init="init()" @tab-changed.window="onTabChanged($event.detail.type)">
+                x-data="evalTabs(@js($exportStatus))" x-init="init()" @tab-changed.window="onTabChanged($event.detail.type)">
                 <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
 
 
@@ -443,32 +445,36 @@
                         @endif
 
 
-                        {{-- Focus Mode Toggle Button --}}
-                        <button type="button"
-                            @click="
-                    $dispatch('open-focus-mode', { type: activeTab, month: {{ $month }}, year: {{ $year }} })
-                "
-                            class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group">
-                            <i class="bx bx-scan text-lg group-hover:scale-110 transition-transform"></i>
-                            <span>Mode Fokus</span>
-                        </button>
-
-                        {{-- Advanced Toggle Button --}}
-                        <button type="button" @click="$dispatch('open-advanced-sidebar')"
-                            class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5">
-                            <i class="bx bx-slider-alt text-lg text-slate-500"></i>
-                            <span>Tingkat Lanjut</span>
-                        </button>
-
-                        {{-- Export — only when fully approved --}}
-                        @if ($canExport)
-                            <a href="#" id="export-btn"
-                                class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5"
-                                @click="$el.href = '{{ route('evaluation.export') }}?month={{ $month }}&year={{ $year }}&type=' + activeTab">
-                                <i class="bx bx-export text-lg text-emerald-600"></i>
-                                <span>Export Excel</span>
-                            </a>
+                        @if($canGrade)
+                            {{-- Focus Mode Toggle Button --}}
+                            <button type="button"
+                                @click="
+                                    $dispatch('open-focus-mode', { type: activeTab, month: {{ $month }}, year: {{ $year }} })
+                                "
+                                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group">
+                                <i class="bx bx-scan text-lg group-hover:scale-110 transition-transform"></i>
+                                <span>Mode Fokus</span>
+                            </button>
                         @endif
+
+                        @role('super-admin')
+                            {{-- Advanced Toggle Button --}}
+                            <button type="button" @click="$dispatch('open-advanced-sidebar')"
+                                class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5">
+                                <i class="bx bx-slider-alt text-lg text-slate-500"></i>
+                                <span>Tingkat Lanjut</span>
+                            </button>
+                        @endrole
+
+                        {{-- Export — now allowed as long as there is data for the period --}}
+                        <a href="#" id="export-btn"
+                            x-show="exportStatus[activeTab]"
+                            class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5"
+                            :href="'{{ route('evaluation.export') }}?month={{ $month }}&year={{ $year }}&type=' + activeTab">
+
+                            <i class="bx bx-export text-lg text-emerald-600"></i>
+                            <span>Export Excel</span>
+                        </a>
 
                         {{-- History button (super-admin only) --}}
                         @role('super-admin')
@@ -508,11 +514,14 @@
                     </div>
                 </div>
             </div>
-        @endif {{-- $hasData --}}
+        @endif
 
         {{-- Grade / Edit Modal --}}
-        @push('modals')
-            @include('partials.edit-evaluation-modal')
+        @if($canGrade)
+            @push('modals')
+                @include('partials.edit-evaluation-modal')
+            @endpush
+        @endif
 
             {{-- ═══ HISTORY MODAL (super-admin) ════════════════════════════════ --}}
             @role('super-admin')
@@ -595,182 +604,184 @@
             @endrole
 
             {{-- ═══════════════════════════════════════════════════════════════
-        ADVANCED SIDEBAR (AlpineJS + Tailwind)
-    ═══════════════════════════════════════════════════════════════ --}}
-            <div x-data="{ advancedOpen: false }" @open-advanced-sidebar.window="advancedOpen = true" x-init="$watch('advancedOpen', value => {
-                if (value) {
-                    document.body.classList.add('overflow-hidden');
-                } else {
-                    document.body.classList.remove('overflow-hidden');
-                }
-            })"
-                x-show="advancedOpen" style="display: none;" class="relative z-[1050]"
-                aria-labelledby="advancedFeaturesLabel" role="dialog" aria-modal="true" x-cloak>
+                ADVANCED SIDEBAR (AlpineJS + Tailwind)
+            ═══════════════════════════════════════════════════════════════ --}}
+            @if($canGrade)
+                <div x-data="{ advancedOpen: false }" @open-advanced-sidebar.window="advancedOpen = true" x-init="$watch('advancedOpen', value => {
+                    if (value) {
+                        document.body.classList.add('overflow-hidden');
+                    } else {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                })"
+                    x-show="advancedOpen" style="display: none;" class="relative z-[1050]"
+                    aria-labelledby="advancedFeaturesLabel" role="dialog" aria-modal="true" x-cloak>
 
-                {{-- Background Overlay --}}
-                <div x-show="advancedOpen" x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500"
-                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+                    {{-- Background Overlay --}}
+                    <div x-show="advancedOpen" x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500"
+                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
 
-                {{-- Slide-over Container --}}
-                <div class="fixed inset-0 overflow-hidden">
-                    <div class="absolute inset-0 overflow-hidden">
-                        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-                            <div x-show="advancedOpen"
-                                x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700"
-                                x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-                                x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700"
-                                x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-                                class="pointer-events-auto w-screen max-w-md">
-                                <div
-                                    class="flex h-full flex-col overflow-y-auto custom-scrollbar bg-white shadow-xl shadow-slate-900/20 border-l border-slate-200">
-
-                                    {{-- Header --}}
+                    {{-- Slide-over Container --}}
+                    <div class="fixed inset-0 overflow-hidden">
+                        <div class="absolute inset-0 overflow-hidden">
+                            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                                <div x-show="advancedOpen"
+                                    x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700"
+                                    x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+                                    x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700"
+                                    x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+                                    class="pointer-events-auto w-screen max-w-md">
                                     <div
-                                        class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
-                                        <div class="flex items-center gap-4">
-                                            <div
-                                                class="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-                                                <i class="bx bx-slider-alt text-2xl"></i>
-                                            </div>
-                                            <div class="flex flex-col">
-                                                <h2 class="text-lg font-bold text-slate-900" id="advancedFeaturesLabel">
-                                                    Tingkat Lanjut</h2>
-                                                <p
-                                                    class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-0.5">
-                                                    Filter & Export</p>
-                                            </div>
-                                        </div>
-                                        <div class="ml-3 flex h-7 items-center">
-                                            <button type="button" @click="advancedOpen = false"
-                                                class="relative rounded-lg bg-white p-2 text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm border border-slate-200 transition-colors">
-                                                <span class="absolute -inset-2.5"></span>
-                                                <span class="sr-only">Close panel</span>
-                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-                                                    stroke="currentColor" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
+                                        class="flex h-full flex-col overflow-y-auto custom-scrollbar bg-white shadow-xl shadow-slate-900/20 border-l border-slate-200">
 
-                                    {{-- Content --}}
-                                    <div class="relative flex-1 px-6 py-6 space-y-8 bg-white">
-
-                                        {{-- Feature 1: Cetak Format (Legacy Restored) --}}
-                                        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
-                                            <h6
-                                                class="text-[13px] font-extrabold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                                <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                                                    <i class="bx bx-printer"></i>
-                                                </div>
-                                                Cetak Format Penilaian
-                                            </h6>
-                                            <div class="space-y-2.5">
-                                                <a href="{{ route('format.evaluation.year.allin') }}"
-                                                    class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
-                                                    <span class="truncate pr-4">Format Regular (All In)</span>
-                                                    <i
-                                                        class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
-                                                </a>
-                                                <a href="{{ route('format.evaluation.year.yayasan') }}"
-                                                    class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
-                                                    <span class="truncate pr-4">Format Yayasan</span>
-                                                    <i
-                                                        class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
-                                                </a>
-                                                <a href="{{ route('format.evaluation.year.magang') }}"
-                                                    class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
-                                                    <span class="truncate pr-4">Format Magang</span>
-                                                    <i
-                                                        class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
-                                                </a>
-                                                <a href="{{ route('format.evaluation.year.allinperpanjangan') }}"
-                                                    class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
-                                                    <span class="truncate pr-4">Format Perpanjangan Kontrak</span>
-                                                    <i
-                                                        class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        {{-- Feature: Export Yayasan Data --}}
+                                        {{-- Header --}}
                                         <div
-                                            class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-                                            <div
-                                                class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 pointer-events-none">
-                                                <i class="bx bx-buildings text-9xl"></i>
-                                            </div>
-                                            <h6
-                                                class="relative text-[13px] font-extrabold text-indigo-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                                <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm font-black">
-                                                    <i class="bx bxs-file-export"></i>
+                                            class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+                                            <div class="flex items-center gap-4">
+                                                <div
+                                                    class="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                                                    <i class="bx bx-slider-alt text-2xl"></i>
                                                 </div>
-                                                Export Yayasan
-                                            </h6>
-                                            <div class="relative space-y-2.5">
-                                                <a href="{{ route('evaluation.jpayroll.select') }}"
-                                                    class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
-                                                    <span>Export Data ke JPayroll</span>
-                                                    <i
-                                                        class="bx bx-right-arrow-alt text-xl text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
-                                                </a>
+                                                <div class="flex flex-col">
+                                                    <h2 class="text-lg font-bold text-slate-900" id="advancedFeaturesLabel">
+                                                        Tingkat Lanjut</h2>
+                                                    <p
+                                                        class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-0.5">
+                                                        Filter & Export</p>
+                                                </div>
+                                            </div>
+                                            <div class="ml-3 flex h-7 items-center">
+                                                <button type="button" @click="advancedOpen = false"
+                                                    class="relative rounded-lg bg-white p-2 text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm border border-slate-200 transition-colors">
+                                                    <span class="absolute -inset-2.5"></span>
+                                                    <span class="sr-only">Close panel</span>
+                                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                                                        stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
 
-                                        {{-- Grade Distribution Tally --}}
-                                        <div>
-                                            <h6
-                                                class="text-[13px] font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
-                                            </h6>
-                                            @php
-                                                $total = $summary['total'] ?? 0;
-                                                $graded =
-                                                    ($summary['graded'] ?? 0) +
-                                                    ($summary['dept_approved'] ?? 0) +
-                                                    ($summary['fully_approved'] ?? 0);
-                                                $pending = $summary['pending'] ?? 0;
-                                                $rejected = $summary['rejected'] ?? 0;
-                                                $pct = $total > 0 ? round(($graded / $total) * 100) : 0;
-                                            @endphp
+                                        {{-- Content --}}
+                                        <div class="relative flex-1 px-6 py-6 space-y-8 bg-white">
 
-                                            {{-- Progress bar --}}
-                                            <div class="mb-3">
-                                                <div
-                                                    class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
-                                                    <span>Progress penilaian</span>
-                                                    <span class="text-indigo-600 font-bold">{{ $pct }}%</span>
-                                                </div>
-                                                <div class="w-full bg-slate-100 rounded-full h-2">
-                                                    <div class="bg-indigo-500 h-2 rounded-full transition-all"
-                                                        style="width: {{ $pct }}%"></div>
+                                            {{-- Feature 1: Cetak Format (Legacy Restored) --}}
+                                            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                                <h6
+                                                    class="text-[13px] font-extrabold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                    <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                                                        <i class="bx bx-printer"></i>
+                                                    </div>
+                                                    Cetak Format Penilaian
+                                                </h6>
+                                                <div class="space-y-2.5">
+                                                    <a href="{{ route('format.evaluation.year.allin') }}"
+                                                        class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                        <span class="truncate pr-4">Format Regular (All In)</span>
+                                                        <i
+                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                    </a>
+                                                    <a href="{{ route('format.evaluation.year.yayasan') }}"
+                                                        class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                        <span class="truncate pr-4">Format Yayasan</span>
+                                                        <i
+                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                    </a>
+                                                    <a href="{{ route('format.evaluation.year.magang') }}"
+                                                        class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                        <span class="truncate pr-4">Format Magang</span>
+                                                        <i
+                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                    </a>
+                                                    <a href="{{ route('format.evaluation.year.allinperpanjangan') }}"
+                                                        class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                        <span class="truncate pr-4">Format Perpanjangan Kontrak</span>
+                                                        <i
+                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                    </a>
                                                 </div>
                                             </div>
 
-                                            <div class="space-y-2">
-                                                @foreach ([['label' => 'Sudah Dinilai', 'desc' => 'Graded, dept-approved, atau final', 'count' => $graded, 'icon' => 'bx-check-circle', 'color' => 'emerald'], ['label' => 'Belum Dinilai', 'desc' => 'Menunggu penilaian dari atasan', 'count' => $pending, 'icon' => 'bx-time-five', 'color' => 'amber'], ['label' => 'Ditolak', 'desc' => 'Perlu diisi ulang oleh penilai', 'count' => $rejected, 'icon' => 'bx-x-circle', 'color' => 'rose'], ['label' => 'Total Karyawan', 'desc' => 'Karyawan aktif di departemen', 'count' => $total, 'icon' => 'bx-group', 'color' => 'indigo']] as $stat)
-                                                    <div
-                                                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-{{ $stat['color'] }}-50 border border-{{ $stat['color'] }}-100">
-                                                        <div
-                                                            class="h-8 w-8 rounded-lg bg-{{ $stat['color'] }}-100 flex items-center justify-center shrink-0">
-                                                            <i
-                                                                class="bx {{ $stat['icon'] }} text-{{ $stat['color'] }}-600 text-base"></i>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p
-                                                                class="text-xs font-bold text-{{ $stat['color'] }}-800 leading-none">
-                                                                {{ $stat['label'] }}</p>
-                                                            <p
-                                                                class="text-[10px] text-{{ $stat['color'] }}-600 mt-0.5 leading-tight">
-                                                                {{ $stat['desc'] }}</p>
-                                                        </div>
-                                                        <span
-                                                            class="text-base font-black text-{{ $stat['color'] }}-800 shrink-0">{{ $stat['count'] }}</span>
+                                            {{-- Feature: Export Yayasan Data --}}
+                                            <div
+                                                class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                                <div
+                                                    class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 pointer-events-none">
+                                                    <i class="bx bx-buildings text-9xl"></i>
+                                                </div>
+                                                <h6
+                                                    class="relative text-[13px] font-extrabold text-indigo-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                    <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm font-black">
+                                                        <i class="bx bxs-file-export"></i>
                                                     </div>
-                                                @endforeach
+                                                    Export Yayasan
+                                                </h6>
+                                                <div class="relative space-y-2.5">
+                                                    <a href="{{ route('evaluation.jpayroll.select') }}"
+                                                        class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
+                                                        <span>Export Data ke JPayroll</span>
+                                                        <i
+                                                            class="bx bx-right-arrow-alt text-xl text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            {{-- Grade Distribution Tally --}}
+                                            <div>
+                                                <h6
+                                                    class="text-[13px] font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
+                                                </h6>
+                                                @php
+                                                    $total = $summary['total'] ?? 0;
+                                                    $graded =
+                                                        ($summary['graded'] ?? 0) +
+                                                        ($summary['dept_approved'] ?? 0) +
+                                                        ($summary['fully_approved'] ?? 0);
+                                                    $pending = $summary['pending'] ?? 0;
+                                                    $rejected = $summary['rejected'] ?? 0;
+                                                    $pct = $total > 0 ? round(($graded / $total) * 100) : 0;
+                                                @endphp
+
+                                                {{-- Progress bar --}}
+                                                <div class="mb-3">
+                                                    <div
+                                                        class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+                                                        <span>Progress penilaian</span>
+                                                        <span class="text-indigo-600 font-bold">{{ $pct }}%</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 rounded-full h-2">
+                                                        <div class="bg-indigo-500 h-2 rounded-full transition-all"
+                                                            style="width: {{ $pct }}%"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="space-y-2">
+                                                    @foreach ([['label' => 'Sudah Dinilai', 'desc' => 'Graded, dept-approved, atau final', 'count' => $graded, 'icon' => 'bx-check-circle', 'color' => 'emerald'], ['label' => 'Belum Dinilai', 'desc' => 'Menunggu penilaian dari atasan', 'count' => $pending, 'icon' => 'bx-time-five', 'color' => 'amber'], ['label' => 'Ditolak', 'desc' => 'Perlu diisi ulang oleh penilai', 'count' => $rejected, 'icon' => 'bx-x-circle', 'color' => 'rose'], ['label' => 'Total Karyawan', 'desc' => 'Karyawan aktif di departemen', 'count' => $total, 'icon' => 'bx-group', 'color' => 'indigo']] as $stat)
+                                                        <div
+                                                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-{{ $stat['color'] }}-50 border border-{{ $stat['color'] }}-100">
+                                                            <div
+                                                                class="h-8 w-8 rounded-lg bg-{{ $stat['color'] }}-100 flex items-center justify-center shrink-0">
+                                                                <i
+                                                                    class="bx {{ $stat['icon'] }} text-{{ $stat['color'] }}-600 text-base"></i>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p
+                                                                    class="text-xs font-bold text-{{ $stat['color'] }}-800 leading-none">
+                                                                    {{ $stat['label'] }}</p>
+                                                                <p
+                                                                    class="text-[10px] text-{{ $stat['color'] }}-600 mt-0.5 leading-tight">
+                                                                    {{ $stat['desc'] }}</p>
+                                                            </div>
+                                                            <span
+                                                                class="text-base font-black text-{{ $stat['color'] }}-800 shrink-0">{{ $stat['count'] }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -779,13 +790,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
 
         {{-- Full-Screen Focus Mode Component --}}
-        @livewire('evaluation.focus-mode')
+        @if($canGrade)
+            @livewire('evaluation.focus-mode')
+        @endif
 
-    @endpush
 
 @endsection
 
@@ -817,7 +829,7 @@
         // Server-injected: which tabs this user is allowed to see
         const ALLOWED_TABS = @json($allowedTabs);
 
-        function evalTabs() {
+        function evalTabs(initialExportStatus) {
             // All possible tabs in display order — filter to only allowed ones
             const ALL_TABS = [{
                     id: 'regular',
@@ -836,6 +848,7 @@
             return {
                 activeTab: ALLOWED_TABS[0] ?? 'regular',
                 tabs: ALL_TABS.filter(t => ALLOWED_TABS.includes(t.id)),
+                exportStatus: initialExportStatus,
 
                 init() {
                     window.evalActiveTab = this.activeTab;
