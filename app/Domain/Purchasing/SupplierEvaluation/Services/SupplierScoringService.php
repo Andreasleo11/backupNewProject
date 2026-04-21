@@ -33,7 +33,7 @@ final class SupplierScoringService
         // Ambil hanya detail yang ada PO-nya
         $details = PurchasingDetailEvaluationSupplier::where('header_id', $headerId)
             ->get()
-            ->filter(fn($d) => in_array(
+            ->filter(fn ($d) => in_array(
                 $d->year . '-' . self::MONTH_MAPPING[$d->month],
                 $validMonths
             ));
@@ -64,13 +64,14 @@ final class SupplierScoringService
             foreach ($details as $detail) {
                 $detail->update(['kualitas_barang' => 20]);
             }
+
             return;
         }
 
         foreach ($details as $detail) {
-            $monthNumber   = self::MONTH_MAPPING[$detail->month];
+            $monthNumber = self::MONTH_MAPPING[$detail->month];
             $monthlyClaims = $claims->filter(
-                fn($c) => Carbon::parse($c->claim_start_date)->format('m') == $monthNumber
+                fn ($c) => Carbon::parse($c->claim_start_date)->format('m') == $monthNumber
                     && Carbon::parse($c->claim_start_date)->format('Y') == $detail->year
             );
 
@@ -102,16 +103,16 @@ final class SupplierScoringService
         }
 
         foreach ($details as $detail) {
-            $monthNumber   = self::MONTH_MAPPING[$detail->month];
+            $monthNumber = self::MONTH_MAPPING[$detail->month];
             $monthlyClaims = $claims->filter(
-                fn($c) => Carbon::parse($c->claim_start_date)->format('m') === $monthNumber
+                fn ($c) => Carbon::parse($c->claim_start_date)->format('m') === $monthNumber
                     && Carbon::parse($c->claim_start_date)->format('Y') == $detail->year
             );
 
             if ($monthlyClaims->isEmpty()) {
                 $detail->customer_stopline = 10;
             } else {
-                $yesCount = $monthlyClaims->filter(fn($c) => $c->customer_stopline === 'Yes')->count();
+                $yesCount = $monthlyClaims->filter(fn ($c) => $c->customer_stopline === 'Yes')->count();
                 $detail->customer_stopline = max(10 - ($yesCount * 5), 0);
             }
 
@@ -140,8 +141,8 @@ final class SupplierScoringService
 
         foreach ($details as $detail) {
             $monthNumber = self::MONTH_MAPPING[$detail->month];
-            $monthly     = $accuracyGoods->filter(
-                fn($g) => Carbon::parse($g->incoming_date)->format('m') === $monthNumber
+            $monthly = $accuracyGoods->filter(
+                fn ($g) => Carbon::parse($g->incoming_date)->format('m') === $monthNumber
                     && Carbon::parse($g->incoming_date)->format('Y') == $detail->year
             );
 
@@ -174,8 +175,8 @@ final class SupplierScoringService
 
         foreach ($details as $detail) {
             $monthNumber = self::MONTH_MAPPING[$detail->month];
-            $monthly     = $ontimeDeliveries->filter(
-                fn($d) => Carbon::parse($d->actual_date)->format('m') === $monthNumber
+            $monthly = $ontimeDeliveries->filter(
+                fn ($d) => Carbon::parse($d->actual_date)->format('m') === $monthNumber
                     && Carbon::parse($d->actual_date)->format('Y') == $detail->year
             );
 
@@ -208,8 +209,8 @@ final class SupplierScoringService
 
         foreach ($details as $detail) {
             $monthNumber = self::MONTH_MAPPING[$detail->month];
-            $monthly     = $urgentRequests->filter(
-                fn($r) => Carbon::parse($r->request_date)->format('m') === $monthNumber
+            $monthly = $urgentRequests->filter(
+                fn ($r) => Carbon::parse($r->request_date)->format('m') === $monthNumber
                     && Carbon::parse($r->request_date)->format('Y') == $detail->year
             );
 
@@ -217,10 +218,10 @@ final class SupplierScoringService
                 $detail->kerjasama_permintaan_mendadak = 10;
             } else {
                 $totalPoint = 0;
-                $count      = $monthly->count();
+                $count = $monthly->count();
 
                 foreach ($monthly as $request) {
-                    $requestDate  = Carbon::parse($request->request_date);
+                    $requestDate = Carbon::parse($request->request_date);
                     $incomingDate = Carbon::parse($request->incoming_date);
 
                     if ($requestDate->eq($incomingDate)) {
@@ -262,12 +263,12 @@ final class SupplierScoringService
 
         foreach ($monthlyClaimResponses as $yearMonth => $responses) {
             // Skip bulan yang tidak ada PO
-            if (!in_array($yearMonth, $validMonths)) {
+            if (! in_array($yearMonth, $validMonths)) {
                 continue;
             }
 
             $totalPoint = 0;
-            $count      = $responses->count();
+            $count = $responses->count();
 
             foreach ($responses as $response) {
                 $point = 0;
@@ -285,8 +286,8 @@ final class SupplierScoringService
             }
 
             $finalScore = $count > 0 ? ceil($totalPoint / $count) : 0;
-            $monthName  = Carbon::parse($yearMonth . '-01')->format('F');
-            $year       = Carbon::parse($yearMonth . '-01')->format('Y');
+            $monthName = Carbon::parse($yearMonth . '-01')->format('F');
+            $year = Carbon::parse($yearMonth . '-01')->format('Y');
 
             PurchasingDetailEvaluationSupplier::where('header_id', $headerId)
                 ->where('month', $monthName)
@@ -297,15 +298,15 @@ final class SupplierScoringService
 
     private function calculateSertifikasi(int $headerId, string $supplierCode, $details): void
     {
-        $certificates     = PurchasingVendorListCertificate::where('vendor_code', $supplierCode)->first();
+        $certificates = PurchasingVendorListCertificate::where('vendor_code', $supplierCode)->first();
         $sertifikasiScore = 0;
 
         if ($certificates) {
-            if (!is_null($certificates->iatf_16949_doc) && trim($certificates->iatf_16949_doc) !== '') {
+            if (! is_null($certificates->iatf_16949_doc) && trim($certificates->iatf_16949_doc) !== '') {
                 $sertifikasiScore = 10;
             } elseif (
-                (!is_null($certificates->iso_9001_doc)  && trim($certificates->iso_9001_doc)  !== '') ||
-                (!is_null($certificates->iso_14001_doc) && trim($certificates->iso_14001_doc) !== '')
+                (! is_null($certificates->iso_9001_doc) && trim($certificates->iso_9001_doc) !== '') ||
+                (! is_null($certificates->iso_14001_doc) && trim($certificates->iso_14001_doc) !== '')
             ) {
                 $sertifikasiScore = 5;
             }
@@ -322,7 +323,7 @@ final class SupplierScoringService
         // Hitung average hanya dari bulan yang ada PO
         $details = PurchasingDetailEvaluationSupplier::where('header_id', $headerId)
             ->get()
-            ->filter(fn($d) => in_array(
+            ->filter(fn ($d) => in_array(
                 $d->year . '-' . self::MONTH_MAPPING[$d->month],
                 $validMonths
             ));
@@ -333,8 +334,8 @@ final class SupplierScoringService
             return;
         }
 
-        $totalSum = $details->sum(fn($d) =>
-            ($d->kualitas_barang ?? 0) +
+        $totalSum = $details->sum(
+            fn ($d) => ($d->kualitas_barang ?? 0) +
             ($d->ketepatan_kuantitas_barang ?? 0) +
             ($d->ketepatan_waktu_pengiriman ?? 0) +
             ($d->kerjasama_permintaan_mendadak ?? 0) +
@@ -346,7 +347,7 @@ final class SupplierScoringService
         $averageScore = $totalSum / $count;
 
         \App\Models\PurchasingHeaderEvaluationSupplier::where('id', $headerId)->update([
-            'grade'  => $this->determineGrade($averageScore),
+            'grade' => $this->determineGrade($averageScore),
             'status' => $this->determineStatus($averageScore),
         ]);
     }
@@ -356,7 +357,7 @@ final class SupplierScoringService
         return match (true) {
             $averageScore >= 81 => 'A',
             $averageScore >= 61 => 'B',
-            default             => 'C',
+            default => 'C',
         };
     }
 
@@ -365,7 +366,7 @@ final class SupplierScoringService
         return match (true) {
             $averageScore >= 81 => 'Diteruskan',
             $averageScore >= 61 => 'Dipertahankan dan dilakukan Audit Supplier setelah 1-3 bulan dari Evaluasi Supplier tahunan',
-            default             => 'Dilakukan Monitoring performa selama 3 bulan dan dilakukan Audit Supplier di bulan berikutnya. Gradenya harus naik, bila gradenya tidak naik, akan dipertimbangkan untuk pemutusan kerjasama.',
+            default => 'Dilakukan Monitoring performa selama 3 bulan dan dilakukan Audit Supplier di bulan berikutnya. Gradenya harus naik, bila gradenya tidak naik, akan dipertimbangkan untuk pemutusan kerjasama.',
         };
     }
 }

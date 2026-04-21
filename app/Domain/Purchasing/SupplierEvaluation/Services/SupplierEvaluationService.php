@@ -90,7 +90,7 @@ final class SupplierEvaluationService
         $validMonths = PurchasingListPo::where('supplier_name', $supplierName)
             ->whereBetween('posting_date', [$startDate, $endDate])
             ->get()
-            ->map(fn($p) => Carbon::parse($p->posting_date)->format('Y-m'))
+            ->map(fn ($p) => Carbon::parse($p->posting_date)->format('Y-m'))
             ->unique()
             ->values()
             ->toArray();
@@ -123,21 +123,21 @@ final class SupplierEvaluationService
 
         while ($current->lte($endDate)) {
             $monthKey = $current->format('Y-m');
-            $hasPo    = in_array($monthKey, $validMonths);
+            $hasPo = in_array($monthKey, $validMonths);
 
             PurchasingDetailEvaluationSupplier::create([
-                'header_id'                     => $headerId,
-                'month'                         => $current->format('F'),
-                'year'                          => $current->format('Y'),
+                'header_id' => $headerId,
+                'month' => $current->format('F'),
+                'year' => $current->format('Y'),
                 // Kalau tidak ada PO — semua null, tidak di-scoring
-                'kualitas_barang'               => $hasPo ? null : null,
-                'ketepatan_kuantitas_barang'    => $hasPo ? null : null,
-                'ketepatan_waktu_pengiriman'    => $hasPo ? null : null,
+                'kualitas_barang' => $hasPo ? null : null,
+                'ketepatan_kuantitas_barang' => $hasPo ? null : null,
+                'ketepatan_waktu_pengiriman' => $hasPo ? null : null,
                 'kerjasama_permintaan_mendadak' => $hasPo ? null : null,
-                'respon_klaim'                  => $hasPo ? null : null,
-                'sertifikasi'                   => $hasPo ? null : null,
-                'customer_stopline'             => $hasPo ? null : null,
-                'has_po'                        => $hasPo, // flag biar gampang filter
+                'respon_klaim' => $hasPo ? null : null,
+                'sertifikasi' => $hasPo ? null : null,
+                'customer_stopline' => $hasPo ? null : null,
+                'has_po' => $hasPo, // flag biar gampang filter
             ]);
 
             $current->addMonth();
@@ -158,7 +158,7 @@ final class SupplierEvaluationService
 
         foreach ($grouped as $supplier_code => $byName) {
             foreach ($byName as $supplier_name => $records) {
-                $years = $records->map(fn($r) => Carbon::parse($r->posting_date)->format('Y'))
+                $years = $records->map(fn ($r) => Carbon::parse($r->posting_date)->format('Y'))
                     ->unique()->values()->toArray();
 
                 $key = ($supplier_name ?: 'Unknown') . ' - ' . $supplier_code;

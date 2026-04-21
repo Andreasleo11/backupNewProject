@@ -21,23 +21,23 @@ class DepartmentEmployeeResolver
         // Super Admins / HRD / GM see all regular employees
         if ($user->can('evaluation.view-any')) {
             return $this->repository->getAllNonYayasan();
-            
+
             if ($this->isSpecialAccessId($user)) {
                 return $this->repository->getByDepartmentCodes([
                     DepartmentCode::QC->value,
                     DepartmentCode::QA->value,
                 ]);
             }
-    
+
             if ($user->department) {
                 $code = DepartmentCode::fromDepartmentName($user->department->name);
-    
+
                 if (! $code) {
                     throw new \DomainException("Unknown department: {$user->department->name}");
                 }
-    
+
                 $codes = $this->getDepartmentCodes($code, $user);
-    
+
                 return $this->repository->getByDepartmentCodes($codes);
             }
         }
@@ -54,11 +54,11 @@ class DepartmentEmployeeResolver
             return $this->repository->getAllYayasanEmployees();
         }
 
-        if($user->can('evaluation.view-yayasan')) {
+        if ($user->can('evaluation.view-yayasan')) {
             if ($user->department && in_array($user->department->name, ['QC', 'QA'], true)) {
                 return $this->repository->getYayasanEmployees($this->getQcQaCodes($user));
             }
-    
+
             if ($user->department) {
                 $code = DepartmentCode::fromDepartmentName($user->department->name);
 
@@ -84,24 +84,23 @@ class DepartmentEmployeeResolver
             return $this->repository->getAllMagangEmployees();
         }
 
-        if($user->can('evaluation.view-magang')) {
+        if ($user->can('evaluation.view-magang')) {
             if ($user->department && in_array($user->department->name, ['QC', 'QA'], true)) {
                 return $this->repository->getMagangEmployees($this->getQcQaCodes($user));
             }
-    
+
             if ($user->department) {
                 $code = DepartmentCode::fromDepartmentName($user->department->name);
-    
+
                 if (! $code) {
                     throw new \DomainException("Unknown department: {$user->department->name}");
                 }
-    
+
                 return $this->repository->getMagangEmployees(
                     $this->getDepartmentCodesForType($code, $user)
                 );
             }
         }
-        
 
         return collect();
     }

@@ -36,19 +36,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('monthly_budget_reports', function (Blueprint $table) {
-            if (!Schema::hasColumn('monthly_budget_reports', 'workflow_status')) {
+            if (! Schema::hasColumn('monthly_budget_reports', 'workflow_status')) {
                 $table->string('workflow_status')->nullable();
             }
-            if (!Schema::hasColumn('monthly_budget_reports', 'workflow_step')) {
+            if (! Schema::hasColumn('monthly_budget_reports', 'workflow_step')) {
                 $table->string('workflow_step')->nullable();
             }
         });
 
         Schema::table('monthly_budget_summary_reports', function (Blueprint $table) {
-            if (!Schema::hasColumn('monthly_budget_summary_reports', 'workflow_status')) {
+            if (! Schema::hasColumn('monthly_budget_summary_reports', 'workflow_status')) {
                 $table->string('workflow_status')->nullable();
             }
-            if (!Schema::hasColumn('monthly_budget_summary_reports', 'workflow_step')) {
+            if (! Schema::hasColumn('monthly_budget_summary_reports', 'workflow_step')) {
                 $table->string('workflow_step')->nullable();
             }
         });

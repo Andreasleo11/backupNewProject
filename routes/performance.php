@@ -43,7 +43,7 @@ Route::middleware(['auth', 'evaluation.access'])->group(function () {
     // DataTable AJAX data per type tab (before {month}/{year} to avoid wildcard capture)
     Route::get('/evaluation/data/regular', [EvaluationController::class, 'dataRegular'])->can('evaluation.view-regular')->name('evaluation.data.regular');
     Route::get('/evaluation/data/yayasan', [EvaluationController::class, 'dataYayasan'])->can('evaluation.view-yayasan')->name('evaluation.data.yayasan');
-    Route::get('/evaluation/data/magang',  [EvaluationController::class, 'dataMagang'])->can('evaluation.view-magang')->name('evaluation.data.magang');
+    Route::get('/evaluation/data/magang', [EvaluationController::class, 'dataMagang'])->can('evaluation.view-magang')->name('evaluation.data.magang');
 
     // Status summary chips (AJAX — before {month}/{year})
     Route::get('/evaluation/summary', [EvaluationController::class, 'summary'])->name('evaluation.summary');
@@ -80,9 +80,9 @@ Route::middleware(['auth', 'evaluation.access'])->group(function () {
     // ──────────────────────────────────────────────
     // Yayasan JPayroll Export — must be before {month}/{year} wildcard
     // ──────────────────────────────────────────────
-    Route::get('/evaluation/jpayroll/select',    [EvaluationJpayrollController::class, 'select'])->name('evaluation.jpayroll.select');
-    Route::get('/evaluation/jpayroll/summary',   [EvaluationJpayrollController::class, 'summary'])->name('evaluation.jpayroll.summary');
-    Route::get('/evaluation/jpayroll',           [EvaluationJpayrollController::class, 'index'])->name('evaluation.jpayroll.index');
+    Route::get('/evaluation/jpayroll/select', [EvaluationJpayrollController::class, 'select'])->name('evaluation.jpayroll.select');
+    Route::get('/evaluation/jpayroll/summary', [EvaluationJpayrollController::class, 'summary'])->name('evaluation.jpayroll.summary');
+    Route::get('/evaluation/jpayroll', [EvaluationJpayrollController::class, 'index'])->name('evaluation.jpayroll.index');
     Route::post('/evaluation/jpayroll/download', [EvaluationJpayrollController::class, 'download'])->name('evaluation.jpayroll.download');
 
     // Parameterized period route (must come AFTER all literal /evaluation/... routes)
@@ -100,6 +100,4 @@ Route::middleware(['auth', 'evaluation.access'])->group(function () {
     Route::post('/getformat/magang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
     Route::post('/getformatallinperpanjangan', [EvaluationDataController::class, 'getFormatYearallinPerpanjangan'])->name('get.format.allinperpanjangan');
 
-
 });
-

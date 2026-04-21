@@ -12,7 +12,7 @@ final class SupplierReportService
 {
     public function getDetailedView(int $headerId): array
     {
-        $header       = PurchasingHeaderEvaluationSupplier::with(['details', 'contact'])->findOrFail($headerId);
+        $header = PurchasingHeaderEvaluationSupplier::with(['details', 'contact'])->findOrFail($headerId);
         $detailsCount = $header->details->count();
 
         $monthMap = [
@@ -30,9 +30,9 @@ final class SupplierReportService
             'December' => 12,
         ];
 
-        $dates = $header->details->map(fn($d) => Carbon::create($d->year, $monthMap[$d->month] ?? 1, 1));
+        $dates = $header->details->map(fn ($d) => Carbon::create($d->year, $monthMap[$d->month] ?? 1, 1));
         $start = $dates->min();
-        $end   = $dates->max();
+        $end = $dates->max();
 
         $months = $this->generateMonthRange($start, $end);
         $result = $this->calculateMonthlyValues($header, $months, $detailsCount);
@@ -45,13 +45,13 @@ final class SupplierReportService
 
     private function generateMonthRange(Carbon $start, Carbon $end): Collection
     {
-        $months  = collect();
+        $months = collect();
         $current = $start->copy();
 
         while ($current <= $end) {
             $months->push([
                 'month' => $current->format('F'),
-                'year'  => $current->year,
+                'year' => $current->year,
                 'label' => $current->format('F Y'),
             ]);
             $current->addMonth();
@@ -60,7 +60,7 @@ final class SupplierReportService
         while ($months->count() < 12) {
             $months->push([
                 'month' => $current->format('F'),
-                'year'  => $current->year,
+                'year' => $current->year,
                 'label' => $current->format('F Y'),
             ]);
             $current->addMonth();
@@ -83,24 +83,24 @@ final class SupplierReportService
             'customer_stopline' => 0,
         ];
 
-        $categorySums   = array_fill_keys($categories, 0);
+        $categorySums = array_fill_keys($categories, 0);
         $categoryCounts = array_fill_keys($categories, 0);
 
         foreach ($months as $m) {
             $detail = $header->details->first(
-                fn($d) => $d->month === $m['month'] && $d->year == $m['year']
+                fn ($d) => $d->month === $m['month'] && $d->year == $m['year']
             );
 
             // Kalau tidak ada detail atau semua nilainya null = tidak ada PO bulan ini
-            $hasPo = $detail && collect($categories)->contains(fn($c) => !is_null($detail->$c));
+            $hasPo = $detail && collect($categories)->contains(fn ($c) => ! is_null($detail->$c));
 
             $row = [];
             foreach ($categories as $cat) {
-                $value      = $hasPo ? ($detail->$cat ?? 0) : null;
-                $row[$cat]  = $value;
+                $value = $hasPo ? ($detail->$cat ?? 0) : null;
+                $row[$cat] = $value;
 
-                if (!is_null($value) && $value > 0) {
-                    $categorySums[$cat]   += $value;
+                if (! is_null($value) && $value > 0) {
+                    $categorySums[$cat] += $value;
                     $categoryCounts[$cat]++;
                 }
             }
@@ -110,7 +110,7 @@ final class SupplierReportService
         }
 
         // Average hanya dari bulan yang ada PO
-        $validCount = collect($result)->filter(fn($r) => $r['has_po'])->count();
+        $validCount = collect($result)->filter(fn ($r) => $r['has_po'])->count();
 
         $result['rata-rata'] = [];
         foreach ($categories as $cat) {

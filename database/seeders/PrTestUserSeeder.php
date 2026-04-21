@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -14,12 +14,13 @@ class PrTestUserSeeder extends Seeder
     {
         // Require that the necessary roles already exist before creating users
         $requiredRoles = ['staff', 'department-head', 'verificator', 'general-manager', 'director', 'purchaser'];
-        
+
         foreach ($requiredRoles as $role) {
-            if (!Role::where('name', $role)->exists()) {
+            if (! Role::where('name', $role)->exists()) {
                 if ($this->command) {
                     $this->command->warn("Role '{$role}' does not exist. Please run RolesAndPermissionsSeeder first.");
                 }
+
                 return;
             }
         }
@@ -36,9 +37,9 @@ class PrTestUserSeeder extends Seeder
         $this->createTestUser('purchaser', 'Purchaser Maintenance', 'purchaser_main@example.com', 'purchaser', 'MAINTENANCE');
         $this->createTestUser('purchaser', 'Purchaser Purchasing', 'purchaser_purc@example.com', 'purchaser', 'PURCHASING');
         $this->createTestUser('purchaser', 'Purchaser Personalia', 'purchaser_hrd@example.com', 'purchaser', 'PERSONALIA');
-        
+
         if ($this->command) {
-            $this->command->info("Test PR Users seeded successfully.");
+            $this->command->info('Test PR Users seeded successfully.');
         }
     }
 
@@ -53,7 +54,7 @@ class PrTestUserSeeder extends Seeder
         );
 
         // Assign role if they don't have it
-        if (!$user->hasRole($roleSlug)) {
+        if (! $user->hasRole($roleSlug)) {
             $user->assignRole($roleSlug);
         }
 

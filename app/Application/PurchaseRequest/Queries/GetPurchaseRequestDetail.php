@@ -12,7 +12,6 @@ use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
 
-
 final class GetPurchaseRequestDetail
 {
     public function __construct(

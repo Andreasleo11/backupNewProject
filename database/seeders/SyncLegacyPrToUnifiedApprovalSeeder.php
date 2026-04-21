@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
-use App\Models\PurchaseRequest;
 use App\Application\PurchaseRequest\Services\PurchaseRequestContextBuilder;
 use App\Infrastructure\Approval\Services\DefaultRuleResolver;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
+use App\Models\PurchaseRequest;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -21,7 +20,7 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
     {
         // 0. Cleanup existing PR approval data to allow re-migration
         $this->command->info('Cleaning up existing Purchase Request approval data...');
-        
+
         ApprovalStep::whereHas('request', function ($query) {
             $query->where('approvable_type', PurchaseRequest::class);
         })->delete();
@@ -31,18 +30,19 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
         $legacyPrs = PurchaseRequest::all();
         if ($legacyPrs->isEmpty()) {
             $this->command->info('No Purchase Requests found to migrate.');
+
             return;
         }
 
-        $contextBuilder = new PurchaseRequestContextBuilder();
-        $resolver = new DefaultRuleResolver();
+        $contextBuilder = new PurchaseRequestContextBuilder;
+        $resolver = new DefaultRuleResolver;
 
         $legacyToModernRole = [
-            'DEPT_HEAD'   => 'department-head',
-            'GM'          => 'general-manager',
+            'DEPT_HEAD' => 'department-head',
+            'GM' => 'general-manager',
             'VERIFICATOR' => 'verificator',
-            'PURCHASER'   => 'purchaser',
-            'DIRECTOR'    => 'director',
+            'PURCHASER' => 'purchaser',
+            'DIRECTOR' => 'director',
             'HEAD_DESIGN' => 'department-head',
         ];
 
@@ -51,8 +51,8 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
                 // 1. Resolve Rule Template
                 $context = $contextBuilder->build($pr);
                 $rule = $resolver->resolveFor(PurchaseRequest::class, $context);
-                
-                if (!$rule) {
+
+                if (! $rule) {
                     $this->command->warn("No rule found for PR #{$pr->id} ({$pr->pr_no}). Skipping status backfill, using default.");
                     continue;
                 }
@@ -65,14 +65,14 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
 
                 // 3. Create Approval Request
                 $submittedBy = DB::table('users')->where('id', $pr->user_id_create)->exists() ? $pr->user_id_create : null;
-                
+
                 $approvalRequest = $pr->approvalRequest()->create([
-                    'status'           => 'DRAFT', // will update once steps are set
+                    'status' => 'DRAFT', // will update once steps are set
                     'rule_template_id' => $rule->id,
-                    'current_step'     => 1,
-                    'submitted_by'     => $submittedBy,
-                    'submitted_at'     => $pr->created_at,
-                    'meta'             => ['migrated_from_v2_recovery' => true],
+                    'current_step' => 1,
+                    'submitted_by' => $submittedBy,
+                    'submitted_at' => $pr->created_at,
+                    'meta' => ['migrated_from_v2_recovery' => true],
                 ]);
 
                 // 4. Create ALL steps from rule template
@@ -88,7 +88,7 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
                     $roleUsageCounter[$roleName] = ($roleUsageCounter[$roleName] ?? 0) + 1;
 
                     $legacyCode = array_search($roleName, $legacyToModernRole);
-                    
+
                     // Specific override for duplicate roles like department-head
                     if ($roleName === 'department-head' && $roleUsageCounter[$roleName] === 2) {
                         $legacyCode = 'HEAD_DESIGN';
@@ -108,7 +108,7 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
                         $actedBy = DB::table('users')->where('id', $sig->signed_by_user_id)->exists() ? $sig->signed_by_user_id : null;
                         $actedAt = $sig->signed_at ?: ($sig->created_at ?: $pr->created_at);
                         $imagePath = $sig->image_path;
-                        
+
                         // Try to link user_signature_id
                         if ($actedBy) {
                             $userSig = \App\Infrastructure\Persistence\Eloquent\Models\UserSignature::where('user_id', $actedBy)
@@ -122,27 +122,27 @@ class SyncLegacyPrToUnifiedApprovalSeeder extends Seeder
                         }
                     } else {
                         $allApproved = false;
-                        if (!$foundCurrent) {
+                        if (! $foundCurrent) {
                             $currentStepSequence = $tStep->sequence;
                             $foundCurrent = true;
                         }
                     }
 
                     ApprovalStep::create([
-                        'approval_request_id'         => $approvalRequest->id,
-                        'sequence'                    => $tStep->sequence,
-                        'approver_type'               => 'role',
-                        'approver_id'                 => $tStep->approver_id,
-                        'approver_snapshot_name'      => $imagePath ? pathinfo($imagePath, PATHINFO_FILENAME) : null,
+                        'approval_request_id' => $approvalRequest->id,
+                        'sequence' => $tStep->sequence,
+                        'approver_type' => 'role',
+                        'approver_id' => $tStep->approver_id,
+                        'approver_snapshot_name' => $imagePath ? pathinfo($imagePath, PATHINFO_FILENAME) : null,
                         'approver_snapshot_role_slug' => $roleName,
-                        'approver_snapshot_label'     => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
-                        'status'                      => $status,
-                        'acted_by'                    => $actedBy,
-                        'acted_at'                    => $actedAt,
-                        'signature_image_path'        => $imagePath,
-                        'signature_sha256'            => $sha256,
-                        'user_signature_id'           => $sigId,
-                        'remarks'                     => $sig ? 'Migrated from legacy signatures table' : null,
+                        'approver_snapshot_label' => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
+                        'status' => $status,
+                        'acted_by' => $actedBy,
+                        'acted_at' => $actedAt,
+                        'signature_image_path' => $imagePath,
+                        'signature_sha256' => $sha256,
+                        'user_signature_id' => $sigId,
+                        'remarks' => $sig ? 'Migrated from legacy signatures table' : null,
                     ]);
                 }
 
