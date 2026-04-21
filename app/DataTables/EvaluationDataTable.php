@@ -371,7 +371,8 @@ class EvaluationDataTable extends DataTable
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(0, 'asc')
-            ->buttons([]); // Export handled via the action bar button
+            ->buttons([]) // Export handled via the action bar button
+            ->parameters(['dom' => 'lfrtip']);
     }
 
     /**
