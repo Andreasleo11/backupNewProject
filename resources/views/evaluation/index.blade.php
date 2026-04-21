@@ -896,6 +896,7 @@
             // ── Build each DataTable ──────────────────────────────────────────────────
             function makeTable(tableId, ajaxRoute, columns) {
                 return $('#' + tableId).DataTable({
+                    dom: 'lfrtip',
                     processing: true,
                     serverSide: true,
                     ajax: {
@@ -916,6 +917,7 @@
                         searchPlaceholder: 'Cari NIK, Nama, atau Departemen…',
                         search: '',
                     },
+
                 });
             }
 
