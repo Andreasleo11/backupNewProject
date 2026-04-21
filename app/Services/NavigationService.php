@@ -230,8 +230,15 @@ class NavigationService
                         'label' => 'Purchase Requests',
                         'route' => 'purchase-requests.index',
                         'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('purchase-requests.*'),
+                        'active' => request()->routeIs('purchase-requests.index'),
                         'permission' => ['pr.view-all', 'pr.view'],
+                    ],
+                    [
+                        'label' => 'Approved PRs (All Depts)',
+                        'route' => 'purchase-requests.approved-all',
+                        'icon' => 'clipboard-document-check',
+                        'active' => request()->routeIs('purchase-requests.approved-all'),
+                        'permission' => 'pr.view-all-approved',
                     ],
                     [
                         'label' => 'Purchase Orders',

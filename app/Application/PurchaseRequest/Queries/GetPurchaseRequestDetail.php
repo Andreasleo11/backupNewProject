@@ -127,6 +127,7 @@ final class GetPurchaseRequestDetail
         return [
             'canApprove' => $canApprove,
             'canEdit' => $user->can('update', $pr),
+            'canViewPrices' => $user->can('viewPrices', $pr),
             'canEditPo' => $user->can('updatePo', $pr),
             'canDelete' => $user->can('delete', $pr),
             'canCancel' => $user->can('cancel', $pr),

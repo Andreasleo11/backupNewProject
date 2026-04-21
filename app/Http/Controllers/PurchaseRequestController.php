@@ -26,6 +26,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
@@ -309,7 +310,7 @@ class PurchaseRequestController extends Controller
             // Domain exceptions contain user-friendly messages about business rules
             abort(403, $e->getMessage());
         } catch (\Exception $e) {
-            \Log::error('Deletion failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
+            Log::error('Deletion failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
 
             return redirect()
                 ->back()
@@ -376,7 +377,7 @@ class PurchaseRequestController extends Controller
             // Domain exceptions contain user-friendly messages
             abort(403, $e->getMessage());
         } catch (\Exception $e) {
-            \Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
+            Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
 
             return redirect()->back()->with('error', 'Failed to cancel purchase request');
         }
@@ -432,7 +433,7 @@ class PurchaseRequestController extends Controller
 
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+            Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
 
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => 'Failed to approve purchase request'], 500);
@@ -479,7 +480,7 @@ class PurchaseRequestController extends Controller
 
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+            Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
 
             if ($isAjax) {
                 return response()->json(['success' => false, 'message' => 'Failed to reject purchase request'], 500);
@@ -594,5 +595,12 @@ class PurchaseRequestController extends Controller
         }
 
         return response()->json(['success' => true, 'batches' => $statuses]);
+    }
+
+    public function indexApprovedAll()
+    {
+        $this->authorize('viewAllApproved', PurchaseRequest::class);
+
+        return view('purchase-requests.approved-all');
     }
 }
