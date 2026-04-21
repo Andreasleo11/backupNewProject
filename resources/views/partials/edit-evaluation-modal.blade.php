@@ -162,7 +162,7 @@
                             {{-- NEW SYSTEM: Yayasan / Magang — from Calc::getScoreMaps() --}}
                             <div x-show="record.isNewSystem" style="display: none;">
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Baru — Yayasan /
+                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Yayasan /
                                     Magang)
                                 </h6>
                                 <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
@@ -196,7 +196,7 @@
                             {{-- OLD SYSTEM: Regular — from Calc::getOldScoreMaps() --}}
                             <div x-show="!record.isNewSystem" style="display: none;">
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Lama — Regular)
+                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Regular)
                                 </h6>
                                 <p class="text-xs text-indigo-700 mb-2">Base score: <strong>40</strong> + jumlah
                                     kriteria − penalti absensi.</p>

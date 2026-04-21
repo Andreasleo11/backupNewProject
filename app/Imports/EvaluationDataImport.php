@@ -41,12 +41,17 @@ class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             // Fallback to null
         }
 
+        // Resolve Employee & Type
+        $employee = Employee::where('nik', $nik)->first();
+        $scheme = $employee?->employment_scheme ?? '';
+        $type = match (true) {
+            str_contains($scheme, 'YAYASAN') => 'yayasan',
+            str_contains($scheme, 'MAGANG')  => 'magang',
+            default => 'regular',
+        };
+
         // Resolve Department if not provided
-        $dept = $row['dept'] ?? $row['Dept'] ?? $row['department'] ?? null;
-        if (empty($dept)) {
-            $employee = Employee::where('nik', $nik)->first();
-            $dept = $employee?->dept_no;
-        }
+        $dept = $row['dept'] ?? $row['Dept'] ?? $row['department'] ?? $employee?->dept_no;
 
         // Upsert logic: Update if NIK + Month combo already exists
         $existing = EvaluationData::where('NIK', $nik)
@@ -57,6 +62,7 @@ class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'NIK' => $nik,
             'dept' => $dept,
             'Month' => $month,
+            'evaluation_type' => $type,
             'Telat' => (int) ($row['telat'] ?? $row['T'] ?? $row['terlambat'] ?? 0),
             'Alpha' => (int) ($row['alpha'] ?? $row['A'] ?? 0),
             'Izin' => (int) ($row['izin'] ?? $row['I'] ?? 0),
@@ -64,6 +70,7 @@ class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'approval_status' => 'pending',
             'total' => 0,
         ];
+
 
         if ($existing) {
             $existing->update($data);

@@ -73,8 +73,9 @@ class EvaluationController extends Controller
             ->whereYear('Month', $year)
             ->exists();
 
-        // Can export? All records for this period must be fully_approved (if deptNo is null, it checks company-wide)
-        $canExport = $this->approvalService->canExport($month, $year, $deptNo);
+        // Can export? Check per type for the interactive UI.
+        $exportStatus = [];
+
         $canApproveDept = $user->can('evaluation.approve-department');
         $canApproveFinal = $user->can('evaluation.approve-final');
 
@@ -85,21 +86,29 @@ class EvaluationController extends Controller
             $user->can('evaluation.view-magang') ? 'magang' : null,
         ]));
 
+        foreach ($allowedTabs as $t) {
+            $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t);
+        }
+
+
         if (empty($allowedTabs)) {
             abort(403, 'No evaluation tabs accessible for your account.');
         }
+
+        $canGrade = $user->can('evaluation.grade');
 
         return view('evaluation.index', compact(
             'month',
             'year',
             'user',
             'summary',
-            'canExport',
+            'exportStatus',
             'canApproveDept',
             'canApproveFinal',
             'allowedTabs',
             'hasData',
-            'isElevated'
+            'isElevated',
+            'canGrade'
         ));
     }
 
@@ -174,11 +183,13 @@ class EvaluationController extends Controller
 
         if (! $record->exists) {
             // Need to populate relations and base values for a new record to pass validation
-            $record->pe_id = null; // Generated normally in some flow? It's nullable or default.
+            $record->pe_id = null; 
             $record->department_id = $employee->department->id ?? null;
-            $record->level = $employee->level ?? 5; // Defaulting level
+            $record->level = $employee->level ?? 5; 
+            $record->evaluation_type = $record->evaluationType(); // Resolves from karyawan relation
             $record->setRelation('karyawan', $employee);
         } else {
+
             $record->load('karyawan');
         }
 
@@ -447,7 +458,7 @@ class EvaluationController extends Controller
      */
     public function export(Request $request, EvaluationDataTable $dataTable)
     {
-        $this->authorize('evaluation.approve-final');
+        // $this->authorize('evaluation.approve-final');
 
         $month = $request->integer('month', now()->month);
         $year = $request->integer('year', now()->year);

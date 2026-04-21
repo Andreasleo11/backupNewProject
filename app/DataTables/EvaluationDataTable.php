@@ -6,8 +6,10 @@ use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
 use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
+use App\Exports\EvaluationExport;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Column;
@@ -392,6 +394,17 @@ class EvaluationDataTable extends DataTable
     }
 
     /**
+     * Excel export method.
+     */
+    public function excel()
+    {
+        return Excel::download(
+            new EvaluationExport($this->type, $this->filterMonth, $this->filterYear),
+            $this->filename() . '.xlsx'
+        );
+    }
+
+    /**
      * Return column definitions as a plain array suitable for JSON serialization.
      * Used by the evaluation/index.blade.php view to pass column defs to DataTables JS.
      */
@@ -451,7 +464,7 @@ class EvaluationDataTable extends DataTable
                 ->title('Department')
                 ->addClass('align-middle text-center'),
             Column::make('employment_scheme')
-                ->exportable(false)
+                ->exportable(true)
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
@@ -462,17 +475,17 @@ class EvaluationDataTable extends DataTable
                 ->addClass('align-middle text-center'),
             Column::make('total')
                 ->title('Total Nilai')
-                ->exportable(false)
+                ->exportable(true)
                 ->addClass('align-middle text-center font-bold text-indigo-600'),
             Column::make('grade')
                 ->title('Grade')
                 ->searchable(false)
-                ->exportable(false)
+                ->exportable(true)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::computed('approval_status')
                 ->title('Status')
-                ->exportable(false)
+                ->exportable(true)
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
@@ -500,6 +513,7 @@ class EvaluationDataTable extends DataTable
                 ->addClass('align-middle text-center'),
             Column::make('employment_scheme')
                 ->title('Status')
+                ->exportable(true)
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
@@ -510,23 +524,23 @@ class EvaluationDataTable extends DataTable
                 ->addClass('align-middle text-center'),
             Column::make('total')
                 ->title('Total Nilai')
-                ->exportable(false)
+                ->exportable(true)
                 ->addClass('align-middle text-center font-bold text-indigo-600'),
             Column::make('grade')
                 ->title('Grade')
                 ->searchable(false)
-                ->exportable(false)
+                ->exportable(true)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::make('pengawas')
                 ->title('Graded By')
                 ->searchable(false)
-                ->exportable(false)
+                ->exportable(true)
                 ->addClass('align-middle text-center text-sm font-medium text-slate-600')
                 ->orderable(false),
             Column::computed('approval_status')
                 ->title('Status')
-                ->exportable(false)
+                ->exportable(true)
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),

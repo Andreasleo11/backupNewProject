@@ -440,7 +440,7 @@ class NavigationService
                         'route' => 'evaluation.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('evaluation.*'),
-                        'permission' => ['evaluation.view-any', 'evaluation.view-department'],
+                        'permission' => ['evaluation.view-any', 'evaluation.view-department', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang'],
                     ],
                     [
                         'label' => 'Export JPayroll',

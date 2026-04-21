@@ -56,6 +56,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class EvaluationData extends Model
 {
     use HasFactory, LogsActivity;
+    
+    protected static function booted()
+    {
+        static::creating(function ($record) {
+            if (empty($record->evaluation_type)) {
+                $record->evaluation_type = $record->evaluationType();
+            }
+        });
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -218,10 +227,10 @@ class EvaluationData extends Model
      *
      * @return 'yayasan'|'magang'|'regular'
      */
-    public function evaluationType(): string
+    public function evaluationType(bool $force = false): string
     {
-        // Use stored column when available (fast path — no join needed)
-        if (! empty($this->evaluation_type)) {
+        // Use stored column when available (unless forcing a refresh)
+        if (! $force && ! empty($this->evaluation_type)) {
             return $this->evaluation_type;
         }
 

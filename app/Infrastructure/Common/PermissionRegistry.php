@@ -62,6 +62,7 @@ class PermissionRegistry
                     'evaluation.view-any', 'evaluation.view-department', 'evaluation.grade', 'evaluation.approve-department', 'evaluation.approve-final', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang', 'evaluation.export-jpayroll',
                 ],
                 'roles' => [
+                    'evaluation-admin' => ['evaluation.view-yayasan', 'evaluation.view-magang', 'evaluation.view-regular'],
                     'department-head' => ['evaluation.view-department', 'evaluation.grade', 'evaluation.approve-department', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang'],
                     'hrd-manager' => ['evaluation.view-any', 'evaluation.approve-final', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang'],
                     'general-manager' => ['evaluation.view-any', 'evaluation.approve-final', 'evaluation.view-regular', 'evaluation.view-yayasan', 'evaluation.view-magang'],
