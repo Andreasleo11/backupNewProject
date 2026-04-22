@@ -57,8 +57,8 @@ return [
         'popon' => ['361', '362'],
         // 'catur' sees Store (330) + Logistic (331)
         'catur' => ['330', '331'],
-        // 'yuli' sees QC (340) + QA (341)
-        'yuli' => ['340', '341'],
+        // 'Umi' sees QC (340) + QA (341)
+        'Umi' => ['340', '341'],
     ],
 
     /*

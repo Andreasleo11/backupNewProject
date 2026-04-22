@@ -190,6 +190,7 @@
                                 <strong>{{ array_sum($monthlyTotalPredictions) }}</strong>
                             </td>
                         </tr>
+                        <td>** Daijo tidak bertanggung jawab atas perubahan Qty Forecast, sewaktu - waktu Qty bisa berubah sesuai permintaan customer kami</td>
                     </tbody>
                 </table>
             </div>

@@ -39,7 +39,7 @@ final class PurchaseRequestSecurityService
 
         // Creators/Owners can only edit in "Initial" or "Returned" states
         if (! $hasOversight) {
-            $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED'];
+            $allowedForCreator = ['DRAFT', 'RETURNED', 'REJECTED', 'IN_REVIEW', 'APPROVED'];
 
             return in_array($status, $allowedForCreator);
         }
