@@ -108,16 +108,17 @@ class Index extends Component
             'excludeInfoStatus' => true,
         ]));
 
-        $row = DB::table('detail_form_overtime as d')
-            ->join('header_form_overtime as h', 'd.header_id', '=', 'h.id')
-            ->whereIn('h.id', function ($query) use ($h) {
+        $row = OvertimeForm::query()
+            ->workflowApproved()
+            ->join('detail_form_overtime as d', 'd.header_id', '=', 'header_form_overtime.id')
+            ->whereIn('header_form_overtime.id', function ($query) use ($h) {
                 $query->select('id')->fromSub($h->select('id'), 'sub');
             })
             ->whereNull('d.deleted_at')
             ->selectRaw("
-                SUM(CASE WHEN h.status = 'APPROVED' AND d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
-                SUM(CASE WHEN h.status = 'APPROVED' AND d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
-                SUM(CASE WHEN h.status = 'APPROVED' AND d.status IS NULL THEN 1 ELSE 0 END) as pending
+                SUM(CASE WHEN d.status = 'Approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN d.status = 'Rejected' THEN 1 ELSE 0 END) as rejected,
+                SUM(CASE WHEN d.status IS NULL THEN 1 ELSE 0 END) as pending
             ")
             ->first();
 
