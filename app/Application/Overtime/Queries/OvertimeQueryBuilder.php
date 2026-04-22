@@ -54,8 +54,6 @@ class OvertimeQueryBuilder
             ]);
 
         return $query->byRole($user);
-
-        return $query->byRole($user);
     }
 
     public function withFilters(Builder $query, array $filters): Builder
