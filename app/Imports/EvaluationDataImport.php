@@ -46,7 +46,7 @@ class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
         $scheme = $employee?->employment_scheme ?? '';
         $type = match (true) {
             str_contains($scheme, 'YAYASAN') => 'yayasan',
-            str_contains($scheme, 'MAGANG')  => 'magang',
+            str_contains($scheme, 'MAGANG') => 'magang',
             default => 'regular',
         };
 
@@ -70,7 +70,6 @@ class EvaluationDataImport implements SkipsEmptyRows, ToModel, WithHeadingRow
             'approval_status' => 'pending',
             'total' => 0,
         ];
-
 
         if ($existing) {
             $existing->update($data);

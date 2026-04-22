@@ -25,7 +25,6 @@ class FixEvaluationTypes extends Command
             foreach ($records as $record) {
                 $correctType = $record->evaluationType(true);
 
-                
                 if ($record->evaluation_type !== $correctType) {
                     if ($this->option('dry-run')) {
                         $this->line("\nNIK {$record->NIK} ({$record->Month->format('Y-m')}): {$record->evaluation_type} -> {$correctType}");
@@ -40,9 +39,8 @@ class FixEvaluationTypes extends Command
 
         $bar->finish();
         $this->line('');
-        
-        $status = $this->option('dry-run') ? "Would fix" : "Successfully fixed";
+
+        $status = $this->option('dry-run') ? 'Would fix' : 'Successfully fixed';
         $this->info("{$status} {$fixed} out of {$total} records.");
     }
-
 }

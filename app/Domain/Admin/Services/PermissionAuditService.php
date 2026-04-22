@@ -39,7 +39,7 @@ class PermissionAuditService
             $added = array_diff($afterPerms, $beforePerms);
             $removed = array_diff($beforePerms, $afterPerms);
 
-            if (!empty($added) || !empty($removed)) {
+            if (! empty($added) || ! empty($removed)) {
                 $diff[$role] = [
                     'added' => array_values($added),
                     'removed' => array_values($removed),
@@ -75,7 +75,7 @@ class PermissionAuditService
 
         // Unmanaged: Roles that exist in DB but NOT in the registry
         $unmanagedRoles = array_diff_key($current, $registry);
-        
+
         return [
             'managed' => $managed,
             'unmanaged' => $unmanagedRoles,

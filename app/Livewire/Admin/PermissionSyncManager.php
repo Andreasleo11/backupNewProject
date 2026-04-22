@@ -11,8 +11,11 @@ use Livewire\Component;
 class PermissionSyncManager extends Component
 {
     public $managedChanges = [];
+
     public $unmanagedRoles = [];
+
     public $logs = [];
+
     public $activeTab = 'compare';
 
     public function mount(PermissionAuditService $auditService)
@@ -40,7 +43,7 @@ class PermissionSyncManager extends Component
         $after = $auditService->getCurrentState();
         $changes = $auditService->calculateDiff($before, $after);
 
-        if (!empty($changes)) {
+        if (! empty($changes)) {
             PermissionSyncLog::create([
                 'user_id' => Auth::id(),
                 'snapshot' => $before,
@@ -57,7 +60,7 @@ class PermissionSyncManager extends Component
     public function revert(PermissionSyncLog $log, PermissionAuditService $auditService)
     {
         $auditService->revert($log);
-        
+
         // Log the reversion itself as a NEW sync event
         PermissionSyncLog::create([
             'user_id' => Auth::id(),

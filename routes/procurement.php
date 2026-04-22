@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     // Purchase Requests
     Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames'])->name('purchase-requests.get-item-names');
     Route::get('purchase-requests', PurchaseRequestIndex::class)->name('purchase-requests.index');
+    Route::get('purchase-requests/approved-all', [PurchaseRequestController::class, 'indexApprovedAll'])->name('purchase-requests.approved-all');
     Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
     Route::post('purchase-requests', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
     Route::get('purchase-requests/{id}/edit', [PurchaseRequestController::class, 'edit'])->name('purchase-requests.edit');

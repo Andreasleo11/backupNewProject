@@ -66,7 +66,7 @@ class ApprovalHub extends Component
     {
         $this->groupingMode = $mode;
         $this->hasSelectedGroupingMode = true;
-          session(['overtime_grouping_mode' => $mode, 'overtime_grouping_mode_selected' => true]);
+        session(['overtime_grouping_mode' => $mode, 'overtime_grouping_mode_selected' => true]);
         $this->expandedGroups = []; // Reset expanded groups when switching grouping modes
         $this->selectedPackKeys = [];
         $this->bulkSelectionKey++;

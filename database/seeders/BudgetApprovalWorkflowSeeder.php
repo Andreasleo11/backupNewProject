@@ -7,7 +7,6 @@ use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class BudgetApprovalWorkflowSeeder extends Seeder
 {
@@ -38,16 +37,16 @@ class BudgetApprovalWorkflowSeeder extends Seeder
 
         if ($modelType === MonthlyBudgetReport::class) {
             // --- Departmental Reports (2 Steps: Dept Head -> GM/Director) ---
-            
+
             // A. QA/QC Workflow (Director Approval)
             $qaqc = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-qaqc-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (QA/QC)',
-                'priority'   => 1,
-                'active'     => true,
+                'code' => 'budget-qaqc-' . strtolower($shortName),
+                'name' => $shortName . ' Approval (QA/QC)',
+                'priority' => 1,
+                'active' => true,
                 'match_expr' => [
-                    'from_department_in' => ['QA', 'QC']
+                    'from_department_in' => ['QA', 'QC'],
                 ],
             ]);
 
@@ -59,10 +58,10 @@ class BudgetApprovalWorkflowSeeder extends Seeder
             // B. Moulding Workflow
             $moulding = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-moulding-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (Moulding)',
-                'priority'   => 2,
-                'active'     => true,
+                'code' => 'budget-moulding-' . strtolower($shortName),
+                'name' => $shortName . ' Approval (Moulding)',
+                'priority' => 2,
+                'active' => true,
                 'match_expr' => [
                     'is_moulding' => true,
                 ],
@@ -76,10 +75,10 @@ class BudgetApprovalWorkflowSeeder extends Seeder
             // C. Standard Workflow (Catch-all)
             $standard = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-standard-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (Standard)',
-                'priority'   => 10,
-                'active'     => true,
+                'code' => 'budget-standard-' . strtolower($shortName),
+                'name' => $shortName . ' Approval (Standard)',
+                'priority' => 10,
+                'active' => true,
                 'match_expr' => [
                     'is_moulding' => false,
                 ],
@@ -91,14 +90,14 @@ class BudgetApprovalWorkflowSeeder extends Seeder
             ]);
         } else {
             // --- Summary Reports ---
-            
+
             // A. Moulding Summary (Dept Head -> Director)
             $mouldingSummary = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-summary-moulding-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (Moulding: DH -> Dir)',
-                'priority'   => 1,
-                'active'     => true,
+                'code' => 'budget-summary-moulding-' . strtolower($shortName),
+                'name' => $shortName . ' Approval (Moulding: DH -> Dir)',
+                'priority' => 1,
+                'active' => true,
                 'match_expr' => [
                     'is_moulding' => true,
                 ],
@@ -112,10 +111,10 @@ class BudgetApprovalWorkflowSeeder extends Seeder
             // B. Standard Summary (GM -> Director)
             $standardSummary = RuleTemplate::create([
                 'model_type' => $modelType,
-                'code'       => 'budget-summary-standard-' . strtolower($shortName),
-                'name'       => $shortName . ' Approval (Standard: GM -> Dir)',
-                'priority'   => 10,
-                'active'     => true,
+                'code' => 'budget-summary-standard-' . strtolower($shortName),
+                'name' => $shortName . ' Approval (Standard: GM -> Dir)',
+                'priority' => 10,
+                'active' => true,
                 'match_expr' => [
                     'is_moulding' => false,
                 ],
@@ -133,10 +132,10 @@ class BudgetApprovalWorkflowSeeder extends Seeder
         foreach ($steps as $step) {
             RuleStepTemplate::create([
                 'rule_template_id' => $template->id,
-                'sequence'         => $step['sequence'],
-                'approver_type'    => 'role',
-                'approver_id'      => $step['role_id'],
-                'final'            => $step['final'] ?? false,
+                'sequence' => $step['sequence'],
+                'approver_type' => 'role',
+                'approver_id' => $step['role_id'],
+                'final' => $step['final'] ?? false,
             ]);
         }
     }

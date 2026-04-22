@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Application\Overtime\Services\OvertimeApprovalContextBuilder;
 use App\Domain\Overtime\Models\OvertimeForm;
-use App\Infrastructure\Approval\Services\DefaultRuleResolver;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Infrastructure\Persistence\Eloquent\Models\UserSignature;
@@ -31,24 +30,25 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
         $legacyForms = OvertimeForm::all();
         if ($legacyForms->isEmpty()) {
             $this->command->info('No Overtime forms found to migrate.');
+
             return;
         }
 
-        $contextBuilder = new OvertimeApprovalContextBuilder();
+        $contextBuilder = new OvertimeApprovalContextBuilder;
         $resolver = app(\App\Domain\Approval\Contracts\RuleResolver::class);
 
         // Legacy role_slug to Modern role mapping
         $legacyToModernRole = [
             'department-head' => 'department-head',
             'general-manager' => 'general-manager',
-            'verificator'     => 'verificator',
-            'dept_head'       => 'department-head',
-            'DEPT_HEAD'       => 'department-head',
-            'gm'              => 'general-manager',
-            'GM'              => 'general-manager',
-            'director'        => 'director',
-            'DIRECTOR'        => 'director',
-            'supervisor'      => 'department-head', // Legacy supervisor maps to dept-head
+            'verificator' => 'verificator',
+            'dept_head' => 'department-head',
+            'DEPT_HEAD' => 'department-head',
+            'gm' => 'general-manager',
+            'GM' => 'general-manager',
+            'director' => 'director',
+            'DIRECTOR' => 'director',
+            'supervisor' => 'department-head', // Legacy supervisor maps to dept-head
         ];
 
         DB::transaction(function () use ($legacyForms, $contextBuilder, $resolver, $legacyToModernRole) {
@@ -58,7 +58,7 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
                 $context = $contextBuilder->build($form);
                 $rule = $resolver->resolveFor(OvertimeForm::class, $context);
 
-                if (!$rule) {
+                if (! $rule) {
                     $this->command->warn("No rule template found for Overtime #{$form->id}. Skipping.");
                     continue;
                 }
@@ -74,12 +74,12 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
 
                 // 3. Create Unified Approval Request
                 $approvalRequest = $form->approvalRequest()->create([
-                    'status'           => 'DRAFT', // Temporary
+                    'status' => 'DRAFT', // Temporary
                     'rule_template_id' => $rule->id,
-                    'current_step'     => 1,
-                    'submitted_by'     => $form->user_id,
-                    'submitted_at'     => $form->created_at,
-                    'meta'             => ['migrated_from_legacy_overtime' => true],
+                    'current_step' => 1,
+                    'submitted_by' => $form->user_id,
+                    'submitted_at' => $form->created_at,
+                    'meta' => ['migrated_from_legacy_overtime' => true],
                 ]);
 
                 // 4. Create all steps from the resolved Rule Template
@@ -96,8 +96,10 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
                     // Try to find the matching legacy signature
                     // We check ALL legacy codes that map to our modern roleName
                     $legacyCodes = array_keys($legacyToModernRole, $roleName);
-                    if (!in_array($roleName, $legacyCodes)) $legacyCodes[] = $roleName;
-                    
+                    if (! in_array($roleName, $legacyCodes)) {
+                        $legacyCodes[] = $roleName;
+                    }
+
                     $sig = null;
                     foreach ($legacyCodes as $code) {
                         if ($legacyApprovals->has($code)) {
@@ -136,33 +138,33 @@ class SyncLegacyOvertimeToUnifiedApprovalSeeder extends Seeder
                         $allApproved = false;
                         $actedBy = $sig->approver_id;
                         $actedAt = $sig->signed_at ?: $sig->updated_at;
-                        if (!$foundCurrent) {
+                        if (! $foundCurrent) {
                             $currentStepSequence = $tStep->sequence;
                             $foundCurrent = true;
                         }
                     } else {
                         $allApproved = false;
-                        if (!$foundCurrent) {
+                        if (! $foundCurrent) {
                             $currentStepSequence = $tStep->sequence;
                             $foundCurrent = true;
                         }
                     }
 
                     ApprovalStep::create([
-                        'approval_request_id'         => $approvalRequest->id,
-                        'sequence'                    => $tStep->sequence,
-                        'approver_type'               => 'role',
-                        'approver_id'                 => $tStep->approver_id,
-                        'approver_snapshot_name'      => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
+                        'approval_request_id' => $approvalRequest->id,
+                        'sequence' => $tStep->sequence,
+                        'approver_type' => 'role',
+                        'approver_id' => $tStep->approver_id,
+                        'approver_snapshot_name' => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
                         'approver_snapshot_role_slug' => $roleName,
-                        'approver_snapshot_label'     => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
-                        'status'                      => $status,
-                        'acted_by'                    => $actedBy,
-                        'acted_at'                    => $actedAt,
-                        'signature_image_path'        => $imagePath,
-                        'signature_sha256'            => $sha256,
-                        'user_signature_id'           => $sigId,
-                        'remarks'                     => $sig ? ($sig->comment ?? 'Migrated from legacy overtime signature') : null,
+                        'approver_snapshot_label' => $roleName ? ucwords(str_replace('-', ' ', $roleName)) : 'Approver',
+                        'status' => $status,
+                        'acted_by' => $actedBy,
+                        'acted_at' => $actedAt,
+                        'signature_image_path' => $imagePath,
+                        'signature_sha256' => $sha256,
+                        'user_signature_id' => $sigId,
+                        'remarks' => $sig ? ($sig->comment ?? 'Migrated from legacy overtime signature') : null,
                     ]);
                 }
 

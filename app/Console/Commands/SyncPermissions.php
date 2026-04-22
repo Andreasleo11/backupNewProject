@@ -53,7 +53,7 @@ class SyncPermissions extends Command
                 }
             }
 
-            if (!empty($data['unmanaged'])) {
+            if (! empty($data['unmanaged'])) {
                 $this->warn("\n--- Unmanaged Roles (Database Only) ---");
                 foreach (array_keys($data['unmanaged']) as $role) {
                     $this->line(" - {$role}");
@@ -109,7 +109,7 @@ class SyncPermissions extends Command
         $afterState = $auditService->getCurrentState();
         $changes = $auditService->calculateDiff($beforeState, $afterState);
 
-        if (!empty($changes)) {
+        if (! empty($changes)) {
             PermissionSyncLog::create([
                 'user_id' => null, // CLI
                 'snapshot' => $beforeState,

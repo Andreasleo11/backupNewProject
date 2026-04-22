@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\MonthlyBudgetReportController;
-use App\Http\Controllers\MonthlyBudgetReportDetailController;
 use App\Http\Controllers\MonthlyBudgetSummaryController;
 use App\Http\Controllers\MonthlyBudgetSummaryDetailController;
 use App\Livewire\DepartmentExpenses;
@@ -41,7 +40,6 @@ Route::middleware('auth')->group(function () {
 
     Route::put('monthly-budget-reports/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('monthly-budget-reports/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
-
 
     // Monthly Budget Summaries
     Route::prefix('monthly-budget-summaries')->group(function () {

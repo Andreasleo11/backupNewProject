@@ -133,14 +133,13 @@ class EvaluationApprovalService
         }
 
         $total = $query->count();
-        
+
         // if($type === 'yayasan') dd($total, $query->get());
         // $approved = (clone $query)->where('approval_status', 'fully_approved')->count();
 
         // return $total > 0 && $total === $approved;
         return $total > 0;
     }
-
 
     /**
      * Get a summary count of each approval_status for a dept+month.
@@ -159,7 +158,6 @@ class EvaluationApprovalService
                 $sub->where('dept_code', $deptNo);
             });
         }
-
 
         if ($type) {
             $query->where('evaluation_type', $type);
@@ -200,5 +198,4 @@ class EvaluationApprovalService
 
         return $q;
     }
-
 }

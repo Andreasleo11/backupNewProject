@@ -309,7 +309,6 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
 
-
     }
 
     public function batchReject(
@@ -358,7 +357,6 @@ class PurchaseRequestIndex extends Component
         } else {
             $this->dispatch('toast', message: $result['message'], type: 'error');
         }
-
 
     }
 
@@ -413,7 +411,6 @@ class PurchaseRequestIndex extends Component
             $this->dispatch('toast', message: 'PO Number updated successfully!', type: 'success');
             $this->dispatch('close-edit-po-modal');
 
-
             $this->dispatch('$refresh');
 
         } catch (\Exception $e) {
@@ -425,6 +422,7 @@ class PurchaseRequestIndex extends Component
     {
         if (empty($reason)) {
             $this->dispatch('toast', message: 'Cancellation reason is required.', type: 'error');
+
             return;
         }
 
@@ -440,7 +438,6 @@ class PurchaseRequestIndex extends Component
 
             $this->dispatch('toast', message: 'Purchase request cancelled successfully.', type: 'success');
             $this->dispatch('close-cancel-pr-modal');
-
 
             $this->dispatch('$refresh');
         } catch (\Exception $e) {

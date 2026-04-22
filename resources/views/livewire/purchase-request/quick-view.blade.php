@@ -135,9 +135,17 @@
                                                     <td class="px-4 py-3 text-right">
                                                         <div class="text-[10px] text-slate-400 font-bold mb-0.5">
                                                             {{ $item->currency }}
-                                                            {{ number_format((float) $item->price, 2) }}</div>
+                                                            @if($flags['canViewPrices'])
+                                                                {{ number_format((float) $item->price, 2) }}
+                                                            @else
+                                                                <span class="text-slate-400">***</span>
+                                                            @endif</div>
                                                         <div class="text-xs font-black text-slate-900">
-                                                            {{ number_format((float) $item->price * (float) $item->quantity, 2) }}
+                                                            @if($flags['canViewPrices'])
+                                                                {{ number_format((float) $item->price * (float) $item->quantity, 2) }}
+                                                            @else
+                                                                <span class="text-slate-400">***</span>
+                                                            @endif
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -158,7 +166,11 @@
                                                     <span
                                                         class="text-[10px] font-bold text-indigo-400 mr-1">{{ $totals['currency'] ?? '' }}</span>
                                                     <span
-                                                        class="text-sm font-black">{{ number_format((float) $totals['total'], 2) }}</span>
+                                                        @if($flags['canViewPrices'])
+                                                            class="text-sm font-black">{{ number_format((float) $totals['total'], 2) }}</span>
+                                                        @else
+                                                            <span class="text-sm font-black text-slate-400">***</span>
+                                                        @endif
                                                 </td>
                                             </tr>
                                         </tfoot>

@@ -37,6 +37,14 @@ class PurchaseRequestPolicy
     }
 
     /**
+     * Determine whether the user can view all approved PRs across departments.
+     */
+    public function viewAllApproved(User $user): bool
+    {
+        return $user->can('pr.view-all-approved');
+    }
+
+    /**
      * Determine whether the user can view a specific purchase request.
      */
     public function view(User $user, PurchaseRequest $pr): bool
