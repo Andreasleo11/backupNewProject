@@ -19,8 +19,8 @@ class BatchRejectPurchaseRequestsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->useCase = new BatchRejectPurchaseRequests();
+
+        $this->useCase = new BatchRejectPurchaseRequests;
     }
 
     /** @test */

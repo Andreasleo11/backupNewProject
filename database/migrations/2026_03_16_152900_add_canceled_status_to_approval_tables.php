@@ -24,7 +24,7 @@ return new class extends Migration
     {
         // Revert enum (warning: data loss if records exist with CANCELED status)
         DB::statement("ALTER TABLE approval_requests MODIFY COLUMN status ENUM('DRAFT', 'SUBMITTED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RETURNED') DEFAULT 'DRAFT'");
-        
+
         DB::statement("ALTER TABLE approval_steps MODIFY COLUMN status ENUM('PENDING', 'APPROVED', 'REJECTED', 'SKIPPED', 'RETURNED') DEFAULT 'PENDING'");
     }
 };

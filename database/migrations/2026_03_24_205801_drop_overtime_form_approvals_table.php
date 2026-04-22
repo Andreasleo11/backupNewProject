@@ -15,7 +15,7 @@ return new class extends Migration
         // 1. Migrate existing data to unified Approval system before dropping the table
         Artisan::call('db:seed', [
             '--class' => 'MigrateLegacyOvertimeToUnifiedApprovalSeeder',
-            '--force' => true
+            '--force' => true,
         ]);
 
         // 2. Drop the legacy table

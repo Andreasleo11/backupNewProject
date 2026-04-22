@@ -12,7 +12,6 @@ use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
 
-
 final class GetPurchaseRequestDetail
 {
     public function __construct(
@@ -128,6 +127,7 @@ final class GetPurchaseRequestDetail
         return [
             'canApprove' => $canApprove,
             'canEdit' => $user->can('update', $pr),
+            'canViewPrices' => $user->can('viewPrices', $pr),
             'canEditPo' => $user->can('updatePo', $pr),
             'canDelete' => $user->can('delete', $pr),
             'canCancel' => $user->can('cancel', $pr),

@@ -14,24 +14,24 @@ return new class extends Migration
             $table->string('reporter_id')->comment('FK to employees (nik)');
             $table->foreignId('assigned_to')->nullable()->comment('FK to users table. Single PIC.');
             $table->foreignId('category_id')->constrained('ticket_categories');
-            
+
             $table->string('title');
             $table->text('description');
-            
+
             $table->string('status')->default('Open')->comment('Enum: Open, In Progress, On Hold, Resolved, Closed');
             $table->string('priority')->default('Medium')->comment('Enum: Low, Medium, High, Critical');
-            
+
             // SLA and Tracking timestamps
             $table->timestamp('first_response_at')->nullable()->comment('When PIC first interacts');
             $table->timestamp('resolved_at')->nullable()->comment('When ticket is marked resolved');
             $table->timestamp('on_hold_since')->nullable()->comment('When ticket entered On Hold state');
-            
+
             $table->integer('total_hold_time_minutes')->default(0)->comment('Total time spent on hold in minutes');
             $table->integer('reopen_count')->default(0)->comment('Number of times transitioned from Resolved to Open');
-            
+
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indices for fast dashboards
             $table->index('status');
             $table->index('priority');

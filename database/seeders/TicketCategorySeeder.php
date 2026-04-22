@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Domains\Ticketing\Entities\TicketCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TicketCategorySeeder extends Seeder

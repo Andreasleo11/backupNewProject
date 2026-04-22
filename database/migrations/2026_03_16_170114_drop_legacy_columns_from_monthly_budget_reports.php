@@ -20,7 +20,7 @@ return new class extends Migration
                 'reject_reason',
                 'created_autograph',
                 'is_known_autograph',
-                'approved_autograph'
+                'approved_autograph',
             ]);
         });
 
@@ -33,7 +33,7 @@ return new class extends Migration
                 'reject_reason',
                 'created_autograph',
                 'is_known_autograph',
-                'approved_autograph'
+                'approved_autograph',
             ]);
         });
     }

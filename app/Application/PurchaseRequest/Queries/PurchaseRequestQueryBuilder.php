@@ -61,6 +61,12 @@ final class PurchaseRequestQueryBuilder
                         $dq->where('from_department', $user->department_name);
                     }
                 })
+              // Users with view-all-approved can see all approved PRs
+                ->orWhere(function ($aq) use ($user) {
+                    if ($user->can('pr.view-all-approved')) {
+                        $aq->whereHas('approvalRequest', fn ($ar) => $ar->where('status', 'APPROVED'));
+                    }
+                })
               // Everything else: centralised approval visibility
                 ->orWhereHas('approvalRequest', fn ($aq) => $aq->forUser($user));
         });

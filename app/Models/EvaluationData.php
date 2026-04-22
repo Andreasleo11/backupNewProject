@@ -56,7 +56,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class EvaluationData extends Model
 {
     use HasFactory, LogsActivity;
-    
+
     protected static function booted()
     {
         static::creating(function ($record) {

@@ -11,7 +11,6 @@ use App\Application\PurchaseRequest\Queries\Filters\InReviewFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyActiveRequestsFilter;
 use App\Application\PurchaseRequest\Queries\Filters\MyApprovalFilter;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-
 use Illuminate\Support\Facades\DB;
 
 class GetPurchaseRequestStats
@@ -145,6 +144,4 @@ class GetPurchaseRequestStats
 
         return ! empty($totals) ? array_map('floatval', $totals) : ['IDR' => 0.0];
     }
-
-
 }

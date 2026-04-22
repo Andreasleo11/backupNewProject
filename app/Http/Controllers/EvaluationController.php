@@ -90,7 +90,6 @@ class EvaluationController extends Controller
             $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t);
         }
 
-
         if (empty($allowedTabs)) {
             abort(403, 'No evaluation tabs accessible for your account.');
         }
@@ -183,9 +182,9 @@ class EvaluationController extends Controller
 
         if (! $record->exists) {
             // Need to populate relations and base values for a new record to pass validation
-            $record->pe_id = null; 
+            $record->pe_id = null;
             $record->department_id = $employee->department->id ?? null;
-            $record->level = $employee->level ?? 5; 
+            $record->level = $employee->level ?? 5;
             $record->evaluation_type = $record->evaluationType(); // Resolves from karyawan relation
             $record->setRelation('karyawan', $employee);
         } else {
