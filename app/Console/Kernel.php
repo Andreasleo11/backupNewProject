@@ -47,8 +47,6 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('email:daily-stock-report')->dailyAt('01:30');
 
-        $schedule->command('notify:overtime')->dailyAt('09:00')->timezone('Asia/Jakarta');
-
         $schedule
             ->command('notify:missing-reports')
             ->weekdays()
