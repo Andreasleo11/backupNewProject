@@ -110,7 +110,10 @@
                                                     Qty</th>
                                                 <th
                                                     class="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">
-                                                    Price/Subtotal</th>
+                                                    Price</th>
+                                                <th
+                                                    class="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">
+                                                    Subtotal</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-slate-50 bg-white">
@@ -126,42 +129,54 @@
                                                                 For: {{ $item->purpose }}</p>
                                                         @endif
                                                     </td>
-                                                    <td class="px-4 py-3 text-center">
-                                                        <span
-                                                            class="text-xs font-black text-slate-700">{{ (float) $item->quantity }}</span>
-                                                        <span
-                                                            class="text-[9px] font-bold text-slate-400 block">{{ $item->uom }}</span>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-right">
-                                                        <div class="text-[10px] text-slate-400 font-bold mb-0.5">
-                                                            {{ $item->currency }}
-                                                            @if($flags['canViewPrices'])
-                                                                {{ number_format((float) $item->price, 2) }}
-                                                            @else
-                                                                <span class="text-slate-400">***</span>
-                                                            @endif</div>
-                                                        <div class="text-xs font-black text-slate-900">
-                                                            @if($flags['canViewPrices'])
-                                                                {{ number_format((float) $item->price * (float) $item->quantity, 2) }}
-                                                            @else
-                                                                <span class="text-slate-400">***</span>
-                                                            @endif
-                                                        </div>
-                                                    </td>
+                                                     <td class="px-4 py-3 text-center">
+                                                         <span
+                                                             class="text-xs font-black text-slate-700">{{ (float) $item->quantity }}</span>
+                                                         <span
+                                                             class="text-[9px] font-bold text-slate-400 block">{{ $item->uom }}</span>
+                                                     </td>
+                                                     <td class="px-4 py-3 text-right">
+                                                         <div class="text-[10px] text-slate-400 font-bold mb-0.5">
+                                                             {{ $item->currency }}
+                                                             @if($flags['canViewPrices'])
+                                                                 {{ number_format((float) $item->price, 2) }}
+                                                             @else
+                                                                 <span class="text-slate-400">***</span>
+                                                             @endif</div>
+                                                         @if ($item->master && $flags['canViewPrices'])
+                                                             <div class="text-[9px] text-slate-500 mt-0.5">
+                                                                 Master: {{ number_format($item->master->price, 2) }}
+                                                                 @if ($item->master->price != $item->price)
+                                                                     <span class="text-amber-600 font-bold">(diff)</span>
+                                                                 @endif
+                                                             </div>
+                                                         @elseif (!$item->master)
+                                                             <div class="text-[9px] text-emerald-600 font-bold mt-0.5">New Item</div>
+                                                         @endif
+                                                     </td>
+                                                     <td class="px-4 py-3 text-right">
+                                                         <div class="text-xs font-black text-slate-900">
+                                                             @if($flags['canViewPrices'])
+                                                                 {{ number_format((float) $item->price * (float) $item->quantity, 2) }}
+                                                             @else
+                                                                 <span class="text-slate-400">***</span>
+                                                             @endif
+                                                         </div>
+                                                     </td>
                                                 </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="3"
-                                                        class="px-4 py-12 text-center text-xs text-slate-400 italic">No
-                                                        details available.</td>
-                                                </tr>
-                                            @endforelse
+                                             @empty
+                                                 <tr>
+                                                     <td colspan="4"
+                                                         class="px-4 py-12 text-center text-xs text-slate-400 italic">No
+                                                         details available.</td>
+                                                 </tr>
+                                             @endforelse
                                         </tbody>
                                         <tfoot class="bg-slate-900 text-white">
-                                            <tr>
-                                                <td colspan="2"
-                                                    class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-indigo-200">
-                                                    Total Validated Value</td>
+                                             <tr>
+                                                 <td colspan="3"
+                                                     class="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-indigo-200">
+                                                     Total Validated Value</td>
                                                 <td class="px-4 py-3 text-right">
                                                     <span
                                                         class="text-[10px] font-bold text-indigo-400 mr-1">{{ $totals['currency'] ?? '' }}</span>
