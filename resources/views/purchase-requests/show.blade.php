@@ -292,10 +292,15 @@
                                                         @currency($detail->price)
                                                     @endif
                                                 </span>
-                                                @if ($detail->master && $detail->master->price != $detail->price)
-                                                    <span class="text-[10px] text-slate-400 line-through">
-                                                        {{ number_format($detail->master->price, 2) }}
+                                                @if ($detail->master)
+                                                    <span class="text-[10px] text-slate-500">
+                                                        Master: {{ number_format($detail->master->price, 2) }}
+                                                        @if ($detail->master->price != $detail->price)
+                                                            <span class="text-amber-600 font-bold">(diff)</span>
+                                                        @endif
                                                     </span>
+                                                @else
+                                                    <span class="text-[10px] text-emerald-600 font-bold">New Item</span>
                                                 @endif
                                             </div>
                                         </td>
