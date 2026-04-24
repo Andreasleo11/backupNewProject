@@ -29,6 +29,13 @@
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
                         P{{ $rule->priority }}
                     </span>
+                    {{-- Version badge --}}
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $rule->is_current ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' }}">
+                        v{{ $rule->version_number }}
+                        @if($rule->is_current)
+                            <span class="ml-1 text-[10px]">(Current)</span>
+                        @endif
+                    </span>
                 </div>
             </div>
 

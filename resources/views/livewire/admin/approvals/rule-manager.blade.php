@@ -581,6 +581,19 @@
                     @enderror
                 </div>
 
+                {{-- Version Notes (only when editing) --}}
+                @if($editingRuleId)
+                    <div class="relative">
+                        <textarea wire:model.defer="version_notes" rows="2"
+                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            placeholder=" "></textarea>
+                        <label for="version_notes"
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300">
+                            Version Notes (describe what changed)
+                        </label>
+                    </div>
+                @endif
+
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" wire:model.defer="rule_active" class="sr-only peer">
@@ -704,6 +717,23 @@
 
             Livewire.on('force-delete-rule', (data) => {
                 $wire.forceDeleteRule(data.ruleId);
+            });
+
+            Livewire.on('confirm-new-version', (data) => {
+                const confirmed = confirm(
+                    `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
+                    `Creating a new version will NOT affect ongoing approvals (they will continue using the old version).\n\n` +
+                    `Do you want to create a new version anyway?`
+                );
+
+                if (confirmed) {
+                    Livewire.dispatch('force-new-version', { ruleId: data.ruleId, data: data.data });
+                }
+            });
+
+            Livewire.on('force-new-version', (data) => {
+                $wire.forceNewVersion = true;
+                $wire.forceCreateNewVersion(data.ruleId, data.data);
             });
         });
     </script>

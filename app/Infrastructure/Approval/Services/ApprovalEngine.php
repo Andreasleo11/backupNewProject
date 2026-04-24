@@ -139,9 +139,19 @@ final class ApprovalEngine implements Approvals
                 throw new \DomainException('No matching approval rule template.');
             }
 
+            // Get CURRENT active version of the rule
+            $currentVersion = \App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate::where('version_uuid', $tpl->version_uuid)
+                ->where('is_current', true)
+                ->first();
+
+            if (! $currentVersion) {
+                throw new \DomainException('Rule template version not found.');
+            }
+
             $req->fill([
                 'status' => 'IN_REVIEW',
-                'rule_template_id' => $tpl->id,
+                'rule_template_id' => $currentVersion->version_uuid, // Reference to version group
+                'rule_template_version_id' => $currentVersion->id, // Specific immutable version
                 'current_step' => 1,
                 'submitted_by' => $by,
                 'submitted_at' => now(),
