@@ -142,6 +142,7 @@ final class ApprovalEngine implements Approvals
             // Get CURRENT active version of the rule
             $currentVersion = \App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate::where('version_uuid', $tpl->version_uuid)
                 ->where('is_current', true)
+                ->where('active', true)
                 ->first();
 
             if (! $currentVersion) {
