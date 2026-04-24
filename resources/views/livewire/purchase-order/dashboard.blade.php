@@ -164,15 +164,18 @@ document.addEventListener('livewire:init', () => {
         if (monthlyCtx) {
             if (monthlyChart) monthlyChart.destroy();
 
+            const monthlyData = @js($monthlyTotals);
+            const hasMonthlyData = monthlyData && monthlyData.length > 0;
+
             monthlyChart = new Chart(monthlyCtx, {
                 type: 'line',
                 data: {
-                    labels: @js($monthlyTotals->pluck('month')->map(function($m) {
+                    labels: hasMonthlyData ? @js($monthlyTotals->pluck('month')->map(function($m) {
                         return new Date($m + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    })),
+                    })) : [],
                     datasets: [{
                         label: 'Total Amount',
-                        data: @js($monthlyTotals->pluck('total')),
+                        data: hasMonthlyData ? @js($monthlyTotals->pluck('total')) : [],
                         borderColor: 'rgb(14, 165, 233)',
                         backgroundColor: 'rgba(14, 165, 233, 0.1)',
                         tension: 0.4
@@ -203,12 +206,19 @@ document.addEventListener('livewire:init', () => {
         if (statusCtx) {
             if (statusChart) statusChart.destroy();
 
+            const statusData = @js($statusCounts);
+
             statusChart = new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
                     datasets: [{
-                        data: [@js($statusCounts['approved']), @js($statusCounts['waiting']), @js($statusCounts['rejected']), @js($statusCounts['canceled'])],
+                        data: [
+                            statusData?.approved || 0,
+                            statusData?.waiting || 0,
+                            statusData?.rejected || 0,
+                            statusData?.canceled || 0
+                        ],
                         backgroundColor: [
                             'rgb(34, 197, 94)',  // green
                             'rgb(251, 191, 36)', // yellow
@@ -232,12 +242,15 @@ document.addEventListener('livewire:init', () => {
         if (categoryCtx) {
             if (categoryChart) categoryChart.destroy();
 
+            const categoryData = @js($categoryChartData);
+            const hasCategoryData = categoryData && categoryData.length > 0;
+
             categoryChart = new Chart(categoryCtx, {
                 type: 'pie',
                 data: {
-                    labels: @js(collect($categoryChartData)->pluck('label')),
+                    labels: hasCategoryData ? @js($categoryChartData->pluck('label')) : [],
                     datasets: [{
-                        data: @js(collect($categoryChartData)->pluck('count')),
+                        data: hasCategoryData ? @js($categoryChartData->pluck('count')) : [],
                         backgroundColor: [
                             'rgb(14, 165, 233)',   // blue
                             'rgb(168, 85, 247)',   // violet

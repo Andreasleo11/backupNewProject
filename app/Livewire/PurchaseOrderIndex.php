@@ -1,3 +1,7 @@
+<?php
+
+namespace App\Livewire;
+
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Services\PurchaseOrderService;

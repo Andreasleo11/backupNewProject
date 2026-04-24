@@ -1,21 +1,41 @@
-use Livewire\Component;
+<?php
+
+namespace App\Livewire;
+
 use App\Services\PurchaseOrderService;
 use Illuminate\Support\Facades\Log;
+use Livewire\Component;
 
 class PurchaseOrderDashboard extends Component
 {
     public $selectedMonth;
-    public $monthlyTotals = [];
-    public $topVendors = [];
-    public $vendorTotals = [];
-    public $availableMonths = [];
-    public $statusCounts = [
-        'approved' => 0,
-        'waiting' => 0,
-        'rejected' => 0,
-        'canceled' => 0,
-    ];
-    public $categoryChartData = [];
+
+    public $monthlyTotals;
+
+    public $topVendors;
+
+    public $vendorTotals;
+
+    public $availableMonths;
+
+    public $statusCounts;
+
+    public $categoryChartData;
+
+    public function __construct()
+    {
+        $this->monthlyTotals = collect();
+        $this->topVendors = collect();
+        $this->vendorTotals = collect();
+        $this->availableMonths = collect();
+        $this->statusCounts = [
+            'approved' => 0,
+            'waiting' => 0,
+            'rejected' => 0,
+            'canceled' => 0,
+        ];
+        $this->categoryChartData = collect();
+    }
 
     protected $listeners = ['refreshDashboard' => '$refresh'];
 
@@ -49,14 +69,15 @@ class PurchaseOrderDashboard extends Component
         } catch (\Exception $e) {
             Log::error('Failed to load dashboard data', [
                 'month' => $this->selectedMonth,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             // Set default empty data
-            $this->monthlyTotals = [];
-            $this->topVendors = [];
-            $this->vendorTotals = [];
-            $this->categoryChartData = [];
+            $this->monthlyTotals = collect();
+            $this->topVendors = collect();
+            $this->vendorTotals = collect();
+            $this->availableMonths = collect();
+            $this->categoryChartData = collect();
         }
     }
 
@@ -72,7 +93,7 @@ class PurchaseOrderDashboard extends Component
             Log::error('Failed to get vendor details', [
                 'vendor' => $vendorName,
                 'month' => $this->selectedMonth,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
