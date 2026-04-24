@@ -21,6 +21,10 @@ use setasign\Fpdi\Fpdi;
 
 class PurchaseOrderController extends Controller
 {
+    public function __construct(
+        private PurchaseOrderService $poService
+    ) {}
+
     public function index(PurchaseOrderDataTable $dataTable, Request $request)
     {
         $month = $request->query('month');
@@ -75,58 +79,48 @@ class PurchaseOrderController extends Controller
 
     public function store(StorePoRequest $request)
     {
-        // Process validated data
-        $validated = $request->validated();
-        // dd($validated);
-        // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
-        if (isset($validated['invoice_date'])) {
-            $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
-            if ($date) {
-                $validated['invoice_date'] = $date->format('Y-m-d');
-            } else {
-                return redirect()
-                    ->back()
-                    ->withInputs(['invoice_date' => 'Invalid date format']);
+        try {
+            // Process validated data
+            $validated = $request->validated();
+
+            // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
+            if (isset($validated['invoice_date'])) {
+                $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
+                if ($date) {
+                    $validated['invoice_date'] = $date->format('Y-m-d');
+                } else {
+                    return redirect()
+                        ->back()
+                        ->withInputs(['invoice_date' => 'Invalid date format']);
+                }
             }
+
+            // Store the uploaded PDF with a unique filename
+            $file = $validated['pdf_file'];
+            $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
+            $file->storeAs('public/pdfs', $filename);
+
+            // Remove commas from the total and convert it to a float
+            $validated['total'] = (float) str_replace(',', '', $validated['total']);
+
+            // Add the processed filename to validated data
+            $validated['pdf_file'] = $filename;
+
+            // Use the service to create the PO
+            $purchaseOrder = $this->poService->create($validated);
+
+            return redirect()->route('po.index')->with('success', 'PO created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create PO via controller', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create purchase order. Please try again.');
         }
-
-        // Store the uploaded PDF with a unique filename
-        $file = $validated['pdf_file'];
-        $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
-        $file->storeAs('public/pdfs', $filename);
-
-        // Remove commas from the total and convert it to a float
-        $total = (float) str_replace(',', '', $validated['total']);
-
-        // Create a new PurchaseOrder record using Eloquent
-        $purchaseOrder = new PurchaseOrder;
-        $purchaseOrder->po_number = $validated['po_number'];
-        $purchaseOrder->status = 1;
-        $purchaseOrder->filename = $filename;
-        $purchaseOrder->creator_id = auth()->id();
-        $purchaseOrder->vendor_name = $validated['vendor_name'];
-        $purchaseOrder->invoice_date = $validated['invoice_date'];
-        $purchaseOrder->invoice_number = $validated['invoice_number'];
-        $purchaseOrder->currency = $validated['currency'];
-        $purchaseOrder->total = $total;
-        $purchaseOrder->purchase_order_category_id = $validated['purchase_order_category_id'];
-        $purchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
-
-        if (! empty($validated['parent_po_number'])) {
-            $purchaseOrder->parent_po_number = $validated['parent_po_number'];
-
-            // Update the canceled PO revision_count
-            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
-            if ($parentPO) {
-                $parentPO->update([
-                    'revision_count' => $parentPO->revision_count + 1,
-                ]);
-            }
-        }
-
-        $purchaseOrder->save();
-
-        return redirect()->route('po.index')->with('success', 'PO created successfully.');
     }
 
     public function view($id)
@@ -352,42 +346,38 @@ class PurchaseOrderController extends Controller
 
     public function update(UpdatePoRequest $request, $id)
     {
-        // Validate the request (already done automatically by UpdatePoRequest)
-        $validatedData = $request->validated();
+        try {
+            // Validate the request (already done automatically by UpdatePoRequest)
+            $validatedData = $request->validated();
 
-        // Find the existing PO
-        $po = PurchaseOrder::findOrFail($id);
-
-        // Update the PO with validated data
-        $po->po_number = $validatedData['po_number'];
-        $po->vendor_name = $validatedData['vendor_name'];
-        $po->invoice_date = $validatedData['invoice_date'];
-        $po->invoice_number = $validatedData['invoice_number'];
-        $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
-        $po->currency = $validatedData['currency'];
-        $po->purchase_order_category_id = $validatedData['purchase_order_category_id'];
-        $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total
-
-        // Check if a new PDF file is uploaded
-        if ($request->hasFile('pdf_file')) {
-            // Delete the old file if necessary (optional, depends on your setup)
-            if ($po->filename) {
-                Storage::delete($po->filename);
+            // Handle PDF file upload if provided
+            if ($request->hasFile('pdf_file')) {
+                $file = $validatedData['pdf_file'];
+                $filename = 'PO_' . $validatedData['po_number'] . '_' . time() . '.pdf';
+                $file->storeAs('public/pdfs', $filename);
+                $validatedData['pdf_file'] = $filename;
             }
 
-            $file = $validatedData['pdf_file'];
-            $filename = 'PO_' . $po->po_number . '_' . time() . '.pdf';
-            $file->storeAs('public/pdfs', $filename);
+            // Remove commas from total
+            $validatedData['total'] = str_replace(',', '', $validatedData['total']);
 
-            // Store the new file and update the path
-            $po->filename = $filename;
+            // Use the service to update the PO
+            $updatedPo = $this->poService->update($id, $validatedData);
+
+            // Redirect back with a success message
+            return redirect()->back()->with('success', 'PO Successfully Updated!');
+        } catch (\Exception $e) {
+            Log::error('Failed to update PO via controller', [
+                'po_id' => $id,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to update purchase order. Please try again.');
         }
-
-        // Save the changes
-        $po->save();
-
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'PO Successfully Updated!');
     }
 
     public function dashboard(Request $request)

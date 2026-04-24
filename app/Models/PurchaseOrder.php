@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Notifications\PurchaseOrderApproved;
 use App\Notifications\PurchaseOrderCanceled;
 use App\Notifications\PurchaseOrderCreated;
