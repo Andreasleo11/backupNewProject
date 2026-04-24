@@ -136,20 +136,6 @@ class RuleManager extends Component
         session()->flash('success', 'Selected rules deactivated.');
     }
 
-    public function bulkDelete(): void
-    {
-        $count = count($this->selectedRules);
-
-        // Delete steps first using bulk operation
-        RuleStepTemplate::whereIn('rule_template_id', $this->selectedRules)->delete();
-
-        // Then delete the rules
-        RuleTemplate::whereIn('id', $this->selectedRules)->delete();
-
-        $this->selectedRules = [];
-        session()->flash('success', "{$count} rules deleted.");
-    }
-
     public function updatedShowRuleModal($value): void
     {
         if (! $value) {
@@ -236,17 +222,73 @@ class RuleManager extends Component
 
     public function deleteRule(int $id): void
     {
-        $rule = RuleTemplate::with('steps')->findOrFail($id);
+        $rule = RuleTemplate::findOrFail($id);
 
-        // Simple guard: avoid deleting if used heavily (optional)
+        // Check if there are any active approval requests using this rule
+        $activeRequestsCount = \App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::where('rule_template_id', $id)
+            ->whereNotIn('status', ['APPROVED', 'CANCELLED', 'REJECTED'])
+            ->count();
+
+        if ($activeRequestsCount > 0) {
+            // Show warning and ask for confirmation
+            $this->dispatch('confirm-delete-rule', [
+                'ruleId' => $id,
+                'ruleName' => $rule->name,
+                'activeRequestsCount' => $activeRequestsCount,
+            ]);
+
+            return;
+        }
+
+        // No active requests, proceed with soft deletion
+        $this->performRuleSoftDeletion($rule);
+    }
+
+    public function forceDeleteRule(int $id): void
+    {
+        $rule = RuleTemplate::findOrFail($id);
+        $this->performRuleSoftDeletion($rule);
+    }
+
+    private function performRuleSoftDeletion(RuleTemplate $rule): void
+    {
+        // Soft delete steps first (cascading)
         $rule->steps()->delete();
+
+        // Soft delete the rule
         $rule->delete();
 
-        if ($this->selectedRuleId === $id) {
+        if ($this->selectedRuleId === $rule->id) {
             $this->selectedRuleId = null;
         }
 
-        session()->flash('success', 'Rule deleted.');
+        session()->flash('success', 'Rule soft-deleted. It can be restored if needed.');
+    }
+
+    public function restoreRule(int $id): void
+    {
+        $rule = RuleTemplate::withTrashed()->findOrFail($id);
+
+        // Restore steps first
+        $rule->steps()->restore();
+
+        // Restore the rule
+        $rule->restore();
+
+        session()->flash('success', 'Rule restored.');
+    }
+
+    public function forceDeleteRulePermanently(int $id): void
+    {
+        $rule = RuleTemplate::withTrashed()->findOrFail($id);
+
+        // Permanently delete steps first
+        $rule->steps()->forceDelete();
+
+        // Permanently delete the rule
+        $rule->forceDelete();
+
+        session()->flash('success', 'Rule permanently deleted.');
     }
 
     private function resetRuleForm(): void

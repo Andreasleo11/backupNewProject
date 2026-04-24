@@ -148,11 +148,6 @@
                             class="flex-1 px-3 py-2 text-xs font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors">
                             Deactivate
                         </button>
-                        <button wire:click="bulkDelete"
-                            class="flex-1 px-3 py-2 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            onclick="return confirm('Delete {{ count($selectedRules) }} rules?')">
-                            Delete
-                        </button>
                     </div>
                 </div>
             @endif
@@ -693,4 +688,23 @@
         }
 
     </style>
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('confirm-delete-rule', (data) => {
+                const confirmed = confirm(
+                    `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
+                    `Deleting this rule will affect ongoing approvals. Are you sure you want to proceed?`
+                );
+
+                if (confirmed) {
+                    Livewire.dispatch('force-delete-rule', { ruleId: data.ruleId });
+                }
+            });
+
+            Livewire.on('force-delete-rule', (data) => {
+                $wire.forceDeleteRule(data.ruleId);
+            });
+        });
+    </script>
 </div>
