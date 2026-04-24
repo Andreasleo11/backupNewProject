@@ -103,7 +103,7 @@
                                 All Types
                             </button>
                             @foreach($availableModelTypes as $modelType)
-                                <button wire:click="setModelTypeFilter('{{ $modelType }}')"
+                                <button wire:click="setModelTypeFilter({{ json_encode($modelType) }})"
                                     class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all {{ $modelTypeFilter === $modelType ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-50' }}">
                                     <div class="flex items-center justify-between">
                                         <span class="truncate">{{ class_basename($modelType) }}</span>
