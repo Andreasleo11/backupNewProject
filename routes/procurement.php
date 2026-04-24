@@ -69,7 +69,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/pr/markasreceivedall', [DetailPurchaseRequestController::class, 'receivedAll'])->name('pr.receive.all');
 
     // Purchase Orders
-    Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
+    // Livewire Index (Phase 2)
+    Route::get('purchaseOrders', App\Livewire\PurchaseOrderIndex::class)->name('po.index');
     Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
     Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
     Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
@@ -83,7 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
     Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');
     Route::post('purchase-orders/reject-selected', [PurchaseOrderController::class, 'rejectSelected'])->name('purchase_orders.reject_selected');
-    Route::get('purchaseOrders/dashboard', [PurchaseOrderController::class, 'dashboard'])->name('po.dashboard');
+    // Livewire Dashboard (Phase 2)
+    Route::get('purchaseOrders/dashboard', App\Livewire\PurchaseOrderDashboard::class)->name('po.dashboard');
     Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']);
     Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
     Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);

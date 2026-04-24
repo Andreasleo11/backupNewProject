@@ -157,39 +157,151 @@ class PurchaseOrderService
     }
 
     /**
-     * Submit a purchase order for approval (transition to WAITING status)
+     * Approve a purchase order
      *
      * @param int $id Purchase order ID
+     * @param int $userId User performing the approval
+     * @param string|null $remarks Approval remarks
      *
      * @throws \Exception
      */
-    public function submitForApproval(int $id): PurchaseOrder
+    public function approve(int $id, int $userId, ?string $remarks = null): void
     {
         try {
-            return DB::transaction(function () use ($id) {
+            DB::transaction(function () use ($id, $userId, $remarks) {
                 $po = PurchaseOrder::findOrFail($id);
 
-                if (! $po->canTransitionTo(PurchaseOrderStatus::WAITING)) {
-                    throw new \InvalidArgumentException('Purchase order cannot be submitted for approval');
+                if (! $po->canTransitionTo(PurchaseOrderStatus::APPROVED)) {
+                    throw new \InvalidArgumentException('Purchase order cannot be approved');
                 }
 
-                $po->setStatusEnum(PurchaseOrderStatus::WAITING);
+                $po->setStatusEnum(PurchaseOrderStatus::APPROVED);
+                $po->approved_date = now();
                 $po->save();
 
-                // TODO: Trigger approval workflow
-                // TODO: Send notifications
-
-                Log::info('Purchase order submitted for approval', [
+                Log::info('Purchase order approved', [
                     'po_id' => $po->id,
                     'po_number' => $po->po_number,
-                    'submitted_by' => auth()->id(),
+                    'approved_by' => $userId,
+                    'remarks' => $remarks,
                 ]);
-
-                return $po;
             });
         } catch (\Exception $e) {
-            Log::error('Failed to submit purchase order for approval', [
+            Log::error('Failed to approve purchase order', [
                 'po_id' => $id,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get dashboard analytics data
+     *
+     * @param string $month Month in Y-m format
+     */
+    public function getDashboardData(?string $month = null): array
+    {
+        try {
+            $selectedMonth = $month ?: now()->format('Y-m');
+
+            // Query for vendor totals (distinct vendors with their totals)
+            $vendorTotals = PurchaseOrder::selectRaw(
+                'vendor_name, COUNT(id) as po_count, SUM(total) as total',
+            )
+                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->groupBy('vendor_name')
+                ->orderByDesc('total')
+                ->get();
+
+            // Fetch top 5 vendors
+            $topVendors = PurchaseOrder::selectRaw('vendor_name')
+                ->selectRaw('SUM(total) as total')
+                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->groupBy('vendor_name')
+                ->orderByDesc('total')
+                ->take(5)
+                ->get();
+
+            // Sum of totals for each month (for chart)
+            $monthlyTotals = PurchaseOrder::selectRaw(
+                "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
+            )
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            // List of available months for the filter dropdown
+            $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
+                ->distinct()
+                ->orderByDesc('month')
+                ->pluck('month');
+
+            // Fetch counts for approved, waiting, and rejected using query scopes
+            $statusCounts = [
+                'approved' => PurchaseOrder::approved()->count(),
+                'waiting' => PurchaseOrder::waiting()->count(),
+                'rejected' => PurchaseOrder::rejected()->count(),
+                'canceled' => PurchaseOrder::canceled()->count(),
+            ];
+
+            // Fetch Purchase Order counts grouped by category
+            $poByCategory = PurchaseOrder::selectRaw('purchase_order_category_id, COUNT(*) as count')
+                ->groupBy('purchase_order_category_id')
+                ->get();
+
+            // Fetch category names for better readability
+            $categories = \App\Models\PurchaseOrderCategory::whereIn(
+                'id',
+                $poByCategory->pluck('purchase_order_category_id'),
+            )->pluck('name', 'id'); // Returns [id => name]
+
+            // Format data for chart
+            $categoryChartData = $poByCategory->map(function ($po) use ($categories) {
+                return [
+                    'label' => $categories[$po->purchase_order_category_id] ?? 'Unknown',
+                    'count' => $po->count,
+                ];
+            });
+
+            return [
+                'monthlyTotals' => $monthlyTotals,
+                'topVendors' => $topVendors,
+                'vendorTotals' => $vendorTotals,
+                'availableMonths' => $availableMonths,
+                'statusCounts' => $statusCounts,
+                'categoryChartData' => $categoryChartData,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get dashboard data', [
+                'month' => $month,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get vendor details for a specific month
+     *
+     * @param string $month Month in Y-m format
+     */
+    public function getVendorDetails(string $vendorName, string $month): \Illuminate\Support\Collection
+    {
+        try {
+            return PurchaseOrder::where('vendor_name', $vendorName)
+                ->select('id', 'po_number', 'invoice_date', 'total', 'status')
+                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month])
+                ->orderBy('invoice_date', 'desc')
+                ->orderByDesc('total')
+                ->get();
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get vendor details', [
+                'vendor' => $vendorName,
+                'month' => $month,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
