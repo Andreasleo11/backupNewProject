@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+class CustomNotification extends Notification implements ShouldQueue
+{
+    use Queueable;
+
+    protected string $subject;
+
+    protected string $message;
+
+    protected ?string $actionUrl;
+
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct(string $subject, string $message, ?string $actionUrl = null)
+    {
+        $this->subject = $subject;
+        $this->message = $message;
+        $this->actionUrl = $actionUrl;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
+    {
+        return ['mail', 'database'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        $mail = (new MailMessage)
+            ->subject($this->subject)
+            ->line($this->message);
+
+        if ($this->actionUrl) {
+            $mail->action('View Details', $this->actionUrl);
+        }
+
+        return $mail;
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'subject' => $this->subject,
+            'message' => $this->message,
+            'action_url' => $this->actionUrl,
+        ];
+    }
+}
