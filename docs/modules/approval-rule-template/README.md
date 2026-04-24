@@ -11,6 +11,10 @@ The **Approval Rule Template** module defines reusable approval workflows for di
 - **Active/Inactive Control**: Businesslogic enable/disable independent of versioning
 - **Step Definitions**: Configurable multi-step approval flows
 - **Match Expressions**: JSON-based conditions to auto-match rules to documents
+- **Advanced Filtering**: Filter by status, model type, and current version only
+- **Real-time Search**: Live search with debounced input for performance
+- **JSON Viewer**: Toggle detailed JSON view for match expressions in list mode
+- **Responsive Layout**: Optimized grid layout for different screen sizes
 
 ## Architecture
 
@@ -20,7 +24,9 @@ The **Approval Rule Template** module defines reusable approval workflows for di
 ┌─────────────────────────────────────────────────────┐
 │                   Livewire UI                       │
 │  RuleManager.php (Component)                     │
-│  - Filters, pagination, selection                  │
+│  - Filters: status, model type, current version     │
+│  - Search: live with debounced input               │
+│  - JSON viewer toggle in list mode                 │
 │  - saveRule(), deleteRule(), restoreRule()        │
 └───────────────────┬─────────────────────────────┘
                     │ uses
@@ -185,6 +191,38 @@ Schema::table('approvals_rule_templates', function (Blueprint $table) {
 });
 ```
 
+## User Interface Features
+
+### Filtering & Search
+
+The Rule Manager provides comprehensive filtering and search capabilities:
+
+- **Status Filter**: Filter by `all`, `active`, or `inactive` rules
+- **Model Type Filter**: Filter by specific document types (e.g., PurchaseRequest, OvertimeForm)
+- **Current Version Filter**: Show only the current (latest) version of each rule
+- **Live Search**: Real-time search with 400ms debounce for optimal performance
+- **Bulk Actions**: Select multiple rules for bulk activation/deactivation
+
+### View Modes
+
+- **Visual Flow**: Shows approval steps as a flowchart with connectors
+- **List View**: Compact table format with JSON viewer toggle for match expressions
+
+### JSON Viewer
+
+In list view mode, users can toggle detailed JSON viewing for match expressions:
+
+- Click "View JSON" to expand the formatted JSON structure
+- Click "Hide JSON" to collapse back to summary view
+
+### Responsive Layout
+
+The interface uses a 12-column grid system optimized for different screen sizes:
+
+- **Sidebar (col-span-2)**: Filters and search
+- **Rules List (col-span-4)**: Search results and rule cards
+- **Detail Panel (col-span-6)**: Selected rule details and steps
+
 ## API Reference
 
 ### Livewire: RuleManager Methods
@@ -197,6 +235,8 @@ Schema::table('approvals_rule_templates', function (Blueprint $table) {
 | `forceCreateNewVersion($ruleId, $data)` | int, array | Forces new version even with active requests |
 | `selectRule($id)`                       | int $id    | Selects rule for viewing                     |
 | `openEditRule($id)`                     | int $id    | Opens edit modal with version notes          |
+| `toggleJsonViewer()`                    | -          | Toggles JSON viewer in list view mode        |
+| `updatedCurrentVersionFilter()`         | -          | Updates query when version filter changes    |
 
 ### Service: ApprovalEngine Methods
 

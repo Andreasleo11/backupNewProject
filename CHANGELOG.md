@@ -9,10 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Initial project setup.
+- Approval Rule Manager with advanced filtering and search capabilities
+- Current version filtering for rules
+- JSON viewer toggle in list view mode
+- Real-time search with debounced input
+- Responsive grid layout for rule management interface
+- Basic feature tests for approval rule manager
 
 ### Changed
 
-- N/A
+- Improved rule manager layout from 4-column to 12-column grid system
+- Fixed JSON viewer toggle button functionality
+- Enhanced user interface with better visual hierarchy
 
 ### Deprecated
 

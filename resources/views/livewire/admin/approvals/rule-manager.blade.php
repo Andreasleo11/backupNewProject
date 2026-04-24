@@ -46,32 +46,9 @@
     </div>
 
     {{-- Main Content Area --}}
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {{-- Sidebar: Rule List --}}
-        <div class="lg:col-span-1">
-            {{-- Sidebar Header --}}
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-slate-900">Rules</h2>
-                <button wire:click="openCreateRule"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                </button>
-            </div>
-
-            {{-- Search --}}
-            <div class="relative mb-6">
-                <input type="text" wire:model.live.debounce.400ms="search"
-                    class="w-full rounded-xl border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all backdrop-blur-sm"
-                    placeholder="Search rules...">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-            </div>
-
+        <div class="lg:col-span-2">
             {{-- Quick Filters --}}
             <div class="space-y-3 mb-6">
                 {{-- Status Filters --}}
@@ -114,16 +91,33 @@
                         </div>
                     </div>
                 @endif
-
                 {{-- View Options --}}
+                 <div>
+                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">View</label>
+                     <button wire:click="toggleGroupByModel"
+                             class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all {{ $groupByModel ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100' }}">
+                         <span>{{ $groupByModel ? 'Grouped by Type' : 'List View' }}</span>
+                         <svg class="h-4 w-4 transition-transform {{ $groupByModel ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                         </svg>
+                     </button>
+                 </div>
+                 {{-- Current Version Filter --}}
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">View</label>
-                    <button wire:click="toggleGroupByModel"
-                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all {{ $groupByModel ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100' }}">
-                        <span>{{ $groupByModel ? 'Grouped by Type' : 'List View' }}</span>
-                        <svg class="h-4 w-4 transition-transform {{ $groupByModel ? 'rotate-180' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Version</label>
+                    <button wire:click="$toggle('currentVersionFilter')"
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all {{ $currentVersionFilter ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100' }}">
+                        <span class="flex items-center gap-2">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Current Version Only
+                        </span>
+                        @if($currentVersionFilter)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        @endif
                     </button>
                 </div>
             </div>
@@ -151,7 +145,29 @@
                     </div>
                 </div>
             @endif
+        </div>
 
+        <div class="lg:col-span-4">
+             {{-- Sidebar Header --}}
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-lg font-bold text-slate-900">Rules</h2>
+            </div>
+
+
+
+            {{-- Search --}}
+            <div class="relative mb-4">
+                <input type="text" wire:model.live.debounce.400ms="search"
+                    class="w-full rounded-xl border-slate-200 bg-slate-50/50 py-2 pl-11 pr-4 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all backdrop-blur-sm"
+                    placeholder="Search rules...">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            
             {{-- Rules List --}}
             <div class="space-y-3">
                 @forelse ($rules as $rule)
@@ -176,42 +192,32 @@
                 @endif
             </div>
         </div>
-
             
         {{-- Main Detail Area --}}
-        <div class="lg:col-span-3">
+        <div class="lg:col-span-6">
             @if ($selectedRule)
                 {{-- Rule Header --}}
                 <div class="glass-card p-6 mb-6">
                     <div class="flex items-start justify-between mb-4">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 mb-2">{{ $selectedRule->name }}</h2>
-                            <div class="flex items-center gap-3">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm">
-                                    {{ class_basename($selectedRule->model_type) }}
-                                </span>
-                                <span class="text-sm text-slate-600">Priority: <strong>{{ $selectedRule->priority }}</strong></span>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 rounded-full {{ $selectedRule->active ? 'bg-emerald-500' : 'bg-slate-400' }}"></div>
-                                    <span class="text-sm text-slate-600">{{ $selectedRule->active ? 'Active' : 'Inactive' }}</span>
-                                </div>
-                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                       <div class="flex items-center gap-3">
                             <button wire:click="openEditRule({{ $selectedRule->id }})"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition-colors">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition-colors">
+                                <svg class="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 Edit Rule
                             </button>
                             <button wire:click="openCreateStep"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all shadow-sm">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all shadow-sm">
+                                <svg class="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 Add Step
                             </button>
+
                         </div>
                     </div>
 
@@ -363,9 +369,9 @@
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trigger Conditions</h3>
                                 @if (!empty($selectedRule->match_expr))
-                                    <button wire:click="$set('showJsonViewer', !isset($showJsonViewer) || !$showJsonViewer)"
+                                    <button wire:click="toggleJsonViewer"
                                         class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
-                                        {{ isset($showJsonViewer) && $showJsonViewer ? 'Hide JSON' : 'View JSON' }}
+                                        {{ $showJsonViewer ? 'Hide JSON' : 'View JSON' }}
                                     </button>
                                 @endif
                             </div>
@@ -503,6 +509,7 @@
             @endif
         </div>
     </div>
+    
     {{-- Rule Modal --}}
     <x-modal wire:model="showRuleModal" maxWidth="lg">
         <div class="p-4">
@@ -695,46 +702,45 @@
         </div>
     </x-modal>
 
-    <style>
-        .bg-grid-slate-100 {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='%23f1f5f9'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
-        }
 
-    </style>
 
-    <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('confirm-delete-rule', (data) => {
-                const confirmed = confirm(
-                    `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
-                    `Deleting this rule will affect ongoing approvals. Are you sure you want to proceed?`
-                );
 
-                if (confirmed) {
-                    Livewire.dispatch('force-delete-rule', { ruleId: data.ruleId });
-                }
-            });
 
-            Livewire.on('force-delete-rule', (data) => {
-                $wire.forceDeleteRule(data.ruleId);
-            });
+     <script>
+         document.addEventListener('livewire:init', () => {
+             Livewire.on('confirm-delete-rule', (data) => {
+                 const confirmed = confirm(
+                     `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
+                     `Deleting this rule will affect ongoing approvals. Are you sure you want to proceed?`
+                 );
 
-            Livewire.on('confirm-new-version', (data) => {
-                const confirmed = confirm(
-                    `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
-                    `Creating a new version will NOT affect ongoing approvals (they will continue using the old version).\n\n` +
-                    `Do you want to create a new version anyway?`
-                );
+                 if (confirmed) {
+                     Livewire.dispatch('force-delete-rule', { ruleId: data.ruleId });
+                 }
+             });
 
-                if (confirmed) {
-                    Livewire.dispatch('force-new-version', { ruleId: data.ruleId, data: data.data });
-                }
-            });
+             Livewire.on('force-delete-rule', (data) => {
+                 $wire.forceDeleteRule(data.ruleId);
+             });
 
-            Livewire.on('force-new-version', (data) => {
-                $wire.forceNewVersion = true;
-                $wire.forceCreateNewVersion(data.ruleId, data.data);
-            });
-        });
-    </script>
-</div>
+             Livewire.on('confirm-new-version', (data) => {
+                 const confirmed = confirm(
+                     `Warning: This rule "${data.ruleName}" is currently being used by ${data.activeRequestsCount} active approval request(s).\n\n` +
+                     `Creating a new version will NOT affect ongoing approvals (they will continue using the old version).\n\n` +
+                     `Do you want to create a new version anyway?`
+                 );
+
+                 if (confirmed) {
+                     Livewire.dispatch('force-new-version', { ruleId: data.ruleId, data: data.data });
+                 }
+             });
+
+             Livewire.on('force-new-version', (data) => {
+                 $wire.forceNewVersion = true;
+                 $wire.forceCreateNewVersion(data.ruleId, data.data);
+             });
+         });
+     </script>
+
+      
+  </div>

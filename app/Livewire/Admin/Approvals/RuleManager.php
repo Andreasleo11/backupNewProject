@@ -12,6 +12,8 @@ class RuleManager extends Component
 {
     use WithPagination;
 
+    public function mount() {}
+
     // ====== Filters & UI ======
     public string $search = '';
 
@@ -20,6 +22,8 @@ class RuleManager extends Component
     public ?string $modelTypeFilter = null; // null for all, or specific model type
 
     public bool $groupByModel = false;
+
+    public bool $currentVersionFilter = false;
 
     public array $selectedRules = [];
 
@@ -86,6 +90,11 @@ class RuleManager extends Component
     }
 
     public function updatedModelTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedCurrentVersionFilter(): void
     {
         $this->resetPage();
     }
@@ -247,6 +256,7 @@ class RuleManager extends Component
         $this->resetRuleForm();
         $this->version_notes = '';
         $this->forceNewVersion = false;
+
     }
 
     /**
@@ -357,6 +367,11 @@ class RuleManager extends Component
     }
 
     // ====== Steps CRUD ======
+
+    public function toggleJsonViewer(): void
+    {
+        $this->showJsonViewer = ! $this->showJsonViewer;
+    }
 
     public function openCreateStep(): void
     {
@@ -473,6 +488,9 @@ class RuleManager extends Component
             ->when($this->modelTypeFilter, function ($q) {
                 $q->where('model_type', $this->modelTypeFilter);
             })
+            ->when($this->currentVersionFilter, function ($q) {
+                $q->where('is_current', true);
+            })
             ->orderBy('priority')
             ->orderBy('code');
 
@@ -481,10 +499,12 @@ class RuleManager extends Component
         $rules = [];
 
         if ($this->groupByModel) {
+            // For grouped view, we don't paginate as we want to show all groups
             $allRules = $rulesQuery->get();
             $groupedRules = $allRules->groupBy('model_type')->sortKeys();
-            $rules = $allRules; // For pagination compatibility
+            $rules = $allRules; // For compatibility with existing code
         } else {
+            // For regular view, paginate with caching of counts
             $rules = $rulesQuery->paginate(10);
         }
 
@@ -500,7 +520,7 @@ class RuleManager extends Component
             $steps = $selectedRule?->steps ?? collect();
         }
 
-        // Calculate stats more efficiently
+        // Calculate stats
         $stats = [
             'total_rules' => RuleTemplate::count(),
             'active_rules' => RuleTemplate::where('active', true)->count(),
@@ -508,7 +528,7 @@ class RuleManager extends Component
             'avg_steps_per_rule' => RuleTemplate::withCount('steps')->get()->avg('steps_count') ?? 0,
         ];
 
-        // Stats per model type - optimized with fewer queries
+        // Stats per model type
         $modelTypeStats = [];
         $modelStatsQuery = RuleTemplate::withCount('steps')
             ->select('model_type', 'active')
@@ -534,7 +554,7 @@ class RuleManager extends Component
             'stats' => $stats,
             'modelTypeStats' => $modelTypeStats,
             'availableModelTypes' => $availableModelTypes,
-        ])->layout('new.layouts.app');
+        ]);
     }
 
     private function getFilteredRules()
