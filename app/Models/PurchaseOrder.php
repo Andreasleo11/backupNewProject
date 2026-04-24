@@ -34,25 +34,80 @@ class PurchaseOrder extends Model
         'revision_count',
     ];
 
-    // Queries
+    // Enum-based status methods
+    public function getStatusEnum(): PurchaseOrderStatus
+    {
+        return PurchaseOrderStatus::fromLegacyValue($this->status);
+    }
+
+    public function setStatusEnum(PurchaseOrderStatus $status): void
+    {
+        $this->status = $status->legacyValue();
+    }
+
+    public function isStatus(PurchaseOrderStatus $status): bool
+    {
+        return $this->status === $status->legacyValue();
+    }
+
+    public function canTransitionTo(PurchaseOrderStatus $newStatus): bool
+    {
+        $currentStatus = $this->getStatusEnum();
+
+        return match ($currentStatus) {
+            PurchaseOrderStatus::DRAFT => in_array($newStatus, [PurchaseOrderStatus::WAITING]),
+            PurchaseOrderStatus::WAITING => in_array($newStatus, [PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]),
+            PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED => false,
+        };
+    }
+
+    // Legacy scope methods (keeping for backward compatibility)
     public function scopeApproved($query)
     {
-        return $query->where('status', 2);
+        return $query->where('status', PurchaseOrderStatus::APPROVED->legacyValue());
     }
 
     public function scopeWaiting($query)
     {
-        return $query->where('status', 1);
+        return $query->where('status', PurchaseOrderStatus::WAITING->legacyValue());
     }
 
     public function scopeRejected($query)
     {
-        return $query->where('status', 3);
+        return $query->where('status', PurchaseOrderStatus::REJECTED->legacyValue());
     }
 
     public function scopeCanceled($query)
     {
-        return $query->where('status', 4);
+        return $query->where('status', PurchaseOrderStatus::CANCELLED->legacyValue());
+    }
+
+    // New enum-based scopes
+    public function scopeWithStatus($query, PurchaseOrderStatus $status)
+    {
+        return $query->where('status', $status->legacyValue());
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', PurchaseOrderStatus::DRAFT->legacyValue());
+    }
+
+    public function scopeTerminal($query)
+    {
+        return $query->whereIn('status', [
+            PurchaseOrderStatus::APPROVED->legacyValue(),
+            PurchaseOrderStatus::REJECTED->legacyValue(),
+            PurchaseOrderStatus::CANCELLED->legacyValue(),
+        ]);
+    }
+
+    public function scopeEditable($query)
+    {
+        return $query->whereIn('status', [
+            PurchaseOrderStatus::DRAFT->legacyValue(),
+            PurchaseOrderStatus::REJECTED->legacyValue(),
+        ]);
     }
 
     public function scopeApprovedForCurrentMonth($query)
@@ -145,13 +200,13 @@ class PurchaseOrder extends Model
 
     private function getStatusText($status)
     {
-        return match ($status) {
-            1 => 'WAITING',
-            2 => 'APPROVED',
-            3 => 'REJECTED',
-            4 => 'CANCELED',
-            default => 'UNDEFINED',
-        };
+        try {
+            $statusEnum = PurchaseOrderStatus::fromLegacyValue($status);
+
+            return $statusEnum->label();
+        } catch (\InvalidArgumentException $e) {
+            return 'UNDEFINED';
+        }
     }
 
     private function getNotificationUsers($event)
