@@ -17,4 +17,14 @@ class RuleStepTemplate extends Model
     {
         return $this->belongsTo(RuleTemplate::class, 'rule_template_id');
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'approver_id');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'approver_id');
+    }
 }

@@ -15,6 +15,14 @@ class RuleManager extends Component
     // ====== Filters & UI ======
     public string $search = '';
 
+    public string $statusFilter = 'all'; // 'all', 'active', 'inactive'
+
+    public ?string $modelTypeFilter = null; // null for all, or specific model type
+
+    public bool $groupByModel = false;
+
+    public array $selectedRules = [];
+
     public ?int $selectedRuleId = null;
 
     // ====== Rule form ======
@@ -33,6 +41,11 @@ class RuleManager extends Component
     public string $rule_match_expr_raw = '{}';
 
     public bool $showRuleModal = false;
+
+    // ====== View settings ======
+    public string $viewMode = 'visual'; // 'visual' | 'compact'
+
+    public bool $showJsonViewer = false;
 
     // ====== Step form ======
     public ?int $editingStepId = null;
@@ -61,6 +74,80 @@ class RuleManager extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedModelTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function toggleGroupByModel(): void
+    {
+        $this->groupByModel = ! $this->groupByModel;
+    }
+
+    public function setModelTypeFilter(?string $modelType): void
+    {
+        $this->modelTypeFilter = $modelType;
+        $this->resetPage();
+    }
+
+    public function setStatusFilter(string $status): void
+    {
+        $this->statusFilter = $status;
+        $this->resetPage();
+    }
+
+    public function toggleRuleSelection(int $ruleId): void
+    {
+        if (in_array($ruleId, $this->selectedRules)) {
+            $this->selectedRules = array_diff($this->selectedRules, [$ruleId]);
+        } else {
+            $this->selectedRules[] = $ruleId;
+        }
+    }
+
+    public function selectAllRules(): void
+    {
+        $this->selectedRules = $this->getFilteredRules()->pluck('id')->toArray();
+    }
+
+    public function clearSelection(): void
+    {
+        $this->selectedRules = [];
+    }
+
+    public function bulkActivate(): void
+    {
+        RuleTemplate::whereIn('id', $this->selectedRules)->update(['active' => true]);
+        $this->selectedRules = [];
+        session()->flash('success', 'Selected rules activated.');
+    }
+
+    public function bulkDeactivate(): void
+    {
+        RuleTemplate::whereIn('id', $this->selectedRules)->update(['active' => false]);
+        $this->selectedRules = [];
+        session()->flash('success', 'Selected rules deactivated.');
+    }
+
+    public function bulkDelete(): void
+    {
+        $count = count($this->selectedRules);
+
+        // Delete steps first using bulk operation
+        RuleStepTemplate::whereIn('rule_template_id', $this->selectedRules)->delete();
+
+        // Then delete the rules
+        RuleTemplate::whereIn('id', $this->selectedRules)->delete();
+
+        $this->selectedRules = [];
+        session()->flash('success', "{$count} rules deleted.");
     }
 
     public function updatedShowRuleModal($value): void
@@ -181,6 +268,11 @@ class RuleManager extends Component
         $this->resetStepForm();
     }
 
+    public function toggleViewMode(): void
+    {
+        $this->viewMode = $this->viewMode === 'visual' ? 'compact' : 'visual';
+    }
+
     // ====== Steps CRUD ======
 
     public function openCreateStep(): void
@@ -279,30 +371,103 @@ class RuleManager extends Component
 
     public function render()
     {
-        $rules = RuleTemplate::query()
+        // Get available model types for filtering
+        $availableModelTypes = RuleTemplate::distinct('model_type')->pluck('model_type')->sort();
+
+        // Build filtered query
+        $rulesQuery = RuleTemplate::query()
+            ->withCount('steps')
             ->when($this->search !== '', function ($q) {
-                $q->where('code', 'like', '%' . $this->search . '%')
-                    ->orWhere('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('model_type', 'like', '%' . $this->search . '%');
+                $q->where(function ($query) {
+                    $query->where('code', 'like', '%' . $this->search . '%')
+                        ->orWhere('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('model_type', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->statusFilter !== 'all', function ($q) {
+                $q->where('active', $this->statusFilter === 'active');
+            })
+            ->when($this->modelTypeFilter, function ($q) {
+                $q->where('model_type', $this->modelTypeFilter);
             })
             ->orderBy('priority')
-            ->orderBy('code')
-            ->paginate(10);
+            ->orderBy('code');
+
+        // Group rules by model type if requested
+        $groupedRules = [];
+        $rules = [];
+
+        if ($this->groupByModel) {
+            $allRules = $rulesQuery->get();
+            $groupedRules = $allRules->groupBy('model_type')->sortKeys();
+            $rules = $allRules; // For pagination compatibility
+        } else {
+            $rules = $rulesQuery->paginate(10);
+        }
 
         $selectedRule = null;
         $steps = collect();
 
         if ($this->selectedRuleId) {
-            $selectedRule = RuleTemplate::with('steps')
+            $selectedRule = RuleTemplate::with(['steps' => function ($query) {
+                $query->with(['user:id,name,email', 'role:id,name']); // Load related user/role data
+            }])
                 ->find($this->selectedRuleId);
 
             $steps = $selectedRule?->steps ?? collect();
         }
 
+        // Calculate stats more efficiently
+        $stats = [
+            'total_rules' => RuleTemplate::count(),
+            'active_rules' => RuleTemplate::where('active', true)->count(),
+            'total_steps' => RuleStepTemplate::count(),
+            'avg_steps_per_rule' => RuleTemplate::withCount('steps')->get()->avg('steps_count') ?? 0,
+        ];
+
+        // Stats per model type - optimized with fewer queries
+        $modelTypeStats = [];
+        $modelStatsQuery = RuleTemplate::withCount('steps')
+            ->select('model_type', 'active')
+            ->whereIn('model_type', $availableModelTypes)
+            ->get()
+            ->groupBy('model_type');
+
+        foreach ($availableModelTypes as $modelType) {
+            $modelRules = $modelStatsQuery->get($modelType, collect());
+            $modelTypeStats[$modelType] = [
+                'total' => $modelRules->count(),
+                'active' => $modelRules->where('active', true)->count(),
+                'steps' => $modelRules->sum('steps_count'),
+            ];
+        }
+
         return view('livewire.admin.approvals.rule-manager', [
             'rules' => $rules,
+            'groupedRules' => $groupedRules,
             'selectedRule' => $selectedRule,
             'steps' => $steps,
+            'viewMode' => $this->viewMode,
+            'stats' => $stats,
+            'modelTypeStats' => $modelTypeStats,
+            'availableModelTypes' => $availableModelTypes,
         ])->layout('new.layouts.app');
+    }
+
+    private function getFilteredRules()
+    {
+        return RuleTemplate::query()
+            ->when($this->search !== '', function ($q) {
+                $q->where('code', 'like', '%' . $this->search . '%')
+                    ->orWhere('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('model_type', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->statusFilter !== 'all', function ($q) {
+                $q->where('active', $this->statusFilter === 'active');
+            })
+            ->when($this->modelTypeFilter, function ($q) {
+                $q->where('model_type', $this->modelTypeFilter);
+            })
+            ->get();
     }
 }
