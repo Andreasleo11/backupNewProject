@@ -17,12 +17,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use setasign\Fpdi\Fpdi;
 
 class PurchaseOrderController extends Controller
 {
     public function __construct(
-        private PurchaseOrderService $poService
+        private PurchaseOrderService $poService,
+        private PdfProcessingService $pdfService
     ) {}
 
     public function index(PurchaseOrderDataTable $dataTable, Request $request)
@@ -147,100 +147,80 @@ class PurchaseOrderController extends Controller
 
     public function sign(Request $request)
     {
-        // version click langsung keluar tanda tangan
-        $id = $request->input('id');
-        $filename = $request->input('filename');
-        $signedPdfPath = $this->signPDF($id, $filename);
+        try {
+            $id = $request->input('id');
+            $po = PurchaseOrder::findOrFail($id);
 
-        $PurchaseOrder = PurchaseOrder::find($id);
-        if ($PurchaseOrder) {
-            $PurchaseOrder->filename = basename($signedPdfPath); // Save only the file name, not the full path
-            $PurchaseOrder->approved_date = now();
-            $PurchaseOrder->status = 2;
-            $PurchaseOrder->save();
+            // Use the PDF service to sign the document
+            $this->pdfService->sign($po, auth()->id());
+
+            // Update additional PO fields
+            $po->approved_date = now();
+            $po->status = 2; // Approved
+            $po->save();
+
+            return response()->json(['message' => 'PDF signed successfully!']);
+        } catch (\Exception $e) {
+            Log::error('PDF signing failed in controller', [
+                'po_id' => $request->input('id'),
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to sign PDF: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json(['message' => 'PDF signed successfully!']);
-    }
-
-    private function signPDF($id, $filename)
-    {
-        $pdfPath = public_path("storage/pdfs/{$filename}");
-        $signedPdfPath = str_replace('.pdf', '_signed.pdf', $pdfPath);
-
-        // Initialize FPDI
-        $pdf = new Fpdi;
-        $pageCount = $pdf->setSourceFile($pdfPath);
-
-        // Path to the stored signature file
-        $signaturePath = public_path('autographs/Djoni.png');
-
-        // Loop through each page and add it to the new PDF
-        for ($pageIndex = 1; $pageIndex <= $pageCount; $pageIndex++) {
-            $pdf->AddPage();
-            $templateId = $pdf->importPage($pageIndex);
-            $pdf->useTemplate($templateId, 0, 0, 210);
-
-            // Check if this is the last page
-            if ($pageIndex === $pageCount) {
-                $pdf->SetFont('Arial', '', 12); // Set font before adding text if necessary
-                $pdf->Image($signaturePath, 40, 250, 40, 20); // Position the signature on the last page
-            }
-        }
-
-        // Save the signed PDF
-        $pdf->Output($signedPdfPath, 'F');
-
-        return $signedPdfPath;
     }
 
     public function rejectPDF(Request $request)
     {
-        $data = PurchaseOrder::find($request->input('id'));
+        try {
+            $po = PurchaseOrder::findOrFail($request->input('id'));
+            $reason = $request->input('reason', 'No reason provided');
 
-        if (! $data) {
-            return response()->json(['message' => 'PO not found.'], 404);
+            // Use the PDF service to reject the document
+            $this->pdfService->reject($po, $reason);
+
+            return response()->json(['message' => 'PO rejected successfully.']);
+        } catch (\Exception $e) {
+            Log::error('PDF rejection failed in controller', [
+                'po_id' => $request->input('id'),
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to reject PO: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $data->reason = $request->input('reason');
-        $data->status = 3; // Optionally, set a different status to indicate "Rejected"
-        $data->save();
-
-        return response()->json(['message' => 'PO rejected successfully.']);
     }
 
     public function downloadPDF($id)
     {
         try {
-            // Attempt to find the PurchaseOrder record
+            // Use the PDF service for download with security checks
+            $response = $this->pdfService->download($id, auth()->id());
+
+            // Log download for creator (additional logging beyond service)
             $po = PurchaseOrder::findOrFail($id);
-
-            $filename = $po->filename;
-            $path = storage_path("app/public/pdfs/{$filename}");
-
-            // Check if the file exists in the specified path
-            if (! file_exists($path)) {
-                abort(404, 'PDF file not found.');
-            }
-
-            // Update the 'downloaded_at' timestamp for the PO only for creator_id
-            if ($po->creator_id === auth()->user()->id) {
-                // $po->update(['downloaded_at' => now()]);
+            if ($po->creator_id === auth()->id()) {
                 PurchaseOrderDownloadLog::create([
-                    'user_id' => auth()->user()->id,
+                    'user_id' => auth()->id(),
                     'purchase_order_id' => $po->id,
                 ]);
             }
 
-            // Return the response to download the PDF file
-            return response()->download($path, $filename, [
-                'Content-Type' => 'application/pdf',
-            ]);
+            return $response;
         } catch (ModelNotFoundException $e) {
-            // Handle the case where the PurchaseOrder record is not found
             return response()->json(['error' => 'Purchase order not found.'], 404);
         } catch (\Exception $e) {
-            // Return the exception message for debugging purposes
+            Log::error('PDF download failed in controller', [
+                'po_id' => $id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
