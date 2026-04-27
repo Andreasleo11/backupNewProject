@@ -3,11 +3,9 @@
 namespace App\Services;
 
 use App\Models\PurchaseOrder;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderAnalyticsService
 {
@@ -19,7 +17,7 @@ class PurchaseOrderAnalyticsService
         $cacheKey = 'po_operational_metrics_' . md5(serialize($filters));
 
         return Cache::remember($cacheKey, 300, function () use ($filters) {
-            $dateRange = $this->parseDateRange($filters['date_range'] ?? null);
+            $dateRange = $filters['date_range'] ?? [now()->subDays(30), now()];
 
             return [
                 // Core KPIs
@@ -57,7 +55,8 @@ class PurchaseOrderAnalyticsService
     private function getFulfillmentRate(array $dateRange, array $filters): array
     {
         $baseQuery = PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->where('status', 3); // Approved
+            ->where('status', 2) // Approved
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']));
 
         $totalApproved = (clone $baseQuery)->count();
         $fulfilled = (clone $baseQuery)->whereNotNull('tanggal_pembayaran')->count();
@@ -89,7 +88,8 @@ class PurchaseOrderAnalyticsService
                 SUM(total) as total_value
             ')
             ->whereBetween('invoice_date', $dateRange)
-            ->where('status', 3) // Approved
+            ->where('status', 2) // Approved
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('days_aging')
             ->orderBy('days_aging')
             ->get();
@@ -117,10 +117,11 @@ class PurchaseOrderAnalyticsService
      */
     private function getOverduePOs(array $dateRange, array $filters): array
     {
-        $overdue = PurchaseOrder::where('status', 3) // Approved
+        $overdue = PurchaseOrder::where('status', 2) // Approved
             ->whereNotNull('approved_date')
             ->where('tanggal_pembayaran', '<', now())
             ->whereBetween('invoice_date', $dateRange)
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->with(['category', 'user'])
             ->orderBy('tanggal_pembayaran')
             ->take(10)
@@ -146,11 +147,17 @@ class PurchaseOrderAnalyticsService
      */
     private function getApprovalMetrics(array $dateRange, array $filters): array
     {
-        $approvalStats = DB::table('approval_requests')
+        $query = DB::table('approval_requests')
             ->join('purchase_orders', 'approval_requests.approvable_id', '=', 'purchase_orders.id')
             ->where('approval_requests.approvable_type', 'App\\Models\\PurchaseOrder')
-            ->whereBetween('purchase_orders.invoice_date', $dateRange)
-            ->selectRaw('
+            ->whereBetween('purchase_orders.invoice_date', $dateRange);
+
+        // Apply filters if provided
+        if (isset($filters['categories']) && ! empty($filters['categories'])) {
+            $query->whereIn('purchase_orders.purchase_order_category_id', $filters['categories']);
+        }
+
+        $approvalStats = $query->selectRaw('
                 AVG(TIMESTAMPDIFF(HOUR, approval_requests.submitted_at, approval_requests.updated_at)) as avg_approval_hours,
                 COUNT(*) as total_requests,
                 SUM(CASE WHEN approval_requests.status = "approved" THEN 1 ELSE 0 END) as approved_count,
@@ -172,16 +179,22 @@ class PurchaseOrderAnalyticsService
      */
     private function getBottleneckAnalysis(array $dateRange, array $filters): array
     {
-        $slowSteps = DB::table('approval_steps')
+        $query = DB::table('approval_steps')
             ->join('approval_requests', 'approval_steps.approval_request_id', '=', 'approval_requests.id')
             ->join('purchase_orders', function ($join) {
                 $join->on('approval_requests.approvable_id', '=', 'purchase_orders.id')
-                     ->where('approval_requests.approvable_type', '=', 'App\\Models\\PurchaseOrder');
+                    ->where('approval_requests.approvable_type', '=', 'App\\Models\\PurchaseOrder');
             })
             ->whereBetween('purchase_orders.invoice_date', $dateRange)
-            ->whereNull('approval_steps.acted_at') // Still pending
             ->where('approval_steps.status', 'pending')
-            ->selectRaw('
+            ->where('approval_steps.created_at', '<', now()->subDays(7));
+
+        // Apply filters if provided
+        if (isset($filters['categories']) && ! empty($filters['categories'])) {
+            $query->whereIn('purchase_orders.purchase_order_category_id', $filters['categories']);
+        }
+
+        $slowSteps = $query->selectRaw('
                 approval_steps.approver_snapshot_name,
                 approval_steps.approver_snapshot_role_slug,
                 COUNT(*) as pending_count,
@@ -217,7 +230,8 @@ class PurchaseOrderAnalyticsService
             ')
             ->whereBetween('invoice_date', $dateRange)
             ->whereNotNull('tanggal_pembayaran')
-            ->where('status', 3) // Approved
+            ->where('status', 2) // Approved
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('vendor_name')
             ->having('total_orders', '>=', 3) // Minimum sample size
             ->orderBy('avg_lead_time_days')
@@ -243,7 +257,9 @@ class PurchaseOrderAnalyticsService
      */
     private function calculateSupplierReliability($supplier): float
     {
-        if (!$supplier->avg_lead_time_days) return 0;
+        if (! $supplier->avg_lead_time_days) {
+            return 0;
+        }
 
         // Calculate coefficient of variation (lower is more reliable)
         $variation = ($supplier->max_lead_time - $supplier->min_lead_time) / $supplier->avg_lead_time_days;
@@ -258,15 +274,28 @@ class PurchaseOrderAnalyticsService
     private function getTrendForecast(array $dateRange, array $filters): array
     {
         // Simple linear regression for forecasting
-        $historicalData = PurchaseOrder::selectRaw("
+        $query = PurchaseOrder::selectRaw("
                 DATE_FORMAT(invoice_date, '%Y-%m') as month,
                 SUM(total) as monthly_spend,
                 COUNT(*) as order_count
             ")
             ->where('invoice_date', '>=', now()->subMonths(12))
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
             ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+            ->orderBy('month');
+
+        $historicalData = $query->get();
+
+        // Check if we have enough data for forecasting
+        if ($historicalData->isEmpty()) {
+            return [
+                'next_month_prediction' => 0,
+                'trend_direction' => 'insufficient_data',
+                'confidence_level' => 0,
+                'seasonal_factors' => [],
+            ];
+        }
 
         $forecast = $this->calculateLinearRegression($historicalData->pluck('monthly_spend')->toArray());
 
@@ -284,27 +313,51 @@ class PurchaseOrderAnalyticsService
     private function calculateLinearRegression(array $values): array
     {
         $n = count($values);
+
+        // Need at least 2 data points for regression
+        if ($n < 2) {
+            return [
+                'slope' => 0,
+                'intercept' => array_sum($values) / max(1, $n),
+                'next_value' => array_sum($values) / max(1, $n),
+                'r_squared' => 0,
+            ];
+        }
+
         $x = range(1, $n);
 
         $sumX = array_sum($x);
         $sumY = array_sum($values);
-        $sumXY = array_sum(array_map(fn($xi, $yi) => $xi * $yi, $x, $values));
-        $sumX2 = array_sum(array_map(fn($xi) => $xi * $xi, $x));
+        $sumXY = array_sum(array_map(fn ($xi, $yi) => $xi * $yi, $x, $values));
+        $sumX2 = array_sum(array_map(fn ($xi) => $xi * $xi, $x));
 
-        $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumX2 - $sumX * $sumX);
+        $denominator = ($n * $sumX2 - $sumX * $sumX);
+
+        // Avoid division by zero
+        if ($denominator == 0) {
+            return [
+                'slope' => 0,
+                'intercept' => $sumY / $n,
+                'next_value' => $sumY / $n,
+                'r_squared' => 0,
+            ];
+        }
+
+        $slope = ($n * $sumXY - $sumX * $sumY) / $denominator;
         $intercept = ($sumY - $slope * $sumX) / $n;
 
         $nextValue = $intercept + $slope * ($n + 1);
 
         // Calculate R-squared
         $yMean = $sumY / $n;
-        $ssRes = array_sum(array_map(function($xi, $yi) use ($slope, $intercept) {
+        $ssRes = array_sum(array_map(function ($xi, $yi) use ($slope, $intercept) {
             $predicted = $intercept + $slope * $xi;
+
             return pow($yi - $predicted, 2);
         }, $x, $values));
 
-        $ssTot = array_sum(array_map(fn($yi) => pow($yi - $yMean, 2), $values));
-        $rSquared = 1 - ($ssRes / $ssTot);
+        $ssTot = array_sum(array_map(fn ($yi) => pow($yi - $yMean, 2), $values));
+        $rSquared = $ssTot > 0 ? 1 - ($ssRes / $ssTot) : 0;
 
         return [
             'slope' => $slope,
@@ -322,7 +375,7 @@ class PurchaseOrderAnalyticsService
         $alerts = [];
 
         // Critical overdue POs (>90 days)
-        $criticalOverdue = PurchaseOrder::where('status', 3)
+        $criticalOverdue = PurchaseOrder::where('status', 1)
             ->whereNotNull('approved_date')
             ->where('tanggal_pembayaran', '<', now()->subDays(90))
             ->whereBetween('invoice_date', $dateRange)
@@ -362,14 +415,16 @@ class PurchaseOrderAnalyticsService
     private function getPendingActions(array $filters): array
     {
         $user = auth()->user();
-        if (!$user) return [];
+        if (! $user) {
+            return [];
+        }
 
         $pendingApprovals = DB::table('approval_steps')
             ->join('approval_requests', 'approval_steps.approval_request_id', '=', 'approval_requests.id')
             ->where('approval_steps.status', 'pending')
             ->where(function ($query) use ($user) {
                 $query->where('approval_steps.approver_id', $user->id)
-                      ->orWhere('approval_steps.approver_snapshot_role_slug', 'LIKE', '%manager%'); // Simplified
+                    ->orWhere('approval_steps.approver_snapshot_role_slug', 'LIKE', '%director%'); // Simplified
             })
             ->count();
 
@@ -384,12 +439,16 @@ class PurchaseOrderAnalyticsService
         ];
     }
 
+    /**
+     * Parse date range string to array format
+     */
     private function parseDateRange(?string $range): array
     {
-        return match($range) {
+        return match ($range) {
             'last_7_days' => [now()->subDays(7), now()],
             'last_30_days' => [now()->subDays(30), now()],
             'last_90_days' => [now()->subDays(90), now()],
+            'last_6_months' => [now()->subMonths(6), now()],
             'last_year' => [now()->subYear(), now()],
             default => [now()->subDays(30), now()],
         };
@@ -401,8 +460,8 @@ class PurchaseOrderAnalyticsService
     private function getTotalSpend(array $dateRange, array $filters): float
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']), fn($q) => $q->whereIn('status', $filters['statuses']))
-            ->when(isset($filters['vendors']), fn($q) => $q->whereIn('vendor_name', $filters['vendors']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->sum('total');
     }
 
@@ -412,8 +471,8 @@ class PurchaseOrderAnalyticsService
     private function getOrderCount(array $dateRange, array $filters): int
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']), fn($q) => $q->whereIn('status', $filters['statuses']))
-            ->when(isset($filters['vendors']), fn($q) => $q->whereIn('vendor_name', $filters['vendors']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->count();
     }
 
@@ -423,8 +482,8 @@ class PurchaseOrderAnalyticsService
     private function getAverageOrderValue(array $dateRange, array $filters): float
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']), fn($q) => $q->whereIn('status', $filters['statuses']))
-            ->when(isset($filters['vendors']), fn($q) => $q->whereIn('vendor_name', $filters['vendors']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->avg('total') ?? 0;
     }
 
@@ -442,7 +501,8 @@ class PurchaseOrderAnalyticsService
                 MAX(invoice_date) as last_order
             ')
             ->whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']), fn($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('vendor_name')
             ->orderByDesc('total_spend')
             ->take(20)
@@ -467,9 +527,12 @@ class PurchaseOrderAnalyticsService
      */
     private function calculateOrderFrequency($supplier): float
     {
-        if (!$supplier->first_order || !$supplier->last_order) return 0;
+        if (! $supplier->first_order || ! $supplier->last_order) {
+            return 0;
+        }
 
         $months = max(1, Carbon::parse($supplier->first_order)->diffInMonths(Carbon::parse($supplier->last_order)) + 1);
+
         return round($supplier->order_count / $months, 2);
     }
 

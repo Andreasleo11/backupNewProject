@@ -1,8 +1,17 @@
 @props(['supplierData' => []])
 
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-    <h3 class="text-lg font-semibold text-slate-900 mb-4">Supplier Lead Times</h3>
-    <p class="text-sm text-slate-500 mb-6">Average fulfillment time and reliability by supplier</p>
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-lg font-semibold text-slate-900">Supplier Intelligence</h3>
+            <p class="text-sm text-slate-500">Performance metrics, lead times, and reliability scores</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Live Data
+            </span>
+        </div>
+    </div>
 
     <div class="space-y-3">
         @forelse($supplierData as $supplier)

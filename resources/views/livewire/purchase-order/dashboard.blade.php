@@ -9,7 +9,7 @@
                 Purchase Order Dashboard
             </h1>
             <p class="mt-1 text-sm text-slate-500">
-                Monitor spend per month, status mix, categories, and top vendors.
+                Operational command center for procurement intelligence and decision-making.
             </p>
 
             <nav class="mt-2">
@@ -25,31 +25,80 @@
             </nav>
         </div>
 
-        <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-            {{-- Month filter --}}
-            <div class="flex items-center gap-2">
-                <label for="monthFilter" class="text-xs font-medium text-slate-600">
-                    Period
-                </label>
-                <select wire:model.live="selectedMonth"
-                        class="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    @foreach ($availableMonths as $month)
-                        <option value="{{ $month }}">
-                            {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('M Y') }}
-                        </option>
-                    @endforeach
-                </select>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            {{-- Advanced Filters --}}
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- Date Range Filter --}}
+                <div class="flex items-center gap-2">
+                    <label for="dateRange" class="text-xs font-medium text-slate-600">
+                        Time Range
+                    </label>
+                    <select wire:model.live="selectedDateRange"
+                            class="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="last_7_days">Last 7 days</option>
+                        <option value="last_30_days">Last 30 days</option>
+                        <option value="last_90_days">Last 90 days</option>
+                        <option value="last_6_months">Last 6 months</option>
+                        <option value="last_year">Last year</option>
+                        <option value="custom">Custom range</option>
+                    </select>
+                </div>
+
+                {{-- Status Filters --}}
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-slate-600">Status</label>
+                    <div class="flex gap-1">
+                        @foreach(['approved', 'waiting', 'rejected'] as $status)
+                            <label class="inline-flex items-center">
+                                <input wire:model.live="selectedStatuses"
+                                       type="checkbox"
+                                       value="{{ $status }}"
+                                       class="rounded border-slate-300 text-sky-600 shadow-sm focus:border-sky-500 focus:ring-sky-500">
+                                <span class="ml-1 text-xs text-slate-700 capitalize">{{ $status }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Category Filter --}}
+                <div class="flex items-center gap-2">
+                    <label for="categoryFilter" class="text-xs font-medium text-slate-600">
+                        Category
+                    </label>
+                    <select wire:model.live="selectedCategory"
+                            class="block rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">All Categories</option>
+                        @foreach($availableCategories ?? [] as $category)
+                            <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div class="flex gap-2">
-                <button wire:click="showTopVendors"
+            {{-- Action Buttons --}}
+            <div class="flex flex-wrap gap-2">
+                <button wire:click="refreshData"
                         class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
-                    Top 5 vendors
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+
+                <button wire:click="exportDashboard"
+                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export
                 </button>
 
                 <a href="{{ route('po.index') }}"
                    class="inline-flex items-center rounded-lg bg-sky-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
-                    View PO list
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Manage POs
                 </a>
             </div>
         </div>
@@ -119,93 +168,111 @@
         </div>
     @endif
 
-    {{-- Charts row --}}
-    <div class="grid gap-6 lg:grid-cols-4 mt-6">
-        {{-- Monthly totals --}}
-        <div class="lg:col-span-2 xl:col-span-3 rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="flex items-center justify-between gap-2 px-4 pt-4">
-                <div>
-                    <h2 class="text-sm font-semibold text-slate-900">Monthly totals</h2>
-                    <p class="mt-1 text-xs text-slate-500">
-                        Sum of purchase order amounts per month.
-                    </p>
-                </div>
-                <button wire:click="refreshData"
-                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="relative mt-3 px-4 pb-4">
-                <canvas id="monthlyChart" class="h-full w-full"></canvas>
-            </div>
+
+
+    {{-- Enhanced Supplier Intelligence & Quick Actions --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        {{-- Supplier Intelligence Dashboard --}}
+        <div class="lg:col-span-2">
+            <x-supplier-lead-times :supplier-data="$operationalMetrics['supplierLeadTimes'] ?? []" />
         </div>
 
-        {{-- Status & category pies --}}
-        <div class="space-y-4">
-            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">PO by status</h2>
-                <p class="mt-1 text-xs text-slate-500">Count of POs in each status.</p>
-                <div class="mt-3">
-                    <canvas id="statusChart" class="h-full w-full"></canvas>
+        {{-- Quick Actions & Pending Tasks --}}
+        <div class="space-y-6">
+            {{-- Pending Approvals --}}
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Pending Actions</h3>
+                <div class="space-y-3">
+                    @if(($operationalMetrics['pendingActions']['pending_approvals'] ?? 0) > 0)
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                                    <svg class="h-4 w-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-yellow-800">Approvals Pending</p>
+                                    <p class="text-xs text-yellow-600">{{ $operationalMetrics['pendingActions']['pending_approvals'] }} items need review</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('po.approvals') }}" class="text-yellow-700 hover:text-yellow-800 text-sm font-medium">
+                                Review →
+                            </a>
+                        </div>
+                    @endif
+
+                    @if(($operationalMetrics['pendingActions']['draft_pos'] ?? 0) > 0)
+                        <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-blue-800">Draft POs</p>
+                                    <p class="text-xs text-blue-600">{{ $operationalMetrics['pendingActions']['draft_pos'] }} drafts need completion</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('po.index', ['status' => 'draft']) }}" class="text-blue-700 hover:text-blue-800 text-sm font-medium">
+                                Complete →
+                            </a>
+                        </div>
+                    @endif
+
+                    @if(empty($operationalMetrics['pendingActions']) || ($operationalMetrics['pendingActions']['total_actions'] ?? 0) === 0)
+                        <div class="text-center py-8 text-slate-500">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="mt-2 text-sm">All caught up!</p>
+                            <p class="text-xs text-slate-400">No pending actions at this time</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">PO by category</h2>
-                <p class="mt-1 text-xs text-slate-500">Distribution by category.</p>
-                <div class="mt-3">
-                    <canvas id="categoryChart" class="h-full w-full"></canvas>
+            {{-- Quick Create Actions --}}
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <button wire:click="showCreateModal"
+                            class="w-full flex items-center justify-between p-3 bg-sky-50 border border-sky-200 rounded-lg hover:bg-sky-100 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center">
+                                <svg class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-sky-800">Create PO</p>
+                                <p class="text-xs text-sky-600">Start new purchase order</p>
+                            </div>
+                        </div>
+                        <svg class="h-4 w-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+
+                    <button wire:click="showBulkActions"
+                            class="w-full flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <svg class="h-4 w-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">Bulk Operations</p>
+                                <p class="text-xs text-slate-600">Process multiple POs</p>
+                            </div>
+                        </div>
+                        <svg class="h-4 w-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Vendor details table --}}
-    <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between gap-2 px-4 pt-4">
-            <div>
-                <h2 class="text-sm font-semibold text-slate-900">Vendor Performance</h2>
-                <p class="mt-1 text-xs text-slate-500">
-                    Top vendors by total purchase order value for {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('M Y') }}.
-                </p>
-            </div>
-        </div>
-
-        <div class="px-4 pb-4">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-700">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="px-4 py-2 font-medium">Vendor</th>
-                            <th class="px-4 py-2 font-medium text-right">PO Count</th>
-                            <th class="px-4 py-2 font-medium text-right">Total Amount</th>
-                            <th class="px-4 py-2 font-medium">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($vendorTotals as $vendor)
-                            <tr class="border-t border-slate-100">
-                                <td class="px-4 py-2 font-medium">{{ $vendor['vendor_name'] }}</td>
-                                <td class="px-4 py-2 text-right">{{ number_format($vendor['po_count']) }}</td>
-                                <td class="px-4 py-2 text-right font-mono">{{ number_format($vendor['total'], 0, ',', '.') }}</td>
-                                <td class="px-4 py-2">
-                                    <button wire:click="getVendorDetails('{{ $vendor['vendor_name'] }}')"
-                                            class="text-sky-600 hover:text-sky-800 text-sm font-medium">
-                                        View Details
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-slate-500">
-                                    No vendor data available for this period.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -218,215 +285,22 @@
 </div>
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Pass PHP data to JavaScript safely
-        let monthlyTotalsData = @js($monthlyTotals ?? collect());
-        let statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
-        let categoryChartData = @js($categoryChartData ?? collect());
-
         document.addEventListener('livewire:init', () => {
-            let monthlyChart = null;
-            let statusChart = null;
-            let categoryChart = null;
-            let isInitialized = false;
+            console.log('🚀 Operational Command Center initialized');
 
-            function createMonthlyChart() {
-                console.log('Creating monthly chart');
-                const monthlyCtx = document.getElementById('monthlyChart');
-                if (!monthlyCtx) {
-                    console.log('Monthly chart canvas not found');
-                    return;
-                }
+            // Listen for dashboard data updates
+            Livewire.on('dashboardDataUpdated', (data) => {
+                console.log('📊 Dashboard data updated:', data);
 
-                if (monthlyChart) {
-                    console.log('Destroying existing monthly chart');
-                    monthlyChart.destroy();
-                }
-
-                const hasMonthlyData = monthlyTotalsData && monthlyTotalsData.length > 0;
-
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: hasMonthlyData ? monthlyTotalsData.map(item => {
-                            const date = new Date(item.month + '-01');
-                            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                        }) : [],
-                        datasets: [{
-                            label: 'Total Amount',
-                            data: hasMonthlyData ? monthlyTotalsData.map(item => item.total) : [],
-                            borderColor: 'rgb(14, 165, 233)',
-                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return 'IDR ' + new Intl.NumberFormat('id-ID').format(value);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            function createStatusChart() {
-                const statusCtx = document.getElementById('statusChart');
-                if (!statusCtx) return;
-
-                if (statusChart) statusChart.destroy();
-
-                statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
-                        datasets: [{
-                            data: [
-                                statusCountsData.approved || 0,
-                                statusCountsData.waiting || 0,
-                                statusCountsData.rejected || 0,
-                                statusCountsData.canceled || 0
-                            ],
-                            backgroundColor: [
-                                'rgb(34, 197, 94)',  // green
-                                'rgb(251, 191, 36)', // yellow
-                                'rgb(239, 68, 68)',  // red
-                                'rgb(156, 163, 175)' // gray
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-
-            function createCategoryChart() {
-                const categoryCtx = document.getElementById('categoryChart');
-                if (!categoryCtx) return;
-
-                if (categoryChart) categoryChart.destroy();
-
-                const hasCategoryData = categoryChartData && categoryChartData.length > 0;
-
-                categoryChart = new Chart(categoryCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: hasCategoryData ? categoryChartData.map(item => item.label) : [],
-                        datasets: [{
-                            data: hasCategoryData ? categoryChartData.map(item => item.count) : [],
-                            backgroundColor: [
-                                'rgb(14, 165, 233)',   // blue
-                                'rgb(168, 85, 247)',   // violet
-                                'rgb(236, 72, 153)',   // pink
-                                'rgb(34, 197, 94)',    // green
-                                'rgb(245, 158, 11)'    // amber
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-
-            function updateCharts() {
-                console.log('updateCharts called');
-                createMonthlyChart();
-                createStatusChart();
-                createCategoryChart();
-                console.log('Charts updated');
-            }
-
-            // Initial chart render
-            updateCharts();
-            isInitialized = true;
-            console.log('Dashboard initialization complete');
-
-            // Listen for Livewire updates - update charts and operational metrics
-            Livewire.on('monthChanged', (data) => {
-                console.log('🔄 monthChanged event received:', data);
-                if (isInitialized) {
-                    if (data && Object.keys(data).length > 0) {
-                        console.log('📊 Processing monthChanged data...');
-                        // Handle arrays from PHP
-                        monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
-                        statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-                        categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
-
-                        // Update operational metrics for real-time dashboard
-                        if (data.operationalMetrics) {
-                            console.log('🎯 Operational metrics updated:', data.operationalMetrics);
-                            updateOperationalMetrics(data.operationalMetrics);
-                        }
-
-                        console.log('✅ Updated dashboard data:', {
-                            monthlyTotalsData: monthlyTotalsData.length,
-                            statusCountsData,
-                            categoryChartData: categoryChartData.length,
-                            hasOperationalMetrics: !!data.operationalMetrics
-                        });
-                        updateCharts();
-                    } else {
-                        console.log('⚠️ monthChanged event received but no data');
-                    }
-                } else {
-                    console.log('⏳ monthChanged event ignored - not initialized yet');
-                }
-            });
-
-            Livewire.on('dataRefreshed', (data) => {
-                console.log('🔄 dataRefreshed event received:', data);
-                if (isInitialized) {
-                    if (data && Object.keys(data).length > 0) {
-                        console.log('📊 Processing dataRefreshed data...');
-                        // Handle arrays from PHP
-                        monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
-                        statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-                        categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
-
-                        // Update operational metrics for real-time dashboard
-                        if (data.operationalMetrics) {
-                            console.log('🎯 Operational metrics refreshed:', data.operationalMetrics);
-                            updateOperationalMetrics(data.operationalMetrics);
-                        }
-
-                        console.log('✅ Refreshed dashboard data:', {
-                            monthlyTotalsData: monthlyTotalsData.length,
-                            statusCountsData,
-                            categoryChartData: categoryChartData.length,
-                            hasOperationalMetrics: !!data.operationalMetrics
-                        });
-                        updateCharts();
-                    } else {
-                        console.log('⚠️ dataRefreshed event received but no data');
-                    }
-                } else {
-                    console.log('⏳ dataRefreshed event ignored - not initialized yet');
+                // Update operational metrics for real-time dashboard
+                if (data.operationalMetrics) {
+                    console.log('🎯 Operational metrics updated:', data.operationalMetrics);
+                    updateOperationalMetrics(data.operationalMetrics);
                 }
             });
 
             function updateOperationalMetrics(metrics) {
-                // Update real-time KPI displays
                 console.log('🔄 Updating operational metrics displays...');
 
                 // Update fulfillment rate
@@ -461,6 +335,8 @@
                 // Could integrate with notification system
                 console.warn(`🚨 ${alertType}: ${message}`);
             }
+
+            console.log('✅ Operational Command Center ready');
         });
     </script>
 @endpush
