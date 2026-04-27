@@ -48,7 +48,7 @@ class PurchaseOrderDashboard extends Component
     public function updatedSelectedMonth()
     {
         $this->loadDashboardData();
-        $this->emit('monthChanged', $this->selectedMonth);
+        $this->dispatch('monthChanged', $this->selectedMonth);
     }
 
     public function loadDashboardData()
@@ -87,7 +87,7 @@ class PurchaseOrderDashboard extends Component
             $poService = app(PurchaseOrderService::class);
             $details = $poService->getVendorDetails($vendorName, $this->selectedMonth);
 
-            $this->emit('showVendorDetails', $details);
+            $this->dispatch('showVendorDetails', $details);
 
         } catch (\Exception $e) {
             Log::error('Failed to get vendor details', [
@@ -101,7 +101,7 @@ class PurchaseOrderDashboard extends Component
     public function refreshData()
     {
         $this->loadDashboardData();
-        $this->emit('dataRefreshed');
+        $this->dispatch('dataRefreshed');
     }
 
     public function render()
