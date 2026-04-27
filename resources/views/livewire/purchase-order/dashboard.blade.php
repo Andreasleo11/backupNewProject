@@ -1,6 +1,3 @@
-@extends('new.layouts.app')
-
-@section('content')
 <div>
     {{-- Header --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -151,133 +148,134 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('livewire:init', () => {
-    let monthlyChart = null;
-    let statusChart = null;
-    let categoryChart = null;
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Pass PHP data to JavaScript safely
+    const monthlyTotalsData = @js($monthlyTotals ?? collect());
+    const statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
+    const categoryChartData = @js($categoryChartData ?? collect());
 
-    function updateCharts() {
-        // Monthly totals chart
-        const monthlyCtx = document.getElementById('monthlyChart');
-        if (monthlyCtx) {
-            if (monthlyChart) monthlyChart.destroy();
+        document.addEventListener('livewire:init', () => {
+            let monthlyChart = null;
+            let statusChart = null;
+            let categoryChart = null;
 
-            const monthlyData = @js($monthlyTotals);
-            const hasMonthlyData = monthlyData && monthlyData.length > 0;
+            function updateCharts() {
+                // Monthly totals chart
+                const monthlyCtx = document.getElementById('monthlyChart');
+                if (monthlyCtx) {
+                    if (monthlyChart) monthlyChart.destroy();
 
-            monthlyChart = new Chart(monthlyCtx, {
-                type: 'line',
-                data: {
-                    labels: hasMonthlyData ? @js($monthlyTotals->pluck('month')->map(function($m) {
-                        return new Date($m + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    })) : [],
-                    datasets: [{
-                        label: 'Total Amount',
-                        data: hasMonthlyData ? @js($monthlyTotals->pluck('total')) : [],
-                        borderColor: 'rgb(14, 165, 233)',
-                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'IDR ' + new Intl.NumberFormat('id-ID').format(value);
+                    const hasMonthlyData = monthlyTotalsData && monthlyTotalsData.length > 0;
+
+                    monthlyChart = new Chart(monthlyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: hasMonthlyData ? monthlyTotalsData.map(item => {
+                                const date = new Date(item.month + '-01');
+                                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                            }) : [],
+                            datasets: [{
+                                label: 'Total Amount',
+                                data: hasMonthlyData ? monthlyTotalsData.map(item => item.total) : [],
+                                borderColor: 'rgb(14, 165, 233)',
+                                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'IDR ' + new Intl.NumberFormat('id-ID').format(value);
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
+                    });
                 }
-            });
-        }
 
-        // Status chart
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            if (statusChart) statusChart.destroy();
+                // Status chart
+                const statusCtx = document.getElementById('statusChart');
+                if (statusCtx) {
+                    if (statusChart) statusChart.destroy();
 
-            const statusData = @js($statusCounts);
-
-            statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
-                    datasets: [{
-                        data: [
-                            statusData?.approved || 0,
-                            statusData?.waiting || 0,
-                            statusData?.rejected || 0,
-                            statusData?.canceled || 0
-                        ],
-                        backgroundColor: [
-                            'rgb(34, 197, 94)',  // green
-                            'rgb(251, 191, 36)', // yellow
-                            'rgb(239, 68, 68)',  // red
-                            'rgb(156, 163, 175)' // gray
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    statusChart = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
+                            datasets: [{
+                                data: [
+                                    statusCountsData.approved || 0,
+                                    statusCountsData.waiting || 0,
+                                    statusCountsData.rejected || 0,
+                                    statusCountsData.canceled || 0
+                                ],
+                                backgroundColor: [
+                                    'rgb(34, 197, 94)',  // green
+                                    'rgb(251, 191, 36)', // yellow
+                                    'rgb(239, 68, 68)',  // red
+                                    'rgb(156, 163, 175)' // gray
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
                 }
-            });
-        }
 
-        // Category chart
-        const categoryCtx = document.getElementById('categoryChart');
-        if (categoryCtx) {
-            if (categoryChart) categoryChart.destroy();
+                // Category chart
+                const categoryCtx = document.getElementById('categoryChart');
+                if (categoryCtx) {
+                    if (categoryChart) categoryChart.destroy();
 
-            const categoryData = @js($categoryChartData);
-            const hasCategoryData = categoryData && categoryData.length > 0;
+                    const hasCategoryData = categoryChartData && categoryChartData.length > 0;
 
-            categoryChart = new Chart(categoryCtx, {
-                type: 'pie',
-                data: {
-                    labels: hasCategoryData ? @js($categoryChartData->pluck('label')) : [],
-                    datasets: [{
-                        data: hasCategoryData ? @js($categoryChartData->pluck('count')) : [],
-                        backgroundColor: [
-                            'rgb(14, 165, 233)',   // blue
-                            'rgb(168, 85, 247)',   // violet
-                            'rgb(236, 72, 153)',   // pink
-                            'rgb(34, 197, 94)',    // green
-                            'rgb(245, 158, 11)'    // amber
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    categoryChart = new Chart(categoryCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: hasCategoryData ? categoryChartData.map(item => item.label) : [],
+                            datasets: [{
+                                data: hasCategoryData ? categoryChartData.map(item => item.count) : [],
+                                backgroundColor: [
+                                    'rgb(14, 165, 233)',   // blue
+                                    'rgb(168, 85, 247)',   // violet
+                                    'rgb(236, 72, 153)',   // pink
+                                    'rgb(34, 197, 94)',    // green
+                                    'rgb(245, 158, 11)'    // amber
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
                 }
-            });
-        }
-    }
+            }
 
-    // Initial chart render
-    updateCharts();
+            // Initial chart render
+            updateCharts();
 
-    // Listen for Livewire updates
-    Livewire.on('monthChanged', updateCharts);
-    Livewire.on('dataRefreshed', updateCharts);
-});
-</script>
+            // Listen for Livewire updates
+            Livewire.on('monthChanged', updateCharts);
+            Livewire.on('dataRefreshed', updateCharts);
+        });
+    </script>
 @endpush
-@endsection
