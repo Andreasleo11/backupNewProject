@@ -311,8 +311,6 @@
         let statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
         let categoryChartData = @js($categoryChartData ?? collect());
 
-        console.log('Dashboard Data:', { monthlyTotalsData, statusCountsData, categoryChartData });
-
         document.addEventListener('livewire:init', () => {
             let monthlyChart = null;
             let statusChart = null;
