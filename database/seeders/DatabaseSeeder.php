@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
          */
         $this->call([
             PrApprovalRulesSeeder::class,      // Purchase Request approval rules
+            PoWorkflowSeeder::class,           // Purchase Order approval rules
         ]);
 
         /**

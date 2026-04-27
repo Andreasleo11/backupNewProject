@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App;
+use App\Domain\Approval\Contracts\Approvable;
 use App\Enums\PurchaseOrderStatus;
 use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class PurchaseOrder extends Model
+class PurchaseOrder extends Model implements Approvable
 {
     use HasFactory;
 
@@ -29,6 +31,7 @@ class PurchaseOrder extends Model
         'purchase_order_category_id',
         'parent_po_number',
         'revision_count',
+        'approval_request_id',
     ];
 
     // Enum-based status methods
@@ -127,6 +130,39 @@ class PurchaseOrder extends Model
     public function category()
     {
         return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
+    }
+
+    // === APPROVAL SYSTEM INTEGRATION ===
+
+    public function approvalRequest(): MorphOne
+    {
+        return $this->morphOne(\App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::class, 'approvable');
+    }
+
+    public function getApprovableTypeLabel(): string
+    {
+        return 'Purchase Order';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return "PO/{$this->po_number}";
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('po.show', $this->id);
+    }
+
+    public function getApprovableDepartmentName(): ?string
+    {
+        return $this->user?->department?->name;
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        // Return branch information if available
+        return $this->user?->branch?->name;
     }
 
     protected static function boot()

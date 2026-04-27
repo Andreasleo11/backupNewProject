@@ -787,6 +787,90 @@ This document serves as the authoritative source of truth for the Purchase Order
 
 ---
 
+## 🔄 **Unified Approval Workflow Setup**
+
+### Overview
+
+The Purchase Order approval workflow is now managed through a single unified command that handles the complete setup atomically.
+
+### Architecture
+
+```
+Legacy Commands (Removed)           New Components
+├── PoApprovalRulesSeeder       →   PoWorkflowSeeder
+├── MigratePoApprovalRelationships →   SetupPoApproval Command
+└── EnsurePoApprovalRulesAssigned →   (Atomic Migration + Validation)
+```
+
+### Command Usage
+
+```bash
+# First, seed the workflow data
+php artisan db:seed --class=PoWorkflowSeeder
+
+# Then setup complete PO approval workflow
+php artisan po:setup-approval
+
+# Force recreation of baseline rules (if needed)
+php artisan po:setup-approval --force
+```
+
+### Features
+
+- **Pre-execution Validation**: Checks for required workflow data before proceeding
+- **Clear Error Messages**: Guides developers when setup prerequisites are missing
+- **Atomic Execution**: All setup operations in one database transaction
+- **Idempotent**: Safe to run multiple times without duplication
+- **Comprehensive Migration**: Handles both missing approval requests and missing rule templates
+- **Complete Verification**: Validates workflow integrity after setup
+
+### Validation Behavior
+
+The command includes built-in validation to ensure proper setup order:
+
+**When workflow data is missing:**
+```
+❌ Required workflow data is missing!
+
+The PO approval workflow has not been seeded into the database.
+Please run the following command first:
+
+    php artisan db:seed --class=PoWorkflowSeeder
+
+This will create the necessary approval rules and workflows.
+
+After seeding, you can run this command again.
+```
+
+**When workflow data exists:**
+- Command proceeds with migration and verification
+- All legacy POs are processed atomically
+- Complete setup validation is performed
+
+### Migration Logic
+
+The command handles two migration cases atomically:
+
+1. **Case 1 - Missing Approval Requests**: POs without approval relationships
+   - Creates `ApprovalRequest` with status `IN_REVIEW`
+   - Assigns baseline rule template (ID: 158)
+   - Creates approval steps for director approval
+   - Updates PO with `approval_request_id`
+
+2. **Case 2 - Incomplete Approval Requests**: POs with requests missing rule templates
+   - Assigns `rule_template_version_id` to baseline rule
+   - Creates missing approval steps
+   - Ensures complete workflow setup
+
+### Business Impact
+
+- **Single Source of Truth**: One command for complete workflow setup
+- **Zero Downtime Migration**: Atomic operations prevent inconsistent states
+- **Operational Simplicity**: Eliminates manual coordination of multiple commands
+- **Audit Compliance**: Complete approval trails for all migrated POs
+
+---
+
 ### 📊 **Overall Project Status**
 
 - **Phase 1 (Foundation)**: ✅ **COMPLETE** (Weeks 1-3, 15 days)

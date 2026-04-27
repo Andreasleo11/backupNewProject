@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Approval\Contracts\Approvals;
 use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use App\Http\Requests\UpdatePoRequest;
-use App\Jobs\POSignPDFJob;
 use App\Models\File;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderCategory;
@@ -24,7 +24,8 @@ class PurchaseOrderController extends Controller
 {
     public function __construct(
         private PurchaseOrderService $poService,
-        private PdfProcessingService $pdfService
+        private PdfProcessingService $pdfService,
+        private Approvals $approvals
     ) {}
 
     public function index(PurchaseOrderDataTable $dataTable, Request $request)
@@ -38,13 +39,21 @@ class PurchaseOrderController extends Controller
     {
         if (auth()->user()->hasRole('DIRECTOR')) {
             $ids = $request->input('ids');
-            $purchaseOrders = PurchaseOrder::whereIn('id', $ids)->get();
 
-            foreach ($purchaseOrders as $po) {
-                POSignPDFJob::dispatch($po);
+            foreach ($ids as $id) {
+                try {
+                    $po = PurchaseOrder::findOrFail($id);
+                    $this->approvals->approve($po, auth()->id());
+                } catch (\Exception $e) {
+                    Log::error('Failed to approve PO in batch', [
+                        'po_id' => $id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Continue with other POs
+                }
             }
 
-            return response()->json(['message' => 'Selected purchase orders approved.']);
+            return response()->json(['message' => 'Selected purchase orders approval processed.']);
         }
 
         return response()->json(['message' => 'No permission granted.']);
@@ -60,12 +69,20 @@ class PurchaseOrderController extends Controller
                 return response()->json(['message' => 'Invalid request.'], 400);
             }
 
-            PurchaseOrder::whereIn('id', $ids)->update([
-                'status' => 3,
-                'reason' => $reason,
-            ]);
+            foreach ($ids as $id) {
+                try {
+                    $po = PurchaseOrder::findOrFail($id);
+                    $this->approvals->reject($po, auth()->id(), $reason);
+                } catch (\Exception $e) {
+                    Log::error('Failed to reject PO in batch', [
+                        'po_id' => $id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Continue with other POs
+                }
+            }
 
-            return response()->json(['message' => 'Selected purchase orders rejected.']);
+            return response()->json(['message' => 'Selected purchase orders rejection processed.']);
         }
 
         return response()->json(['message' => 'No permission granted.']);
@@ -156,12 +173,10 @@ class PurchaseOrderController extends Controller
             // Use the PDF service to sign the document
             $this->pdfService->sign($po, auth()->id());
 
-            // Update additional PO fields
-            $po->approved_date = now();
-            $po->status = 2; // Approved
-            $po->save();
+            // Process approval via approval engine
+            $this->approvals->approve($po, auth()->id(), 'Signed and approved via PDF signature');
 
-            return response()->json(['message' => 'PDF signed successfully!']);
+            return response()->json(['message' => 'PDF signed and approved successfully!']);
         } catch (\Exception $e) {
             Log::error('PDF signing failed in controller', [
                 'po_id' => $request->input('id'),

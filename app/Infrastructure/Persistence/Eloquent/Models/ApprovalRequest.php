@@ -26,7 +26,7 @@ class ApprovalRequest extends Model
     }
 
     protected $fillable = [
-        'status', 'rule_template_id', 'current_step', 'submitted_by', 'submitted_at', 'meta',
+        'status', 'rule_template_id', 'rule_template_version_id', 'current_step', 'submitted_by', 'submitted_at', 'meta',
     ];
 
     protected $casts = ['meta' => 'array', 'submitted_at' => 'datetime'];

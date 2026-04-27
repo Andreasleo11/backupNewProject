@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Application\Approval\Contracts\Approvals;
 use App\Enums\PurchaseOrderStatus;
 use App\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class PurchaseOrderService
 {
+    public function __construct(private Approvals $approvals) {}
+
     /**
      * Create a new purchase order
      *
@@ -20,7 +23,7 @@ class PurchaseOrderService
     {
         try {
             return DB::transaction(function () use ($data) {
-                // Create the purchase order
+                // Create the purchase order initially as DRAFT
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->po_number = $data['po_number'];
                 $purchaseOrder->status = PurchaseOrderStatus::DRAFT->legacyValue(); // Start as draft
@@ -49,7 +52,12 @@ class PurchaseOrderService
 
                 $purchaseOrder->save();
 
-                Log::info('Purchase order created', [
+                // Submit for approval - this creates approval request and sets status to WAITING
+                $this->approvals->submit($purchaseOrder, auth()->id());
+                $purchaseOrder->status = PurchaseOrderStatus::WAITING->legacyValue();
+                $purchaseOrder->save();
+
+                Log::info('Purchase order created and submitted for approval', [
                     'po_number' => $purchaseOrder->po_number,
                     'creator_id' => $purchaseOrder->creator_id,
                     'total' => $purchaseOrder->total,
@@ -168,24 +176,21 @@ class PurchaseOrderService
     public function approve(int $id, int $userId, ?string $remarks = null): void
     {
         try {
-            DB::transaction(function () use ($id, $userId, $remarks) {
-                $po = PurchaseOrder::findOrFail($id);
-
-                if (! $po->canTransitionTo(PurchaseOrderStatus::APPROVED)) {
-                    throw new \InvalidArgumentException('Purchase order cannot be approved');
-                }
-
-                $po->setStatusEnum(PurchaseOrderStatus::APPROVED);
+            $po = PurchaseOrder::findOrFail($id);
+            
+            $po->setStatusEnum(PurchaseOrderStatus::APPROVED);
                 $po->approved_date = now();
                 $po->save();
 
-                Log::info('Purchase order approved', [
-                    'po_id' => $po->id,
-                    'po_number' => $po->po_number,
-                    'approved_by' => $userId,
-                    'remarks' => $remarks,
-                ]);
-            });
+            // Use approval engine to approve
+            $this->approvals->approve($po, $userId, $remarks);
+
+            Log::info('Purchase order approval processed via approval engine', [
+                'po_id' => $po->id,
+                'po_number' => $po->po_number,
+                'approved_by' => $userId,
+                'remarks' => $remarks,
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to approve purchase order', [
                 'po_id' => $id,
