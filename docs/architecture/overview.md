@@ -54,7 +54,7 @@ Each module has its documentation in `docs/modules/{module-name}/`:
 | Module                 | Documentation Path                          | Status      |
 | ---------------------- | ------------------------------------------- | ----------- |
 | Approval Rule Template | `docs/modules/approval-rule-template/`      | ✅ Piloting |
-| Purchase Order         | `docs/modules/purchase-order-refactoring/`  | ✅ Active   |
+| Purchase Order         | `docs/modules/purchase-order/`              | ✅ Active   |
 | Purchase Request       | `docs/modules/purchase-request/`            | 📝 Todo     |
 | Overtime Form          | `docs/modules/overtime-form/`               | 📝 Todo     |
 
