@@ -20,6 +20,7 @@ This document provides a high-level overview of the system's architecture, focus
 │                     Domain Layer                        │
 │  App\Domain\Overtime\Models\OvertimeForm          │
 │  App\Models\PurchaseRequest                     │
+│  App\Models\PurchaseOrder                        │
 └──────────────────────┬──────────────────────────────┘
                        │ implements Approvable
                        ▼
@@ -50,11 +51,12 @@ This document provides a high-level overview of the system's architecture, focus
 
 Each module has its documentation in `docs/modules/{module-name}/`:
 
-| Module                 | Documentation Path                     | Status      |
-| ---------------------- | -------------------------------------- | ----------- |
-| Approval Rule Template | `docs/modules/approval-rule-template/` | ✅ Piloting |
-| Purchase Request       | `docs/modules/purchase-request/`       | 📝 Todo     |
-| Overtime Form          | `docs/modules/overtime-form/`          | 📝 Todo     |
+| Module                 | Documentation Path                          | Status      |
+| ---------------------- | ------------------------------------------- | ----------- |
+| Approval Rule Template | `docs/modules/approval-rule-template/`      | ✅ Piloting |
+| Purchase Order         | `docs/modules/purchase-order-refactoring/`  | ✅ Active   |
+| Purchase Request       | `docs/modules/purchase-request/`            | 📝 Todo     |
+| Overtime Form          | `docs/modules/overtime-form/`               | 📝 Todo     |
 
 ## Documentation-as-Code Workflow
 

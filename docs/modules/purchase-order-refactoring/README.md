@@ -793,6 +793,18 @@ This document serves as the authoritative source of truth for the Purchase Order
 
 The Purchase Order approval workflow is now managed through a single unified command that handles the complete setup atomically.
 
+### Version History
+
+- **2026-04-27**: Implemented unified PO approval workflow
+  - Consolidated three separate commands into single `SetupPoApproval` command
+  - Added `PoWorkflowSeeder` for baseline approval rule creation
+  - Implemented pre-execution validation requiring workflow seeding first
+  - Added atomic migration for all legacy POs (1,218 processed)
+  - Integrated approval engine into PO lifecycle (create/approve/sign operations)
+  - Added automatic PO status transitions on director approval
+  - Removed redundant commands: `MigratePoApprovalRelationships`, `EnsurePoApprovalRulesAssigned`
+  - Updated `docs/architecture/overview.md` to include PurchaseOrder in approval system
+
 ### Architecture
 
 ```
