@@ -509,3 +509,8 @@
             });
     </script>
 @endpush
+
+{{-- Modals --}}
+<livewire:create-purchase-order-modal :show-modal="$showCreateModal" />
+<livewire:purchase-order.top-vendors-modal :show-modal="$showTopVendorsModal" />
+<livewire:purchase-order.purchase-order-detail />

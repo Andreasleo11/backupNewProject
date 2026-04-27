@@ -166,10 +166,10 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex gap-2">
-                                    <a href="{{ route('po.view', $po->id) }}"
-                                       class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                    <button wire:click="$dispatch('openDetailModal', {{ $po->id }})"
+                                            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
                                         View
-                                    </a>
+                                    </button>
                                     @if($po->getStatusEnum()->canEdit())
                                         <a href="{{ route('po.edit', $po->id) }}"
                                            class="text-slate-600 hover:text-slate-900 text-sm font-medium">
@@ -228,7 +228,9 @@
             @endif
         </div>
     </div>
-</div>
+
+    {{-- PO Detail Modal --}}
+    <livewire:purchase-order.purchase-order-detail />
 
 {{-- Reject Modal --}}
 <div x-data="{ open: false }" x-show="open" x-cloak
