@@ -55,6 +55,70 @@
         </div>
     </div>
 
+    {{-- Operational Command Center --}}
+    @if($operationalMetrics)
+        {{-- Urgent Alerts --}}
+        <x-urgent-alerts :alerts="$operationalMetrics['urgentAlerts'] ?? []" />
+
+        {{-- Core Operational KPIs --}}
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+            {{-- Total Spend --}}
+            <x-operational-metric-card
+                title="Total Spend"
+                :value="'IDR ' . number_format($operationalMetrics['totalSpend'] ?? 0, 0, ',', '.')"
+                :secondary-value="number_format($operationalMetrics['orderCount'] ?? 0)"
+                secondary-label="Orders"
+                :change="12.5"
+                icon="<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1'></path>"
+            />
+
+            {{-- Fulfillment Rate --}}
+            <x-operational-metric-card
+                title="Fulfillment Rate"
+                :value="number_format(($operationalMetrics['fulfillmentRate']['rate'] ?? 0), 1) . '%'"
+                :secondary-value="number_format($operationalMetrics['fulfillmentRate']['fulfilled'] ?? 0, 0, ',', '.')"
+                secondary-label="Fulfilled Value"
+                :change="round(($operationalMetrics['fulfillmentRate']['rate'] ?? 0) - 85, 1)"
+                :change-type="(($operationalMetrics['fulfillmentRate']['rate'] ?? 0) >= 90) ? 'positive' : 'negative'"
+                icon="<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'></path>"
+            />
+
+            {{-- Aging Alert --}}
+            <x-operational-metric-card
+                title="Critical Aging"
+                :value="collect($operationalMetrics['agingAnalysis'] ?? [])->where('bucket', '90+ days')->first()['count'] ?? 0"
+                secondary-label="POs over 90 days"
+                :alert="(collect($operationalMetrics['agingAnalysis'] ?? [])->where('bucket', '90+ days')->first()['count'] ?? 0) > 0"
+                alert-message="Immediate attention required"
+                icon="<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z'></path>"
+            />
+
+            {{-- Approval Efficiency --}}
+            <x-operational-metric-card
+                title="Approval Time"
+                :value="number_format($operationalMetrics['approvalMetrics']['avg_approval_time_hours'] ?? 0, 1) . 'h'"
+                :secondary-value="number_format($operationalMetrics['approvalMetrics']['approval_rate'] ?? 0, 1) . '%'"
+                secondary-label="Approval Rate"
+                :change="round(24 - ($operationalMetrics['approvalMetrics']['avg_approval_time_hours'] ?? 24), 1)"
+                :change-type="(($operationalMetrics['approvalMetrics']['avg_approval_time_hours'] ?? 24) <= 24) ? 'positive' : 'negative'"
+                trend="vs target (24h)"
+                icon="<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'></path>"
+            />
+        </div>
+
+        {{-- Advanced Analytics Grid --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            {{-- Aging Analysis --}}
+            <x-aging-analysis :aging-data="$operationalMetrics['agingAnalysis'] ?? []" />
+
+            {{-- Supplier Lead Times --}}
+            <x-supplier-lead-times :supplier-data="$operationalMetrics['supplierLeadTimes'] ?? []" />
+
+            {{-- Trend Forecast --}}
+            <x-trend-forecast :forecast="$operationalMetrics['trendForecast'] ?? []" />
+        </div>
+    @endif
+
     {{-- Charts row --}}
     <div class="grid gap-6 lg:grid-cols-4 mt-6">
         {{-- Monthly totals --}}
@@ -97,162 +161,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Vendor Details Modal --}}
-    @if($showVendorModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-                </div>
-
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                Purchase Orders for {{ $selectedVendorName }}
-                            </h3>
-                            <button wire:click="closeVendorModal" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="max-h-96 overflow-y-auto">
-                            @if(!empty($selectedVendorDetails))
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Date</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($selectedVendorDetails as $po)
-                                                <tr>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ $po['po_number'] }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ \Carbon\Carbon::parse($po['invoice_date'])->format('d/m/Y') }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                                        IDR {{ number_format($po['total'], 0, ',', '.') }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                            @if($po['status'] === 1) bg-yellow-100 text-yellow-800
-                                                            @elseif($po['status'] === 2) bg-green-100 text-green-800
-                                                            @elseif($po['status'] === 3) bg-red-100 text-red-800
-                                                            @else bg-gray-100 text-gray-800
-                                                            @endif">
-                                                            @if($po['status'] === 1) Waiting
-                                                            @elseif($po['status'] === 2) Approved
-                                                            @elseif($po['status'] === 3) Rejected
-                                                            @else Cancelled
-                                                            @endif
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="text-center py-8">
-                                    <p class="text-gray-500">No purchase orders found for this vendor in the selected period.</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button wire:click="closeVendorModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- Top 5 Vendors Modal --}}
-    @if($showTopVendorsModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-                </div>
-
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                Top 5 Vendors - {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('M Y') }}
-                            </h3>
-                            <button wire:click="closeTopVendorsModal" class="text-gray-400 hover:text-gray-600">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="max-h-96 overflow-y-auto">
-                            @if($topVendors && $topVendors->count() > 0)
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($topVendors as $index => $vendor)
-                                                <tr>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ $index + 1 }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ $vendor['vendor_name'] }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                                        IDR {{ number_format($vendor['total'], 0, ',', '.') }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <button wire:click="getVendorDetails('{{ $vendor['vendor_name'] }}'); closeTopVendorsModal()"
-                                                                class="text-indigo-600 hover:text-indigo-900 font-medium">
-                                                            View Details
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="text-center py-8">
-                                    <p class="text-gray-500">No vendor data available for this period.</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button wire:click="closeTopVendorsModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
 
     {{-- Vendor details table --}}
     <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -301,6 +209,12 @@
             </div>
         </div>
     </div>
+    
+    {{-- Modals --}}
+    <livewire:purchase-order.create-purchase-order-modal />
+    <livewire:purchase-order.top-vendors-modal :show-modal="$showTopVendorsModal" />
+    <livewire:purchase-order.vendor-details-modal :show-modal="$showVendorModal" />
+    <livewire:purchase-order.purchase-order-detail />
 </div>
 
 @push('scripts')
@@ -448,7 +362,7 @@
             isInitialized = true;
             console.log('Dashboard initialization complete');
 
-            // Listen for Livewire updates - update charts with new data
+            // Listen for Livewire updates - update charts and operational metrics
             Livewire.on('monthChanged', (data) => {
                 console.log('🔄 monthChanged event received:', data);
                 if (isInitialized) {
@@ -458,7 +372,19 @@
                         monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
                         statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
                         categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
-                        console.log('✅ Updated dashboard data:', { monthlyTotalsData: monthlyTotalsData.length, statusCountsData, categoryChartData: categoryChartData.length });
+
+                        // Update operational metrics for real-time dashboard
+                        if (data.operationalMetrics) {
+                            console.log('🎯 Operational metrics updated:', data.operationalMetrics);
+                            updateOperationalMetrics(data.operationalMetrics);
+                        }
+
+                        console.log('✅ Updated dashboard data:', {
+                            monthlyTotalsData: monthlyTotalsData.length,
+                            statusCountsData,
+                            categoryChartData: categoryChartData.length,
+                            hasOperationalMetrics: !!data.operationalMetrics
+                        });
                         updateCharts();
                     } else {
                         console.log('⚠️ monthChanged event received but no data');
@@ -477,7 +403,19 @@
                         monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
                         statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
                         categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
-                        console.log('✅ Refreshed dashboard data:', { monthlyTotalsData: monthlyTotalsData.length, statusCountsData, categoryChartData: categoryChartData.length });
+
+                        // Update operational metrics for real-time dashboard
+                        if (data.operationalMetrics) {
+                            console.log('🎯 Operational metrics refreshed:', data.operationalMetrics);
+                            updateOperationalMetrics(data.operationalMetrics);
+                        }
+
+                        console.log('✅ Refreshed dashboard data:', {
+                            monthlyTotalsData: monthlyTotalsData.length,
+                            statusCountsData,
+                            categoryChartData: categoryChartData.length,
+                            hasOperationalMetrics: !!data.operationalMetrics
+                        });
                         updateCharts();
                     } else {
                         console.log('⚠️ dataRefreshed event received but no data');
@@ -487,30 +425,42 @@
                 }
             });
 
-            // Test events manually (remove in production)
-            window.testMonthChange = () => {
-                console.log('🧪 Testing month change event manually');
-                Livewire.emit('monthChanged', {
-                    monthlyTotals: @js($monthlyTotals ?? collect()),
-                    statusCounts: @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]),
-                    categoryChartData: @js($categoryChartData ?? collect())
-                });
-            };
+            function updateOperationalMetrics(metrics) {
+                // Update real-time KPI displays
+                console.log('🔄 Updating operational metrics displays...');
 
-            window.testDataRefresh = () => {
-                console.log('🧪 Testing data refresh event manually');
-                Livewire.emit('dataRefreshed', {
-                    monthlyTotals: @js($monthlyTotals ?? collect()),
-                    statusCounts: @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]),
-                    categoryChartData: @js($categoryChartData ?? collect())
-                });
-            };
-                console.log('Monthly chart created successfully');
-            });
+                // Update fulfillment rate
+                const fulfillmentRate = metrics.fulfillmentRate?.rate || 0;
+                updateMetricDisplay('fulfillment-rate', fulfillmentRate.toFixed(1) + '%');
+
+                // Update critical aging count
+                const criticalAging = metrics.agingAnalysis?.find(item => item.bucket === '90+ days')?.count || 0;
+                updateMetricDisplay('critical-aging', criticalAging.toString());
+
+                // Update approval time
+                const avgApprovalTime = metrics.approvalMetrics?.avg_approval_time_hours || 0;
+                updateMetricDisplay('approval-time', avgApprovalTime.toFixed(1) + 'h');
+
+                // Trigger visual alerts for critical metrics
+                if (criticalAging > 0) {
+                    triggerAlert('aging-alert', `Critical: ${criticalAging} POs over 90 days`);
+                }
+                if (fulfillmentRate < 80) {
+                    triggerAlert('fulfillment-alert', `Low fulfillment rate: ${fulfillmentRate.toFixed(1)}%`);
+                }
+            }
+
+            function updateMetricDisplay(metricId, value) {
+                const element = document.querySelector(`[data-metric="${metricId}"]`);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+
+            function triggerAlert(alertType, message) {
+                // Could integrate with notification system
+                console.warn(`🚨 ${alertType}: ${message}`);
+            }
+        });
     </script>
 @endpush
-
-{{-- Modals --}}
-<livewire:create-purchase-order-modal :show-modal="$showCreateModal" />
-<livewire:purchase-order.top-vendors-modal :show-modal="$showTopVendorsModal" />
-<livewire:purchase-order.purchase-order-detail />

@@ -2,24 +2,29 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use App\Services\PurchaseOrderService;
 use App\Enums\PurchaseOrderStatus;
+use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class PurchaseOrderIndex extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = '';
+
     public $vendorFilter = '';
+
     public $monthFilter = '';
+
     public $perPage = 10;
 
     public $selectedIds = [];
+
     public $selectAll = false;
 
     protected $queryString = [
@@ -69,6 +74,7 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
+
             return;
         }
 
@@ -85,8 +91,9 @@ class PurchaseOrderIndex extends Component
                 ->pluck('po_number')
                 ->toArray();
 
-            if (!empty($invalidPOs)) {
+            if (! empty($invalidPOs)) {
                 session()->flash('error', 'Some selected POs cannot be approved: ' . implode(', ', $invalidPOs));
+
                 return;
             }
 
@@ -103,7 +110,7 @@ class PurchaseOrderIndex extends Component
             Log::error('Bulk approval failed', [
                 'selected_ids' => $this->selectedIds,
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             session()->flash('error', 'Failed to approve selected purchase orders.');
         }
@@ -113,10 +120,11 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
+
             return;
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = 'Bulk rejection by ' . auth()->user()->name;
         }
 
@@ -130,8 +138,9 @@ class PurchaseOrderIndex extends Component
                 ->pluck('po_number')
                 ->toArray();
 
-            if (!empty($invalidPOs)) {
+            if (! empty($invalidPOs)) {
                 session()->flash('error', 'Some selected POs cannot be rejected: ' . implode(', ', $invalidPOs));
+
                 return;
             }
 
@@ -139,7 +148,7 @@ class PurchaseOrderIndex extends Component
             \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
                 ->update([
                     'status' => PurchaseOrderStatus::REJECTED->legacyValue(),
-                    'reason' => $reason
+                    'reason' => $reason,
                 ]);
 
             session()->flash('success', 'Selected purchase orders rejected successfully.');
@@ -150,7 +159,7 @@ class PurchaseOrderIndex extends Component
             Log::error('Bulk rejection failed', [
                 'selected_ids' => $this->selectedIds,
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             session()->flash('error', 'Failed to reject selected purchase orders.');
         }
@@ -162,8 +171,8 @@ class PurchaseOrderIndex extends Component
             ->when($this->search, function (Builder $query) {
                 $query->where(function (Builder $q) {
                     $q->where('po_number', 'like', '%' . $this->search . '%')
-                      ->orWhere('vendor_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('invoice_number', 'like', '%' . $this->search . '%');
+                        ->orWhere('vendor_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('invoice_number', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->statusFilter, function (Builder $query) {

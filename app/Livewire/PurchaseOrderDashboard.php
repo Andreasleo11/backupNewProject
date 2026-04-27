@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Services\PurchaseOrderService;
+use App\Services\PurchaseOrderAnalyticsService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -21,6 +22,8 @@ class PurchaseOrderDashboard extends Component
     public $statusCounts;
 
     public $categoryChartData;
+
+    public $operationalMetrics = [];
 
     public $showVendorModal = false;
 
@@ -51,6 +54,7 @@ class PurchaseOrderDashboard extends Component
             'monthlyTotals' => $this->monthlyTotals->toArray(),
             'statusCounts' => $this->statusCounts,
             'categoryChartData' => $this->categoryChartData->toArray(),
+            'operationalMetrics' => $this->operationalMetrics,
         ]);
         Log::info('monthChanged event dispatched');
     }
@@ -58,17 +62,27 @@ class PurchaseOrderDashboard extends Component
     public function loadDashboardData()
     {
         try {
+            $analyticsService = app(PurchaseOrderAnalyticsService::class);
             $poService = app(PurchaseOrderService::class);
 
-            // Get dashboard analytics data
+            // Get operational metrics for command center
+            $operationalMetrics = $analyticsService->getOperationalMetrics([
+                'date_range' => $this->selectedMonth,
+            ]);
+
+            // Get legacy dashboard data for backward compatibility
             $dashboardData = $poService->getDashboardData($this->selectedMonth);
 
+            // Combine data for comprehensive dashboard
             $this->monthlyTotals = $dashboardData['monthlyTotals'];
             $this->topVendors = $dashboardData['topVendors'];
             $this->vendorTotals = $dashboardData['vendorTotals'];
             $this->availableMonths = $dashboardData['availableMonths'];
             $this->statusCounts = $dashboardData['statusCounts'];
             $this->categoryChartData = $dashboardData['categoryChartData'];
+
+            // Add operational metrics
+            $this->operationalMetrics = $operationalMetrics;
 
         } catch (\Exception $e) {
             Log::error('Failed to load dashboard data', [
@@ -82,6 +96,7 @@ class PurchaseOrderDashboard extends Component
             $this->vendorTotals = collect();
             $this->availableMonths = collect();
             $this->categoryChartData = collect();
+            $this->operationalMetrics = [];
         }
     }
 
@@ -94,6 +109,8 @@ class PurchaseOrderDashboard extends Component
             $this->selectedVendorName = $vendorName;
             $this->selectedVendorDetails = $details->toArray();
             $this->showVendorModal = true;
+
+            $this->dispatch('showVendorDetails', $vendorName, $this->selectedVendorDetails);
 
         } catch (\Exception $e) {
             Log::error('Failed to get vendor details', [
@@ -114,11 +131,17 @@ class PurchaseOrderDashboard extends Component
     public function showTopVendors()
     {
         $this->showTopVendorsModal = true;
+        $this->dispatch('showTopVendors', $this->topVendors->toArray());
     }
 
     public function closeTopVendorsModal()
     {
         $this->showTopVendorsModal = false;
+    }
+
+    public function showCreateModal()
+    {
+        $this->dispatch('openCreateModal');
     }
 
     public function refreshData()
@@ -134,6 +157,7 @@ class PurchaseOrderDashboard extends Component
             'monthlyTotals' => $this->monthlyTotals->toArray(),
             'statusCounts' => $this->statusCounts,
             'categoryChartData' => $this->categoryChartData->toArray(),
+            'operationalMetrics' => $this->operationalMetrics,
         ]);
         Log::info('dataRefreshed event dispatched');
     }
