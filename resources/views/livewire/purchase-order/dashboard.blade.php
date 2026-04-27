@@ -311,6 +311,8 @@
         let statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
         let categoryChartData = @js($categoryChartData ?? collect());
 
+        console.log('Dashboard Data:', { monthlyTotalsData, statusCountsData, categoryChartData });
+
         document.addEventListener('livewire:init', () => {
             let monthlyChart = null;
             let statusChart = null;
@@ -318,10 +320,17 @@
             let isInitialized = false;
 
             function createMonthlyChart() {
+                console.log('Creating monthly chart');
                 const monthlyCtx = document.getElementById('monthlyChart');
-                if (!monthlyCtx) return;
+                if (!monthlyCtx) {
+                    console.log('Monthly chart canvas not found');
+                    return;
+                }
 
-                if (monthlyChart) monthlyChart.destroy();
+                if (monthlyChart) {
+                    console.log('Destroying existing monthly chart');
+                    monthlyChart.destroy();
+                }
 
                 const hasMonthlyData = monthlyTotalsData && monthlyTotalsData.length > 0;
 
@@ -429,35 +438,76 @@
             }
 
             function updateCharts() {
+                console.log('updateCharts called');
                 createMonthlyChart();
                 createStatusChart();
                 createCategoryChart();
+                console.log('Charts updated');
             }
 
             // Initial chart render
             updateCharts();
             isInitialized = true;
+            console.log('Dashboard initialization complete');
 
-    // Listen for Livewire updates - update charts with new data
-    Livewire.on('monthChanged', (data) => {
-        if (isInitialized && data) {
-            // Update data from server
-            monthlyTotalsData = data.monthlyTotals || [];
-            statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-            categoryChartData = data.categoryChartData || [];
-            updateCharts();
-        }
-    });
+            // Listen for Livewire updates - update charts with new data
+            Livewire.on('monthChanged', (data) => {
+                console.log('🔄 monthChanged event received:', data);
+                if (isInitialized) {
+                    if (data && Object.keys(data).length > 0) {
+                        console.log('📊 Processing monthChanged data...');
+                        // Handle arrays from PHP
+                        monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
+                        statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+                        categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
+                        console.log('✅ Updated dashboard data:', { monthlyTotalsData: monthlyTotalsData.length, statusCountsData, categoryChartData: categoryChartData.length });
+                        updateCharts();
+                    } else {
+                        console.log('⚠️ monthChanged event received but no data');
+                    }
+                } else {
+                    console.log('⏳ monthChanged event ignored - not initialized yet');
+                }
+            });
 
-    Livewire.on('dataRefreshed', (data) => {
-        if (isInitialized && data) {
-            // Update data from server
-            monthlyTotalsData = data.monthlyTotals || [];
-            statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-            categoryChartData = data.categoryChartData || [];
-            updateCharts();
-        }
-    });
-        });
+            Livewire.on('dataRefreshed', (data) => {
+                console.log('🔄 dataRefreshed event received:', data);
+                if (isInitialized) {
+                    if (data && Object.keys(data).length > 0) {
+                        console.log('📊 Processing dataRefreshed data...');
+                        // Handle arrays from PHP
+                        monthlyTotalsData = Array.isArray(data.monthlyTotals) ? data.monthlyTotals : [];
+                        statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+                        categoryChartData = Array.isArray(data.categoryChartData) ? data.categoryChartData : [];
+                        console.log('✅ Refreshed dashboard data:', { monthlyTotalsData: monthlyTotalsData.length, statusCountsData, categoryChartData: categoryChartData.length });
+                        updateCharts();
+                    } else {
+                        console.log('⚠️ dataRefreshed event received but no data');
+                    }
+                } else {
+                    console.log('⏳ dataRefreshed event ignored - not initialized yet');
+                }
+            });
+
+            // Test events manually (remove in production)
+            window.testMonthChange = () => {
+                console.log('🧪 Testing month change event manually');
+                Livewire.emit('monthChanged', {
+                    monthlyTotals: @js($monthlyTotals ?? collect()),
+                    statusCounts: @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]),
+                    categoryChartData: @js($categoryChartData ?? collect())
+                });
+            };
+
+            window.testDataRefresh = () => {
+                console.log('🧪 Testing data refresh event manually');
+                Livewire.emit('dataRefreshed', {
+                    monthlyTotals: @js($monthlyTotals ?? collect()),
+                    statusCounts: @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]),
+                    categoryChartData: @js($categoryChartData ?? collect())
+                });
+            };
+                console.log('Monthly chart created successfully');
+            });
     </script>
 @endpush

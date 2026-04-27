@@ -40,12 +40,19 @@ class PurchaseOrderDashboard extends Component
 
     public function updatedSelectedMonth()
     {
+        Log::info('Month changed to: ' . $this->selectedMonth);
         $this->loadDashboardData();
-        $this->dispatch('monthChanged', [
-            'monthlyTotals' => $this->monthlyTotals,
+        Log::info('Dashboard data loaded', [
+            'monthlyTotalsCount' => $this->monthlyTotals->count(),
             'statusCounts' => $this->statusCounts,
-            'categoryChartData' => $this->categoryChartData,
+            'categoryChartDataCount' => $this->categoryChartData->count(),
         ]);
+        $this->dispatch('monthChanged', [
+            'monthlyTotals' => $this->monthlyTotals->toArray(),
+            'statusCounts' => $this->statusCounts,
+            'categoryChartData' => $this->categoryChartData->toArray(),
+        ]);
+        Log::info('monthChanged event dispatched');
     }
 
     public function loadDashboardData()
@@ -116,12 +123,19 @@ class PurchaseOrderDashboard extends Component
 
     public function refreshData()
     {
+        Log::info('Refresh data requested');
         $this->loadDashboardData();
-        $this->dispatch('dataRefreshed', [
-            'monthlyTotals' => $this->monthlyTotals,
+        Log::info('Dashboard data refreshed', [
+            'monthlyTotalsCount' => $this->monthlyTotals->count(),
             'statusCounts' => $this->statusCounts,
-            'categoryChartData' => $this->categoryChartData,
+            'categoryChartDataCount' => $this->categoryChartData->count(),
         ]);
+        $this->dispatch('dataRefreshed', [
+            'monthlyTotals' => $this->monthlyTotals->toArray(),
+            'statusCounts' => $this->statusCounts,
+            'categoryChartData' => $this->categoryChartData->toArray(),
+        ]);
+        Log::info('dataRefreshed event dispatched');
     }
 
     public function render()
