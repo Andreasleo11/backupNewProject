@@ -42,7 +42,7 @@
             </div>
 
             <div class="flex gap-2">
-                <button wire:click="getVendorDetails('{{ $topVendors->first()->vendor_name ?? '' }}')"
+                <button wire:click="showTopVendors"
                         class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1">
                     Top 5 vendors
                 </button>
@@ -172,6 +172,80 @@
 
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="closeVendorModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Top 5 Vendors Modal --}}
+    @if($showTopVendorsModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Top 5 Vendors - {{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('M Y') }}
+                            </h3>
+                            <button wire:click="closeTopVendorsModal" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="max-h-96 overflow-y-auto">
+                            @if($topVendors && $topVendors->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @foreach($topVendors as $index => $vendor)
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {{ $index + 1 }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {{ $vendor['vendor_name'] }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                                        IDR {{ number_format($vendor['total'], 0, ',', '.') }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <button wire:click="getVendorDetails('{{ $vendor['vendor_name'] }}'); closeTopVendorsModal()"
+                                                                class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                                            View Details
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <p class="text-gray-500">No vendor data available for this period.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="closeTopVendorsModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                             Close
                         </button>
                     </div>
@@ -364,31 +438,26 @@
             updateCharts();
             isInitialized = true;
 
-            // Listen for Livewire updates - only update when data actually changes
-            Livewire.on('monthChanged', (data) => {
-                if (isInitialized) {
-                    // Update data from server
-                    monthlyTotalsData = data.monthlyTotals || [];
-                    statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-                    categoryChartData = data.categoryChartData || [];
-                    updateCharts();
-                }
-            });
+    // Listen for Livewire updates - update charts with new data
+    Livewire.on('monthChanged', (data) => {
+        if (isInitialized && data) {
+            // Update data from server
+            monthlyTotalsData = data.monthlyTotals || [];
+            statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+            categoryChartData = data.categoryChartData || [];
+            updateCharts();
+        }
+    });
 
-            Livewire.on('dataRefreshed', (data) => {
-                if (isInitialized) {
-                    // Update data from server
-                    monthlyTotalsData = data.monthlyTotals || [];
-                    statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
-                    categoryChartData = data.categoryChartData || [];
-                    updateCharts();
-                }
-            });
-
-            // Prevent chart destruction when modal opens/closes
-            Livewire.on('showVendorDetails', () => {
-                // Modal opens, charts remain intact
-            });
+    Livewire.on('dataRefreshed', (data) => {
+        if (isInitialized && data) {
+            // Update data from server
+            monthlyTotalsData = data.monthlyTotals || [];
+            statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+            categoryChartData = data.categoryChartData || [];
+            updateCharts();
+        }
+    });
         });
     </script>
 @endpush

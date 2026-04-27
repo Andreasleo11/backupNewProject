@@ -28,6 +28,8 @@ class PurchaseOrderDashboard extends Component
 
     public $selectedVendorName = '';
 
+    public $showTopVendorsModal = false;
+
     protected $listeners = ['refreshDashboard' => '$refresh'];
 
     public function mount()
@@ -39,7 +41,11 @@ class PurchaseOrderDashboard extends Component
     public function updatedSelectedMonth()
     {
         $this->loadDashboardData();
-        $this->dispatch('monthChanged', $this->selectedMonth);
+        $this->dispatch('monthChanged', [
+            'monthlyTotals' => $this->monthlyTotals,
+            'statusCounts' => $this->statusCounts,
+            'categoryChartData' => $this->categoryChartData,
+        ]);
     }
 
     public function loadDashboardData()
@@ -98,10 +104,24 @@ class PurchaseOrderDashboard extends Component
         $this->selectedVendorName = '';
     }
 
+    public function showTopVendors()
+    {
+        $this->showTopVendorsModal = true;
+    }
+
+    public function closeTopVendorsModal()
+    {
+        $this->showTopVendorsModal = false;
+    }
+
     public function refreshData()
     {
         $this->loadDashboardData();
-        $this->dispatch('dataRefreshed');
+        $this->dispatch('dataRefreshed', [
+            'monthlyTotals' => $this->monthlyTotals,
+            'statusCounts' => $this->statusCounts,
+            'categoryChartData' => $this->categoryChartData,
+        ]);
     }
 
     public function render()
