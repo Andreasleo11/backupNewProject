@@ -22,20 +22,11 @@ class PurchaseOrderDashboard extends Component
 
     public $categoryChartData;
 
-    public function __construct()
-    {
-        $this->monthlyTotals = collect();
-        $this->topVendors = collect();
-        $this->vendorTotals = collect();
-        $this->availableMonths = collect();
-        $this->statusCounts = [
-            'approved' => 0,
-            'waiting' => 0,
-            'rejected' => 0,
-            'canceled' => 0,
-        ];
-        $this->categoryChartData = collect();
-    }
+    public $showVendorModal = false;
+
+    public $selectedVendorDetails = [];
+
+    public $selectedVendorName = '';
 
     protected $listeners = ['refreshDashboard' => '$refresh'];
 
@@ -87,7 +78,9 @@ class PurchaseOrderDashboard extends Component
             $poService = app(PurchaseOrderService::class);
             $details = $poService->getVendorDetails($vendorName, $this->selectedMonth);
 
-            $this->dispatch('showVendorDetails', $details);
+            $this->selectedVendorName = $vendorName;
+            $this->selectedVendorDetails = $details->toArray();
+            $this->showVendorModal = true;
 
         } catch (\Exception $e) {
             Log::error('Failed to get vendor details', [
@@ -96,6 +89,13 @@ class PurchaseOrderDashboard extends Component
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function closeVendorModal()
+    {
+        $this->showVendorModal = false;
+        $this->selectedVendorDetails = [];
+        $this->selectedVendorName = '';
     }
 
     public function refreshData()

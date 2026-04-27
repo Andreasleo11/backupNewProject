@@ -98,6 +98,88 @@
         </div>
     </div>
 
+    {{-- Vendor Details Modal --}}
+    @if($showVendorModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="true" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Purchase Orders for {{ $selectedVendorName }}
+                            </h3>
+                            <button wire:click="closeVendorModal" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="max-h-96 overflow-y-auto">
+                            @if(!empty($selectedVendorDetails))
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Date</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @foreach($selectedVendorDetails as $po)
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {{ $po['po_number'] }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {{ \Carbon\Carbon::parse($po['invoice_date'])->format('d/m/Y') }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                                        IDR {{ number_format($po['total'], 0, ',', '.') }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                            @if($po['status'] === 1) bg-yellow-100 text-yellow-800
+                                                            @elseif($po['status'] === 2) bg-green-100 text-green-800
+                                                            @elseif($po['status'] === 3) bg-red-100 text-red-800
+                                                            @else bg-gray-100 text-gray-800
+                                                            @endif">
+                                                            @if($po['status'] === 1) Waiting
+                                                            @elseif($po['status'] === 2) Approved
+                                                            @elseif($po['status'] === 3) Rejected
+                                                            @else Cancelled
+                                                            @endif
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <p class="text-gray-500">No purchase orders found for this vendor in the selected period.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="closeVendorModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Vendor details table --}}
     <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="flex items-center justify-between gap-2 px-4 pt-4">
@@ -150,132 +232,163 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-    // Pass PHP data to JavaScript safely
-    const monthlyTotalsData = @js($monthlyTotals ?? collect());
-    const statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
-    const categoryChartData = @js($categoryChartData ?? collect());
+        // Pass PHP data to JavaScript safely
+        let monthlyTotalsData = @js($monthlyTotals ?? collect());
+        let statusCountsData = @js($statusCounts ?? ['approved' => 0, 'waiting' => 0, 'rejected' => 0, 'canceled' => 0]);
+        let categoryChartData = @js($categoryChartData ?? collect());
 
         document.addEventListener('livewire:init', () => {
             let monthlyChart = null;
             let statusChart = null;
             let categoryChart = null;
+            let isInitialized = false;
 
-            function updateCharts() {
-                // Monthly totals chart
+            function createMonthlyChart() {
                 const monthlyCtx = document.getElementById('monthlyChart');
-                if (monthlyCtx) {
-                    if (monthlyChart) monthlyChart.destroy();
+                if (!monthlyCtx) return;
 
-                    const hasMonthlyData = monthlyTotalsData && monthlyTotalsData.length > 0;
+                if (monthlyChart) monthlyChart.destroy();
 
-                    monthlyChart = new Chart(monthlyCtx, {
-                        type: 'line',
-                        data: {
-                            labels: hasMonthlyData ? monthlyTotalsData.map(item => {
-                                const date = new Date(item.month + '-01');
-                                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                            }) : [],
-                            datasets: [{
-                                label: 'Total Amount',
-                                data: hasMonthlyData ? monthlyTotalsData.map(item => item.total) : [],
-                                borderColor: 'rgb(14, 165, 233)',
-                                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                                tension: 0.4
-                            }]
+                const hasMonthlyData = monthlyTotalsData && monthlyTotalsData.length > 0;
+
+                monthlyChart = new Chart(monthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: hasMonthlyData ? monthlyTotalsData.map(item => {
+                            const date = new Date(item.month + '-01');
+                            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                        }) : [],
+                        datasets: [{
+                            label: 'Total Amount',
+                            data: hasMonthlyData ? monthlyTotalsData.map(item => item.total) : [],
+                            borderColor: 'rgb(14, 165, 233)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return 'IDR ' + new Intl.NumberFormat('id-ID').format(value);
-                                        }
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'IDR ' + new Intl.NumberFormat('id-ID').format(value);
                                     }
                                 }
                             }
                         }
-                    });
-                }
+                    }
+                });
+            }
 
-                // Status chart
+            function createStatusChart() {
                 const statusCtx = document.getElementById('statusChart');
-                if (statusCtx) {
-                    if (statusChart) statusChart.destroy();
+                if (!statusCtx) return;
 
-                    statusChart = new Chart(statusCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
-                            datasets: [{
-                                data: [
-                                    statusCountsData.approved || 0,
-                                    statusCountsData.waiting || 0,
-                                    statusCountsData.rejected || 0,
-                                    statusCountsData.canceled || 0
-                                ],
-                                backgroundColor: [
-                                    'rgb(34, 197, 94)',  // green
-                                    'rgb(251, 191, 36)', // yellow
-                                    'rgb(239, 68, 68)',  // red
-                                    'rgb(156, 163, 175)' // gray
-                                ]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            }
+                if (statusChart) statusChart.destroy();
+
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
+                        datasets: [{
+                            data: [
+                                statusCountsData.approved || 0,
+                                statusCountsData.waiting || 0,
+                                statusCountsData.rejected || 0,
+                                statusCountsData.canceled || 0
+                            ],
+                            backgroundColor: [
+                                'rgb(34, 197, 94)',  // green
+                                'rgb(251, 191, 36)', // yellow
+                                'rgb(239, 68, 68)',  // red
+                                'rgb(156, 163, 175)' // gray
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
                         }
-                    });
-                }
+                    }
+                });
+            }
 
-                // Category chart
+            function createCategoryChart() {
                 const categoryCtx = document.getElementById('categoryChart');
-                if (categoryCtx) {
-                    if (categoryChart) categoryChart.destroy();
+                if (!categoryCtx) return;
 
-                    const hasCategoryData = categoryChartData && categoryChartData.length > 0;
+                if (categoryChart) categoryChart.destroy();
 
-                    categoryChart = new Chart(categoryCtx, {
-                        type: 'pie',
-                        data: {
-                            labels: hasCategoryData ? categoryChartData.map(item => item.label) : [],
-                            datasets: [{
-                                data: hasCategoryData ? categoryChartData.map(item => item.count) : [],
-                                backgroundColor: [
-                                    'rgb(14, 165, 233)',   // blue
-                                    'rgb(168, 85, 247)',   // violet
-                                    'rgb(236, 72, 153)',   // pink
-                                    'rgb(34, 197, 94)',    // green
-                                    'rgb(245, 158, 11)'    // amber
-                                ]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            }
+                const hasCategoryData = categoryChartData && categoryChartData.length > 0;
+
+                categoryChart = new Chart(categoryCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: hasCategoryData ? categoryChartData.map(item => item.label) : [],
+                        datasets: [{
+                            data: hasCategoryData ? categoryChartData.map(item => item.count) : [],
+                            backgroundColor: [
+                                'rgb(14, 165, 233)',   // blue
+                                'rgb(168, 85, 247)',   // violet
+                                'rgb(236, 72, 153)',   // pink
+                                'rgb(34, 197, 94)',    // green
+                                'rgb(245, 158, 11)'    // amber
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
                         }
-                    });
-                }
+                    }
+                });
+            }
+
+            function updateCharts() {
+                createMonthlyChart();
+                createStatusChart();
+                createCategoryChart();
             }
 
             // Initial chart render
             updateCharts();
+            isInitialized = true;
 
-            // Listen for Livewire updates
-            Livewire.on('monthChanged', updateCharts);
-            Livewire.on('dataRefreshed', updateCharts);
+            // Listen for Livewire updates - only update when data actually changes
+            Livewire.on('monthChanged', (data) => {
+                if (isInitialized) {
+                    // Update data from server
+                    monthlyTotalsData = data.monthlyTotals || [];
+                    statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+                    categoryChartData = data.categoryChartData || [];
+                    updateCharts();
+                }
+            });
+
+            Livewire.on('dataRefreshed', (data) => {
+                if (isInitialized) {
+                    // Update data from server
+                    monthlyTotalsData = data.monthlyTotals || [];
+                    statusCountsData = data.statusCounts || {approved: 0, waiting: 0, rejected: 0, canceled: 0};
+                    categoryChartData = data.categoryChartData || [];
+                    updateCharts();
+                }
+            });
+
+            // Prevent chart destruction when modal opens/closes
+            Livewire.on('showVendorDetails', () => {
+                // Modal opens, charts remain intact
+            });
         });
     </script>
 @endpush
