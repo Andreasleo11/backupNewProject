@@ -497,8 +497,8 @@ The command handles two migration cases atomically:
 #### ✅ **Implemented Features**
 
 **Core Infrastructure:**
-- **PurchaseOrderStatus Enum**: Type-safe status management with validation (122 lines)
-- **PurchaseOrderService**: Complete CRUD operations with approval engine integration (315 lines)
+- **PurchaseOrderStatus Enum**: Type-safe status management with validation (109 lines)
+- **PurchaseOrderService**: Complete CRUD operations with approval engine integration (277 lines)
 - **PdfProcessingService**: PDF lifecycle management (sign, reject, download, validate)
 - **NotificationService**: Flexible notification system with templates
 - **Database Schema**: Approval relationship support with foreign keys
