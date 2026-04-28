@@ -14,7 +14,7 @@ use Spatie\Permission\Models\Role;
 class SetupPoApproval extends Command
 {
     protected $signature = 'po:setup-approval {--force : Force recreation of approval workflow}';
-    protected $description = 'Unified command to setup PO approval workflow and migrate all legacy POs atomically';
+    protected $description = 'Setup PO approval workflow and synchronize all existing PO data with approval requests';
 
     public function __construct(private Approvals $approvals)
     {
@@ -23,7 +23,7 @@ class SetupPoApproval extends Command
 
     public function handle()
     {
-        $this->info('🚀 Starting PO Approval Setup...');
+        $this->info('🚀 Starting PO Approval Setup & Data Synchronization...');
 
         $forceRecreation = $this->option('force');
 
@@ -54,36 +54,40 @@ class SetupPoApproval extends Command
     }
 
     /**
-     * Migrate all legacy POs atomically
+     * Migrate all legacy POs atomically with status synchronization
      */
     private function migrateAllLegacyPos(RuleTemplate $baselineRule): void
     {
-        $this->info('🔄 Starting atomic migration of all legacy POs...');
+        $this->info('🔄 Starting comprehensive migration and synchronization of all legacy POs...');
 
-        // Case 1: POs without any approval request
-        $posWithoutApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue()) // PENDING_APPROVAL
-            ->whereNull('approval_request_id')
-            ->get();
+        // Get all POs that need approval requests created
+        $posNeedingRequests = PurchaseOrder::whereNull('approval_request_id')->get();
 
-        // Case 2: POs with approval request but missing rule template
-        $posWithBrokenApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue()) // PENDING_APPROVAL
-            ->whereNotNull('approval_request_id')
+        // Get all POs that have approval requests but need status synchronization
+        $posNeedingSync = PurchaseOrder::whereNotNull('approval_request_id')
             ->whereHas('approvalRequest', function ($query) {
-                $query->whereNull('rule_template_version_id');
+                $query->whereColumn('approval_requests.status', '!=',
+                    DB::raw("CASE
+                        WHEN purchase_orders.status = 1 THEN 'IN_REVIEW'
+                        WHEN purchase_orders.status = 2 THEN 'APPROVED'
+                        WHEN purchase_orders.status = 3 THEN 'REJECTED'
+                        WHEN purchase_orders.status = 4 THEN 'CANCELLED'
+                        ELSE 'IN_REVIEW'
+                    END"));
             })
             ->with('approvalRequest')
             ->get();
 
-        $totalToProcess = $posWithoutApproval->count() + $posWithBrokenApproval->count();
+        $totalToProcess = $posNeedingRequests->count() + $posNeedingSync->count();
 
         if ($totalToProcess === 0) {
-            $this->info('✅ No legacy POs need migration');
+            $this->info('✅ All POs have properly synchronized approval requests');
             return;
         }
 
-        $this->info("📊 Found {$totalToProcess} PENDING_APPROVAL POs to migrate:");
-        $this->info("   - {$posWithoutApproval->count()} POs without approval requests");
-        $this->info("   - {$posWithBrokenApproval->count()} POs with incomplete approval requests");
+        $this->info("📊 Found {$totalToProcess} POs requiring attention:");
+        $this->info("   - {$posNeedingRequests->count()} POs need approval requests created");
+        $this->info("   - {$posNeedingSync->count()} POs need approval request status synchronized");
 
         $progressBar = $this->output->createProgressBar($totalToProcess);
         $progressBar->start();
@@ -91,33 +95,36 @@ class SetupPoApproval extends Command
         $successCount = 0;
         $errorCount = 0;
 
-        // Process Case 1: POs without approval requests
-        foreach ($posWithoutApproval as $po) {
+        // Process POs that need new approval requests
+        foreach ($posNeedingRequests as $po) {
             try {
-                $this->createApprovalRequestForPo($po, $baselineRule);
+                $this->createSynchronizedApprovalRequestForPo($po, $baselineRule);
                 $successCount++;
             } catch (\Exception $e) {
                 $this->error("Failed to create approval for PO #{$po->po_number}: {$e->getMessage()}");
                 $errorCount++;
                 Log::error('PO approval creation failed', [
                     'po_id' => $po->id,
+                    'po_status' => $po->status,
                     'error' => $e->getMessage(),
                 ]);
             }
             $progressBar->advance();
         }
 
-        // Process Case 2: POs with incomplete approval requests
-        foreach ($posWithBrokenApproval as $po) {
+        // Process POs that need status synchronization
+        foreach ($posNeedingSync as $po) {
             try {
-                $this->completeApprovalRequestForPo($po->approvalRequest, $baselineRule);
+                $this->synchronizeApprovalRequestStatus($po, $po->approvalRequest);
                 $successCount++;
             } catch (\Exception $e) {
-                $this->error("Failed to complete approval for PO #{$po->po_number}: {$e->getMessage()}");
+                $this->error("Failed to sync approval for PO #{$po->po_number}: {$e->getMessage()}");
                 $errorCount++;
-                Log::error('PO approval completion failed', [
+                Log::error('PO approval sync failed', [
                     'po_id' => $po->id,
                     'request_id' => $po->approvalRequest->id,
+                    'po_status' => $po->status,
+                    'request_status' => $po->approvalRequest->status,
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -127,34 +134,47 @@ class SetupPoApproval extends Command
         $progressBar->finish();
         $this->newLine(2);
 
-        $this->info('📈 Migration Summary:');
+        $this->info('📈 Migration & Synchronization Summary:');
         $this->info("   ✅ Successful: {$successCount}");
         if ($errorCount > 0) {
             $this->error("   ❌ Failed: {$errorCount}");
         }
         $this->info("   📊 Total Processed: {$totalToProcess}");
+
+        // Summary by operation type
+        $this->info('📋 Operations Performed:');
+        if ($posNeedingRequests->count() > 0) {
+            $this->info("   - Created approval requests for {$posNeedingRequests->count()} POs");
+        }
+        if ($posNeedingSync->count() > 0) {
+            $this->info("   - Synchronized approval request statuses for {$posNeedingSync->count()} POs");
+        }
     }
 
     /**
-     * Create approval request for PO that doesn't have one
+     * Create approval request synchronized with PO status
      */
-    private function createApprovalRequestForPo(PurchaseOrder $po, RuleTemplate $baselineRule): void
+    private function createSynchronizedApprovalRequestForPo(PurchaseOrder $po, RuleTemplate $baselineRule): void
     {
+        // Determine approval request status based on PO status
+        $approvalStatus = $this->getApprovalStatusForPo($po);
+
         // Create approval request using proper polymorphic association
         $approvalRequest = new ApprovalRequest;
         $approvalRequest->fill([
-            'status' => 'IN_REVIEW',
-            // Note: rule_template_id is a UUID string but column is integer FK
-            // We'll set rule_template_version_id which is the actual FK to rule template
+            'status' => $approvalStatus,
+            'rule_template_id' => $baselineRule->id,
             'rule_template_version_id' => $baselineRule->id,
-            'current_step' => 1,
+            'current_step' => $approvalStatus === 'APPROVED' ? 1 : 1, // Always step 1 for director approval
             'submitted_by' => $po->creator_id,
-            'submitted_at' => $po->updated_at,
+            'submitted_at' => $po->created_at,
+            'approved_at' => $approvalStatus === 'APPROVED' ? $po->approved_date : null,
             'meta' => [
-                'migration_source' => 'unified_workflow_setup',
+                'migration_source' => 'status_synchronized_setup',
                 'migrated_at' => now()->toISOString(),
-                'original_status_update' => $po->updated_at,
+                'original_po_status' => $po->status,
                 'rule_template_code' => 'po.baseline.director',
+                'sync_type' => 'legacy_data_migration',
             ],
         ]);
 
@@ -162,8 +182,10 @@ class SetupPoApproval extends Command
         $approvalRequest->approvable()->associate($po);
         $approvalRequest->save();
 
-        // Create approval steps
+        // Create approval steps with appropriate status
         foreach ($baselineRule->steps as $stepTemplate) {
+            $stepStatus = $this->getStepStatusForPo($po, $approvalStatus);
+
             $approvalRequest->steps()->create([
                 'sequence' => $stepTemplate->sequence,
                 'approver_type' => $stepTemplate->approver_type,
@@ -171,53 +193,104 @@ class SetupPoApproval extends Command
                 'approver_snapshot_name' => $this->resolveApproverSnapshotName($stepTemplate->approver_type, $stepTemplate->approver_id),
                 'approver_snapshot_role_slug' => $stepTemplate->approver_type === 'role' ? $this->getRoleSlug($stepTemplate->approver_id) : null,
                 'approver_snapshot_label' => $this->resolveApproverSnapshotLabel($stepTemplate->approver_type, $stepTemplate->approver_id),
-                'status' => 'PENDING',
+                'status' => $stepStatus,
+                'approved_at' => $stepStatus === 'APPROVED' ? $po->approved_date : null,
+                'approved_by' => $stepStatus === 'APPROVED' ? $this->getDirectorUserId() : null,
             ]);
         }
 
         // Update PO with approval request ID
         $po->update(['approval_request_id' => $approvalRequest->id]);
 
-        Log::info('PO approval request created via unified setup', [
+        Log::info('PO approval request created with status synchronization', [
             'po_id' => $po->id,
             'po_number' => $po->po_number,
+            'po_status' => $po->status,
             'approval_request_id' => $approvalRequest->id,
+            'approval_status' => $approvalStatus,
         ]);
     }
 
     /**
-     * Complete approval request for PO that has one but missing rule template
+     * Get the appropriate approval request status based on PO status
      */
-    private function completeApprovalRequestForPo(ApprovalRequest $request, RuleTemplate $baselineRule): void
+    private function getApprovalStatusForPo(PurchaseOrder $po): string
     {
-        // Assign the baseline rule template
+        return match ($po->status) {
+            \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue() => 'IN_REVIEW',
+            \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue() => 'APPROVED',
+            \App\Enums\PurchaseOrderStatus::REJECTED->legacyValue() => 'REJECTED',
+            \App\Enums\PurchaseOrderStatus::CANCELLED->legacyValue() => 'CANCELLED',
+            default => 'IN_REVIEW', // Default for any unexpected status
+        };
+    }
+
+    /**
+     * Get the appropriate step status based on PO and approval status
+     */
+    private function getStepStatusForPo(PurchaseOrder $po, string $approvalStatus): string
+    {
+        return match ($approvalStatus) {
+            'APPROVED' => 'APPROVED',
+            'REJECTED' => 'REJECTED',
+            'CANCELLED' => 'CANCELLED',
+            default => 'PENDING', // IN_REVIEW status
+        };
+    }
+
+    /**
+     * Synchronize existing approval request status with PO status
+     */
+    private function synchronizeApprovalRequestStatus(PurchaseOrder $po, ApprovalRequest $request): void
+    {
+        $correctApprovalStatus = $this->getApprovalStatusForPo($po);
+
+        // Update approval request status
         $request->update([
-            // Note: rule_template_id is a UUID string but column is integer FK
-            // We'll set rule_template_version_id which is the actual FK to rule template
-            'rule_template_version_id' => $baselineRule->id,
+            'status' => $correctApprovalStatus,
+            'approved_at' => $correctApprovalStatus === 'APPROVED' ? $po->approved_date : null,
         ]);
 
-        // Create approval steps if they don't exist
-        if ($request->steps()->count() === 0) {
-            foreach ($baselineRule->steps as $stepTemplate) {
-                $request->steps()->create([
-                    'sequence' => $stepTemplate->sequence,
-                    'approver_type' => $stepTemplate->approver_type,
-                    'approver_id' => $stepTemplate->approver_id,
-                    'approver_snapshot_name' => $this->resolveApproverSnapshotName($stepTemplate->approver_type, $stepTemplate->approver_id),
-                    'approver_snapshot_role_slug' => $stepTemplate->approver_type === 'role' ? $this->getRoleSlug($stepTemplate->approver_id) : null,
-                    'approver_snapshot_label' => $this->resolveApproverSnapshotLabel($stepTemplate->approver_type, $stepTemplate->approver_id),
-                    'status' => 'PENDING',
-                ]);
+        // Update approval steps status
+        $correctStepStatus = $this->getStepStatusForPo($po, $correctApprovalStatus);
+
+        foreach ($request->steps as $step) {
+            $step->update([
+                'status' => $correctStepStatus,
+                'approved_at' => $correctStepStatus === 'APPROVED' ? $po->approved_date : null,
+                'approved_by' => $correctStepStatus === 'APPROVED' ? $this->getDirectorUserId() : null,
+            ]);
+        }
+
+        Log::info('PO approval request status synchronized', [
+            'po_id' => $po->id,
+            'po_number' => $po->po_number,
+            'po_status' => $po->status,
+            'request_id' => $request->id,
+            'old_request_status' => $request->getOriginal('status'),
+            'new_request_status' => $correctApprovalStatus,
+        ]);
+    }
+
+    /**
+     * Get the director user ID for approved requests (fallback to system user)
+     */
+    private function getDirectorUserId(): ?int
+    {
+        // Try to find a director user, fallback to the PO creator or system user
+        $directorRole = \Spatie\Permission\Models\Role::where('name', 'director')->first();
+        if ($directorRole) {
+            $directorUser = $directorRole->users()->first();
+            if ($directorUser) {
+                return $directorUser->id;
             }
         }
 
-        Log::info('PO approval request completed via unified setup', [
-            'request_id' => $request->id,
-            'approvable_type' => $request->approvable_type,
-            'approvable_id' => $request->approvable_id,
-        ]);
+        // Fallback: return null (system approval)
+        return null;
     }
+
+
 
     /**
      * Verify the complete setup
@@ -237,16 +310,21 @@ class SetupPoApproval extends Command
             $this->error('❌ Baseline approval rule missing');
         }
 
-        // Check all PENDING_APPROVAL POs have approval requests
-        $pendingPosWithoutApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue())
-            ->whereNull('approval_request_id')
-            ->count();
+        // Check all POs have approval requests
+        $totalPos = PurchaseOrder::count();
+        $posWithApproval = PurchaseOrder::whereNotNull('approval_request_id')->count();
+        $posWithoutApproval = PurchaseOrder::whereNull('approval_request_id')->count();
 
-        if ($pendingPosWithoutApproval === 0) {
-            $this->info('✅ All PENDING_APPROVAL POs have approval requests');
+        $this->info("📊 Approval Request Coverage: {$posWithApproval}/{$totalPos} POs ({$posWithoutApproval} missing)");
+
+        if ($posWithoutApproval === 0) {
+            $this->info('✅ All POs have approval requests');
         } else {
-            $this->warn("⚠️ {$pendingPosWithoutApproval} PENDING_APPROVAL POs still lack approval requests");
+            $this->warn("⚠️ {$posWithoutApproval} POs still lack approval requests");
         }
+
+        // Verify status synchronization
+        $this->verifyStatusSynchronization();
 
         // Check all approval requests have rule templates
         $totalPoRequests = ApprovalRequest::where('approvable_type', \App\Models\PurchaseOrder::class)->count();
@@ -280,6 +358,52 @@ class SetupPoApproval extends Command
         }
 
         $this->info('✅ Setup verification complete');
+    }
+
+    /**
+     * Verify that approval request statuses are synchronized with PO statuses
+     */
+    private function verifyStatusSynchronization(): void
+    {
+        $this->info('🔍 Verifying status synchronization...');
+
+        // Check APPROVED POs have APPROVED approval requests
+        $approvedPosWithWrongStatus = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue())
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', '!=', 'APPROVED');
+            })
+            ->count();
+
+        // Check PENDING_APPROVAL POs have IN_REVIEW approval requests
+        $pendingPosWithWrongStatus = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue())
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', '!=', 'IN_REVIEW');
+            })
+            ->count();
+
+        // Check REJECTED POs have REJECTED approval requests
+        $rejectedPosWithWrongStatus = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::REJECTED->legacyValue())
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', '!=', 'REJECTED');
+            })
+            ->count();
+
+        $totalIssues = $approvedPosWithWrongStatus + $pendingPosWithWrongStatus + $rejectedPosWithWrongStatus;
+
+        if ($totalIssues === 0) {
+            $this->info('✅ All PO statuses are properly synchronized with approval requests');
+        } else {
+            $this->warn("⚠️ Found {$totalIssues} status synchronization issues:");
+            if ($approvedPosWithWrongStatus > 0) {
+                $this->warn("   - {$approvedPosWithWrongStatus} APPROVED POs with non-APPROVED approval requests");
+            }
+            if ($pendingPosWithWrongStatus > 0) {
+                $this->warn("   - {$pendingPosWithWrongStatus} PENDING_APPROVAL POs with non-IN_REVIEW approval requests");
+            }
+            if ($rejectedPosWithWrongStatus > 0) {
+                $this->warn("   - {$rejectedPosWithWrongStatus} REJECTED POs with non-REJECTED approval requests");
+            }
+        }
     }
 
     /**
