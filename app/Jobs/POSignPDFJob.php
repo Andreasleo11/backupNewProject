@@ -59,7 +59,7 @@ class POSignPDFJob implements ShouldQueue
             // Update the filename and status after signing
             $this->purchaseOrder->update([
                 'filename' => basename($signedPdfPath),
-                'status' => 2, // Approved after signing
+                'status' => \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue(), // Approved after signing
                 'approved_date' => now(),
             ]);
         } catch (\Exception $e) {

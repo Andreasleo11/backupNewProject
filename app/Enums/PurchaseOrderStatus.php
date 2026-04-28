@@ -4,11 +4,11 @@ namespace App\Enums;
 
 enum PurchaseOrderStatus: int
 {
-    case DRAFT = 1;
-    case WAITING = 2;
-    case APPROVED = 3;
-    case REJECTED = 4;
-    case CANCELLED = 5;
+    case PENDING_APPROVAL = 1;  // Waiting for director approval
+    case APPROVED = 2;          // Director has approved and signed
+    case REJECTED = 3;
+    case CANCELLED = 4;
+    case DRAFT = 5;             // Legacy draft status (if needed)
 
     /**
      * Get the human-readable label for the status
@@ -16,11 +16,11 @@ enum PurchaseOrderStatus: int
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Draft',
-            self::WAITING => 'Waiting for Approval',
+            self::PENDING_APPROVAL => 'Pending Approval',
             self::APPROVED => 'Approved',
             self::REJECTED => 'Rejected',
             self::CANCELLED => 'Cancelled',
+            self::DRAFT => 'Draft',
         };
     }
 
@@ -38,8 +38,8 @@ enum PurchaseOrderStatus: int
     public function canEdit(): bool
     {
         return match ($this) {
-            self::DRAFT, self::REJECTED => true,
-            self::WAITING, self::APPROVED, self::CANCELLED => false,
+            self::REJECTED, self::CANCELLED => true,  // Can edit rejected/cancelled for revisions
+            self::PENDING_APPROVAL, self::APPROVED, self::DRAFT => false,
         };
     }
 
@@ -48,7 +48,7 @@ enum PurchaseOrderStatus: int
      */
     public function canApprove(): bool
     {
-        return $this === self::WAITING;
+        return $this === self::PENDING_APPROVAL;
     }
 
     /**
@@ -56,7 +56,7 @@ enum PurchaseOrderStatus: int
      */
     public function canReject(): bool
     {
-        return $this === self::WAITING;
+        return $this === self::PENDING_APPROVAL;
     }
 
     /**
@@ -66,7 +66,7 @@ enum PurchaseOrderStatus: int
     {
         return match ($this) {
             self::APPROVED, self::REJECTED, self::CANCELLED => true,
-            self::DRAFT, self::WAITING => false,
+            self::PENDING_APPROVAL, self::DRAFT => false,
         };
     }
 
@@ -76,11 +76,11 @@ enum PurchaseOrderStatus: int
     public function cssClass(): string
     {
         return match ($this) {
-            self::DRAFT => 'bg-gray-100 text-gray-800',
-            self::WAITING => 'bg-yellow-100 text-yellow-800',
+            self::PENDING_APPROVAL => 'bg-yellow-100 text-yellow-800',
             self::APPROVED => 'bg-green-100 text-green-800',
             self::REJECTED => 'bg-red-100 text-red-800',
             self::CANCELLED => 'bg-orange-100 text-orange-800',
+            self::DRAFT => 'bg-gray-100 text-gray-800',
         };
     }
 
@@ -90,11 +90,11 @@ enum PurchaseOrderStatus: int
     public static function fromLegacyValue(int $value): self
     {
         return match ($value) {
-            1 => self::DRAFT,
-            2 => self::WAITING,
-            3 => self::APPROVED,
-            4 => self::REJECTED,
-            5 => self::CANCELLED,
+            1 => self::PENDING_APPROVAL,
+            2 => self::APPROVED,
+            3 => self::REJECTED,
+            4 => self::CANCELLED,
+            5 => self::DRAFT,
             default => throw new \InvalidArgumentException("Invalid status value: {$value}"),
         };
     }

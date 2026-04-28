@@ -23,10 +23,10 @@ class PurchaseOrderService
     {
         try {
             return DB::transaction(function () use ($data) {
-                // Create the purchase order initially as DRAFT
+                // Create the purchase order and submit for director approval
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->po_number = $data['po_number'];
-                $purchaseOrder->status = PurchaseOrderStatus::DRAFT->legacyValue(); // Start as draft
+                $purchaseOrder->status = PurchaseOrderStatus::PENDING_APPROVAL->legacyValue(); // Start as pending approval
                 $purchaseOrder->filename = $data['pdf_file'] ?? null;
                 $purchaseOrder->creator_id = auth()->id();
                 $purchaseOrder->vendor_name = $data['vendor_name'];
@@ -52,10 +52,8 @@ class PurchaseOrderService
 
                 $purchaseOrder->save();
 
-                // Submit for approval - this creates approval request and sets status to WAITING
+                // Submit for approval - this creates approval request (status remains PENDING_APPROVAL)
                 $this->approvals->submit($purchaseOrder, auth()->id());
-                $purchaseOrder->status = PurchaseOrderStatus::WAITING->legacyValue();
-                $purchaseOrder->save();
 
                 Log::info('Purchase order created and submitted for approval', [
                     'po_number' => $purchaseOrder->po_number,

@@ -199,10 +199,10 @@ class PurchaseOrderIndex extends Component
         return [
             'statuses' => [
                 '' => 'All Statuses',
-                PurchaseOrderStatus::WAITING->legacyValue() => 'Waiting',
-                PurchaseOrderStatus::APPROVED->legacyValue() => 'Approved',
-                PurchaseOrderStatus::REJECTED->legacyValue() => 'Rejected',
-                PurchaseOrderStatus::CANCELLED->legacyValue() => 'Cancelled',
+                PurchaseOrderStatus::PENDING_APPROVAL->legacyValue() => PurchaseOrderStatus::PENDING_APPROVAL->label(),
+                PurchaseOrderStatus::APPROVED->legacyValue() => PurchaseOrderStatus::APPROVED->label(),
+                PurchaseOrderStatus::REJECTED->legacyValue() => PurchaseOrderStatus::REJECTED->label(),
+                PurchaseOrderStatus::CANCELLED->legacyValue() => PurchaseOrderStatus::CANCELLED->label(),
             ],
             'vendors' => ['' => 'All Vendors'] + \App\Models\PurchaseOrder::distinct()
                 ->pluck('vendor_name', 'vendor_name')

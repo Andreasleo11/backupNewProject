@@ -273,7 +273,7 @@ class PurchaseOrderController extends Controller
         $reason = $request->input('reason', 'No reason provided');
 
         // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
-        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
+        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue())->pluck('po_number');
         $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
 
         // If any approved or rejected POs are found, return an error

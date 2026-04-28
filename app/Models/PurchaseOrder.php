@@ -55,9 +55,9 @@ class PurchaseOrder extends Model implements Approvable
         $currentStatus = $this->getStatusEnum();
 
         return match ($currentStatus) {
-            PurchaseOrderStatus::DRAFT => in_array($newStatus, [PurchaseOrderStatus::WAITING]),
-            PurchaseOrderStatus::WAITING => in_array($newStatus, [PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]),
-            PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED => false,
+            PurchaseOrderStatus::PENDING_APPROVAL => in_array($newStatus, [PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]),
+            PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED => in_array($newStatus, [PurchaseOrderStatus::PENDING_APPROVAL]), // Can resubmit
+            PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::DRAFT => false, // Terminal states
         };
     }
 
@@ -67,9 +67,14 @@ class PurchaseOrder extends Model implements Approvable
         return $query->where('status', PurchaseOrderStatus::APPROVED->legacyValue());
     }
 
-    public function scopeWaiting($query)
+    public function scopePendingApproval($query)
     {
-        return $query->where('status', PurchaseOrderStatus::WAITING->legacyValue());
+        return $query->where('status', PurchaseOrderStatus::PENDING_APPROVAL->legacyValue());
+    }
+
+    public function scopeWaiting($query) // Backward compatibility
+    {
+        return $this->scopePendingApproval($query);
     }
 
     public function scopeRejected($query)
@@ -105,8 +110,8 @@ class PurchaseOrder extends Model implements Approvable
     public function scopeEditable($query)
     {
         return $query->whereIn('status', [
-            PurchaseOrderStatus::DRAFT->legacyValue(),
             PurchaseOrderStatus::REJECTED->legacyValue(),
+            PurchaseOrderStatus::CANCELLED->legacyValue(),
         ]);
     }
 

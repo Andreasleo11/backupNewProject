@@ -61,12 +61,12 @@ class SetupPoApproval extends Command
         $this->info('🔄 Starting atomic migration of all legacy POs...');
 
         // Case 1: POs without any approval request
-        $posWithoutApproval = PurchaseOrder::where('status', 2) // WAITING
+        $posWithoutApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue()) // PENDING_APPROVAL
             ->whereNull('approval_request_id')
             ->get();
 
         // Case 2: POs with approval request but missing rule template
-        $posWithBrokenApproval = PurchaseOrder::where('status', 2) // WAITING
+        $posWithBrokenApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue()) // PENDING_APPROVAL
             ->whereNotNull('approval_request_id')
             ->whereHas('approvalRequest', function ($query) {
                 $query->whereNull('rule_template_version_id');
@@ -81,7 +81,7 @@ class SetupPoApproval extends Command
             return;
         }
 
-        $this->info("📊 Found {$totalToProcess} legacy POs to migrate:");
+        $this->info("📊 Found {$totalToProcess} PENDING_APPROVAL POs to migrate:");
         $this->info("   - {$posWithoutApproval->count()} POs without approval requests");
         $this->info("   - {$posWithBrokenApproval->count()} POs with incomplete approval requests");
 
@@ -237,15 +237,15 @@ class SetupPoApproval extends Command
             $this->error('❌ Baseline approval rule missing');
         }
 
-        // Check all WAITING POs have approval requests
-        $waitingPosWithoutApproval = PurchaseOrder::where('status', 2)
+        // Check all PENDING_APPROVAL POs have approval requests
+        $pendingPosWithoutApproval = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::PENDING_APPROVAL->legacyValue())
             ->whereNull('approval_request_id')
             ->count();
 
-        if ($waitingPosWithoutApproval === 0) {
-            $this->info('✅ All WAITING POs have approval requests');
+        if ($pendingPosWithoutApproval === 0) {
+            $this->info('✅ All PENDING_APPROVAL POs have approval requests');
         } else {
-            $this->warn("⚠️ {$waitingPosWithoutApproval} WAITING POs still lack approval requests");
+            $this->warn("⚠️ {$pendingPosWithoutApproval} PENDING_APPROVAL POs still lack approval requests");
         }
 
         // Check all approval requests have rule templates
