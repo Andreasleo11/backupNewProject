@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Enums\PurchaseOrderStatus;
-use App\Services\NotificationService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -168,31 +166,6 @@ class PurchaseOrder extends Model implements Approvable
     {
         // Return branch information if available
         return $this->user?->branch?->name;
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::created(function ($po) {
-            // Use NotificationService instead of direct notification sending
-            $notificationService = App::make(NotificationService::class);
-            $notificationService->sendPurchaseOrderCreated($po);
-        });
-
-        static::updated(function ($po) {
-            if ($po->isDirty('status')) {
-                $notificationService = App::make(NotificationService::class);
-
-                // Send notification based on new status
-                match ($po->status) {
-                    2 => $notificationService->sendPurchaseOrderApproved($po),
-                    3 => $notificationService->sendPurchaseOrderRejected($po),
-                    4 => $notificationService->sendPurchaseOrderCanceled($po),
-                    default => null,
-                };
-            }
-        });
     }
 
     public function getVendorNames()

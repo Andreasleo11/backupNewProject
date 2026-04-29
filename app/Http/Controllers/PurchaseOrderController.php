@@ -37,7 +37,7 @@ class PurchaseOrderController extends Controller
 
     public function approveSelected(Request $request)
     {
-        if (auth()->user()->hasRole('DIRECTOR')) {
+        if (auth()->user()->hasRole('director')) {
             $ids = $request->input('ids');
 
             foreach ($ids as $id) {
@@ -61,7 +61,7 @@ class PurchaseOrderController extends Controller
 
     public function rejectSelected(Request $request)
     {
-        if (auth()->user()->hasRole('DIRECTOR')) {
+        if (auth()->user()->hasRole('director')) {
             $ids = $request->input('ids');
             $reason = $request->input('reason');
 
@@ -150,14 +150,14 @@ class PurchaseOrderController extends Controller
 
         $user = Auth::user();
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
-        $director = $user->hasRole('DIRECTOR');
+        $director = $user->hasRole('director');
 
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (! Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
             // abort(500, 'PDF file not found.');
         }
-
+        
         return view(
             'purchase_order.view',
             compact('purchaseOrder', 'user', 'files', 'revisions', 'director'),

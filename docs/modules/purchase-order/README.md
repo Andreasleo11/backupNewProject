@@ -20,7 +20,7 @@ The Purchase Order module has been modernized with:
 - **Modern UI Components**: Livewire-based reactive interface with modal system
 - **Integrated Approval Workflow**: Unified approval engine with director-only workflow
 - **Comprehensive PDF Processing**: Dedicated service for document lifecycle management
-- **Flexible Notification System**: Template-based notifications with multiple channels
+- **Unified Approval Notifications**: Integrated notification system through approval workflow
 
 ### Key Improvements Implemented
 
@@ -275,25 +275,24 @@ class PurchaseOrderService
     public function update(int $id, array $data): PurchaseOrder
     public function approve(int $id, int $userId, ?string $remarks): void
     public function reject(int $id, int $userId, string $reason): void
-    public function delete(int $id): void
-    public function getAnalytics(): array
+    public function delete(int $id): bool
 }
 
 // app/Services/PdfProcessingService.php
 class PdfProcessingService
 {
     public function sign(PurchaseOrder $po, int $userId): string
-    public function validate(UploadedFile $file): bool
-    public function extractMetadata(string $path): array
+    public function reject(PurchaseOrder $po, string $reason): PurchaseOrder
+    public function download(int $poId, int $userId): BinaryFileResponse
+    public function validatePdfFile(UploadedFile $file): bool
+    public function storePdfFile(UploadedFile $file, int $poNumber): string
+    public function extractMetadata(string $filename): array
 }
 
-// app/Services/NotificationService.php
-class NotificationService
-{
-    public function sendApprovalRequired(PurchaseOrder $po): void
-    public function sendApproved(PurchaseOrder $po): void
-    public function sendRejected(PurchaseOrder $po, string $reason): void
-}
+// Notifications handled by unified approval system:
+// - ApprovalActionRequired: Notifies approvers (directors)
+// - ReportApprovedNotification: Notifies creators on approval
+// - ReportRejectedNotification: Notifies creators on rejection
 ```
 
 #### Repository Pattern
@@ -413,6 +412,8 @@ The Purchase Order approval workflow is now managed through a single unified com
 - Atomic migration of 1,218 legacy POs
 - Automatic status transitions on director approval
 - Consolidated three commands into single unified workflow
+- Removed legacy NotificationService dependency from PurchaseOrder model
+- All notifications now handled through unified approval system
 
 ### Architecture
 
