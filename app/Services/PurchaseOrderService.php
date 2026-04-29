@@ -175,12 +175,12 @@ class PurchaseOrderService
     {
         try {
             $po = PurchaseOrder::findOrFail($id);
-            
-            $po->setStatusEnum(PurchaseOrderStatus::APPROVED);
-                $po->approved_date = now();
-                $po->save();
 
-            // Use approval engine to approve
+            // Update approval date
+            $po->approved_date = now();
+            $po->save();
+
+            // Use approval engine to approve - this will update status automatically
             $this->approvals->approve($po, $userId, $remarks);
 
             Log::info('Purchase order approval processed via approval engine', [
@@ -193,6 +193,40 @@ class PurchaseOrderService
             Log::error('Failed to approve purchase order', [
                 'po_id' => $id,
                 'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Reject a purchase order using the unified approval system
+     *
+     * @param int $id Purchase order ID
+     * @param int $userId User rejecting the PO
+     * @param string $reason Rejection reason
+     *
+     * @throws \Exception
+     */
+    public function reject(int $id, int $userId, string $reason): void
+    {
+        try {
+            $po = PurchaseOrder::findOrFail($id);
+
+            // Use approval engine to reject
+            $this->approvals->reject($po, $userId, $reason);
+
+            Log::info('Purchase order rejection processed via approval engine', [
+                'po_id' => $po->id,
+                'po_number' => $po->po_number,
+                'rejected_by' => $userId,
+                'reason' => $reason,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to reject purchase order', [
+                'po_id' => $id,
+                'user_id' => $userId,
+                'reason' => $reason,
                 'error' => $e->getMessage(),
             ]);
             throw $e;

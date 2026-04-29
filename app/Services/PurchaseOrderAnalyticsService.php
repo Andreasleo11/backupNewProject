@@ -55,7 +55,9 @@ class PurchaseOrderAnalyticsService
     private function getFulfillmentRate(array $dateRange, array $filters): array
     {
         $baseQuery = PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->where('status', \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue()) // Approved
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', 'APPROVED');
+            }) // Approved via workflow
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']));
 
         $totalApproved = (clone $baseQuery)->count();
@@ -230,7 +232,9 @@ class PurchaseOrderAnalyticsService
             ')
             ->whereBetween('invoice_date', $dateRange)
             ->whereNotNull('tanggal_pembayaran')
-            ->where('status', \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue()) // Approved
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', 'APPROVED');
+            }) // Approved via workflow
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('vendor_name')
             ->having('total_orders', '>=', 3) // Minimum sample size

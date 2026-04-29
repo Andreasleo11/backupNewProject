@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Enums\PurchaseOrderStatus;
 use App\Services\PurchaseOrderService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,6 +20,16 @@ class PurchaseOrderIndex extends Component
 
     public $monthFilter = '';
 
+    public $dateFrom = '';
+
+    public $dateTo = '';
+
+    public $amountFrom = '';
+
+    public $amountTo = '';
+
+    public $creatorFilter = '';
+
     public $perPage = 10;
 
     public $perPageOptions = [10, 25, 50, 100];
@@ -29,11 +38,22 @@ class PurchaseOrderIndex extends Component
 
     public $selectAll = false;
 
+    public $sortBy = 'created_at';
+
+    public $sortDirection = 'desc';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
         'vendorFilter' => ['except' => ''],
         'monthFilter' => ['except' => ''],
+        'dateFrom' => ['except' => ''],
+        'dateTo' => ['except' => ''],
+        'amountFrom' => ['except' => ''],
+        'amountTo' => ['except' => ''],
+        'creatorFilter' => ['except' => ''],
+        'sortBy' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
     ];
 
     public function updatingSearch()
@@ -56,9 +76,138 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingDateFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateTo()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingAmountFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingAmountTo()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCreatorFilter()
+    {
+        $this->resetPage();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
+    }
+
+    public function sortBy($column)
+    {
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage();
+    }
+
+    public function clearFilters()
+    {
+        $this->search = '';
+        $this->statusFilter = '';
+        $this->vendorFilter = '';
+        $this->monthFilter = '';
+        $this->dateFrom = '';
+        $this->dateTo = '';
+        $this->amountFrom = '';
+        $this->amountTo = '';
+        $this->creatorFilter = '';
+        $this->sortBy = 'created_at';
+        $this->sortDirection = 'desc';
+        $this->selectedIds = [];
+        $this->selectAll = false;
+        $this->resetPage();
+    }
+
+    public function exportSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'No purchase orders selected for export.');
+            return;
+        }
+
+        return $this->exportPOs($this->selectedIds);
+    }
+
+    public function exportFiltered()
+    {
+        $poIds = $this->getPurchaseOrdersQuery()->pluck('id')->toArray();
+
+        if (empty($poIds)) {
+            session()->flash('error', 'No purchase orders found matching current filters.');
+            return;
+        }
+
+        return $this->exportPOs($poIds);
+    }
+
+    private function exportPOs(array $poIds)
+    {
+        $purchaseOrders = \App\Models\PurchaseOrder::with(['user', 'category'])
+            ->whereIn('id', $poIds)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'purchase-orders-' . now()->format('Y-m-d-H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($purchaseOrders) {
+            $file = fopen('php://output', 'w');
+
+            // CSV headers
+            fputcsv($file, [
+                'PO Number',
+                'Invoice Date',
+                'Invoice Number',
+                'Vendor Name',
+                'Creator',
+                'Status',
+                'Total',
+                'Currency',
+                'Approved Date',
+                'Created At',
+            ]);
+
+            // CSV data
+            foreach ($purchaseOrders as $po) {
+                fputcsv($file, [
+                    $po->po_number,
+                    $po->invoice_date ? $po->invoice_date->format('Y-m-d') : '',
+                    $po->invoice_number ?: '',
+                    $po->vendor_name,
+                    $po->user?->name ?: '',
+                    $po->getStatusEnum()->label(),
+                    $po->total,
+                    $po->currency ?: 'IDR',
+                    $po->approved_date ? $po->approved_date->format('Y-m-d H:i:s') : '',
+                    $po->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function updatedSelectAll($value)
@@ -90,13 +239,11 @@ class PurchaseOrderIndex extends Component
         try {
             $poService = app(PurchaseOrderService::class);
 
-            // Validate that selected POs can be approved
+            // Validate that selected POs can be approved (must be in IN_REVIEW status)
             $invalidPOs = \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
-                ->whereIn('status', [
-                    PurchaseOrderStatus::APPROVED->legacyValue(),
-                    PurchaseOrderStatus::REJECTED->legacyValue(),
-                    PurchaseOrderStatus::CANCELLED->legacyValue(),
-                ])
+                ->whereDoesntHave('approvalRequest', function ($query) {
+                    $query->where('status', 'IN_REVIEW');
+                })
                 ->pluck('po_number')
                 ->toArray();
 
@@ -138,12 +285,11 @@ class PurchaseOrderIndex extends Component
         }
 
         try {
-            // Validate that selected POs can be rejected
+            // Validate that selected POs can be rejected (must be in IN_REVIEW status)
             $invalidPOs = \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
-                ->whereIn('status', [
-                    PurchaseOrderStatus::APPROVED->legacyValue(),
-                    PurchaseOrderStatus::REJECTED->legacyValue(),
-                ])
+                ->whereDoesntHave('approvalRequest', function ($query) {
+                    $query->where('status', 'IN_REVIEW');
+                })
                 ->pluck('po_number')
                 ->toArray();
 
@@ -153,12 +299,10 @@ class PurchaseOrderIndex extends Component
                 return;
             }
 
-            // Reject each PO
-            \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
-                ->update([
-                    'status' => PurchaseOrderStatus::REJECTED->legacyValue(),
-                    'reason' => $reason,
-                ]);
+            // Reject each PO using the service
+            foreach ($this->selectedIds as $poId) {
+                $poService->reject($poId, auth()->id(), $reason);
+            }
 
             session()->flash('success', 'Selected purchase orders rejected successfully.');
             $this->selectedIds = [];
@@ -176,24 +320,49 @@ class PurchaseOrderIndex extends Component
 
     public function getPurchaseOrdersQuery()
     {
-        $query = \App\Models\PurchaseOrder::with(['user', 'category', 'approvalRequest'])
-            ->when($this->search, function (Builder $query) {
-                $query->where(function (Builder $q) {
+        $query = \App\Models\PurchaseOrder::select([
+                'id', 'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
+                'creator_id', 'status', 'total', 'approved_date', 'created_at', 'updated_at'
+            ])
+            ->with([
+                'user:id,name',
+                'category:id,name',
+                'approvalRequest:id,approvable_id,approvable_type,status'
+            ])
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
                     $q->where('po_number', 'like', '%' . $this->search . '%')
                         ->orWhere('vendor_name', 'like', '%' . $this->search . '%')
                         ->orWhere('invoice_number', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($this->statusFilter, function (Builder $query) {
-                $query->where('status', $this->statusFilter);
+            ->when($this->statusFilter, function ($query) {
+                $query->withWorkflowStatus($this->statusFilter);
             })
-            ->when($this->vendorFilter, function (Builder $query) {
+            ->when($this->vendorFilter, function ($query) {
                 $query->where('vendor_name', $this->vendorFilter);
             })
-            ->when($this->monthFilter, function (Builder $query) {
+            ->when($this->monthFilter, function ($query) {
                 $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$this->monthFilter]);
             })
-            ->orderBy('created_at', 'desc');
+            ->when($this->dateFrom, function ($query) {
+                $query->where('invoice_date', '>=', $this->dateFrom);
+            })
+            ->when($this->dateTo, function ($query) {
+                $query->where('invoice_date', '<=', $this->dateTo);
+            })
+            ->when($this->amountFrom, function ($query) {
+                $query->where('total', '>=', $this->amountFrom);
+            })
+            ->when($this->amountTo, function ($query) {
+                $query->where('total', '<=', $this->amountTo);
+            })
+            ->when($this->creatorFilter, function ($query) {
+                $query->whereHas('user', function ($q) {
+                    $q->where('name', 'like', '%' . $this->creatorFilter . '%');
+                });
+            })
+            ->orderBy($this->sortBy, $this->sortDirection);
 
         return $query;
     }
@@ -208,18 +377,29 @@ class PurchaseOrderIndex extends Component
         return [
             'statuses' => [
                 '' => 'All Statuses',
-                PurchaseOrderStatus::PENDING_APPROVAL->legacyValue() => PurchaseOrderStatus::PENDING_APPROVAL->label(),
-                PurchaseOrderStatus::APPROVED->legacyValue() => PurchaseOrderStatus::APPROVED->label(),
-                PurchaseOrderStatus::REJECTED->legacyValue() => PurchaseOrderStatus::REJECTED->label(),
-                PurchaseOrderStatus::CANCELLED->legacyValue() => PurchaseOrderStatus::CANCELLED->label(),
+                'DRAFT' => 'Draft',
+                'IN_REVIEW' => 'In Review',
+                'APPROVED' => 'Approved',
+                'REJECTED' => 'Rejected',
+                'CANCELLED' => 'Cancelled',
             ],
-            'vendors' => ['' => 'All Vendors'] + \App\Models\PurchaseOrder::distinct()
-                ->pluck('vendor_name', 'vendor_name')
-                ->toArray(),
-            'months' => ['' => 'All Months'] + \App\Models\PurchaseOrder::selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
-                ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
-                ->pluck('month_label', 'month_value')
-                ->toArray(),
+            'vendors' => ['' => 'All Vendors'] + 
+                \App\Models\PurchaseOrder::distinct()
+                    ->pluck('vendor_name', 'vendor_name')
+                    ->toArray(),
+            'months' => ['' => 'All Months'] + 
+                \App\Models\PurchaseOrder::selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
+                    ->whereNotNull('invoice_date')
+                    ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
+                    ->pluck('month_label', 'month_value')
+                    ->toArray(),
+            'creators' => ['' => 'All Creators'] + 
+                \App\Models\PurchaseOrder::with('user')
+                    ->whereHas('user')
+                    ->distinct()
+                    ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
+                    ->pluck('users.name', 'users.name')
+                    ->toArray(),
         ];
     }
 

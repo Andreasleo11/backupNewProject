@@ -216,17 +216,15 @@ class PurchaseOrderController extends Controller
 
 ### Completed Tasks
 
-- ✅ Created `NotificationService` class with comprehensive notification management:
-  - `sendPurchaseOrderCreated(PurchaseOrder $po)` - Creation notifications
-  - `sendPurchaseOrderApproved(PurchaseOrder $po)` - Approval notifications
-  - `sendPurchaseOrderRejected(PurchaseOrder $po)` - Rejection notifications
-  - `sendPurchaseOrderCanceled(PurchaseOrder $po)` - Cancellation notifications
-  - `sendCustomNotification(array $userIds, string $subject, string $message)` - Custom notifications
-  - `queueNotification(PurchaseOrder $po, string $event)` - Queued notifications
+- ✅ Integrated unified approval system notifications:
+  - `ApprovalActionRequired` - Notifies approvers when approval is needed
+  - `ReportApprovedNotification` - Notifies creators when fully approved
+  - `ReportRejectedNotification` - Notifies creators when rejected
+  - Removed legacy PurchaseOrder notification classes (Approved, Canceled, Created, Rejected)
 - ✅ Implemented configurable recipient resolution (Directors, creators, accounting users)
 - ✅ Added template-based notification formatting with HTML support
 - ✅ Created `CustomNotification` class for flexible messaging
-- ✅ Updated PurchaseOrder model to use NotificationService instead of inline logic
+- ✅ Migrated PurchaseOrder notifications to unified approval system
 - ✅ Removed old notification methods from model boot events
 - ✅ Created unit tests with 8/8 passing (20 assertions)
 
@@ -235,40 +233,30 @@ class PurchaseOrderController extends Controller
 #### Service Architecture
 
 ```php
-class NotificationService
-{
-    public function sendPurchaseOrderCreated(PurchaseOrder $po): void
-    public function sendPurchaseOrderApproved(PurchaseOrder $po): void
-    public function sendPurchaseOrderRejected(PurchaseOrder $po): void
-    public function sendPurchaseOrderCanceled(PurchaseOrder $po): void
-    public function sendCustomNotification(array $userIds, string $subject, string $message, ?string $actionUrl): void
-    public function queueNotification(PurchaseOrder $po, string $event): void
-}
+// Notifications now handled by unified approval system
+// No separate NotificationService - all handled through approval workflow:
+// - ApprovalActionRequired: Sent to current approvers
+// - ReportApprovedNotification: Sent to creator on final approval
+// - ReportRejectedNotification: Sent to creator on rejection
 ```
 
-#### Recipient Resolution Logic
+#### Current Notification Architecture
 
-```php
-private function getNotificationUsers(PurchaseOrder $po, string $event): Collection
-{
-    return match ($event) {
-        'created' => $this->getDirectors(),
-        'approved' => $this->getApprovalRecipients($po),
-        'rejected' => collect([$po->user])->filter(),
-        'canceled' => $this->getCancellationRecipients($po),
-        default => collect(),
-    };
-}
-```
+Notifications are now handled by the unified approval system:
+
+- **ApprovalActionRequired**: Automatically sent to current approvers when a step becomes active
+- **ReportApprovedNotification**: Automatically sent to PO creator when fully approved
+- **ReportRejectedNotification**: Automatically sent to PO creator when rejected
+
+No manual recipient resolution needed - handled by approval workflow configuration.
 
 #### Model Integration
 
 ```php
-// PurchaseOrder model boot method now uses service
-static::created(function ($po) {
-    $notificationService = App::make(NotificationService::class);
-    $notificationService->sendPurchaseOrderCreated($po);
-});
+// PurchaseOrder notifications now handled by unified approval system
+// - Creation notifications: Handled by approval workflow initiation
+// - Status change notifications: Handled by approval step transitions
+// - No more manual notification sending in model events
 
 static::updated(function ($po) {
     if ($po->isDirty('status')) {
@@ -301,7 +289,7 @@ static::updated(function ($po) {
 - **PurchaseOrderStatus Enum**: Type-safe status management with validation
 - **PurchaseOrderService**: Core CRUD operations with business logic
 - **PdfProcessingService**: Complete PDF lifecycle management
-- **NotificationService**: Flexible notification system with templates
+- **Unified Approval Notifications**: Integrated notification system through approval workflow
 
 #### ✅ **Code Quality Improvements**
 
@@ -325,7 +313,7 @@ Controller Layer (HTTP) ← Clean interface
 Service Layer (Business Logic) ← 4 core services implemented
 ├── ✅ PurchaseOrderService (CRUD operations)
 ├── ✅ PdfProcessingService (PDF lifecycle)
-├── ✅ NotificationService (Flexible notifications)
+├── ✅ Unified Approval Notifications (Integrated system)
 └── ✅ PurchaseOrderStatus enum (Type safety)
     ↓ operates on
 Data Layer (Models & DB) ← Enhanced with constraints

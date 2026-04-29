@@ -24,7 +24,7 @@ class PurchaseOrder extends Model implements Approvable
     protected $fillable = [
         'po_number',
         'approved_date',
-        'status',
+        'status', // Legacy field - use workflow status instead
         'filename',
         'reason',
         'creator_id',
@@ -35,98 +35,70 @@ class PurchaseOrder extends Model implements Approvable
         'currency',
         'total',
         'tanggal_pembayaran',
-        'invoice_number',
         'purchase_order_category_id',
         'parent_po_number',
         'revision_count',
     ];
 
-    // Enum-based status methods
+    /**
+     * Get the current status enum based on workflow status
+     */
     public function getStatusEnum(): PurchaseOrderStatus
     {
-        return PurchaseOrderStatus::fromLegacyValue($this->status);
+        return PurchaseOrderStatus::fromWorkflowStatus($this->workflow_status);
     }
 
-    public function setStatusEnum(PurchaseOrderStatus $status): void
+    /**
+     * Check if PO can be edited (only rejected/cancelled can be revised)
+     */
+    public function canBeEdited(): bool
     {
-        $this->status = $status->legacyValue();
+        $status = $this->getStatusEnum();
+        return in_array($status, [PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]);
     }
 
-    public function isStatus(PurchaseOrderStatus $status): bool
+    /**
+     * Check if PO is in a terminal state (cannot be changed further)
+     */
+    public function isTerminal(): bool
     {
-        return $this->status === $status->legacyValue();
+        return $this->getStatusEnum()->isTerminal();
     }
 
-    public function canTransitionTo(PurchaseOrderStatus $newStatus): bool
+    /**
+     * Scope: Filter by workflow status
+     */
+    public function scopeWithWorkflowStatus($query, string $workflowStatus)
     {
-        $currentStatus = $this->getStatusEnum();
-
-        return match ($currentStatus) {
-            PurchaseOrderStatus::PENDING_APPROVAL => in_array($newStatus, [PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]),
-            PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED => in_array($newStatus, [PurchaseOrderStatus::PENDING_APPROVAL]), // Can resubmit
-            PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::DRAFT => false, // Terminal states
-        };
+        return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
+            $q->where('status', $workflowStatus);
+        })->orWhere(function ($q) use ($workflowStatus) {
+            // Include POs without approval requests for DRAFT status
+            if ($workflowStatus === 'DRAFT') {
+                $q->whereNull('approval_request_id');
+            }
+        });
     }
 
-    // Legacy scope methods (keeping for backward compatibility)
-    public function scopeApproved($query)
-    {
-        return $query->where('status', PurchaseOrderStatus::APPROVED->legacyValue());
-    }
-
-    public function scopePendingApproval($query)
-    {
-        return $query->where('status', PurchaseOrderStatus::PENDING_APPROVAL->legacyValue());
-    }
-
-    public function scopeWaiting($query) // Backward compatibility
-    {
-        return $this->scopePendingApproval($query);
-    }
-
-    public function scopeRejected($query)
-    {
-        return $query->where('status', PurchaseOrderStatus::REJECTED->legacyValue());
-    }
-
-    public function scopeCanceled($query)
-    {
-        return $query->where('status', PurchaseOrderStatus::CANCELLED->legacyValue());
-    }
-
-    // New enum-based scopes
-    public function scopeWithStatus($query, PurchaseOrderStatus $status)
-    {
-        return $query->where('status', $status->legacyValue());
-    }
-
-    public function scopeDraft($query)
-    {
-        return $query->where('status', PurchaseOrderStatus::DRAFT->legacyValue());
-    }
-
-    public function scopeTerminal($query)
-    {
-        return $query->whereIn('status', [
-            PurchaseOrderStatus::APPROVED->legacyValue(),
-            PurchaseOrderStatus::REJECTED->legacyValue(),
-            PurchaseOrderStatus::CANCELLED->legacyValue(),
-        ]);
-    }
-
+    /**
+     * Scope: Filter editable POs (can be revised)
+     */
     public function scopeEditable($query)
     {
-        return $query->whereIn('status', [
-            PurchaseOrderStatus::REJECTED->legacyValue(),
-            PurchaseOrderStatus::CANCELLED->legacyValue(),
-        ]);
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->whereIn('status', ['REJECTED', 'CANCELLED']);
+        });
     }
 
-    public function scopeApprovedForCurrentMonth($query)
+    /**
+     * Scope: Filter POs approved in current month
+     */
+    public function scopeApprovedThisMonth($query)
     {
-        return $query
-            ->where('status', 2)
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->where('status', 'APPROVED')
+              ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        });
     }
 
     public function user()
@@ -177,12 +149,39 @@ class PurchaseOrder extends Model implements Approvable
         return $this->user?->branch?->name;
     }
 
-    public function getVendorNames()
+    /**
+     * Get workflow status from approval request.
+     * This replaces the legacy status column.
+     */
+    public function getWorkflowStatusAttribute(): ?string
     {
-        $vendorNames = Vendor::pluck('name');
+        // Return status from approval request, or DRAFT if no approval
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
 
-        return response()->json([
-            'vendorNames' => $vendorNames,
-        ]);
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+
+        $currentStep = $approval->steps()
+            ->where('sequence', $approval->current_step)
+            ->first();
+
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Get current approver name (alias for workflow_step).
+     */
+    public function getCurrentApproverAttribute(): ?string
+    {
+        return $this->workflow_step;
     }
 }

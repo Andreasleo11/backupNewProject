@@ -72,7 +72,7 @@ The Purchase Order module has been modernized with:
 │  │              Service Layer                          │    │
 │  │  - PurchaseOrderService                             │    │
 │  │  - PdfProcessingService                             │    │
-│  │  - NotificationService                              │    │
+│  │  - Unified Approval Notifications                   │    │
 │  │  - AnalyticsService                                 │    │
 │  └─────────────────────────────────────────────────────┘    │
 │  ┌─────────────────────────────────────────────────────┐    │
@@ -336,7 +336,7 @@ class PurchaseOrderRepository implements PurchaseOrderRepositoryInterface
   - Eliminated redundant foreign key storage for cleaner schema
   - Maintained full functionality through approvable_type/approvable_id
 - v2.1 (2026-04-29): Unified notification architecture
-  - Removed legacy NotificationService dependency from PurchaseOrder model
+  - Removed legacy NotificationService dependency - now handled by unified approval system
   - All notifications now handled through unified approval system
   - Eliminated dual notification paths for single source of truth
   - Maintained Approvable interface compliance
@@ -362,7 +362,7 @@ This document reflects the current implementation state of the Purchase Order mo
 - **PurchaseOrderStatus Enum**: Type-safe status management with validation methods
 - **PurchaseOrderService**: Complete CRUD operations with approval engine integration
 - **PdfProcessingService**: Full PDF lifecycle management (sign, reject, download, validate)
-- **NotificationService**: Flexible notification system with templates
+- **Unified Approval System**: Integrated notification system through approval workflow
 - **Database Schema**: Approval relationship support with polymorphic relationships
 
 #### Modern UI Implementation:
@@ -422,7 +422,7 @@ The Purchase Order approval workflow is now managed through a single unified com
 - Atomic migration of 1,218 legacy POs
 - Automatic status transitions on director approval
 - Consolidated three commands into single unified workflow
-- Removed legacy NotificationService dependency from PurchaseOrder model
+- Removed legacy NotificationService dependency - now handled by unified approval system
 - All notifications now handled through unified approval system
 
 ### Architecture
@@ -511,7 +511,7 @@ The command handles two migration cases atomically:
 - **PurchaseOrderStatus Enum**: Type-safe status management with validation (109 lines)
 - **PurchaseOrderService**: Complete CRUD operations with approval engine integration (277 lines)
 - **PdfProcessingService**: PDF lifecycle management (sign, reject, download, validate)
-- **NotificationService**: Flexible notification system with templates
+- **Unified Approval System**: Integrated notification system through approval workflow
 - **Database Schema**: Approval relationship support with polymorphic relationships
 
 **Modern UI Components:**

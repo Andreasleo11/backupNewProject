@@ -52,6 +52,14 @@ enum PurchaseOrderStatus: int
     }
 
     /**
+     * Check if the status is pending approval
+     */
+    public function isPendingApproval(): bool
+    {
+        return $this === self::PENDING_APPROVAL;
+    }
+
+    /**
      * Check if the status allows rejection actions
      */
     public function canReject(): bool
@@ -118,5 +126,49 @@ enum PurchaseOrderStatus: int
         }
 
         return $options;
+    }
+
+    /**
+     * Create enum instance from workflow status string
+     * Maps approval workflow statuses to PO statuses
+     */
+    public static function fromWorkflowStatus(string $workflowStatus): self
+    {
+        return match (strtoupper($workflowStatus)) {
+            'DRAFT' => self::DRAFT,
+            'IN_REVIEW' => self::PENDING_APPROVAL,
+            'APPROVED' => self::APPROVED,
+            'REJECTED' => self::REJECTED,
+            'CANCELLED', 'RETURNED' => self::CANCELLED,
+            default => throw new \InvalidArgumentException("Invalid workflow status: {$workflowStatus}"),
+        };
+    }
+
+    /**
+     * Get workflow status string representation
+     */
+    public function toWorkflowStatus(): string
+    {
+        return match ($this) {
+            self::DRAFT => 'DRAFT',
+            self::PENDING_APPROVAL => 'IN_REVIEW',
+            self::APPROVED => 'APPROVED',
+            self::REJECTED => 'REJECTED',
+            self::CANCELLED => 'CANCELLED',
+        };
+    }
+
+    /**
+     * Get description for status
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::PENDING_APPROVAL => 'Waiting for director approval',
+            self::APPROVED => 'Approved and ready for processing',
+            self::REJECTED => 'Rejected by approver',
+            self::CANCELLED => 'Cancelled or returned',
+            self::DRAFT => 'Draft - not yet submitted',
+        };
     }
 }

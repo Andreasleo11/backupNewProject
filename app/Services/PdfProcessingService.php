@@ -73,9 +73,9 @@ class PdfProcessingService
                 throw new \Exception('Purchase order not found');
             }
 
-            $po->reason = $reason;
-            $po->status = 3; // Rejected status
-            $po->save();
+            // Use approval system to reject instead of direct status update
+            $approvalService = app(\App\Application\Approval\Contracts\Approvals::class);
+            $approvalService->reject($po, auth()->id(), $reason);
 
             Log::info('PDF rejected', [
                 'po_id' => $po->id,
