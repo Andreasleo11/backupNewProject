@@ -22,6 +22,7 @@ class PurchaseOrder extends Model implements Approvable
         'downloaded_at',
         'vendor_name',
         'invoice_date',
+        'invoice_number',
         'currency',
         'total',
         'tanggal_pembayaran',
@@ -29,7 +30,6 @@ class PurchaseOrder extends Model implements Approvable
         'purchase_order_category_id',
         'parent_po_number',
         'revision_count',
-        'approval_request_id',
     ];
 
     // Enum-based status methods

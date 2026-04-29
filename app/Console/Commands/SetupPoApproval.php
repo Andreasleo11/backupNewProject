@@ -61,11 +61,10 @@ class SetupPoApproval extends Command
         $this->info('🔄 Starting comprehensive migration and synchronization of all legacy POs...');
 
         // Get all POs that need approval requests created
-        $posNeedingRequests = PurchaseOrder::whereNull('approval_request_id')->get();
+        $posNeedingRequests = PurchaseOrder::whereDoesntHave('approvalRequest')->get();
 
         // Get all POs that have approval requests but need status synchronization
-        $posNeedingSync = PurchaseOrder::whereNotNull('approval_request_id')
-            ->whereHas('approvalRequest', function ($query) {
+        $posNeedingSync = PurchaseOrder::whereHas('approvalRequest', function ($query) {
                 $query->whereColumn('approval_requests.status', '!=',
                     DB::raw("CASE
                         WHEN purchase_orders.status = 1 THEN 'IN_REVIEW'
@@ -199,8 +198,8 @@ class SetupPoApproval extends Command
             ]);
         }
 
-        // Update PO with approval request ID
-        $po->update(['approval_request_id' => $approvalRequest->id]);
+        // Note: No need to update PO with approval_request_id
+        // The relationship is handled polymorphically through approvable_type/approvable_id
 
         Log::info('PO approval request created with status synchronization', [
             'po_id' => $po->id,
@@ -290,8 +289,6 @@ class SetupPoApproval extends Command
         return null;
     }
 
-
-
     /**
      * Verify the complete setup
      */
@@ -312,8 +309,8 @@ class SetupPoApproval extends Command
 
         // Check all POs have approval requests
         $totalPos = PurchaseOrder::count();
-        $posWithApproval = PurchaseOrder::whereNotNull('approval_request_id')->count();
-        $posWithoutApproval = PurchaseOrder::whereNull('approval_request_id')->count();
+        $posWithApproval = PurchaseOrder::whereHas('approvalRequest')->count();
+        $posWithoutApproval = PurchaseOrder::whereDoesntHave('approvalRequest')->count();
 
         $this->info("📊 Approval Request Coverage: {$posWithApproval}/{$totalPos} POs ({$posWithoutApproval} missing)");
 
@@ -329,7 +326,7 @@ class SetupPoApproval extends Command
         // Check all approval requests have rule templates
         $totalPoRequests = ApprovalRequest::where('approvable_type', \App\Models\PurchaseOrder::class)->count();
         $requestsWithoutRules = ApprovalRequest::where('approvable_type', \App\Models\PurchaseOrder::class)
-            ->whereNull('rule_template_version_id')
+            ->whereNull('rule_template_id')
             ->count();
 
         $this->info("📊 PO approval requests: {$totalPoRequests} total, {$requestsWithoutRules} without rules");

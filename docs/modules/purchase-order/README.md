@@ -323,13 +323,18 @@ class PurchaseOrderRepository implements PurchaseOrderRepositoryInterface
 
 ## Document Control
 
-**Version:** 2.1
+**Version:** 2.2
 **Date:** April 29, 2026
 **Author:** Kilo AI Assistant
 **Status:** Living documentation - updated with implementation
 
 **Change History:**
 
+- v2.2 (2026-04-29): Database schema optimization
+  - Removed redundant approval_request_id column from purchase_orders table
+  - Approval relationships now handled purely through polymorphic relationships
+  - Eliminated redundant foreign key storage for cleaner schema
+  - Maintained full functionality through approvable_type/approvable_id
 - v2.1 (2026-04-29): Unified notification architecture
   - Removed legacy NotificationService dependency from PurchaseOrder model
   - All notifications now handled through unified approval system
@@ -358,7 +363,7 @@ This document reflects the current implementation state of the Purchase Order mo
 - **PurchaseOrderService**: Complete CRUD operations with approval engine integration
 - **PdfProcessingService**: Full PDF lifecycle management (sign, reject, download, validate)
 - **NotificationService**: Flexible notification system with templates
-- **Database Schema**: Approval relationship support with proper foreign keys
+- **Database Schema**: Approval relationship support with polymorphic relationships
 
 #### Modern UI Implementation:
 
@@ -507,7 +512,7 @@ The command handles two migration cases atomically:
 - **PurchaseOrderService**: Complete CRUD operations with approval engine integration (277 lines)
 - **PdfProcessingService**: PDF lifecycle management (sign, reject, download, validate)
 - **NotificationService**: Flexible notification system with templates
-- **Database Schema**: Approval relationship support with foreign keys
+- **Database Schema**: Approval relationship support with polymorphic relationships
 
 **Modern UI Components:**
 - **PurchaseOrderDashboard**: Interactive analytics with real-time charts
