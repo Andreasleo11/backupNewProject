@@ -23,6 +23,8 @@ class PurchaseOrderIndex extends Component
 
     public $perPage = 10;
 
+    public $perPageOptions = [10, 25, 50, 100];
+
     public $selectedIds = [];
 
     public $selectAll = false;
@@ -54,10 +56,17 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
     public function updatedSelectAll($value)
     {
         if ($value) {
+            // Select only visible items on current page
             $this->selectedIds = $this->getPurchaseOrdersQuery()
+                ->paginate($this->perPage)
                 ->pluck('id')
                 ->toArray();
         } else {
@@ -167,7 +176,7 @@ class PurchaseOrderIndex extends Component
 
     public function getPurchaseOrdersQuery()
     {
-        $query = \App\Models\PurchaseOrder::with(['user', 'category'])
+        $query = \App\Models\PurchaseOrder::with(['user', 'category', 'approvalRequest'])
             ->when($this->search, function (Builder $query) {
                 $query->where(function (Builder $q) {
                     $q->where('po_number', 'like', '%' . $this->search . '%')
@@ -219,6 +228,7 @@ class PurchaseOrderIndex extends Component
         return view('livewire.purchase-order.index', [
             'purchaseOrders' => $this->purchaseOrders,
             'filters' => $this->filters,
+            'perPageOptions' => $this->perPageOptions,
         ]);
     }
 }

@@ -12,6 +12,15 @@ class PurchaseOrder extends Model implements Approvable
 {
     use HasFactory;
 
+    protected $casts = [
+        'invoice_date' => 'date',
+        'approved_date' => 'datetime',
+        'tanggal_pembayaran' => 'date',
+        'downloaded_at' => 'datetime',
+        'total' => 'decimal:2',
+        'revision_count' => 'integer',
+    ];
+
     protected $fillable = [
         'po_number',
         'approved_date',
