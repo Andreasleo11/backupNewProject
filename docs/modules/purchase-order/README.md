@@ -323,13 +323,18 @@ class PurchaseOrderRepository implements PurchaseOrderRepositoryInterface
 
 ## Document Control
 
-**Version:** 2.0
-**Date:** April 27, 2026
+**Version:** 2.1
+**Date:** April 29, 2026
 **Author:** Kilo AI Assistant
 **Status:** Living documentation - updated with implementation
 
 **Change History:**
 
+- v2.1 (2026-04-29): Unified notification architecture
+  - Removed legacy NotificationService dependency from PurchaseOrder model
+  - All notifications now handled through unified approval system
+  - Eliminated dual notification paths for single source of truth
+  - Maintained Approvable interface compliance
 - v2.0 (2026-04-27): Updated to reflect actual implementation state
   - Removed fictional timelines and speculative planning
   - Added accurate implementation history
