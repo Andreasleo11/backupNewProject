@@ -324,7 +324,7 @@ class PurchaseOrderIndex extends Component
         $query = \App\Models\PurchaseOrder::query()
             ->select([
                 'id', 'po_number', 'invoice_date', 'invoice_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at'
+                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
             ])
             ->with([
                 'user:id,name', // Only load necessary user fields
@@ -388,7 +388,7 @@ class PurchaseOrderIndex extends Component
         // Optimized sorting with whitelist
         $sortableColumns = [
             'po_number', 'invoice_date', 'vendor_name',
-            'total', 'approved_date', 'created_at'
+            'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
         ];
 
         if (in_array($this->sortBy, $sortableColumns)) {

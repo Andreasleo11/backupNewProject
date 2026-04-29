@@ -53,17 +53,28 @@
                 <div class="flex flex-col sm:flex-row gap-3 flex-1">
                     <div class="flex-1 max-w-md">
                         <label for="search" class="sr-only">Search</label>
+
                         <div class="relative">
-                            <input type="text" id="search" wire:model.live.debounce.300ms="search"
-                                   placeholder="Search PO number, vendor, invoice..."
-                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 pl-9 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <!-- Search Icon -->
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
-                            <div wire:loading wire:target="search" class="absolute right-2 top-2">
-                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div>
+
+                            <!-- Input -->
+                            <input
+                                type="text"
+                                id="search"
+                                wire:model.debounce.300ms="search"
+                                placeholder="Search PO number, vendor, invoice..."
+                                class="block w-full px-3 py-2 pl-10 pr-10 text-sm border rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+
+                            <!-- Loading Spinner -->
+                            <div wire:loading.delay wire:target="search" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <div class="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
                             </div>
                         </div>
                     </div>
@@ -202,7 +213,7 @@
                             </th>
                             <th class="px-4 py-3 font-medium">
                                 <button wire:click="sortBy('po_number')" class="flex items-center gap-1 hover:text-slate-900">
-                                    PO Number
+                                    PO Details
                                     @if($sortBy === 'po_number')
                                         <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
@@ -210,22 +221,24 @@
                                     @endif
                                 </button>
                             </th>
-                            <th class="px-4 py-3 font-medium hidden sm:table-cell">
-                                <button wire:click="sortBy('invoice_date')" class="flex items-center gap-1 hover:text-slate-900">
-                                    Date
-                                    @if($sortBy === 'invoice_date')
+                            <th class="px-4 py-3 font-medium hidden sm:table-cell">Invoice Info</th>
+                            <th class="px-4 py-3 font-medium">Vendor</th>
+                            <th class="px-4 py-3 font-medium">Creator</th>
+                            <th class="px-4 py-3 font-medium hidden md:table-cell">Status</th>
+                            <th class="px-4 py-3 font-medium hidden lg:table-cell">
+                                <button wire:click="sortBy('total')" class="flex items-center gap-1 hover:text-slate-900">
+                                    Amount
+                                    @if($sortBy === 'total')
                                         <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @endif
                                 </button>
                             </th>
-                            <th class="px-4 py-3 font-medium">Vendor</th>
-                            <th class="px-4 py-3 font-medium hidden md:table-cell">Status</th>
-                            <th class="px-4 py-3 font-medium hidden lg:table-cell">
-                                <button wire:click="sortBy('total')" class="flex items-center gap-1 hover:text-slate-900">
-                                    Amount
-                                    @if($sortBy === 'total')
+                            <th class="px-4 py-3 font-medium hidden xl:table-cell">
+                                <button wire:click="sortBy('tanggal_pembayaran')" class="flex items-center gap-1 hover:text-slate-900">
+                                    Payment Date
+                                    @if($sortBy === 'tanggal_pembayaran')
                                         <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
@@ -243,42 +256,47 @@
                                             class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
-                                        <div class="sm:hidden text-xs text-slate-500 mt-0.5">
-                                            {{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}
-                                            @if($po->total) • {{ number_format($po->total, 0, ',', '.') }} @endif
+                                    <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
+                                </td>
+                                <td class="px-4 py-3 hidden sm:table-cell">
+                                    <div class="flex flex-col text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-slate-600 text-xs">Date:</span>
+                                            <span class="font-medium text-xs">{{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}</span>
                                         </div>
-                                        <div class="md:hidden mt-1">
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}">
-                                                {{ $po->getStatusEnum()->label() }}
-                                                @if($po->getStatusEnum()->isPendingApproval())
-                                                    <span class="ml-1 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
-                                                @endif
-                                            </span>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-slate-600 text-xs">No:</span>
+                                            <span class="font-medium whitespace-nowrap text-xs">{{ $po->invoice_number ?: '-' }}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-600 hidden sm:table-cell">
-                                    {{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}
+                                <td class="px-4 py-3">
+                                    <span class="font-medium">{{ $po->vendor_name }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex flex-col">
-                                        <span class="font-medium">{{ $po->vendor_name }}</span>
-                                        <span class="text-xs text-slate-500 lg:hidden">{{ $po->user?->name ?: 'Unknown' }}</span>
+                                    <div class="flex flex-col gap-2">
+                                        <span class="text-xs text-slate-500">{{ $po->user?->name ?: 'Unknown' }}</span>
+                                        <span class="text-xs text-slate-500">{{ $po->created_at->diffForHumans() }}</span>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 hidden md:table-cell">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}"
-                                          title="{{ $po->getStatusEnum()->description() }}">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}"
+                                            title="{{ $po->getStatusEnum()->description() }}">
                                         {{ $po->getStatusEnum()->label() }}
                                         @if($po->getStatusEnum()->isPendingApproval())
                                             <span class="ml-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" title="Awaiting approval"></span>
                                         @endif
                                     </span>
+                                    
+                                    @if($po->approved_date)
+                                        <div class="text-xs text-slate-500 mt-1">{{ $po->approved_date->diffForHumans() }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 font-mono text-slate-900 hidden lg:table-cell">
                                     {{ number_format($po->total, 0, ',', '.') }}
+                                </td>
+                                <td class="px-4 py-3 text-slate-600 hidden xl:table-cell">
+                                    {{ $po->tanggal_pembayaran ? $po->tanggal_pembayaran->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex gap-1">
@@ -304,7 +322,7 @@
                             </tr>
                           @empty
                               <tr>
-                                  <td colspan="7" class="px-4 py-12 text-center text-slate-500">
+                                  <td colspan="8" class="px-4 py-12 text-center text-slate-500">
                                       <div class="flex flex-col items-center">
                                           <svg class="h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
