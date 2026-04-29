@@ -320,49 +320,82 @@ class PurchaseOrderIndex extends Component
 
     public function getPurchaseOrdersQuery()
     {
-        $query = \App\Models\PurchaseOrder::select([
-                'id', 'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
-                'creator_id', 'status', 'total', 'approved_date', 'created_at', 'updated_at'
+        // Use optimized query with selective field loading and relationship optimization
+        $query = \App\Models\PurchaseOrder::query()
+            ->select([
+                'id', 'po_number', 'invoice_date', 'invoice_number',
+                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at'
             ])
             ->with([
-                'user:id,name',
-                'category:id,name',
-                'approvalRequest:id,approvable_id,approvable_type,status'
-            ])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('po_number', 'like', '%' . $this->search . '%')
-                        ->orWhere('vendor_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('invoice_number', 'like', '%' . $this->search . '%');
+                'user:id,name', // Only load necessary user fields
+                'approvalRequest' // Load full approval request relationship
+            ]);
+
+        // Optimized search across multiple fields
+        if ($this->search) {
+            $searchTerm = trim($this->search);
+            if (strlen($searchTerm) > 0) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('po_number', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('invoice_number', 'like', '%' . $searchTerm . '%')
+                      ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                          $userQuery->where('name', 'like', '%' . $searchTerm . '%');
+                      });
                 });
-            })
-            ->when($this->statusFilter, function ($query) {
-                $query->withWorkflowStatus($this->statusFilter);
-            })
-            ->when($this->vendorFilter, function ($query) {
-                $query->where('vendor_name', $this->vendorFilter);
-            })
-            ->when($this->monthFilter, function ($query) {
-                $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$this->monthFilter]);
-            })
-            ->when($this->dateFrom, function ($query) {
-                $query->where('invoice_date', '>=', $this->dateFrom);
-            })
-            ->when($this->dateTo, function ($query) {
-                $query->where('invoice_date', '<=', $this->dateTo);
-            })
-            ->when($this->amountFrom, function ($query) {
-                $query->where('total', '>=', $this->amountFrom);
-            })
-            ->when($this->amountTo, function ($query) {
-                $query->where('total', '<=', $this->amountTo);
-            })
-            ->when($this->creatorFilter, function ($query) {
-                $query->whereHas('user', function ($q) {
-                    $q->where('name', 'like', '%' . $this->creatorFilter . '%');
-                });
-            })
-            ->orderBy($this->sortBy, $this->sortDirection);
+            }
+        }
+
+        // Optimized status filtering using the improved scope
+        if ($this->statusFilter) {
+            $query->withWorkflowStatus($this->statusFilter);
+        }
+
+        // Direct column filters
+        if ($this->vendorFilter) {
+            $query->where('vendor_name', $this->vendorFilter);
+        }
+
+        // Creator filtering
+        if ($this->creatorFilter) {
+            $query->whereHas('user', function ($q) {
+                $q->where('name', 'like', '%' . $this->creatorFilter . '%');
+            });
+        }
+
+        // Optimized date filtering using database functions
+        if ($this->monthFilter) {
+            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$this->monthFilter]);
+        }
+
+        if ($this->dateFrom) {
+            $query->where('invoice_date', '>=', $this->dateFrom);
+        }
+
+        if ($this->dateTo) {
+            $query->where('invoice_date', '<=', $this->dateTo);
+        }
+
+        // Amount range filtering
+        if ($this->amountFrom) {
+            $query->where('total', '>=', $this->amountFrom);
+        }
+
+        if ($this->amountTo) {
+            $query->where('total', '<=', $this->amountTo);
+        }
+
+        // Optimized sorting with whitelist
+        $sortableColumns = [
+            'po_number', 'invoice_date', 'vendor_name',
+            'total', 'approved_date', 'created_at'
+        ];
+
+        if (in_array($this->sortBy, $sortableColumns)) {
+            $query->orderBy($this->sortBy, $this->sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc'); // Default fallback
+        }
 
         return $query;
     }
@@ -383,23 +416,22 @@ class PurchaseOrderIndex extends Component
                 'REJECTED' => 'Rejected',
                 'CANCELLED' => 'Cancelled',
             ],
-            'vendors' => ['' => 'All Vendors'] + 
-                \App\Models\PurchaseOrder::distinct()
-                    ->pluck('vendor_name', 'vendor_name')
-                    ->toArray(),
-            'months' => ['' => 'All Months'] + 
-                \App\Models\PurchaseOrder::selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
-                    ->whereNotNull('invoice_date')
-                    ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
-                    ->pluck('month_label', 'month_value')
-                    ->toArray(),
-            'creators' => ['' => 'All Creators'] + 
-                \App\Models\PurchaseOrder::with('user')
-                    ->whereHas('user')
-                    ->distinct()
-                    ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
-                    ->pluck('users.name', 'users.name')
-                    ->toArray(),
+            'vendors' => ['' => 'All Vendors'] + \App\Models\PurchaseOrder::query()
+                ->distinct()
+                ->whereNotNull('vendor_name')
+                ->pluck('vendor_name', 'vendor_name')
+                ->toArray(),
+            'months' => ['' => 'All Months'] + \App\Models\PurchaseOrder::query()
+                ->selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
+                ->whereNotNull('invoice_date')
+                ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
+                ->pluck('month_label', 'month_value')
+                ->toArray(),
+            'creators' => ['' => 'All Creators'] + \App\Models\PurchaseOrder::query()
+                ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
+                ->distinct()
+                ->pluck('users.name', 'users.name')
+                ->toArray(),
         ];
     }
 

@@ -70,13 +70,17 @@ class PurchaseOrder extends Model implements Approvable
      */
     public function scopeWithWorkflowStatus($query, string $workflowStatus)
     {
+        if ($workflowStatus === 'DRAFT') {
+            // DRAFT: No approval request or approval request is DRAFT
+            return $query->whereDoesntHave('approvalRequest')
+                        ->orWhereHas('approvalRequest', function ($q) {
+                            $q->where('status', 'DRAFT');
+                        });
+        }
+
+        // Other statuses: Must have approval request with matching status
         return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
             $q->where('status', $workflowStatus);
-        })->orWhere(function ($q) use ($workflowStatus) {
-            // Include POs without approval requests for DRAFT status
-            if ($workflowStatus === 'DRAFT') {
-                $q->whereNull('approval_request_id');
-            }
         });
     }
 
@@ -155,6 +159,11 @@ class PurchaseOrder extends Model implements Approvable
      */
     public function getWorkflowStatusAttribute(): ?string
     {
+        // Load approval request if not already loaded
+        if (!$this->relationLoaded('approvalRequest')) {
+            $this->load('approvalRequest:id,approvable_id,approvable_type,status');
+        }
+
         // Return status from approval request, or DRAFT if no approval
         return $this->approvalRequest?->status ?? 'DRAFT';
     }

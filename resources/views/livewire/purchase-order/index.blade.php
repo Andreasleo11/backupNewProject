@@ -44,314 +44,345 @@
         @endif
     </div>
 
-    {{-- Table shell --}}
-    <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <div>
-                <h2 class="text-sm font-semibold text-slate-800">
-                    Purchase Order List
-                </h2>
-                <p class="mt-0.5 text-xs text-slate-500">
-                    Use filters and search to narrow down by status, vendor, or period.
-                </p>
-            </div>
-
-            {{-- Bulk Actions --}}
-            <div class="flex gap-2">
-                @if(count($selectedIds) > 0)
-                    <button wire:click="approveSelected"
-                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100">
-                        Approve Selected ({{ count($selectedIds) }})
-                    </button>
-                    <button wire:click="$dispatch('open-reject-modal')"
-                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100">
-                        Reject Selected ({{ count($selectedIds) }})
-                    </button>
-                    <button wire:click="exportSelected"
-                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100">
-                        Export Selected ({{ count($selectedIds) }})
-                    </button>
-                @else
-                    <button wire:click="exportFiltered"
-                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100">
-                        Export Filtered
-                    </button>
-                @endif
-            </div>
-        </div>
-
-        {{-- Filters --}}
+    {{-- Controls Bar --}}
+    <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl mb-4"
+         x-data="{ showAdvancedFilters: false }">
         <div class="px-4 py-3 border-b border-slate-100">
-            {{-- Basic Filters --}}
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-                {{-- Search --}}
-                <div>
-                    <label for="search" class="block text-xs font-medium text-slate-600 mb-1">Search</label>
-                    <div class="relative">
-                        <input type="text" id="search" wire:model.live.debounce.300ms="search"
-                               placeholder="PO number, vendor, invoice..."
-                               class="block w-full rounded-lg border border-slate-300 px-3 py-2 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <div wire:loading wire:target="search" class="absolute right-2 top-2">
-                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                {{-- Search & Quick Filters --}}
+                <div class="flex flex-col sm:flex-row gap-3 flex-1">
+                    <div class="flex-1 max-w-md">
+                        <label for="search" class="sr-only">Search</label>
+                        <div class="relative">
+                            <input type="text" id="search" wire:model.live.debounce.300ms="search"
+                                   placeholder="Search PO number, vendor, invoice..."
+                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 pl-9 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <div wire:loading wire:target="search" class="absolute right-2 top-2">
+                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="flex gap-2">
+                        <select wire:model.live="statusFilter"
+                                class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach($filters['statuses'] as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+
+                        <select wire:model.live="vendorFilter"
+                                class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach($filters['vendors'] as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
-                {{-- Status Filter --}}
-                <div>
-                    <label for="statusFilter" class="block text-xs font-medium text-slate-600 mb-1">Status</label>
-                    <select id="statusFilter" wire:model.live="statusFilter"
-                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @foreach($filters['statuses'] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                {{-- Actions --}}
+                <div class="flex items-center gap-2">
+                    {{-- Bulk Actions --}}
+                    @if(count($selectedIds) > 0)
+                        <div class="flex gap-1">
+                            <button wire:click="approveSelected"
+                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100">
+                                Approve ({{ count($selectedIds) }})
+                            </button>
+                            <button wire:click="$dispatch('open-reject-modal')"
+                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">
+                                Reject ({{ count($selectedIds) }})
+                            </button>
+                        </div>
+                    @endif
 
-                {{-- Vendor Filter --}}
-                <div>
-                    <label for="vendorFilter" class="block text-xs font-medium text-slate-600 mb-1">Vendor</label>
-                    <select id="vendorFilter" wire:model.live="vendorFilter"
-                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @foreach($filters['vendors'] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Month Filter --}}
-                <div>
-                    <label for="monthFilter" class="block text-xs font-medium text-slate-600 mb-1">Month</label>
-                    <select id="monthFilter" wire:model.live="monthFilter"
-                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @foreach($filters['months'] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Rows Per Page --}}
-                <div>
-                    <label for="perPage" class="block text-xs font-medium text-slate-600 mb-1">Rows</label>
-                    <select id="perPage" wire:model.live="perPage"
-                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @foreach($perPageOptions as $option)
-                            <option value="{{ $option }}">{{ $option }}</option>
-                        @endforeach
-                    </select>
+                    {{-- Advanced Filters Toggle --}}
+                    <button @click="showAdvancedFilters = !showAdvancedFilters"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filters
+                        <svg class="w-4 h-4 ml-1 transition-transform" :class="{ 'rotate-180': showAdvancedFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
-            {{-- Advanced Filters --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {{-- Date Range --}}
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Date Range</label>
-                    <div class="flex gap-2">
-                        <input type="date" wire:model.live.debounce.300ms="dateFrom"
-                               class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <span class="text-slate-400 self-center">to</span>
-                        <input type="date" wire:model.live.debounce.300ms="dateTo"
-                               class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            {{-- Advanced Filters (Collapsible) --}}
+            <div x-show="showAdvancedFilters"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 max-h-0"
+                 x-transition:enter-end="opacity-100 max-h-96"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 max-h-96"
+                 x-transition:leave-end="opacity-0 max-h-0"
+                 class="mt-4 pt-4 border-t border-slate-100 overflow-hidden">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {{-- Date Range --}}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Invoice Date Range</label>
+                        <div class="space-y-2">
+                            <input type="date" wire:model.live.debounce.300ms="dateFrom"
+                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <input type="date" wire:model.live.debounce.300ms="dateTo"
+                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
                     </div>
-                </div>
 
-                {{-- Amount Range --}}
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Amount Range</label>
-                    <div class="flex gap-2">
-                        <input type="number" wire:model.live.debounce.300ms="amountFrom" placeholder="Min"
-                               class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <span class="text-slate-400 self-center">to</span>
-                        <input type="number" wire:model.live.debounce.300ms="amountTo" placeholder="Max"
-                               class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    {{-- Amount Range --}}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount Range (IDR)</label>
+                        <div class="space-y-2">
+                            <input type="number" wire:model.live.debounce.300ms="amountFrom" placeholder="Minimum"
+                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <input type="number" wire:model.live.debounce.300ms="amountTo" placeholder="Maximum"
+                                   class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
                     </div>
-                </div>
 
-                {{-- Creator Filter --}}
-                <div>
-                    <label for="creatorFilter" class="block text-xs font-medium text-slate-600 mb-1">Creator</label>
-                    <select id="creatorFilter" wire:model.live="creatorFilter"
-                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @foreach($filters['creators'] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    {{-- Creator & Month --}}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Creator</label>
+                        <select wire:model.live="creatorFilter"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach($filters['creators'] as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                {{-- Clear Filters --}}
-                <div class="flex items-end">
-                    <button wire:click="clearFilters"
-                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500">
-                        Clear Filters
-                    </button>
+                    {{-- Month & Per Page --}}
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Month</label>
+                            <select wire:model.live="monthFilter"
+                                    class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach($filters['months'] as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Rows</label>
+                                <select wire:model.live="perPage"
+                                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @foreach($perPageOptions as $option)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button wire:click="clearFilters"
+                                    class="px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         {{-- Table --}}
-        <div class="px-4 pb-4 pt-3 overflow-x-auto">
-            <table class="w-full text-sm text-left text-slate-700">
-                <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-4 py-3">
-                            <input type="checkbox" wire:model.live="selectAll"
-                                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                        </th>
-                        <th class="px-4 py-3 font-medium">
-                            <button wire:click="sortBy('po_number')" class="flex items-center gap-1 hover:text-slate-900">
-                                PO Number
-                                @if($sortBy === 'po_number')
-                                    <span class="text-xs {{ $sortDirection === 'asc' ? 'rotate-180' : '' }}">▲</span>
-                                @endif
-                            </button>
-                        </th>
-                        <th class="px-4 py-3 font-medium hidden sm:table-cell">
-                            <button wire:click="sortBy('invoice_date')" class="flex items-center gap-1 hover:text-slate-900">
-                                Invoice Date
-                                @if($sortBy === 'invoice_date')
-                                    <span class="text-xs {{ $sortDirection === 'asc' ? 'rotate-180' : '' }}">▲</span>
-                                @endif
-                            </button>
-                        </th>
-                        <th class="px-4 py-3 font-medium hidden md:table-cell">Invoice Number</th>
-                        <th class="px-4 py-3 font-medium">Vendor</th>
-                        <th class="px-4 py-3 font-medium hidden lg:table-cell">Creator</th>
-                        <th class="px-4 py-3 font-medium">Status</th>
-                        <th class="px-4 py-3 font-medium hidden sm:table-cell">
-                            <button wire:click="sortBy('total')" class="flex items-center gap-1 hover:text-slate-900">
-                                Total
-                                @if($sortBy === 'total')
-                                    <span class="text-xs {{ $sortDirection === 'asc' ? 'rotate-180' : '' }}">▲</span>
-                                @endif
-                            </button>
-                        </th>
-                        <th class="px-4 py-3 font-medium hidden xl:table-cell">
-                            <button wire:click="sortBy('approved_date')" class="flex items-center gap-1 hover:text-slate-900">
-                                Approved At
-                                @if($sortBy === 'approved_date')
-                                    <span class="text-xs {{ $sortDirection === 'asc' ? 'rotate-180' : '' }}">▲</span>
-                                @endif
-                            </button>
-                        </th>
-                        <th class="px-4 py-3 font-medium">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($purchaseOrders as $po)
-                        <tr class="border-t border-slate-100 hover:bg-slate-50">
-                            <td class="px-4 py-3">
-                                <input type="checkbox" value="{{ $po->id }}" wire:model.live="selectedIds"
+        <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-700">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3 w-12">
+                                <input type="checkbox" wire:model.live="selectAll"
                                         class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            </td>
-                            <td class="px-4 py-3 font-medium text-slate-900">
-                                <div class="flex flex-col">
-                                    <span>{{ $po->po_number }}</span>
-                                    <div class="sm:hidden text-xs text-slate-500 mt-1 space-y-1">
-                                        @if($po->invoice_date)
-                                            <div>{{ $po->invoice_date->format('d/m/Y') }}</div>
+                            </th>
+                            <th class="px-4 py-3 font-medium">
+                                <button wire:click="sortBy('po_number')" class="flex items-center gap-1 hover:text-slate-900">
+                                    PO Number
+                                    @if($sortBy === 'po_number')
+                                        <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 font-medium hidden sm:table-cell">
+                                <button wire:click="sortBy('invoice_date')" class="flex items-center gap-1 hover:text-slate-900">
+                                    Date
+                                    @if($sortBy === 'invoice_date')
+                                        <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 font-medium">Vendor</th>
+                            <th class="px-4 py-3 font-medium hidden md:table-cell">Status</th>
+                            <th class="px-4 py-3 font-medium hidden lg:table-cell">
+                                <button wire:click="sortBy('total')" class="flex items-center gap-1 hover:text-slate-900">
+                                    Amount
+                                    @if($sortBy === 'total')
+                                        <svg class="w-4 h-4 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    @endif
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 font-medium w-32">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($purchaseOrders as $po)
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-4 py-3">
+                                    <input type="checkbox" value="{{ $po->id }}" wire:model.live="selectedIds"
+                                            class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
+                                        <div class="sm:hidden text-xs text-slate-500 mt-0.5">
+                                            {{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}
+                                            @if($po->total) • {{ number_format($po->total, 0, ',', '.') }} @endif
+                                        </div>
+                                        <div class="md:hidden mt-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}">
+                                                {{ $po->getStatusEnum()->label() }}
+                                                @if($po->getStatusEnum()->isPendingApproval())
+                                                    <span class="ml-1 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-slate-600 hidden sm:table-cell">
+                                    {{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium">{{ $po->vendor_name }}</span>
+                                        <span class="text-xs text-slate-500 lg:hidden">{{ $po->user?->name ?: 'Unknown' }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 hidden md:table-cell">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}"
+                                          title="{{ $po->getStatusEnum()->description() }}">
+                                        {{ $po->getStatusEnum()->label() }}
+                                        @if($po->getStatusEnum()->isPendingApproval())
+                                            <span class="ml-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" title="Awaiting approval"></span>
                                         @endif
-                                        @if($po->total)
-                                            <div class="font-mono">{{ number_format($po->total, 0, ',', '.') }}</div>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 font-mono text-slate-900 hidden lg:table-cell">
+                                    {{ number_format($po->total, 0, ',', '.') }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex gap-1">
+                                        <button wire:click="$dispatch('openDetailModal', {{ $po->id }})"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 transition-colors"
+                                                title="View details">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                        @if($po->getStatusEnum()->canEdit())
+                                            <a href="{{ route('po.edit', $po->id) }}"
+                                               class="inline-flex items-center px-2 py-1 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition-colors"
+                                               title="Edit">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
                                         @endif
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 text-slate-600 hidden sm:table-cell">
-                                {{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}
-                            </td>
-                            <td class="px-4 py-3 text-slate-600 hidden md:table-cell">{{ $po->invoice_number ?: '-' }}</td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-col">
-                                    <span>{{ $po->vendor_name }}</span>
-                                    <span class="lg:hidden text-xs text-slate-500">{{ $po->user?->name ?: 'Unknown' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 text-slate-600 hidden lg:table-cell">{{ $po->user?->name ?: 'Unknown' }}</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}"
-                                      title="{{ $po->getStatusEnum()->description() }} - Created {{ $po->created_at->diffForHumans() }}">
-                                    {{ $po->getStatusEnum()->label() }}
-                                    @if($po->getStatusEnum()->isPendingApproval())
-                                        <span class="ml-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" title="Awaiting approval"></span>
-                                    @endif
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 font-mono hidden sm:table-cell">{{ number_format($po->total, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-slate-600 hidden xl:table-cell">
-                                {{ $po->approved_date ? $po->approved_date->format('d/m/Y H:i') : '-' }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex gap-2">
-                                    <button wire:click="$dispatch('openDetailModal', {{ $po->id }})"
-                                            class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                                            title="View detailed purchase order information">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View
-                                    </button>
-                                    @if($po->getStatusEnum()->canEdit())
-                                        <a href="{{ route('po.edit', $po->id) }}"
-                                           class="text-slate-600 hover:text-slate-900 text-sm font-medium"
-                                           title="Edit purchase order details">
-                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Edit
-                                        </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                      @empty
-                          <tr>
-                              <td colspan="10" class="px-4 py-12 text-center text-slate-500">
-                                  <div class="flex flex-col items-center">
-                                      <svg class="h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                      </svg>
-                                      <p>No purchase orders found matching your criteria.</p>
-                                      <p class="text-xs mt-1">Try adjusting your filters or create a new purchase order.</p>
-                                  </div>
-                              </td>
-                          </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                          @empty
+                              <tr>
+                                  <td colspan="7" class="px-4 py-12 text-center text-slate-500">
+                                      <div class="flex flex-col items-center">
+                                          <svg class="h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                          </svg>
+                                          <p class="text-sm font-medium">No purchase orders found</p>
+                                          <p class="text-xs mt-1">Try adjusting your filters or create a new purchase order.</p>
+                                      </div>
+                                  </td>
+                              </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            {{-- Pagination --}}
-            @if ($purchaseOrders->hasPages())
-                <div class="mt-4 flex items-center justify-between">
-                    <div class="text-sm text-slate-700">
-                        Showing {{ $purchaseOrders->firstItem() }} to {{ $purchaseOrders->lastItem() }}
-                        of {{ $purchaseOrders->total() }} results
-                    </div>
-                    <div class="flex gap-1">
+            {{-- Footer with pagination and export --}}
+            <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    @if($purchaseOrders->total() > 0)
+                        <div class="text-sm text-slate-600">
+                            {{ $purchaseOrders->total() }} result{{ $purchaseOrders->total() !== 1 ? 's' : '' }}
+                            @if($purchaseOrders->hasPages())
+                                <span class="text-slate-400">•</span>
+                                Page {{ $purchaseOrders->currentPage() }} of {{ $purchaseOrders->lastPage() }}
+                            @endif
+                        </div>
+                        <button wire:click="exportFiltered"
+                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Export
+                        </button>
+                    @endif
+                </div>
+
+                @if ($purchaseOrders->hasPages())
+                    <div class="flex items-center gap-1">
                         @if ($purchaseOrders->onFirstPage())
-                            <span class="px-3 py-1 text-sm border border-slate-200 rounded bg-slate-50 text-slate-400 cursor-not-allowed">Previous</span>
+                            <button disabled class="px-2.5 py-1.5 text-sm border border-slate-200 rounded-md bg-slate-50 text-slate-400 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
                         @else
-                            <a href="{{ $purchaseOrders->previousPageUrl() }}" wire:click.prevent="setPage({{ $purchaseOrders->currentPage() - 1 }})"
-                               class="px-3 py-1 text-sm border border-slate-200 rounded hover:bg-slate-50">Previous</a>
+                            <button wire:click.prevent="setPage({{ $purchaseOrders->currentPage() - 1 }})"
+                                    class="px-2.5 py-1.5 text-sm border border-slate-200 rounded-md hover:bg-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
                         @endif
 
-                        @foreach ($purchaseOrders->getUrlRange(1, $purchaseOrders->lastPage()) as $page => $url)
-                            <a href="{{ $url }}" wire:click.prevent="setPage({{ $page }})"
-                               class="px-3 py-1 text-sm border rounded {{ $page == $purchaseOrders->currentPage() ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-200 hover:bg-slate-50' }}">
-                                {{ $page }}
-                            </a>
-                        @endforeach
+                        <div class="flex gap-1">
+                            @foreach ($purchaseOrders->getUrlRange(max(1, $purchaseOrders->currentPage() - 2), min($purchaseOrders->lastPage(), $purchaseOrders->currentPage() + 2)) as $page => $url)
+                                <button wire:click.prevent="setPage({{ $page }})"
+                                        class="px-3 py-1.5 text-sm border rounded-md transition-colors {{ $page == $purchaseOrders->currentPage() ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-200 hover:bg-white' }}">
+                                    {{ $page }}
+                                </button>
+                            @endforeach
+                        </div>
 
                         @if ($purchaseOrders->hasMorePages())
-                            <a href="{{ $purchaseOrders->nextPageUrl() }}" wire:click.prevent="setPage({{ $purchaseOrders->currentPage() + 1 }})"
-                               class="px-3 py-1 text-sm border border-slate-200 rounded hover:bg-slate-50">Next</a>
+                            <button wire:click.prevent="setPage({{ $purchaseOrders->currentPage() + 1 }})"
+                                    class="px-2.5 py-1.5 text-sm border border-slate-200 rounded-md hover:bg-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
                         @else
-                            <span class="px-3 py-1 text-sm border border-slate-200 rounded bg-slate-50 text-slate-400 cursor-not-allowed">Next</span>
+                            <button disabled class="px-2.5 py-1.5 text-sm border border-slate-200 rounded-md bg-slate-50 text-slate-400 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
                         @endif
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </div>
 
