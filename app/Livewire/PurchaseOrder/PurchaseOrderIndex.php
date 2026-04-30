@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\PurchaseOrder;
 
 use App\Enums\PurchaseOrderStatus;
 use App\Services\PurchaseOrderService;

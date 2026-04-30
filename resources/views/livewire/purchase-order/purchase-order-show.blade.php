@@ -1,5 +1,5 @@
 <div>
-    <div class="px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-[1600px] mx-auto">
+    <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1600px] mx-auto">
         {{-- Header --}}
         <header>
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -44,22 +44,22 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {{-- Main Content: Timeline & PDF --}}
-            <div class="lg:col-span-8 space-y-8">
+            <div class="lg:col-span-8 space-y-6">
                 
                 {{-- Activity Feed --}}
                 @role('super-admin')
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <i class="bi bi-clock-history text-indigo-500"></i>
                             Activity History
                         </h2>
                         <span class="text-[10px] font-bold text-slate-400">Real-time Audit Trail</span>
                     </div>
-                    <div class="p-8">
-                        <div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-slate-100 before:to-transparent">
+                    <div class="p-6">
+                        <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-slate-100 before:to-transparent">
                             @forelse($activities as $activity)
                                 <div class="relative flex items-start group">
                                     <div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white ring-4 ring-slate-50 transition-all group-hover:scale-110 group-hover:shadow-md">
@@ -98,7 +98,7 @@
 
                 {{-- PDF View --}}
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <i class="bi bi-file-earmark-pdf-fill text-rose-500"></i>
                             Original Document
@@ -113,7 +113,7 @@
                 {{-- Revisions --}}
                 @if ($purchaseOrder->status === 4 || $purchaseOrder->revision_count > 0 || count($revisions) > 0)
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                             <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                 <i class="bi bi-layers-half text-amber-500"></i>
                                 Version History
@@ -123,21 +123,21 @@
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-slate-50/80 text-slate-400 font-black uppercase tracking-widest border-b border-slate-100">
                                     <tr>
-                                        <th class="px-8 py-4">PO Number</th>
-                                        <th class="px-8 py-4">Status</th>
-                                        <th class="px-8 py-4 text-right">Amount</th>
-                                        <th class="px-8 py-4">Actions</th>
+                                        <th class="px-6 py-3">PO Number</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3 text-right">Amount</th>
+                                        <th class="px-6 py-3">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-50">
                                     @foreach ($revisions as $rev)
                                         <tr class="hover:bg-slate-50/50 transition-colors">
-                                            <td class="px-8 py-4 font-bold text-slate-900">{{ $rev->po_number }}</td>
-                                            <td class="px-8 py-4">@include('partials.po-status', ['po' => $rev])</td>
-                                            <td class="px-8 py-4 text-right font-mono font-bold text-slate-700">
+                                            <td class="px-6 py-3 font-bold text-slate-900">{{ $rev->po_number }}</td>
+                                            <td class="px-6 py-3">@include('partials.po-status', ['po' => $rev])</td>
+                                            <td class="px-6 py-3 text-right font-mono font-bold text-slate-700">
                                                 {{ number_format($rev->total, 0, ',', '.') }}
                                             </td>
-                                            <td class="px-8 py-4">
+                                            <td class="px-6 py-3">
                                                 <a href="{{ route('po.view', $rev->id) }}" class="inline-flex items-center gap-1 text-indigo-600 font-bold hover:gap-2 transition-all">
                                                     View <i class="bi bi-arrow-right"></i>
                                                 </a>
@@ -156,20 +156,20 @@
                 
                 {{-- Quick Actions Card --}}
                 @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
-                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-8 text-white relative overflow-hidden group" 
+                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group" 
                          x-data="{ showSignConfirm: false, showReject: false }">
                         <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <h3 class="text-xl font-black mb-2 flex items-center gap-3">
+                        <h3 class="text-xl font-black mb-1.5 flex items-center gap-3">
                             <i class="bi bi-shield-lock-fill"></i>
                             Action Required
                         </h3>
-                        <p class="text-indigo-100 text-sm font-medium mb-8 leading-relaxed">
+                        <p class="text-indigo-100 text-xs font-medium mb-6 leading-relaxed">
                             Please review the document and provide your digital signature to authorize this purchase.
                         </p>
                         
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                             <button @click="showSignConfirm = true" :disabled="$wire.loading"
-                                    class="w-full flex items-center justify-center gap-3 bg-white text-indigo-600 py-4 rounded-2xl font-black shadow-lg hover:shadow-indigo-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
+                                    class="w-full flex items-center justify-center gap-3 bg-white text-indigo-600 py-3.5 rounded-2xl font-black shadow-lg hover:shadow-indigo-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
                                 <span wire:loading.remove wire:target="approve" class="flex items-center gap-2">
                                     <i class="bi bi-vector-pen text-lg"></i>
                                     Sign & Approve
@@ -231,47 +231,47 @@
 
                 {{-- Financial & Info Card --}}
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-50">
-                    <div class="p-8 text-slate-900">
-                        <div class="flex items-center gap-4 mb-8">
-                            <div class="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                <i class="bi bi-wallet2 text-2xl"></i>
+                    <div class="p-6 text-slate-900">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <i class="bi bi-wallet2 text-xl"></i>
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Valuation</p>
-                                <p class="text-2xl font-black text-slate-900 mt-1">
-                                    <span class="text-sm font-bold text-slate-300 uppercase mr-1">{{ $purchaseOrder->currency }}</span>
+                                <p class="text-xl font-black text-slate-900 mt-0.5">
+                                    <span class="text-xs font-bold text-slate-300 uppercase mr-1">{{ $purchaseOrder->currency }}</span>
                                     {{ number_format($purchaseOrder->total, 2, '.', ',') }}
                                 </p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-6">
+                        <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor Profile</label>
-                                <p class="text-sm font-extrabold text-slate-800 mt-1">{{ $purchaseOrder->vendor_name }}</p>
+                                <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->vendor_name }}</p>
                             </div>
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Department Category</label>
-                                <p class="text-sm font-extrabold text-slate-800 mt-1">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
+                                <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-8 bg-slate-50/30 grid grid-cols-2 gap-6 text-slate-900">
+                    <div class="p-6 bg-slate-50/30 grid grid-cols-2 gap-4 text-slate-900">
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inv. Date</label>
-                            <p class="text-xs font-bold text-slate-700 mt-1">{{ $purchaseOrder->invoice_date ? $purchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
+                            <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->invoice_date ? $purchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
                         </div>
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pymt. Date</label>
-                            <p class="text-xs font-bold text-slate-700 mt-1">{{ $purchaseOrder->tanggal_pembayaran ? \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d M Y') : '-' }}</p>
+                            <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->tanggal_pembayaran ? \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d M Y') : '-' }}</p>
                         </div>
                     </div>
                 </div>
 
                 {{-- Related Files --}}
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
                         @if (Auth::id() == $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'))
                             <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
@@ -279,7 +279,7 @@
                             </button>
                         @endif
                     </div>
-                    <div class="p-8">
+                    <div class="p-6">
                         @include('partials.file-attachments', [
                             'files' => $files,
                             'showDelete' => Auth::id() === $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'),

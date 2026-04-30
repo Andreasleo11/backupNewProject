@@ -250,23 +250,23 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($purchaseOrders as $po)
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-2.5">
                                     <input type="checkbox" value="{{ $po->id }}" wire:model.live="selectedIds"
                                             class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-2.5">
                                     <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-2.5">
                                     <span class="font-medium">{{ $po->vendor_name }}</span>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-2.5">
                                     <div class="flex flex-col gap-2">
                                         <span class="text-xs text-slate-500">{{ $po->user?->name ?: 'Unknown' }}</span>
                                         <span class="text-xs text-slate-500">{{ $po->created_at->diffForHumans() }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 hidden md:table-cell">
+                                <td class="px-4 py-2.5 hidden md:table-cell">
                                     <div class="flex flex-col gap-1.5">
                                         <span class="inline-flex items-center w-fit px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}"
                                                 title="{{ $po->getStatusEnum()->description() }}">
@@ -287,13 +287,13 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 font-mono text-slate-900 hidden lg:table-cell">
+                                <td class="px-4 py-2.5 font-mono text-slate-900 hidden lg:table-cell">
                                     {{ number_format($po->total, 0, ',', '.') }}
                                 </td>
-                                <td class="px-4 py-3 text-slate-600 hidden xl:table-cell">
+                                <td class="px-4 py-2.5 text-slate-600 hidden xl:table-cell">
                                     {{ $po->tanggal_pembayaran ? $po->tanggal_pembayaran->format('d/m/Y') : '-' }}
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-2.5">
                                     <div class="flex gap-1">
                                         <button wire:click="openDetailModal({{ $po->id }})"
                                                 class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 transition-colors"
@@ -417,7 +417,7 @@
              class="fixed inset-0 z-50 overflow-y-auto"
              x-on:keydown.escape.window="$wire.closeDetailModal()">
 
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 transition-opacity" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                     <div class="absolute inset-0 bg-gray-500 opacity-75" x-on:click="$wire.closeDetailModal()"></div>
             </div>
@@ -425,7 +425,7 @@
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                 <div class="max-h-screen overflow-y-auto">
                     {{-- Header --}}
-                    <div class="bg-white px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <div class="bg-white px-4 py-3 sm:px-4 border-b border-gray-200">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">
@@ -446,7 +446,7 @@
                     </div>
 
                     {{-- Content --}}
-                    <div class="px-4 py-5 sm:p-6">
+                    <div class="px-4 py-4 sm:p-5">
                         {{-- Loading State --}}
                         <div x-show="loading" x-transition class="flex items-center justify-center py-12">
                             <div class="text-center">
@@ -480,19 +480,9 @@
                                     </div>
 
                                     {{-- Right Side: Quick Action Sidebar (25% width on desktop) --}}
-                                    <div class="lg:col-span-4 flex flex-col h-full space-y-6">
-                                        {{-- PO Header & Status --}}
-                                        <div class="space-y-2">
-                                            <h3 class="text-2xl font-black text-slate-900 leading-none">
-                                                {{ $selectedPurchaseOrder->po_number }}
-                                            </h3>
-                                            <div class="flex items-center gap-2">
-                                                @include('partials.po-status', ['po' => $selectedPurchaseOrder])
-                                            </div>
-                                        </div>
-
+                                    <div class="lg:col-span-4 flex flex-col h-full space-y-5">
                                         {{-- Verification Checklist --}}
-                                        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4">
+                                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
                                             <div>
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor</label>
                                                 <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->vendor_name }}</p>
@@ -501,7 +491,7 @@
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Date</label>
                                                 <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->invoice_date ? $selectedPurchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
                                             </div>
-                                            <div class="pt-4 border-t border-slate-100">
+                                            <div class="pt-3 border-t border-slate-100">
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount</label>
                                                 <p class="text-xl font-black text-slate-900">
                                                     <span class="text-xs text-slate-400 mr-1">{{ $selectedPurchaseOrder->currency }}</span>
@@ -522,7 +512,7 @@
                                         <div class="flex flex-col gap-3 mt-auto">
                                             @if($this->canApproveSelectedPO())
                                                 <button wire:click="approvePurchaseOrder"
-                                                        class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] transition-all">
+                                                        class="w-full py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] transition-all">
                                                     Approve PO
                                                 </button>
                                             @endif
@@ -537,7 +527,7 @@
                                             <div class="grid grid-cols-2 gap-3 pt-2">
                                                 <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}"
                                                    class="flex items-center justify-center py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
-                                                    Full History
+                                                    Full Page
                                                 </a>
                                                 <button wire:click="closeDetailModal"
                                                         type="button"
