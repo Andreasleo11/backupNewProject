@@ -22,7 +22,7 @@
                     </div>
                     <nav class="mt-3" aria-label="Breadcrumb">
                         <ol class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-                            <li><a href="{{ route('po.index') }}" class="hover:text-indigo-600 transition-colors">Procurement</a></li>
+                            <li><a href="{{ route('po.index') }}" class="hover:text-indigo-600 transition-colors">Purchase Orders</a></li>
                             <li><i class="bi bi-chevron-right text-[10px]"></i></li>
                             <li class="text-slate-600">Purchase Order Detail</li>
                         </ol>
