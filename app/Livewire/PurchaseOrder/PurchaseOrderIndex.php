@@ -475,19 +475,26 @@ class PurchaseOrderIndex extends Component
 
     public function rejectSelected($reason = null)
     {
-        if (empty($this->selectedIds)) {
-            session()->flash('error', 'No purchase orders selected.');
+        $idsToReject = $this->selectedIds;
+
+        // Context check: If bulk selection is empty, check if we're in the detail modal
+        if (empty($idsToReject) && $this->selectedPurchaseOrder) {
+            $idsToReject = [$this->selectedPurchaseOrder->id];
+        }
+
+        if (empty($idsToReject)) {
+            $this->dispatch('toast', message: 'No purchase orders selected for rejection.', type: 'error');
             return;
         }
 
         if (!$reason) {
-            $reason = 'Bulk rejection by ' . auth()->user()->name;
+            $reason = 'Rejected by ' . auth()->user()->name;
         }
 
         try {
-            $count = count($this->selectedIds);
+            $count = count($idsToReject);
             
-            foreach ($this->selectedIds as $id) {
+            foreach ($idsToReject as $id) {
                 $po = PurchaseOrder::find($id);
                 if ($po && $po->getStatusEnum()->canReject()) {
                     // Add to processing list for UI feedback
@@ -498,7 +505,12 @@ class PurchaseOrderIndex extends Component
                 }
             }
 
-            session()->flash('info', "Rejecting {$count} purchase orders in the background...");
+            if ($count === 1 && $this->selectedPurchaseOrder) {
+                $this->closeDetailModal();
+                $this->dispatch('toast', message: "Rejection process started for PO #{$this->selectedPurchaseOrder->po_number}...", type: 'info');
+            } else {
+                $this->dispatch('toast', message: "Processing {$count} rejections in the background...", type: 'info');
+            }
             
             $this->selectedIds = [];
             $this->selectAll = false;
@@ -522,8 +534,9 @@ class PurchaseOrderIndex extends Component
                 'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
             ])
             ->with([
-                'user:id,name', // Only load necessary user fields
-                'approvalRequest' // Load full approval request relationship
+                'user:id,name',
+                'approvalRequest.steps',
+                'approvalRequest.actions'
             ]);
 
         // Optimized search across multiple fields
@@ -598,6 +611,47 @@ class PurchaseOrderIndex extends Component
     public function getPurchaseOrdersProperty()
     {
         return $this->getPurchaseOrdersQuery()->paginate($this->perPage);
+    }
+
+    public function getStatsProperty()
+    {
+        $currentMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        return [
+            'pending_me' => PurchaseOrder::whereHas('approvalRequest', function ($q) {
+                $q->where('status', 'IN_REVIEW');
+            })->get()->filter(fn($po) => $po->getStatusEnum()->canApprove())->count(),
+            
+            'in_review' => PurchaseOrder::withWorkflowStatus('IN_REVIEW')->count(),
+            
+            'rejected_month' => PurchaseOrder::withWorkflowStatus('REJECTED')
+                ->whereBetween('updated_at', [$currentMonth, $endOfMonth])
+                ->count(),
+                
+            'total_valuation' => PurchaseOrder::whereBetween('created_at', [$currentMonth, $endOfMonth])
+                ->sum('total'),
+        ];
+    }
+
+    public function getCanBulkActionProperty()
+    {
+        if (empty($this->selectedIds)) {
+            return false;
+        }
+
+        // Only allow bulk actions if all selected POs are in IN_REVIEW
+        // We count how many selected POs are NOT in IN_REVIEW
+        $invalidCount = PurchaseOrder::whereIn('id', $this->selectedIds)
+            ->where(function($query) {
+                $query->whereDoesntHave('approvalRequest')
+                    ->orWhereHas('approvalRequest', function($q) {
+                        $q->whereIn('status', ['APPROVED', 'REJECTED', 'CANCELLED', 'DRAFT']);
+                    });
+            })
+            ->count();
+
+        return $invalidCount === 0;
     }
 
     public function getFiltersProperty()

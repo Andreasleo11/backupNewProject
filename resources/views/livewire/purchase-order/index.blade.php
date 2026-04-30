@@ -43,6 +43,54 @@
             </div>
         @endif
     </div>
+    
+    {{-- Contextual Stats Bar --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {{-- Pending Me --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="bi bi-person-check"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending My Action</p>
+                <p class="text-xl font-black text-slate-900">{{ $this->stats['pending_me'] }}</p>
+            </div>
+        </div>
+
+        {{-- Active Reviews --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Currently In Review</p>
+                <p class="text-xl font-black text-slate-900">{{ $this->stats['in_review'] }}</p>
+            </div>
+        </div>
+
+        {{-- Monthly Rejections --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="bi bi-x-octagon"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rejected This Month</p>
+                <p class="text-xl font-black text-slate-900">{{ $this->stats['rejected_month'] }}</p>
+            </div>
+        </div>
+
+        {{-- Monthly Valuation --}}
+        <div class="bg-indigo-600 rounded-2xl shadow-lg p-4 flex items-center gap-4 text-white relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 h-16 w-16 bg-white/10 rounded-full blur-xl"></div>
+            <div class="h-12 w-12 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shadow-inner relative z-10">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[10px] font-black text-indigo-100 uppercase tracking-widest">Monthly Valuation</p>
+                <p class="text-xl font-black">{{ number_format($this->stats['total_valuation'], 0, ',', '.') }}</p>
+            </div>
+        </div>
+    </div>
 
     {{-- Controls Bar --}}
     <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl mb-4"
@@ -99,18 +147,37 @@
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
                     {{-- Bulk Actions --}}
-                    @if(count($selectedIds) > 0)
-                        <div class="flex gap-1">
-                            <button wire:click="approveSelected"
-                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100">
-                                Approve ({{ count($selectedIds) }})
-                            </button>
-                            <button wire:click="$dispatch('open-reject-modal')"
-                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">
-                                Reject ({{ count($selectedIds) }})
-                            </button>
-                        </div>
-                    @endif
+                    @role('director')
+                        @if(count($selectedIds) > 0)
+                            <div class="flex items-center gap-2">
+                                <div class="flex gap-1">
+                                    <button wire:click="approveSelected"
+                                            @if(!$this->canBulkAction) disabled @endif
+                                            class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md transition-all
+                                                {{ $this->canBulkAction 
+                                                    ? 'text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 shadow-sm' 
+                                                    : 'text-slate-400 bg-slate-50 border border-slate-200 cursor-not-allowed opacity-60' }}">
+                                        Approve ({{ count($selectedIds) }})
+                                    </button>
+                                    <button wire:click="$dispatch('open-reject-modal')"
+                                            @if(!$this->canBulkAction) disabled @endif
+                                            class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md transition-all
+                                                {{ $this->canBulkAction 
+                                                    ? 'text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 shadow-sm' 
+                                                    : 'text-slate-400 bg-slate-50 border border-slate-200 cursor-not-allowed opacity-60' }}">
+                                        Reject ({{ count($selectedIds) }})
+                                    </button>
+                                </div>
+
+                                @if(!$this->canBulkAction)
+                                    <div class="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100 animate-pulse">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Selection contains finalized records
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    @endrole
 
                     {{-- Advanced Filters Toggle --}}
                     <button @click="showAdvancedFilters = !showAdvancedFilters"
@@ -258,7 +325,21 @@
                                             class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                 </td>
                                 <td class="px-4 py-2.5">
-                                    <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-slate-900">{{ $po->po_number }}</span>
+                                        <div class="flex items-center gap-1.5 mt-1">
+                                            @if($po->workflow_status === 'IN_REVIEW')
+                                                @php
+                                                    $daysPending = now()->diffInDays($po->approvalRequest?->submitted_at ?? $po->created_at);
+                                                @endphp
+                                                <span class="text-[9px] font-black px-1.5 py-0.5 rounded border 
+                                                    {{ $daysPending > 3 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-50 text-slate-400 border-slate-100' }}">
+                                                    {{ $daysPending }}D AGING
+                                                </span>
+                                            @endif
+                                            <span class="text-[10px] text-slate-400 font-medium">{{ $po->invoice_date?->format('d M Y') ?? '-' }}</span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-2.5">
                                     <span class="font-medium">{{ $po->vendor_name }}</span>
@@ -271,27 +352,39 @@
                                 </td>
                                 <td class="px-4 py-2.5 hidden md:table-cell">
                                     <div class="flex flex-col gap-1.5">
-                                        <span class="inline-flex items-center w-fit px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}"
-                                                title="{{ $po->getStatusEnum()->description() }}">
+                                        <span class="inline-flex items-center w-fit px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}">
                                             @if($isProcessing)
                                                 <i class="bi bi-arrow-repeat animate-spin mr-1.5"></i>
-                                                Processing...
+                                                Processing
                                             @else
                                                 {{ $po->getStatusEnum()->label() }}
-                                                @if($po->getStatusEnum()->isPendingApproval())
-                                                    <span class="ml-1.5 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
-                                                @endif
                                             @endif
                                         </span>
                                         
-                                        @if($po->workflow_status === 'IN_REVIEW' && $po->current_approver)
-                                            <span class="text-[10px] font-medium text-slate-400 italic">
-                                                With: {{ $po->current_approver }}
-                                            </span>
-                                        @elseif($po->approved_date)
-                                            <span class="text-[10px] text-slate-400">
-                                                Approved {{ $po->approved_date->diffForHumans() }}
-                                            </span>
+                                        @if($po->workflow_status === 'IN_REVIEW')
+                                            <div class="flex flex-col gap-1">
+                                                <span class="text-[10px] font-bold text-slate-700 flex items-center gap-1">
+                                                    <i class="bi bi-person-fill text-indigo-400"></i>
+                                                    {{ $po->current_approver }}
+                                                </span>
+                                                @php
+                                                    $totalSteps = $po->approvalRequest?->steps->count() ?? 1;
+                                                    $currentStep = $po->approvalRequest?->current_step ?? 1;
+                                                    $percentage = ($currentStep / $totalSteps) * 100;
+                                                @endphp
+                                                <div class="w-24 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-indigo-500 rounded-full" style="width: {{ $percentage }}%"></div>
+                                                </div>
+                                            </div>
+                                        @elseif($po->workflow_status === 'REJECTED')
+                                            @php
+                                                $reason = $po->approvalRequest?->actions?->where('to_status', 'REJECTED')->first()?->remarks;
+                                            @endphp
+                                            @if($reason)
+                                                <span class="text-[10px] text-rose-500 italic font-medium truncate max-w-[120px]" title="{{ $reason }}">
+                                                    "{{ Str::limit($reason, 20) }}"
+                                                </span>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
@@ -551,14 +644,14 @@
                                             @if($this->canApproveSelectedPO())
                                                 <button wire:click="approvePurchaseOrder"
                                                         class="w-full py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] transition-all">
-                                                    Approve PO
+                                                    Approve & Sign
                                                 </button>
                                             @endif
 
                                             @if($this->canRejectSelectedPO())
                                                 <button wire:click="$dispatch('open-reject-modal')"
                                                         class="w-full py-3 bg-white text-rose-600 border border-rose-200 rounded-2xl font-bold hover:bg-rose-50 transition-all">
-                                                    Reject Order
+                                                    Reject
                                                 </button>
                                             @endif
 
@@ -584,54 +677,76 @@
         </div>
     </template>    
     
-    {{-- Reject Modal --}}
+    {{-- Reject Modal (Unified for Bulk and Single) --}}
     <template x-teleport="body">
         <div x-data="{ open: false, reason: '' }" 
             x-show="open" 
             x-cloak
             x-on:open-reject-modal.window="open = true"
-            x-on:close-reject-modal.window="open = false"
-            class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-                    <div class="absolute inset-0 bg-gray-500 opacity-75" x-on:click="open = false"></div>
+            x-on:close-reject-modal.window="open = false; reason = ''"
+            class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            
+            {{-- Backdrop --}}
+            <div x-show="open" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0"
+                 class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" 
+                 @click="open = false"></div>
+
+            {{-- Modal Content --}}
+            <div x-show="open" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4" 
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                 class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6 text-center overflow-hidden">
+                
+                {{-- Decorative element --}}
+                <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-rose-50 blur-3xl opacity-50"></div>
+                
+                {{-- Icon --}}
+                <div class="relative h-20 w-20 bg-rose-50 rounded-3xl flex items-center justify-center text-rose-500 mx-auto shadow-inner">
+                    <i class="bi bi-x-octagon-fill text-4xl"></i>
                 </div>
-    
-                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                    <div>
-                        <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                Reject Purchase Orders
-                            </h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Are you sure you want to reject {{ count($selectedIds) }} selected purchase order(s)?
-                                    This action cannot be undone.
-                                </p>
-                                <div class="mt-4">
-                                    <label for="reject-reason" class="block text-sm font-medium text-gray-700">
-                                        Rejection Reason
-                                    </label>
-                                    <textarea id="reject-reason" x-model="reason"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            rows="3" placeholder="Enter rejection reason..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                        <button type="button" x-on:click="$wire.rejectSelected(reason); open = false"
-                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                                wire:loading.attr="disabled" wire:target="rejectSelected">
-                            <span wire:loading.remove wire:target="rejectSelected">Reject</span>
-                            <span wire:loading wire:target="rejectSelected">Rejecting...</span>
-                        </button>
-                        <button type="button" x-on:click="open = false"
-                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                                wire:loading.attr="disabled">
-                            Cancel
-                        </button>
-                    </div>
+
+                {{-- Text --}}
+                <div class="space-y-2 relative z-10">
+                    <h3 class="text-2xl font-black text-slate-900">Reject Request</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed px-4">
+                        @if(count($selectedIds) > 0)
+                            You are about to reject <span class="font-black text-rose-600">{{ count($selectedIds) }}</span> selected purchase orders.
+                        @else
+                            You are rejecting PO <span class="font-black text-rose-600">#{{ $selectedPurchaseOrder?->po_number }}</span>.
+                        @endif
+                        This action will notify the requester immediately.
+                    </p>
+                </div>
+
+                {{-- Textarea --}}
+                <div class="relative z-10">
+                    <textarea x-model="reason" 
+                              rows="4" 
+                              class="w-full rounded-2xl border-slate-200 bg-slate-50/50 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300 p-4 transition-all"
+                              placeholder="Describe the reason for rejection... (e.g., incorrect pricing, missing quotation)"></textarea>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex flex-col gap-3 pt-2 relative z-10">
+                    <button @click="$wire.rejectSelected(reason); open = false" 
+                            :disabled="!reason || reason.length < 3"
+                            class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg shadow-rose-200 hover:bg-rose-700 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100 disabled:shadow-none">
+                        Confirm Rejection
+                    </button>
+                    <button @click="open = false" 
+                            class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
