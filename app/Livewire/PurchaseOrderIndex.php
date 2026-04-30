@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\PurchaseOrderStatus;
 use App\Services\PurchaseOrderService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -55,6 +56,12 @@ class PurchaseOrderIndex extends Component
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
+
+    // Modal properties
+    public $showDetailModal = false;
+    public $selectedPurchaseOrder;
+    public $modalLoading = false;
+    public $pdfUrl = null;
 
     public function updatingSearch()
     {
@@ -133,6 +140,157 @@ class PurchaseOrderIndex extends Component
         $this->selectedIds = [];
         $this->selectAll = false;
         $this->resetPage();
+    }
+
+    public function openDetailModal($poId)
+    {
+        $this->showDetailModal = true;
+        $this->modalLoading = true;
+        $this->selectedPurchaseOrder = null; // Reset previous data
+
+        $this->loadPurchaseOrderForModal($poId);
+    }
+
+    private function loadPurchaseOrderForModal($poId)
+    {
+        $this->selectedPurchaseOrder = \App\Models\PurchaseOrder::with([
+            'user',
+            'category',
+            'approvalRequest.steps' => function ($query) {
+                $query->orderBy('sequence');
+            },
+        ])->findOrFail($poId);
+
+        // Generate PDF preview URL if file exists
+        $this->generatePdfUrl();
+
+        $this->modalLoading = false;
+    }
+
+    private function generatePdfUrl()
+    {
+        $this->pdfUrl = null;
+
+        if ($this->selectedPurchaseOrder && $this->selectedPurchaseOrder->filename) {
+            try {
+                $this->pdfUrl = asset('storage/pdfs/' . $this->selectedPurchaseOrder->filename);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Could not generate PDF preview URL', [
+                    'po_id' => $this->selectedPurchaseOrder->id,
+                    'filename' => $this->selectedPurchaseOrder->filename,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    public function downloadPdf()
+    {
+        try {
+            $pdfService = app(\App\Services\PdfProcessingService::class);
+            return $pdfService->download($this->selectedPurchaseOrder->id, auth()->id());
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('PDF download failed', [
+                'po_id' => $this->selectedPurchaseOrder->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+            session()->flash('error', 'Failed to download PDF.');
+        }
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->modalLoading = false;
+        $this->selectedPurchaseOrder = null;
+        $this->pdfUrl = null;
+    }
+
+    public function approvePurchaseOrder()
+    {
+        if (!$this->canApproveSelectedPO()) {
+            session()->flash('error', 'You do not have permission to approve this purchase order.');
+            return;
+        }
+
+        try {
+            $poService = app(\App\Services\PurchaseOrderService::class);
+            $poService->approve($this->selectedPurchaseOrder->id, auth()->id());
+
+            session()->flash('success', 'Purchase order approved successfully.');
+            $this->closeDetailModal();
+            // Refresh the current page data
+            $this->resetPage();
+
+        } catch (\Exception $e) {
+            Log::error('PO approval failed', [
+                'po_id' => $this->selectedPurchaseOrder->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+            session()->flash('error', 'Failed to approve purchase order.');
+        }
+    }
+
+    public function rejectPurchaseOrder($reason = null)
+    {
+        if (!$this->canRejectSelectedPO()) {
+            session()->flash('error', 'You do not have permission to reject this purchase order.');
+            return;
+        }
+
+        if (!$reason) {
+            $reason = 'Rejected by ' . auth()->user()->name;
+        }
+
+        try {
+            $pdfService = app(\App\Services\PdfProcessingService::class);
+            $pdfService->reject($this->selectedPurchaseOrder, $reason);
+
+            session()->flash('success', 'Purchase order rejected successfully.');
+            $this->closeDetailModal();
+            $this->resetPage();
+
+        } catch (\Exception $e) {
+            Log::error('PO rejection failed', [
+                'po_id' => $this->selectedPurchaseOrder->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+            session()->flash('error', 'Failed to reject purchase order.');
+        }
+    }
+
+    public function editPurchaseOrder()
+    {
+        if (!$this->canEditSelectedPO()) {
+            session()->flash('error', 'This purchase order cannot be edited.');
+            return;
+        }
+
+        $this->closeDetailModal();
+        return redirect()->route('po.edit', $this->selectedPurchaseOrder->id);
+    }
+
+    private function canApproveSelectedPO(): bool
+    {
+        return $this->selectedPurchaseOrder &&
+               $this->selectedPurchaseOrder->getStatusEnum()->canApprove() &&
+               auth()->check();
+    }
+
+    private function canRejectSelectedPO(): bool
+    {
+        return $this->selectedPurchaseOrder &&
+               $this->selectedPurchaseOrder->getStatusEnum()->canReject() &&
+               auth()->check();
+    }
+
+    private function canEditSelectedPO(): bool
+    {
+        return $this->selectedPurchaseOrder &&
+               $this->selectedPurchaseOrder->getStatusEnum()->canEdit();
     }
 
     public function exportSelected()

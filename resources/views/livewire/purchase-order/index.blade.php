@@ -300,7 +300,7 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex gap-1">
-                                        <button wire:click="$dispatch('openDetailModal', {{ $po->id }})"
+                                        <button wire:click="openDetailModal({{ $po->id }})"
                                                 class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 transition-colors"
                                                 title="View details">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,8 +404,172 @@
         </div>
     </div>
 
-    {{-- PO Detail Modal --}}
-    <livewire:purchase-order.purchase-order-detail />
+    {{-- Purchase Order Detail Modal --}}
+    <template x-teleport="body">
+        <div x-data="{
+                open: @entangle('showDetailModal').live,
+                loading: @entangle('modalLoading').live
+            }"
+             x-show="open"
+             x-cloak
+             class="fixed inset-0 z-50 overflow-y-auto"
+             x-on:keydown.escape.window="$wire.closeDetailModal()">
+
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75" x-on:click="$wire.closeDetailModal()"></div>
+            </div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full" x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                <div class="max-h-screen overflow-y-auto">
+                    {{-- Header --}}
+                    <div class="bg-white px-4 py-5 sm:px-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Purchase Order #{{ $selectedPurchaseOrder?->po_number ?? 'N/A' }}
+                                </h3>
+                                @if($selectedPurchaseOrder)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $selectedPurchaseOrder->getStatusEnum()->cssClass() }} ml-3">
+                                        {{ $selectedPurchaseOrder->getStatusEnum()->label() }}
+                                    </span>
+                                @endif
+                            </div>
+                            <button wire:click="closeDetailModal" class="text-gray-400 hover:text-gray-600">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Content --}}
+                    <div class="px-4 py-5 sm:p-6">
+                        {{-- Loading State --}}
+                        <div x-show="loading" x-transition class="flex items-center justify-center py-12">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                                <p class="text-sm text-gray-600">Loading purchase order details...</p>
+                            </div>
+                        </div>
+
+                        {{-- Purchase Order Content --}}
+                        <div x-show="!loading" x-transition>
+                            @if($selectedPurchaseOrder)
+                                <div class="space-y-6">
+                                    {{-- Basic Information --}}
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <h4 class="text-sm font-medium text-gray-900 mb-3">Basic Information</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">PO Number</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->po_number }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Vendor</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->vendor_name }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invoice Date</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->invoice_date ? $selectedPurchaseOrder->invoice_date->format('M d, Y') : '-' }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invoice Number</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->invoice_number ?: '-' }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Amount</dt>
+                                                <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $selectedPurchaseOrder->total ? 'Rp ' . number_format($selectedPurchaseOrder->total, 0, ',', '.') : '-' }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Payment Date</dt>
+                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->tanggal_pembayaran ? $selectedPurchaseOrder->tanggal_pembayaran->format('M d, Y') : '-' }}</dd>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Approval Information --}}
+                                    @if($selectedPurchaseOrder->approvalRequest)
+                                        <div class="bg-blue-50 rounded-lg p-4">
+                                            <h4 class="text-sm font-medium text-gray-900 mb-3">Approval Status</h4>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-sm text-gray-600">Current Status:</span>
+                                                    <span class="text-sm font-medium">{{ $selectedPurchaseOrder->workflow_status }}</span>
+                                                </div>
+                                                @if($selectedPurchaseOrder->workflow_step)
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-sm text-gray-600">Current Approver:</span>
+                                                        <span class="text-sm font-medium">{{ $selectedPurchaseOrder->workflow_step }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- PDF Viewer --}}
+                                    @if($pdfUrl)
+                                        <div class="bg-gray-50 rounded-lg p-4">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h4 class="text-sm font-medium text-gray-900">Purchase Order PDF</h4>
+                                                <button wire:click="downloadPdf"
+                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                    Download
+                                                </button>
+                                            </div>
+                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                                <iframe src="{{ $pdfUrl }}"
+                                                        class="w-full h-96 border-0"
+                                                        title="Purchase Order PDF">
+                                                    <p class="p-4 text-center text-gray-500">
+                                                        Your browser does not support PDFs.
+                                                        <a href="{{ $pdfUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">Click here to view the PDF</a>
+                                                    </p>
+                                                </iframe>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Actions --}}
+                                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                                        @if($this->canApproveSelectedPO())
+                                            <button wire:click="approvePurchaseOrder"
+                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                Approve
+                                            </button>
+                                        @endif
+
+                                        @if($this->canRejectSelectedPO())
+                                            <button wire:click="$dispatch('open-reject-modal')"
+                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                Reject
+                                            </button>
+                                        @endif
+
+                                        @if($this->canEditSelectedPO())
+                                            <button wire:click="editPurchaseOrder"
+                                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                Edit
+                                            </button>
+                                        @endif
+
+                                        <button wire:click="closeDetailModal"
+                                                type="button"
+                                                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {{-- Reject Modal --}}
     <div x-data="{ open: false }" x-show="open" x-cloak
@@ -435,10 +599,11 @@
                                 <textarea id="reject-reason" x-data="{ reason: '' }" x-model="reason"
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                         rows="3" placeholder="Enter rejection reason..."></textarea>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    </template>
                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                     <button type="button" x-on:click="rejectSelected(reason); open = false"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
