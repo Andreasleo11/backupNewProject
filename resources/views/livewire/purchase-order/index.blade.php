@@ -275,7 +275,7 @@
                                                 title="{{ $po->getStatusEnum()->description() }}">
                                             @if($isProcessing)
                                                 <i class="bi bi-arrow-repeat animate-spin mr-1.5"></i>
-                                                Signing...
+                                                Processing...
                                             @else
                                                 {{ $po->getStatusEnum()->label() }}
                                                 @if($po->getStatusEnum()->isPendingApproval())

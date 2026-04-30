@@ -3,6 +3,7 @@
 namespace App\Livewire\PurchaseOrder;
 
 use App\Jobs\PurchaseOrder\ProcessPurchaseOrderApprovalJob;
+use App\Jobs\PurchaseOrder\ProcessPurchaseOrderRejectionJob;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderService;
 use Illuminate\Support\Facades\Log;
@@ -464,21 +465,31 @@ class PurchaseOrderIndex extends Component
         }
 
         try {
-            $poService = app(PurchaseOrderService::class);
-            $poService->rejectAll($this->selectedIds, auth()->id(), $reason);
+            $count = count($this->selectedIds);
+            
+            foreach ($this->selectedIds as $id) {
+                $po = PurchaseOrder::find($id);
+                if ($po && $po->getStatusEnum()->canReject()) {
+                    // Add to processing list for UI feedback
+                    $this->processingIds[] = $id;
+                    
+                    // Dispatch the background job
+                    ProcessPurchaseOrderRejectionJob::dispatch($po, auth()->id(), $reason);
+                }
+            }
 
-            session()->flash('success', count($this->selectedIds) . ' purchase orders rejected successfully.');
+            session()->flash('info', "Rejecting {$count} purchase orders in the background...");
+            
             $this->selectedIds = [];
             $this->selectAll = false;
-            $this->resetPage();
 
         } catch (\Exception $e) {
-            Log::error('Bulk rejection failed', [
+            Log::error('Bulk rejection dispatch failed', [
                 'selected_ids' => $this->selectedIds,
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to reject selected purchase orders: ' . $e->getMessage());
+            session()->flash('error', 'Failed to start bulk rejection: ' . $e->getMessage());
         }
     }
 
