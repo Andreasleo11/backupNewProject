@@ -48,52 +48,55 @@
             {{-- Main Content: Timeline & PDF --}}
             <div class="lg:col-span-8 space-y-6">
                 
-                {{-- Activity Feed --}}
                 @role('super-admin')
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                            <i class="bi bi-clock-history text-indigo-500"></i>
-                            Activity History
-                        </h2>
-                        <span class="text-[10px] font-bold text-slate-400">Real-time Audit Trail</span>
-                    </div>
-                    <div class="p-6">
-                        <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-slate-100 before:to-transparent">
-                            @forelse($activities as $activity)
-                                <div class="relative flex items-start group">
-                                    <div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white ring-4 ring-slate-50 transition-all group-hover:scale-110 group-hover:shadow-md">
-                                        <i class="bi {{ $activity->icon }} text-{{ $activity->color }}-500 text-lg"></i>
-                                    </div>
-                                    <div class="ml-16">
-                                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                                            <span class="text-sm font-black text-slate-800">{{ $activity->label }}</span>
-                                            <time class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
-                                                <i class="bi bi-calendar3"></i>
-                                                {{ \Carbon\Carbon::parse($activity->date)->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }}
-                                            </time>
+                    {{-- Activity Feed --}}
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden" x-data="{ showHistory: false }">
+                        <div @click="showHistory = !showHistory" class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between cursor-pointer group/header hover:bg-slate-100/80 transition-all">
+                            <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <i class="bi bi-clock-history text-indigo-500"></i>
+                                Activity History
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] font-bold text-slate-400 group-hover/header:text-slate-600 transition-colors" x-show="!showHistory">Click to expand audit trail</span>
+                                <i class="bi bi-chevron-down text-slate-400 transition-transform duration-300" :class="showHistory ? 'rotate-180' : ''"></i>
+                            </div>
+                        </div>
+                        <div class="p-6 border-t border-slate-50" x-show="showHistory" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
+                            <div class="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-slate-100 before:to-transparent">
+                                @forelse($activities as $activity)
+                                    <div class="relative flex items-start group">
+                                        <div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white ring-4 ring-slate-50 transition-all group-hover:scale-110 group-hover:shadow-md">
+                                            <i class="bi {{ $activity->icon }} text-{{ $activity->color }}-500 text-lg"></i>
                                         </div>
-                                        <p class="text-xs text-slate-500 mt-1">
-                                            Performed by <span class="font-bold text-slate-900">{{ $activity->user }}</span>
-                                        </p>
-                                        @if(isset($activity->remarks) && $activity->remarks)
-                                            <div class="mt-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed italic shadow-inner">
-                                                "{{ $activity->remarks }}"
+                                        <div class="ml-16">
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                                                <span class="text-sm font-black text-slate-800">{{ $activity->label }}</span>
+                                                <time class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                    <i class="bi bi-calendar3"></i>
+                                                    {{ \Carbon\Carbon::parse($activity->date)->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }}
+                                                </time>
                                             </div>
-                                        @endif
+                                            <p class="text-xs text-slate-500 mt-1">
+                                                Performed by <span class="font-bold text-slate-900">{{ $activity->user }}</span>
+                                            </p>
+                                            @if(isset($activity->remarks) && $activity->remarks)
+                                                <div class="mt-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed italic shadow-inner">
+                                                    "{{ $activity->remarks }}"
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
-                            @empty
-                                <div class="text-center py-10">
-                                    <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <i class="bi bi-inbox text-slate-300 text-2xl"></i>
+                                @empty
+                                    <div class="text-center py-10">
+                                        <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="bi bi-inbox text-slate-300 text-2xl"></i>
+                                        </div>
+                                        <p class="text-slate-400 text-sm font-medium">No activity history found.</p>
                                     </div>
-                                    <p class="text-slate-400 text-sm font-medium">No activity history found.</p>
-                                </div>
-                            @endforelse
+                                @endforelse
+                            </div>
                         </div>
                     </div>
-                </div>
                 @endrole
 
                 {{-- PDF View --}}
