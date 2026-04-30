@@ -36,6 +36,11 @@ class ApprovalRequest extends Model
         return $this->morphTo();
     }
 
+    public function rule(): BelongsTo
+    {
+        return $this->belongsTo(RuleTemplate::class, 'rule_template_id');
+    }
+
     public function steps(): HasMany
     {
         return $this->hasMany(ApprovalStep::class)->orderBy('sequence');
