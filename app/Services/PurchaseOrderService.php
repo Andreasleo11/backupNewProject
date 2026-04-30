@@ -208,6 +208,41 @@ class PurchaseOrderService
      *
      * @throws \Exception
      */
+    /**
+     * Approve multiple purchase orders
+     *
+     * @param array $ids Array of PO IDs
+     * @param int $userId User performing the approval
+     *
+     * @throws \Exception
+     */
+    public function approveAll(array $ids, int $userId): void
+    {
+        try {
+            DB::transaction(function () use ($ids, $userId) {
+                foreach ($ids as $id) {
+                    $this->approve($id, $userId);
+                }
+            });
+        } catch (\Exception $e) {
+            Log::error('Failed to approve multiple purchase orders', [
+                'ids' => $ids,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Reject a purchase order
+     *
+     * @param int $id Purchase order ID
+     * @param int $userId User performing the rejection
+     * @param string $reason Rejection reason
+     *
+     * @throws \Exception
+     */
     public function reject(int $id, int $userId, string $reason): void
     {
         try {
@@ -227,6 +262,64 @@ class PurchaseOrderService
                 'po_id' => $id,
                 'user_id' => $userId,
                 'reason' => $reason,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Reject multiple purchase orders
+     *
+     * @param array $ids Array of PO IDs
+     * @param int $userId User performing the rejection
+     * @param string $reason Rejection reason
+     *
+     * @throws \Exception
+     */
+    public function rejectAll(array $ids, int $userId, string $reason): void
+    {
+        try {
+            DB::transaction(function () use ($ids, $userId, $reason) {
+                foreach ($ids as $id) {
+                    $this->reject($id, $userId, $reason);
+                }
+            });
+        } catch (\Exception $e) {
+            Log::error('Failed to reject multiple purchase orders', [
+                'ids' => $ids,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Cancel a purchase order
+     *
+     * @param int $id Purchase order ID
+     * @param string $reason Cancellation reason
+     *
+     * @throws \Exception
+     */
+    public function cancel(int $id, string $reason): void
+    {
+        try {
+            $po = PurchaseOrder::findOrFail($id);
+
+            // Use approval engine to cancel
+            $this->approvals->cancel($po, auth()->id(), $reason);
+
+            Log::info('Purchase order cancelled via approval engine', [
+                'po_id' => $po->id,
+                'po_number' => $po->po_number,
+                'cancelled_by' => auth()->id(),
+                'reason' => $reason,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel purchase order', [
+                'po_id' => $id,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
@@ -307,6 +400,7 @@ class PurchaseOrderService
                 'topVendors' => $topVendors,
                 'vendorTotals' => $vendorTotals,
                 'availableMonths' => $availableMonths,
+                'selectedMonth' => $selectedMonth,
                 'statusCounts' => $statusCounts,
                 'categoryChartData' => $categoryChartData,
             ];

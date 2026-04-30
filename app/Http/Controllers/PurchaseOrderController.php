@@ -37,55 +37,37 @@ class PurchaseOrderController extends Controller
 
     public function approveSelected(Request $request)
     {
-        if (auth()->user()->hasRole('director')) {
+        try {
             $ids = $request->input('ids');
 
-            foreach ($ids as $id) {
-                try {
-                    $po = PurchaseOrder::findOrFail($id);
-                    $this->approvals->approve($po, auth()->id());
-                } catch (\Exception $e) {
-                    Log::error('Failed to approve PO in batch', [
-                        'po_id' => $id,
-                        'error' => $e->getMessage(),
-                    ]);
-                    // Continue with other POs
-                }
+            if (! $ids || ! is_array($ids)) {
+                return response()->json(['message' => 'Invalid request: No POs selected.'], 400);
             }
 
-            return response()->json(['message' => 'Selected purchase orders approval processed.']);
-        }
+            $this->poService->approveAll($ids, auth()->id());
 
-        return response()->json(['message' => 'No permission granted.']);
+            return response()->json(['message' => 'Selected purchase orders approval processed.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to approve selection: ' . $e->getMessage()], 500);
+        }
     }
 
     public function rejectSelected(Request $request)
     {
-        if (auth()->user()->hasRole('director')) {
+        try {
             $ids = $request->input('ids');
             $reason = $request->input('reason');
 
-            if (! $ids || ! $reason) {
-                return response()->json(['message' => 'Invalid request.'], 400);
+            if (! $ids || ! is_array($ids) || ! $reason) {
+                return response()->json(['message' => 'Invalid request: IDs and reason are required.'], 400);
             }
 
-            foreach ($ids as $id) {
-                try {
-                    $po = PurchaseOrder::findOrFail($id);
-                    $this->approvals->reject($po, auth()->id(), $reason);
-                } catch (\Exception $e) {
-                    Log::error('Failed to reject PO in batch', [
-                        'po_id' => $id,
-                        'error' => $e->getMessage(),
-                    ]);
-                    // Continue with other POs
-                }
-            }
+            $this->poService->rejectAll($ids, auth()->id(), $reason);
 
             return response()->json(['message' => 'Selected purchase orders rejection processed.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to reject selection: ' . $e->getMessage()], 500);
         }
-
-        return response()->json(['message' => 'No permission granted.']);
     }
 
     public function create(Request $request)
@@ -245,73 +227,45 @@ class PurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-            $po = PurchaseOrder::find($id);
-
-            if (! $po) {
-                return redirect()->route('po.index')->with('error', 'PO not found!');
-            }
-
-            $po->delete();
+            $this->poService->delete($id);
 
             return redirect()->route('po.index')->with('success', 'PO deleted successfully!');
         } catch (\Exception $e) {
-            // Log the exception message for debugging
             Log::error("Error deleting PO with ID {$id}: " . $e->getMessage());
 
             return redirect()
                 ->route('po.index')
                 ->with(
                     'error',
-                    'An error occurred while trying to delete the PO. Please try again later.',
+                    'An error occurred while trying to delete the PO: ' . $e->getMessage(),
                 );
         }
     }
 
     public function rejectAll(Request $request)
     {
-        $ids = $request->input('ids');
-        $reason = $request->input('reason', 'No reason provided');
+        try {
+            $ids = $request->input('ids');
+            $reason = $request->input('reason', 'No reason provided');
 
-        // Fetch all requested PO records and separate by workflow status
-        $approvedPOs = PurchaseOrder::whereIn('id', $ids)
-            ->whereHas('approvalRequest', function ($query) {
-                $query->where('status', 'APPROVED');
-            })
-            ->pluck('po_number');
-        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)
-            ->whereHas('approvalRequest', function ($query) {
-                $query->where('status', 'REJECTED');
-            })
-            ->pluck('po_number');
-
-        // If any approved or rejected POs are found, return an error
-        if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
-            $message = 'Cannot reject selected POs. ';
-
-            if ($approvedPOs->isNotEmpty()) {
-                $message .=
-                    'The following PO Numbers are already approved: ' .
-                    $approvedPOs->join(', ') .
-                    '. ';
+            if (! $ids || ! is_array($ids)) {
+                return response()->json(['message' => 'Invalid request: No POs selected.'], 400);
             }
 
-            if ($rejectedPOs->isNotEmpty()) {
-                $message .=
-                    'The following PO Numbers are already rejected: ' .
-                    $rejectedPOs->join(', ') .
-                    '.';
-            }
+            // Use the service to reject all selected POs
+            $this->poService->rejectAll($ids, auth()->id(), $reason);
 
-            return response()->json(['message' => $message], 400);
+            return response()->json(['message' => 'All selected purchase orders rejection processed.']);
+        } catch (\Exception $e) {
+            Log::error('Bulk rejection failed in controller', [
+                'ids' => $request->input('ids'),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to reject purchase orders: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Proceed to reject POs if no conflicts
-        PurchaseOrder::whereIn('id', $ids)->update([
-            'status' => 3,
-            'reason' => $reason,
-        ]);
-
-        return response()->json(['message' => 'All selected POs rejected successfully!']);
     }
 
     public function exportExcel(Request $request)
@@ -387,127 +341,33 @@ class PurchaseOrderController extends Controller
 
     public function dashboard(Request $request)
     {
-        // Determine the current month in 'YYYY-MM' format
-        $currentMonth = now()->format('Y-m');
+        try {
+            $month = $request->get('month');
+            $data = $this->poService->getDashboardData($month);
 
-        // Get the selected month from the request (default to the current month)
-        $selectedMonth = $request->get('month', $currentMonth);
-
-        // Query for vendor totals (distinct vendors with their totals)
-        $vendorTotals = PurchaseOrder::selectRaw(
-            'vendor_name, COUNT(id) as po_count, SUM(total) as total',
-        )
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->get();
-
-        // Fetch top 5 vendors
-        $topVendors = PurchaseOrder::selectRaw('vendor_name')
-            ->selectRaw('SUM(total) as total')
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->take(5)
-            ->get();
-
-        // Sum of totals for each month (for chart)
-        $monthlyTotals = PurchaseOrder::selectRaw(
-            "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
-        )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        // List of available months for the filter dropdown
-        $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
-            ->distinct()
-            ->orderByDesc('month')
-            ->pluck('month');
-
-        // Fetch counts for approved, waiting, and rejected using query scopes
-        $statusCounts = [
-            'approved' => PurchaseOrder::approved()->count(),
-            'waiting' => PurchaseOrder::waiting()->count(),
-            'rejected' => PurchaseOrder::rejected()->count(),
-            'canceled' => PurchaseOrder::canceled()->count(),
-        ];
-
-        // Fetch Purchase Order counts grouped by category
-        $poByCategory = PurchaseOrder::selectRaw('purchase_order_category_id, COUNT(*) as count')
-            ->groupBy('purchase_order_category_id')
-            ->get();
-
-        // Fetch category names for better readability
-        $categories = PurchaseOrderCategory::whereIn(
-            'id',
-            $poByCategory->pluck('purchase_order_category_id'),
-        )->pluck('name', 'id'); // Returns [id => name]
-
-        // Format data for chart
-        $categoryChartData = $poByCategory->map(function ($po) use ($categories) {
-            return [
-                'label' => $categories[$po->purchase_order_category_id] ?? 'Unknown',
-                'count' => $po->count,
-            ];
-        });
-
-        return view(
-            'purchase_order.dashboard',
-            compact(
-                'monthlyTotals',
-                'topVendors',
-                'vendorTotals',
-                'availableMonths',
-                'selectedMonth',
-                'statusCounts',
-                'categoryChartData',
-            ),
-        );
+            return view('purchase_order.dashboard', $data);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load dashboard: ' . $e->getMessage());
+        }
     }
 
     public function filter(Request $request)
     {
-        $selectedMonth = $request->get('month');
-        // Base query for purchase orders filtered by the selected month
-        $query = PurchaseOrder::query();
+        try {
+            $month = $request->get('month');
+            $data = $this->poService->getDashboardData($month);
 
-        if ($selectedMonth) {
-            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+            return response()->json([
+                'chartData' => [
+                    'labels' => $data['monthlyTotals']->pluck('month'),
+                    'totals' => $data['monthlyTotals']->pluck('total'),
+                ],
+                'topVendors' => $data['topVendors'],
+                'vendorTotals' => $data['vendorTotals'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        // Query for vendor totals (all vendors with their total amounts)
-        $vendorTotals = $query
-            ->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->get();
-
-        // Fetch top 5 vendors
-        $topVendors = $query
-            ->select('vendor_name')
-            ->selectRaw('SUM(total) as total')
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->take(5)
-            ->get();
-
-        // Data for the chart
-        $monthlyTotals = PurchaseOrder::selectRaw(
-            "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
-        )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        return response()->json([
-            'chartData' => [
-                'labels' => $monthlyTotals->pluck('month'),
-                'totals' => $monthlyTotals->pluck('total'),
-            ],
-            'topVendors' => $topVendors,
-            'vendorTotals' => $vendorTotals,
-        ]);
     }
 
     public function vendorMonthlyTotals(Request $request)
@@ -518,7 +378,7 @@ class PurchaseOrderController extends Controller
             return response()->json(['error' => 'Vendor name is required'], 400);
         }
 
-        // Query for monthly totals for the specified vendor
+        // This could also be moved to the service if complex, but keeping simple for now
         $monthlyTotals = PurchaseOrder::selectRaw(
             "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
         )
@@ -532,28 +392,27 @@ class PurchaseOrderController extends Controller
 
     public function getVendorDetails(Request $request)
     {
-        $vendorName = $request->query('vendor');
-        $selectedMonth = $request->query('month'); // Format: 'YYYY-MM'
+        try {
+            $vendorName = $request->query('vendor');
+            $selectedMonth = $request->query('month');
 
-        $purchaseOrders = PurchaseOrder::where('vendor_name', $vendorName)
-            ->select('id', 'po_number', 'invoice_date', 'total', 'status')
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]) // Filter by selected month
-            ->orderBy('invoice_date', 'desc')
-            ->orderByDesc('total')
-            ->get();
+            $purchaseOrders = $this->poService->getVendorDetails($vendorName, $selectedMonth);
 
-        return response()->json($purchaseOrders);
+            return response()->json($purchaseOrders);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function cancel(Request $request, $id)
     {
-        $cancelReason = $request->description;
-        PurchaseOrder::find($id)->update([
-            'reason' => $cancelReason,
-            'status' => 4,
-            'approved_date' => null,
-        ]);
+        try {
+            $reason = $request->input('description', 'No reason provided');
+            $this->poService->cancel($id, $reason);
 
-        return redirect()->back()->with('success', 'Purchase Order cancelled successfully!');
+            return redirect()->back()->with('success', 'Purchase Order cancelled successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to cancel PO: ' . $e->getMessage());
+        }
     }
 }
