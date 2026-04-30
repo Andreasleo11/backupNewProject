@@ -302,12 +302,19 @@
                                     <div class="flex gap-1">
                                         <button wire:click="openDetailModal({{ $po->id }})"
                                                 class="inline-flex items-center px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 transition-colors"
-                                                title="View details">
+                                                title="Quick view">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                             </svg>
                                         </button>
+                                        <a href="{{ route('po.view', $po->id) }}"
+                                           class="inline-flex items-center px-2 py-1 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition-colors"
+                                           title="Full page view">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                        </a>
                                         @if($po->getStatusEnum()->canEdit())
                                             <a href="{{ route('po.edit', $po->id) }}"
                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition-colors"
@@ -555,6 +562,11 @@
                                                 Edit
                                             </button>
                                         @endif
+
+                                        <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}"
+                                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Full Page
+                                        </a>
 
                                         <button wire:click="closeDetailModal"
                                                 type="button"

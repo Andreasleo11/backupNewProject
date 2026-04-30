@@ -1,7 +1,7 @@
 @extends('new.layouts.app')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         {{-- Header --}}
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -9,14 +9,6 @@
                 <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
                     Purchase Order Detail
                 </h1>
-                <button type="button" @click="$dispatch('open-upload-modal')"
-                            class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md">
-                        <i class="bi bi-cloud-upload text-lg text-slate-400 group-hover:text-indigo-500"></i>
-                        Upload Files
-                </button>
-                @push('modals')
-            @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
-        @endpush
                 <nav class="mt-2" aria-label="Breadcrumb">
                     <ol class="flex items-center gap-1 text-sm text-slate-500">
                         <li>
@@ -82,14 +74,20 @@
                         </p>
                     @endif
 
-                    <div class="mt-2">
+                    <div class="mt-2 flex flex-wrap gap-2 items-center">
                         {{-- status badge partial --}}
                         @include('partials.po-status', ['po' => $purchaseOrder])
+
+                        @if($purchaseOrder->workflow_status === 'IN_REVIEW' && $purchaseOrder->current_approver)
+                            <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                Pending: {{ $purchaseOrder->current_approver }}
+                            </span>
+                        @endif
                     </div>
                 </div>
 
                 {{-- Director actions --}}
-                @if ($purchaseOrder->status === 1 && $director)
+                @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
                     <div x-data="poApproval({
                         signUrl: '{{ route('po.sign') }}',
                         rejectUrl: '{{ route('po.reject') }}',
@@ -117,69 +115,73 @@
                         </div>
 
                         {{-- Sign confirm modal --}}
-                        <div x-show="showSignConfirm" x-cloak
-                            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-                            <div @click.outside="showSignConfirm=false"
-                                class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
-                                <h3 class="text-sm font-semibold text-slate-900">
-                                    Confirm Signature
-                                </h3>
-                                <p class="text-sm text-slate-600">
-                                    This will sign and approve the current purchase order PDF.
-                                    You can review the document in the preview section below before confirming.
-                                </p>
-                                <div class="flex justify-end gap-2 pt-2">
-                                    <button type="button" @click="showSignConfirm=false"
-                                        class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                                        :disabled="loading">
-                                        Cancel
-                                    </button>
-                                    <button type="button" @click="submitSign"
-                                        class="inline-flex items-center rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                        :disabled="loading">
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Reject modal --}}
-                        <div x-show="showReject" x-cloak
-                            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-                            <div @click.outside="!loading && (showReject=false)"
-                                class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
-                                <h3 class="text-sm font-semibold text-slate-900">
-                                    Reject Purchase Order
-                                </h3>
-                                <p class="text-sm text-slate-600">
-                                    Please provide a clear reason for rejecting this PO. The reason will be stored with the
-                                    record.
-                                </p>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                                        Rejection reason
-                                    </label>
-                                    <textarea x-model="reason" rows="3"
-                                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-red-500 focus:ring-red-500"
-                                        placeholder="Explain why this purchase order is rejected..."></textarea>
-                                </div>
-                                <div class="flex justify-between items-center pt-2">
-                                    <p class="text-xs text-slate-400" x-text="reason.length + ' / 500'"></p>
-                                    <div class="flex gap-2">
-                                        <button type="button" @click="showReject=false"
+                        <template x-teleport="body">
+                            <div x-show="showSignConfirm" x-cloak
+                                class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
+                                <div @click.outside="showSignConfirm=false"
+                                    class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
+                                    <h3 class="text-sm font-semibold text-slate-900">
+                                        Confirm Signature
+                                    </h3>
+                                    <p class="text-sm text-slate-600">
+                                        This will sign and approve the current purchase order PDF.
+                                        You can review the document in the preview section below before confirming.
+                                    </p>
+                                    <div class="flex justify-end gap-2 pt-2">
+                                        <button type="button" @click="showSignConfirm=false"
                                             class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                                             :disabled="loading">
                                             Cancel
                                         </button>
-                                        <button type="button" @click="submitReject"
-                                            class="inline-flex items-center rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                            :disabled="loading || !reason.trim()">
-                                            Reject PO
+                                        <button type="button" @click="submitSign"
+                                            class="inline-flex items-center rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                            :disabled="loading">
+                                            Confirm
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
+
+                        {{-- Reject modal --}}
+                        <template x-teleport="body">
+                            <div x-show="showReject" x-cloak
+                                class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
+                                <div @click.outside="!loading && (showReject=false)"
+                                    class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
+                                    <h3 class="text-sm font-semibold text-slate-900">
+                                        Reject Purchase Order
+                                    </h3>
+                                    <p class="text-sm text-slate-600">
+                                        Please provide a clear reason for rejecting this PO. The reason will be stored with the
+                                        record.
+                                    </p>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-700 mb-1">
+                                            Rejection reason
+                                        </label>
+                                        <textarea x-model="reason" rows="3"
+                                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-red-500 focus:ring-red-500"
+                                            placeholder="Explain why this purchase order is rejected..."></textarea>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-2">
+                                        <p class="text-xs text-slate-400" x-text="reason.length + ' / 500'"></p>
+                                        <div class="flex gap-2">
+                                            <button type="button" @click="showReject=false"
+                                                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                                :disabled="loading">
+                                                Cancel
+                                            </button>
+                                            <button type="button" @click="submitReject"
+                                                class="inline-flex items-center rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                                :disabled="loading || !reason.trim()">
+                                                Reject PO
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 @endif
             </div>
@@ -237,36 +239,38 @@
             </div>
         </div>
 
-        {{-- Upload section (non-director) --}}
+        {{-- Upload controls --}}
         @if (!$director)
-            <div class="container mb-4 space-y-4" x-data="{ openUploadFiles: false }">
-                @if ($user->id == $purchaseOrder->creator_id || $user->specification?->name === 'PURCHASER' || $user->is_head === 1)
+            <div class="container mb-4 space-y-4">
+                @if ($user->id == $purchaseOrder->creator_id || $user->hasRole('purchaser'))
                     <div class="flex justify-end">
-                        <button type="button" @click="openUploadFiles = true"
+                        <button type="button" @click="$dispatch('open-upload-modal')"
                             class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
                             Upload related files
                         </button>
                     </div>
 
-                    {{-- Modal needs to live inside the same x-data scope to see openUploadFiles --}}
-                    @include('partials.upload-files-modal', [
-                        'doc_id' => $purchaseOrder->po_number,
-                    ])
+                    @push('modals')
+                        @include('partials.upload-files-modal', [
+                            'doc_id' => $purchaseOrder->po_number,
+                        ])
+                    @endpush
                 @endif
 
-                <section aria-label="Related Documents">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                        @include('partials.file-attachments', [
-                            'files' => $files,
-                            'showDelete' =>
-                                $user->id === $purchaseOrder->creator_id ||
-                                $user->specification?->name === 'PURCHASER',
-                            'title' => 'Related Documents',
-                        ])
-                    </div>
-                </section>
             </div>
         @endif
+
+        <section aria-label="Related Documents">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                @include('partials.file-attachments', [
+                    'files' => $files,
+                    'showDelete' =>
+                        $user->id === $purchaseOrder->creator_id ||
+                        $user->hasRole('purchaser'),
+                    'title' => 'Related Documents',
+                ])
+            </div>
+        </section>
 
 
         {{-- Revision history --}}

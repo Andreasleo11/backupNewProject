@@ -84,13 +84,14 @@ enum PurchaseOrderStatus: int
     public function cssClass(): string
     {
         return match ($this) {
-            self::PENDING_APPROVAL => 'bg-yellow-100 text-yellow-800',
-            self::APPROVED => 'bg-green-100 text-green-800',
-            self::REJECTED => 'bg-red-100 text-red-800',
-            self::CANCELLED => 'bg-orange-100 text-orange-800',
-            self::DRAFT => 'bg-gray-100 text-gray-800',
+            self::PENDING_APPROVAL => 'bg-amber-100 text-amber-800 border-amber-200',
+            self::APPROVED => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            self::REJECTED => 'bg-rose-100 text-rose-800 border-rose-200',
+            self::CANCELLED => 'bg-orange-100 text-orange-800 border-orange-200',
+            self::DRAFT => 'bg-slate-100 text-slate-800 border-slate-200',
         };
     }
+
 
     /**
      * Create enum instance from legacy integer value

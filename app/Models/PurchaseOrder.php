@@ -139,7 +139,7 @@ class PurchaseOrder extends Model implements Approvable
 
     public function getApprovableShowUrl(): string
     {
-        return route('po.show', $this->id);
+        return route('po.view', $this->id);
     }
 
     public function getApprovableDepartmentName(): ?string

@@ -149,18 +149,22 @@ class PurchaseOrderController extends Controller
     public function sign(Request $request)
     {
         try {
-            $id = $request->input('id');
-            $po = PurchaseOrder::findOrFail($id);
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+                $id = $request->input('id');
+                $po = PurchaseOrder::findOrFail($id);
 
-            // Use the PDF service to sign the document
-            $this->pdfService->sign($po, auth()->id());
+                // Process approval via approval engine first
+                // This ensures if approval logic fails, the PDF is never signed
+                $this->approvals->approve($po, auth()->id(), 'Signed and approved via PDF signature');
 
-            // Process approval via approval engine
-            $this->approvals->approve($po, auth()->id(), 'Signed and approved via PDF signature');
+                // Use the PDF service to sign the document
+                // This updates the filename and saves the PO record
+                $this->pdfService->sign($po, auth()->id());
 
-            return response()->json(['message' => 'PDF signed and approved successfully!']);
+                return response()->json(['message' => 'PDF signed and approved successfully!']);
+            });
         } catch (\Exception $e) {
-            Log::error('PDF signing failed in controller', [
+            Log::error('PDF signing/approval failed in controller', [
                 'po_id' => $request->input('id'),
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
