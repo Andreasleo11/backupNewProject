@@ -11,6 +11,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Notifications\PurchaseOrderProcessFailedNotification;
+use App\Models\User;
 
 class ProcessPurchaseOrderApprovalJob implements ShouldQueue
 {
@@ -51,13 +54,27 @@ class ProcessPurchaseOrderApprovalJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            
             Log::error('Async PO approval failed', [
                 'po_id' => $this->purchaseOrder->id,
                 'user_id' => $this->userId,
-                'error' => $e->getMessage()
+                'error' => $errorMessage
             ]);
+
+            // 1. Store error in cache for real-time polling feedback
+            Cache::put("po_process_error_{$this->purchaseOrder->id}", $errorMessage, now()->addMinutes(5));
+
+            // 2. Notify the user via database notification
+            $user = User::find($this->userId);
+            if ($user) {
+                $user->notify(new PurchaseOrderProcessFailedNotification(
+                    $this->purchaseOrder->po_number,
+                    'Approval',
+                    $errorMessage
+                ));
+            }
             
-            // Re-throw to allow for job retries if configured
             throw $e;
         }
     }

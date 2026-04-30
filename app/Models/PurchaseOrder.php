@@ -138,7 +138,7 @@ class PurchaseOrder extends Model implements Approvable
 
     public function getApprovableIdentifier(): string
     {
-        return "PO/{$this->po_number}";
+        return $this->id;
     }
 
     public function getApprovableShowUrl(): string

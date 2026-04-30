@@ -7,6 +7,7 @@ use App\Jobs\PurchaseOrder\ProcessPurchaseOrderRejectionJob;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -434,7 +435,25 @@ class PurchaseOrderIndex extends Component
             return;
         }
 
-        // Check if these POs are still in IN_REVIEW status
+        // 1. Check for background processing errors
+        foreach ($this->processingIds as $key => $id) {
+            if ($error = Cache::get("po_process_error_{$id}")) {
+                Cache::forget("po_process_error_{$id}");
+                
+                // Remove from processingIds so we stop polling it
+                unset($this->processingIds[$key]);
+                
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => "Processing failed for PO #{$id}: {$error}"
+                ]);
+            }
+        }
+        $this->processingIds = array_values($this->processingIds);
+
+        if (empty($this->processingIds)) return;
+
+        // 2. Check if remaining POs are still in IN_REVIEW status
         $stillProcessing = PurchaseOrder::whereIn('id', $this->processingIds)
             ->whereHas('approvalRequest', function($q) {
                 $q->where('status', 'IN_REVIEW');

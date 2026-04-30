@@ -1,4 +1,4 @@
-<div @if($isProcessing) wire:poll.2s="checkProcessingStatus" @endif>
+<div>
     <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1600px] mx-auto">
         {{-- Header --}}
         <header>
@@ -198,11 +198,11 @@
 
                 {{-- Quick Actions Card --}}
                 @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
-                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group {{ $isProcessing ? 'opacity-90' : '' }}" 
+                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group {{ $loading ? 'opacity-90' : '' }}" 
                          x-data="{ showSignConfirm: false, showReject: false }">
                         <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
                         
-                        @if($isProcessing)
+                        @if($loading)
                             <div class="relative z-10 py-4 flex flex-col items-center justify-center text-center">
                                 <div class="h-12 w-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
                                 <h3 class="text-xl font-black mb-1">Processing Request</h3>
@@ -233,49 +233,53 @@
                         @endif
 
                         {{-- Sign Modal --}}
-                        <div x-show="showSignConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
-                            <div @click.outside="showSignConfirm=false" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6">
-                                <div class="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto">
-                                    <i class="bi bi-vector-pen text-3xl"></i>
-                                </div>
-                                <div class="text-center space-y-2 text-slate-900">
-                                    <h3 class="text-2xl font-black">Authorize Purchase</h3>
-                                    <p class="text-sm text-slate-500 leading-relaxed">
-                                        Your digital signature will be applied to the official PDF. This action is irreversible and legally binding.
-                                    </p>
-                                </div>
-                                <div class="flex flex-col gap-3">
-                                    <button wire:click="approve" @click="showSignConfirm=false" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all">
-                                        Apply Digital Signature
-                                    </button>
-                                    <button @click="showSignConfirm=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
-                                        Maybe later
-                                    </button>
+                        <template x-teleport="body">
+                            <div x-show="showSignConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+                                <div @click.outside="showSignConfirm=false" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6">
+                                    <div class="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto">
+                                        <i class="bi bi-vector-pen text-3xl"></i>
+                                    </div>
+                                    <div class="text-center space-y-2 text-slate-900">
+                                        <h3 class="text-2xl font-black">Authorize Purchase</h3>
+                                        <p class="text-sm text-slate-500 leading-relaxed">
+                                            Your digital signature will be applied to the official PDF. This action is irreversible and legally binding.
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col gap-3">
+                                        <button wire:click="approve" @click="showSignConfirm=false" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all">
+                                            Apply Digital Signature
+                                        </button>
+                                        <button @click="showSignConfirm=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                                            Maybe later
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
 
                         {{-- Reject Modal --}}
-                        <div x-show="showReject" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-on:close-reject-modal.window="showReject = false">
-                            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
-                            <div @click.outside="showReject=false" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6 text-center text-slate-900">
-                                <div class="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 mx-auto">
-                                    <i class="bi bi-x-octagon text-3xl"></i>
-                                </div>
-                                <div class="space-y-2">
-                                    <h3 class="text-2xl font-black">Reject Order</h3>
-                                    <p class="text-sm text-slate-500">Provide a reason to help the requester improve this PO.</p>
-                                </div>
-                                <textarea wire:model="reason" rows="4" class="w-full rounded-2xl border-slate-200 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300" placeholder="e.g., Price mismatch with quotation..."></textarea>
-                                <div class="flex flex-col gap-3">
-                                    <button wire:click="reject" :disabled="!reason || $wire.loading" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 transition-all disabled:opacity-50">
-                                        Confirm Rejection
-                                    </button>
-                                    <button @click="showReject=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600">Cancel</button>
+                        <template x-teleport="body">
+                            <div x-show="showReject" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-on:close-reject-modal.window="showReject = false">
+                                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+                                <div @click.outside="showReject=false" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6 text-center text-slate-900">
+                                    <div class="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 mx-auto">
+                                        <i class="bi bi-x-octagon text-3xl"></i>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <h3 class="text-2xl font-black">Reject Order</h3>
+                                        <p class="text-sm text-slate-500">Provide a reason to help the requester improve this PO.</p>
+                                    </div>
+                                    <textarea wire:model="reason" rows="4" class="w-full rounded-2xl border-slate-200 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300" placeholder="e.g., Price mismatch with quotation..."></textarea>
+                                    <div class="flex flex-col gap-3">
+                                        <button wire:click="reject" :disabled="!reason || $wire.loading" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 transition-all disabled:opacity-50">
+                                            Confirm Rejection
+                                        </button>
+                                        <button @click="showReject=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600">Cancel</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
                     </div>
                 @endif
 
