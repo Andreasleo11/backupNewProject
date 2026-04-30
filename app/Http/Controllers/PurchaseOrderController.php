@@ -28,13 +28,6 @@ class PurchaseOrderController extends Controller
         private Approvals $approvals
     ) {}
 
-    public function index(PurchaseOrderDataTable $dataTable, Request $request)
-    {
-        $month = $request->query('month');
-
-        return $dataTable->with(['month' => $month])->render('purchase_order.index');
-    }
-
     public function approveSelected(Request $request)
     {
         try {
@@ -124,33 +117,6 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function view($id)
-    {
-        $purchaseOrder = PurchaseOrder::with([
-            'user', 
-            'category', 
-            'approvalRequest.actions.causer', 
-            'approvalRequest.steps', 
-            'downloadLogs.user',
-            'latestDownloadLog.user'
-        ])->findOrFail($id);
-
-        $revisions = PurchaseOrder::where('parent_po_number', $purchaseOrder->po_number)->get();
-
-        $user = Auth::user();
-        $files = File::where('doc_id', $purchaseOrder->po_number)->get();
-        $director = $user->hasRole('director');
-
-        // Check if the PDF exists in storage
-        if (! Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
-            // abort(500, 'PDF file not found.');
-        }
-        
-        return view(
-            'purchase_order.view',
-            compact('purchaseOrder', 'user', 'files', 'revisions', 'director'),
-        );
-    }
 
     public function sign(Request $request)
     {
