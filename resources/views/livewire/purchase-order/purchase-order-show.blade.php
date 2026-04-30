@@ -1,4 +1,4 @@
-<div>
+<div @if($isProcessing) wire:poll.2s="checkProcessingStatus" @endif>
     <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1600px] mx-auto">
         {{-- Header --}}
         <header>
@@ -198,31 +198,39 @@
 
                 {{-- Quick Actions Card --}}
                 @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
-                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group" 
+                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group {{ $isProcessing ? 'opacity-90' : '' }}" 
                          x-data="{ showSignConfirm: false, showReject: false }">
                         <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <h3 class="text-xl font-black mb-1.5 flex items-center gap-3">
-                            <i class="bi bi-shield-lock-fill"></i>
-                            Action Required
-                        </h3>
-                        <p class="text-indigo-100 text-xs font-medium mb-6 leading-relaxed">
-                            Please review the document and provide your digital signature to authorize this purchase.
-                        </p>
                         
-                        <div class="space-y-3">
-                            <button @click="showSignConfirm = true" :disabled="$wire.loading"
-                                    class="w-full flex items-center justify-center gap-3 bg-white text-indigo-600 py-3.5 rounded-2xl font-black shadow-lg hover:shadow-indigo-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
-                                <span wire:loading.remove wire:target="approve" class="flex items-center gap-2">
-                                    <i class="bi bi-vector-pen text-lg"></i>
-                                    Sign & Approve
-                                </span>
-                                <span wire:loading wire:target="approve" class="animate-spin h-5 w-5 border-3 border-indigo-600 border-t-transparent rounded-full"></span>
-                            </button>
-                            <button @click="showReject = true" :disabled="$wire.loading"
-                                    class="w-full flex items-center justify-center gap-2 bg-white/10 text-white border border-white/20 py-3.5 rounded-2xl font-bold hover:bg-white/20 transition-all">
-                                Reject with Reason
-                            </button>
-                        </div>
+                        @if($isProcessing)
+                            <div class="relative z-10 py-4 flex flex-col items-center justify-center text-center">
+                                <div class="h-12 w-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
+                                <h3 class="text-xl font-black mb-1">Processing Request</h3>
+                                <p class="text-sm text-indigo-100 italic">Please wait while we secure the document and update the workflow...</p>
+                            </div>
+                        @else
+                            <h3 class="text-xl font-black mb-1.5 flex items-center gap-3 relative z-10">
+                                <i class="bi bi-shield-check"></i>
+                                Quick Actions
+                            </h3>
+                            <p class="text-xs text-indigo-100 mb-6 font-medium tracking-wide relative z-10">Take direct action on this purchase order</p>
+
+                            <div class="space-y-3 relative z-10">
+                                {{-- Primary Action: Approve --}}
+                                <div x-show="!showSignConfirm && !showReject" x-transition>
+                                    <button @click="showSignConfirm = true"
+                                            class="w-full bg-white text-indigo-600 py-3 rounded-2xl font-black text-sm hover:bg-indigo-50 transition-all active:scale-[0.98] shadow-lg shadow-indigo-900/20 flex items-center justify-center gap-2">
+                                        <i class="bi bi-pen-fill"></i>
+                                        Sign & Approve
+                                    </button>
+                                    <button @click="showReject = true"
+                                            class="w-full mt-3 bg-indigo-500/30 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-500/50 transition-all flex items-center justify-center gap-2 border border-white/10">
+                                        <i class="bi bi-x-lg"></i>
+                                        Reject Order
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
 
                         {{-- Sign Modal --}}
                         <div x-show="showSignConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">

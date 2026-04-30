@@ -2,13 +2,12 @@
 
 namespace App\Livewire\PurchaseOrder;
 
-use App\Application\Approval\Contracts\Approvals;
+use App\Jobs\PurchaseOrder\ProcessPurchaseOrderApprovalJob;
+use App\Jobs\PurchaseOrder\ProcessPurchaseOrderRejectionJob;
 use App\Models\File;
 use App\Models\PurchaseOrder;
-use App\Services\PdfProcessingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class PurchaseOrderShow extends Component
@@ -16,6 +15,8 @@ class PurchaseOrderShow extends Component
     public $purchaseOrderId;
     public $reason = '';
     public $loading = false;
+    
+    public $isProcessing = false; // Background processing state
 
     public function mount($id)
     {
@@ -101,56 +102,57 @@ class PurchaseOrderShow extends Component
         return File::where('doc_id', $this->purchaseOrder->po_number)->get();
     }
 
-    public function approve(Approvals $approvals, PdfProcessingService $pdfService)
+    public function approve()
     {
-        $this->loading = true;
+        $this->isProcessing = true;
         
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($approvals, $pdfService) {
-                $po = $this->purchaseOrder;
-                
-                // Process approval
-                $approvals->approve($po, Auth::id(), 'Signed and approved via Livewire Page');
-                
-                // Sign PDF
-                $pdfService->sign($po, Auth::id());
-            });
-
-            $this->dispatch('toast', message: 'Purchase order signed and approved successfully!', type: 'success');
+            ProcessPurchaseOrderApprovalJob::dispatch($this->purchaseOrder, Auth::id(), 'Signed and approved via Full Page View');
+            $this->dispatch('toast', message: 'Approval process started in the background...', type: 'info');
         } catch (\Exception $e) {
-            Log::error('PurchaseOrderShow approval failed', [
+            Log::error('PurchaseOrderShow approval dispatch failed', [
                 'id' => $this->purchaseOrderId, 
                 'error' => $e->getMessage()
             ]);
-            $this->dispatch('toast', message: 'Failed to approve: ' . $e->getMessage(), type: 'error');
-        } finally {
-            $this->loading = false;
+            $this->dispatch('toast', message: 'Failed to start approval: ' . $e->getMessage(), type: 'error');
+            $this->isProcessing = false;
         }
     }
 
-    public function reject(Approvals $approvals)
+    public function checkProcessingStatus()
+    {
+        if (!$this->isProcessing) return;
+
+        $this->purchaseOrder->refresh();
+        
+        // If status has changed from IN_REVIEW, it's done
+        if ($this->purchaseOrder->workflow_status !== 'IN_REVIEW') {
+            $this->isProcessing = false;
+            $this->dispatch('toast', message: 'Purchase order processed successfully!', type: 'success');
+        }
+    }
+
+    public function reject()
     {
         $this->validate([
             'reason' => 'required|min:3|max:500'
         ]);
 
-        $this->loading = true;
+        $this->isProcessing = true;
 
         try {
-            $po = $this->purchaseOrder;
-            $approvals->reject($po, Auth::id(), $this->reason);
+            ProcessPurchaseOrderRejectionJob::dispatch($this->purchaseOrder, Auth::id(), $this->reason);
             
-            $this->dispatch('toast', message: 'Purchase order rejected successfully.', type: 'info');
+            $this->dispatch('toast', message: 'Rejection process started...', type: 'info');
             $this->reason = '';
             $this->dispatch('close-reject-modal');
         } catch (\Exception $e) {
-            Log::error('PurchaseOrderShow rejection failed', [
+            Log::error('PurchaseOrderShow rejection dispatch failed', [
                 'id' => $this->purchaseOrderId, 
                 'error' => $e->getMessage()
             ]);
-            $this->dispatch('toast', message: 'Failed to reject: ' . $e->getMessage(), type: 'error');
-        } finally {
-            $this->loading = false;
+            $this->dispatch('toast', message: 'Failed to start rejection: ' . $e->getMessage(), type: 'error');
+            $this->isProcessing = false;
         }
     }
 
