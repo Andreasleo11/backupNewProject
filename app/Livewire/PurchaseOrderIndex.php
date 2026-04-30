@@ -215,12 +215,11 @@ class PurchaseOrderIndex extends Component
         }
 
         try {
-            $poService = app(\App\Services\PurchaseOrderService::class);
+            $poService = app(PurchaseOrderService::class);
             $poService->approve($this->selectedPurchaseOrder->id, auth()->id());
 
             session()->flash('success', 'Purchase order approved successfully.');
             $this->closeDetailModal();
-            // Refresh the current page data
             $this->resetPage();
 
         } catch (\Exception $e) {
@@ -229,7 +228,7 @@ class PurchaseOrderIndex extends Component
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to approve purchase order.');
+            session()->flash('error', 'Failed to approve purchase order: ' . $e->getMessage());
         }
     }
 
@@ -245,8 +244,8 @@ class PurchaseOrderIndex extends Component
         }
 
         try {
-            $pdfService = app(\App\Services\PdfProcessingService::class);
-            $pdfService->reject($this->selectedPurchaseOrder, $reason);
+            $poService = app(PurchaseOrderService::class);
+            $poService->reject($this->selectedPurchaseOrder->id, auth()->id(), $reason);
 
             session()->flash('success', 'Purchase order rejected successfully.');
             $this->closeDetailModal();
@@ -258,7 +257,7 @@ class PurchaseOrderIndex extends Component
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to reject purchase order.');
+            session()->flash('error', 'Failed to reject purchase order: ' . $e->getMessage());
         }
     }
 
@@ -390,35 +389,17 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
-
             return;
         }
 
         try {
             $poService = app(PurchaseOrderService::class);
+            $poService->approveAll($this->selectedIds, auth()->id());
 
-            // Validate that selected POs can be approved (must be in IN_REVIEW status)
-            $invalidPOs = \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
-                ->whereDoesntHave('approvalRequest', function ($query) {
-                    $query->where('status', 'IN_REVIEW');
-                })
-                ->pluck('po_number')
-                ->toArray();
-
-            if (! empty($invalidPOs)) {
-                session()->flash('error', 'Some selected POs cannot be approved: ' . implode(', ', $invalidPOs));
-
-                return;
-            }
-
-            // Approve each PO
-            foreach ($this->selectedIds as $poId) {
-                $poService->approve($poId, auth()->id());
-            }
-
-            session()->flash('success', 'Selected purchase orders approved successfully.');
+            session()->flash('success', count($this->selectedIds) . ' purchase orders approved successfully.');
             $this->selectedIds = [];
             $this->selectAll = false;
+            $this->resetPage();
 
         } catch (\Exception $e) {
             Log::error('Bulk approval failed', [
@@ -426,7 +407,7 @@ class PurchaseOrderIndex extends Component
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to approve selected purchase orders.');
+            session()->flash('error', 'Failed to approve selected purchase orders: ' . $e->getMessage());
         }
     }
 
@@ -434,37 +415,21 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
-
             return;
         }
 
-        if (! $reason) {
+        if (!$reason) {
             $reason = 'Bulk rejection by ' . auth()->user()->name;
         }
 
         try {
-            // Validate that selected POs can be rejected (must be in IN_REVIEW status)
-            $invalidPOs = \App\Models\PurchaseOrder::whereIn('id', $this->selectedIds)
-                ->whereDoesntHave('approvalRequest', function ($query) {
-                    $query->where('status', 'IN_REVIEW');
-                })
-                ->pluck('po_number')
-                ->toArray();
+            $poService = app(PurchaseOrderService::class);
+            $poService->rejectAll($this->selectedIds, auth()->id(), $reason);
 
-            if (! empty($invalidPOs)) {
-                session()->flash('error', 'Some selected POs cannot be rejected: ' . implode(', ', $invalidPOs));
-
-                return;
-            }
-
-            // Reject each PO using the service
-            foreach ($this->selectedIds as $poId) {
-                $poService->reject($poId, auth()->id(), $reason);
-            }
-
-            session()->flash('success', 'Selected purchase orders rejected successfully.');
+            session()->flash('success', count($this->selectedIds) . ' purchase orders rejected successfully.');
             $this->selectedIds = [];
             $this->selectAll = false;
+            $this->resetPage();
 
         } catch (\Exception $e) {
             Log::error('Bulk rejection failed', [
@@ -472,7 +437,7 @@ class PurchaseOrderIndex extends Component
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to reject selected purchase orders.');
+            session()->flash('error', 'Failed to reject selected purchase orders: ' . $e->getMessage());
         }
     }
 
