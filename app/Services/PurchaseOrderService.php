@@ -26,7 +26,6 @@ class PurchaseOrderService
                 // Create the purchase order and submit for director approval
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->po_number = $data['po_number'];
-                $purchaseOrder->status = PurchaseOrderStatus::PENDING_APPROVAL->legacyValue(); // Start as pending approval
                 $purchaseOrder->filename = $data['pdf_file'] ?? null;
                 $purchaseOrder->creator_id = auth()->id();
                 $purchaseOrder->vendor_name = $data['vendor_name'];

@@ -1,5 +1,5 @@
 
-<div>
+<div @if(!empty($processingIds)) wire:poll.3s="checkProcessingStatus" @endif>
     {{-- Loading Overlay --}}
     <div wire:loading.delay class="fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center z-50" wire:target="approveSelected,rejectSelected,exportSelected,exportFiltered">
         <div class="bg-white rounded-lg p-6 flex items-center gap-3">
@@ -249,7 +249,10 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($purchaseOrders as $po)
-                            <tr class="hover:bg-slate-50 transition-colors">
+                            @php
+                                $isProcessing = in_array($po->id, $processingIds);
+                            @endphp
+                            <tr class="hover:bg-slate-50 transition-colors {{ $isProcessing ? 'opacity-50 pointer-events-none bg-slate-50' : '' }}">
                                 <td class="px-4 py-2.5">
                                     <input type="checkbox" value="{{ $po->id }}" wire:model.live="selectedIds"
                                             class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
@@ -270,9 +273,14 @@
                                     <div class="flex flex-col gap-1.5">
                                         <span class="inline-flex items-center w-fit px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}"
                                                 title="{{ $po->getStatusEnum()->description() }}">
-                                            {{ $po->getStatusEnum()->label() }}
-                                            @if($po->getStatusEnum()->isPendingApproval())
-                                                <span class="ml-1.5 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
+                                            @if($isProcessing)
+                                                <i class="bi bi-arrow-repeat animate-spin mr-1.5"></i>
+                                                Signing...
+                                            @else
+                                                {{ $po->getStatusEnum()->label() }}
+                                                @if($po->getStatusEnum()->isPendingApproval())
+                                                    <span class="ml-1.5 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
+                                                @endif
                                             @endif
                                         </span>
                                         

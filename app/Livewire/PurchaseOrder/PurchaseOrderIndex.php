@@ -2,9 +2,9 @@
 
 namespace App\Livewire\PurchaseOrder;
 
-use App\Enums\PurchaseOrderStatus;
+use App\Jobs\PurchaseOrder\ProcessPurchaseOrderApprovalJob;
+use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderService;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -42,6 +42,8 @@ class PurchaseOrderIndex extends Component
     public $sortBy = 'created_at';
 
     public $sortDirection = 'desc';
+
+    public $processingIds = []; // Track IDs currently being processed in background
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -153,7 +155,7 @@ class PurchaseOrderIndex extends Component
 
     private function loadPurchaseOrderForModal($poId)
     {
-        $this->selectedPurchaseOrder = \App\Models\PurchaseOrder::with([
+        $this->selectedPurchaseOrder = PurchaseOrder::with([
             'user',
             'category',
             'approvalRequest.steps' => function ($query) {
@@ -175,7 +177,7 @@ class PurchaseOrderIndex extends Component
             try {
                 $this->pdfUrl = asset('storage/pdfs/' . $this->selectedPurchaseOrder->filename);
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Could not generate PDF preview URL', [
+                Log::warning('Could not generate PDF preview URL', [
                     'po_id' => $this->selectedPurchaseOrder->id,
                     'filename' => $this->selectedPurchaseOrder->filename,
                     'error' => $e->getMessage(),
@@ -190,7 +192,7 @@ class PurchaseOrderIndex extends Component
             $pdfService = app(\App\Services\PdfProcessingService::class);
             return $pdfService->download($this->selectedPurchaseOrder->id, auth()->id());
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('PDF download failed', [
+            Log::error('PDF download failed', [
                 'po_id' => $this->selectedPurchaseOrder->id,
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
@@ -316,7 +318,7 @@ class PurchaseOrderIndex extends Component
 
     private function exportPOs(array $poIds)
     {
-        $purchaseOrders = \App\Models\PurchaseOrder::with(['user', 'category'])
+        $purchaseOrders = PurchaseOrder::with(['user', 'category'])
             ->whereIn('id', $poIds)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -393,21 +395,60 @@ class PurchaseOrderIndex extends Component
         }
 
         try {
-            $poService = app(PurchaseOrderService::class);
-            $poService->approveAll($this->selectedIds, auth()->id());
+            $count = count($this->selectedIds);
+            
+            foreach ($this->selectedIds as $id) {
+                $po = PurchaseOrder::find($id);
+                if ($po && $po->getStatusEnum()->canApprove()) {
+                    // Add to processing list for UI feedback
+                    $this->processingIds[] = $id;
+                    
+                    // Dispatch the background job
+                    ProcessPurchaseOrderApprovalJob::dispatch($po, auth()->id());
+                }
+            }
 
-            session()->flash('success', count($this->selectedIds) . ' purchase orders approved successfully.');
+            session()->flash('info', "Processing {$count} purchase orders in the background. Please wait...");
+            
             $this->selectedIds = [];
             $this->selectAll = false;
-            $this->resetPage();
 
         } catch (\Exception $e) {
-            Log::error('Bulk approval failed', [
+            Log::error('Bulk approval dispatch failed', [
                 'selected_ids' => $this->selectedIds,
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
             ]);
-            session()->flash('error', 'Failed to approve selected purchase orders: ' . $e->getMessage());
+            session()->flash('error', 'Failed to start bulk approval: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Polled by Livewire to update status of background processing
+     */
+    public function checkProcessingStatus()
+    {
+        if (empty($this->processingIds)) {
+            return;
+        }
+
+        // Check if these POs are still in IN_REVIEW status
+        $stillProcessing = PurchaseOrder::whereIn('id', $this->processingIds)
+            ->whereHas('approvalRequest', function($q) {
+                $q->where('status', 'IN_REVIEW');
+            })
+            ->pluck('id')
+            ->toArray();
+
+        // Find which ones are done
+        $completed = array_diff($this->processingIds, $stillProcessing);
+        
+        if (!empty($completed)) {
+            $this->processingIds = array_values($stillProcessing);
+            
+            if (empty($this->processingIds)) {
+                session()->flash('success', 'All background approvals have been completed.');
+            }
         }
     }
 
@@ -444,7 +485,7 @@ class PurchaseOrderIndex extends Component
     public function getPurchaseOrdersQuery()
     {
         // Use optimized query with selective field loading and relationship optimization
-        $query = \App\Models\PurchaseOrder::query()
+        $query = PurchaseOrder::query()
             ->select([
                 'id', 'po_number', 'invoice_date', 'invoice_number',
                 'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
@@ -539,18 +580,18 @@ class PurchaseOrderIndex extends Component
                 'REJECTED' => 'Rejected',
                 'CANCELLED' => 'Cancelled',
             ],
-            'vendors' => ['' => 'All Vendors'] + \App\Models\PurchaseOrder::query()
+            'vendors' => ['' => 'All Vendors'] + PurchaseOrder::query()
                 ->distinct()
                 ->whereNotNull('vendor_name')
                 ->pluck('vendor_name', 'vendor_name')
                 ->toArray(),
-            'months' => ['' => 'All Months'] + \App\Models\PurchaseOrder::query()
+            'months' => ['' => 'All Months'] + PurchaseOrder::query()
                 ->selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
                 ->whereNotNull('invoice_date')
                 ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
                 ->pluck('month_label', 'month_value')
                 ->toArray(),
-            'creators' => ['' => 'All Creators'] + \App\Models\PurchaseOrder::query()
+            'creators' => ['' => 'All Creators'] + PurchaseOrder::query()
                 ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
                 ->distinct()
                 ->pluck('users.name', 'users.name')

@@ -24,7 +24,6 @@ class PurchaseOrder extends Model implements Approvable
     protected $fillable = [
         'po_number',
         'approved_date',
-        'status', // Legacy field - use workflow status instead
         'filename',
         'reason',
         'creator_id',

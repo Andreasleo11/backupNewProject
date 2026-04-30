@@ -25,14 +25,6 @@ enum PurchaseOrderStatus: int
     }
 
     /**
-     * Get the legacy integer value for backward compatibility
-     */
-    public function legacyValue(): int
-    {
-        return $this->value;
-    }
-
-    /**
      * Check if the status allows editing
      */
     public function canEdit(): bool
@@ -52,17 +44,17 @@ enum PurchaseOrderStatus: int
     }
 
     /**
-     * Check if the status is pending approval
+     * Check if the status allows rejection actions
      */
-    public function isPendingApproval(): bool
+    public function canReject(): bool
     {
         return $this === self::PENDING_APPROVAL;
     }
 
     /**
-     * Check if the status allows rejection actions
+     * Check if the status is pending approval
      */
-    public function canReject(): bool
+    public function isPendingApproval(): bool
     {
         return $this === self::PENDING_APPROVAL;
     }
@@ -89,22 +81,6 @@ enum PurchaseOrderStatus: int
             self::REJECTED => 'bg-rose-100 text-rose-800 border-rose-200',
             self::CANCELLED => 'bg-orange-100 text-orange-800 border-orange-200',
             self::DRAFT => 'bg-slate-100 text-slate-800 border-slate-200',
-        };
-    }
-
-
-    /**
-     * Create enum instance from legacy integer value
-     */
-    public static function fromLegacyValue(int $value): self
-    {
-        return match ($value) {
-            1 => self::PENDING_APPROVAL,
-            2 => self::APPROVED,
-            3 => self::REJECTED,
-            4 => self::CANCELLED,
-            5 => self::DRAFT,
-            default => throw new \InvalidArgumentException("Invalid status value: {$value}"),
         };
     }
 
