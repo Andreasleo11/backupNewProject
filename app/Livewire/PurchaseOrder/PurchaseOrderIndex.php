@@ -641,7 +641,6 @@ class PurchaseOrderIndex extends Component
         }
 
         // Only allow bulk actions if all selected POs are in IN_REVIEW
-        // We count how many selected POs are NOT in IN_REVIEW
         $invalidCount = PurchaseOrder::whereIn('id', $this->selectedIds)
             ->where(function($query) {
                 $query->whereDoesntHave('approvalRequest')
@@ -652,6 +651,27 @@ class PurchaseOrderIndex extends Component
             ->count();
 
         return $invalidCount === 0;
+    }
+
+    public function filterByStat($type)
+    {
+        $this->resetPage();
+        $this->clearFilters();
+
+        switch ($type) {
+            case 'pending_me':
+                $this->statusFilter = 'IN_REVIEW';
+                // Note: The actual filtering for 'pending_me' happens in the query logic
+                // if we add a specific filter property for it.
+                $this->search = ''; 
+                break;
+            case 'in_review':
+                $this->statusFilter = 'IN_REVIEW';
+                break;
+            case 'rejected':
+                $this->statusFilter = 'REJECTED';
+                break;
+        }
     }
 
     public function getFiltersProperty()
