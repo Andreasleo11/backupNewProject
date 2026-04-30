@@ -508,6 +508,36 @@
                                             </div>
                                         </div>
 
+                                        {{-- Rejection Remarks (Most Important) --}}
+                                        @if($selectedPurchaseOrder->getStatusEnum()->label() === 'Rejected')
+                                            @php
+                                                $latestRejection = $selectedPurchaseOrder->approvalRequest?->actions
+                                                    ?->where('to_status', 'REJECTED')
+                                                    ->sortByDesc('created_at')
+                                                    ->first();
+                                            @endphp
+                                            
+                                            @if($latestRejection && $latestRejection->remarks)
+                                                <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                                                    <p class="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-1">
+                                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                                        Rejection Reason
+                                                    </p>
+                                                    <p class="text-xs font-bold text-rose-700 mt-1 italic leading-relaxed">
+                                                        "{{ $latestRejection->remarks }}"
+                                                    </p>
+                                                    <div class="flex items-center justify-between mt-2">
+                                                        <p class="text-[9px] font-bold text-rose-400">
+                                                            By {{ $latestRejection->causer->name ?? 'System' }}
+                                                        </p>
+                                                        <p class="text-[9px] text-rose-300 italic">
+                                                            {{ $latestRejection->created_at->diffForHumans() }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @endif
+
                                         {{-- Workflow Info --}}
                                         @if($selectedPurchaseOrder->workflow_status === 'IN_REVIEW')
                                             <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">

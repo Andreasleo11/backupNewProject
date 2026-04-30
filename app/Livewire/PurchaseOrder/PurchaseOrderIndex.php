@@ -162,6 +162,7 @@ class PurchaseOrderIndex extends Component
             'approvalRequest.steps' => function ($query) {
                 $query->orderBy('sequence');
             },
+            'approvalRequest.actions.causer'
         ])->findOrFail($poId);
 
         // Generate PDF preview URL if file exists

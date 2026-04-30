@@ -157,6 +157,45 @@
             {{-- Sidebar: Summary & Actions --}}
             <aside class="lg:col-span-4 space-y-6">
                 
+                {{-- Rejection Status Card --}}
+                @if($purchaseOrder->getStatusEnum()->label() === 'Rejected')
+                    @php
+                        $latestRejection = $purchaseOrder->approvalRequest?->actions
+                            ?->where('to_status', 'REJECTED')
+                            ->sortByDesc('created_at')
+                            ->first();
+                    @endphp
+                    
+                    @if($latestRejection && $latestRejection->remarks)
+                        <div class="bg-white rounded-3xl shadow-sm border-2 border-rose-100 overflow-hidden">
+                            <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-200">
+                                    <i class="bi bi-exclamation-octagon"></i>
+                                </div>
+                                <h3 class="text-xs font-black text-rose-600 uppercase tracking-widest">Rejection Details</h3>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-sm font-bold text-slate-800 leading-relaxed italic">
+                                    "{{ $latestRejection->remarks }}"
+                                </p>
+                                <div class="mt-4 flex items-center gap-3 pt-4 border-t border-slate-50">
+                                    <div class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Rejected By</p>
+                                        <p class="text-[11px] font-bold text-slate-700 mt-1">{{ $latestRejection->causer->name ?? 'System' }}</p>
+                                    </div>
+                                    <div class="ml-auto text-right">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Date</p>
+                                        <p class="text-[11px] font-bold text-slate-500 mt-1">{{ $latestRejection->created_at->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+
                 {{-- Quick Actions Card --}}
                 @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
                     <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group" 
