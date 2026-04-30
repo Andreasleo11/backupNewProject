@@ -1,382 +1,396 @@
 @extends('new.layouts.app')
 
 @section('content')
-    <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    @php
+        $statusEnum = $purchaseOrder->getStatusEnum();
+        
+        // Build activity feed
+        $activities = collect();
+        
+        // 1. Initial Submission
+        if ($purchaseOrder->approvalRequest && $purchaseOrder->approvalRequest->submitted_at) {
+            $activities->push((object)[
+                'type' => 'submission',
+                'date' => $purchaseOrder->approvalRequest->submitted_at,
+                'user' => $purchaseOrder->user->name,
+                'label' => 'Submitted for Approval',
+                'icon' => 'bi-send',
+                'color' => 'indigo'
+            ]);
+        }
+        
+        // 2. Approval Actions
+        if ($purchaseOrder->approvalRequest) {
+            foreach ($purchaseOrder->approvalRequest->actions as $action) {
+                $activities->push((object)[
+                    'type' => 'approval',
+                    'date' => $action->created_at,
+                    'user' => $action->causer->name ?? 'System',
+                    'label' => 'Status: ' . $action->to_status,
+                    'remarks' => $action->remarks,
+                    'icon' => match($action->to_status) {
+                        'APPROVED' => 'bi-check-circle',
+                        'REJECTED' => 'bi-x-circle',
+                        'RETURNED' => 'bi-arrow-left-right',
+                        default => 'bi-info-circle'
+                    },
+                    'color' => match($action->to_status) {
+                        'APPROVED' => 'emerald',
+                        'REJECTED' => 'rose',
+                        'RETURNED' => 'amber',
+                        default => 'slate'
+                    }
+                ]);
+            }
+        }
+        
+        // 3. Downloads
+        foreach ($purchaseOrder->downloadLogs as $log) {
+            $activities->push((object)[
+                'type' => 'download',
+                'date' => $log->created_at,
+                'user' => $log->user->name,
+                'label' => 'Downloaded Document',
+                'icon' => 'bi-cloud-download',
+                'color' => 'blue'
+            ]);
+        }
+        
+        $activities = $activities->sortByDesc('date');
+    @endphp
 
+    <div class="px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-[1600px] mx-auto">
         {{-- Header --}}
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
-                    Purchase Order Detail
-                </h1>
-                <nav class="mt-2" aria-label="Breadcrumb">
-                    <ol class="flex items-center gap-1 text-sm text-slate-500">
-                        <li>
-                            <a href="{{ route('po.dashboard') }}" class="hover:text-slate-700">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="px-1 text-slate-400">/</li>
-                        <li>
-                            <a href="{{ route('po.index') }}" class="hover:text-slate-700">
-                                Purchase Orders
-                            </a>
-                        </li>
-                        <li class="px-1 text-slate-400">/</li>
-                        <li class="text-slate-700 font-medium">
+        <header>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
                             {{ $purchaseOrder->po_number }}
-                        </li>
-                    </ol>
-                </nav>
-            </div>
-
-            <div class="flex flex-wrap gap-3 justify-end">
-                <a href="{{ route('po.index') }}"
-                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Back to List
-                </a>
-                <a href="{{ route('po.download', $purchaseOrder->id) }}"
-                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Download PDF
-                </a>
-            </div>
-        </div>
-
-        {{-- Summary card --}}
-        <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl p-5 space-y-4">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div class="space-y-1">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Purchase Order {{ $purchaseOrder->po_number }}
-                    </h2>
-                    <p class="text-sm text-slate-500">
-                        Uploaded
-                        <span class="font-medium text-slate-700">
-                            {{ \Carbon\Carbon::parse($purchaseOrder->created_at)->format('d-m-Y') }}
-                        </span>
-                        by
-                        <span class="font-medium text-slate-700">
-                            {{ $purchaseOrder->user->name }}
-                        </span>
-                    </p>
-
-                    @if ($purchaseOrder->approved_date)
-                        <p class="text-sm text-slate-500">
-                            Approved on
-                            <span class="font-medium text-slate-700">
-                                {{ \Carbon\Carbon::parse($purchaseOrder->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
-                            </span>
-                        </p>
-                    @elseif($purchaseOrder->reason)
-                        <p class="text-sm text-red-600">
-                            Rejection reason:
-                            <span class="font-medium">{{ $purchaseOrder->reason }}</span>
-                        </p>
-                    @endif
-
-                    <div class="mt-2 flex flex-wrap gap-2 items-center">
-                        {{-- status badge partial --}}
+                        </h1>
                         @include('partials.po-status', ['po' => $purchaseOrder])
-
+                        
                         @if($purchaseOrder->workflow_status === 'IN_REVIEW' && $purchaseOrder->current_approver)
-                            <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                                Pending: {{ $purchaseOrder->current_approver }}
-                            </span>
+                            <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 text-xs font-bold animate-pulse">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                </span>
+                                Currently with: {{ $purchaseOrder->current_approver }}
+                            </div>
                         @endif
+                    </div>
+                    <nav class="mt-3" aria-label="Breadcrumb">
+                        <ol class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                            <li><a href="{{ route('po.index') }}" class="hover:text-indigo-600 transition-colors">Procurement</a></li>
+                            <li><i class="bi bi-chevron-right text-[10px]"></i></li>
+                            <li class="text-slate-600">Purchase Order Detail</li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('po.index') }}" 
+                       class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to List
+                    </a>
+                    <a href="{{ route('po.download', $purchaseOrder->id) }}" 
+                       class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="bi bi-cloud-arrow-down-fill text-lg"></i>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {{-- Main Content: Timeline & PDF --}}
+            <div class="lg:col-span-8 space-y-8">
+                
+                {{-- Activity Feed (The Historian Core) --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="bi bi-clock-history text-indigo-500"></i>
+                            Activity History
+                        </h2>
+                        <span class="text-[10px] font-bold text-slate-400">Real-time Audit Trail</span>
+                    </div>
+                    <div class="p-8">
+                        <div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-slate-100 before:to-transparent">
+                            @forelse($activities as $activity)
+                                <div class="relative flex items-start group">
+                                    <div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-2xl bg-white ring-4 ring-slate-50 transition-all group-hover:scale-110 group-hover:shadow-md">
+                                        <i class="bi {{ $activity->icon }} text-{{ $activity->color }}-500 text-lg"></i>
+                                    </div>
+                                    <div class="ml-16">
+                                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                                            <span class="text-sm font-black text-slate-800">{{ $activity->label }}</span>
+                                            <time class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                                                <i class="bi bi-calendar3"></i>
+                                                {{ $activity->date->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }}
+                                            </time>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Performed by <span class="font-bold text-slate-900">{{ $activity->user }}</span>
+                                        </p>
+                                        @if(isset($activity->remarks) && $activity->remarks)
+                                            <div class="mt-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed italic shadow-inner">
+                                                "{{ $activity->remarks }}"
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-10">
+                                    <div class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="bi bi-inbox text-slate-300 text-2xl"></i>
+                                    </div>
+                                    <p class="text-slate-400 text-sm font-medium">No activity history found.</p>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
 
-                {{-- Director actions --}}
-                @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
-                    <div x-data="poApproval({
-                        signUrl: '{{ route('po.sign') }}',
-                        rejectUrl: '{{ route('po.reject') }}',
-                        id: '{{ $purchaseOrder->id }}',
-                        filename: '{{ $purchaseOrder->filename }}',
-                        csrf: '{{ csrf_token() }}'
-                    })" class="flex flex-col gap-2 sm:items-end">
-                        <div class="flex flex-wrap gap-2 justify-end">
-                            <button type="button" @click="openSign()"
-                                class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                :disabled="loading">
-                                <span x-show="!loading">Sign PDF</span>
-                                <span x-show="loading" class="inline-flex items-center gap-2">
-                                    <span
-                                        class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                                    Processing…
-                                </span>
+                {{-- PDF View --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="bi bi-file-earmark-pdf-fill text-rose-500"></i>
+                            Original Document
+                        </h2>
+                        <div class="flex gap-2">
+                            <button onclick="document.querySelector('iframe').contentWindow.print()" class="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+                                <i class="bi bi-printer"></i>
                             </button>
+                        </div>
+                    </div>
+                    <div class="p-2 bg-slate-800">
+                        <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}#toolbar=0"
+                            class="w-full h-[900px] rounded-2xl shadow-2xl" frameborder="0"></iframe>
+                    </div>
+                </div>
 
-                            <button type="button" @click="openReject()"
-                                class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                :disabled="loading">
-                                Reject PO
+                {{-- Revisions --}}
+                @if ($purchaseOrder->status === 4 || $purchaseOrder->revision_count > 0 || $revisions->count() > 0)
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                            <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <i class="bi bi-layers-half text-amber-500"></i>
+                                Version History
+                            </h2>
+                            @if($purchaseOrder->canBeEdited())
+                                <form action="{{ route('po.create') }}" method="post">
+                                    @csrf
+                                    <input type="hidden" name="parent_po_number" value="{{ $purchaseOrder->po_number }}">
+                                    <button type="submit" class="text-xs font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">
+                                        + Create New Version
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50/80 text-slate-400 font-black uppercase tracking-widest border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-8 py-4">PO Number</th>
+                                        <th class="px-8 py-4">Status</th>
+                                        <th class="px-8 py-4 text-right">Amount</th>
+                                        <th class="px-8 py-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    @foreach ($revisions as $rev)
+                                        <tr class="hover:bg-slate-50/50 transition-colors">
+                                            <td class="px-8 py-4 font-bold text-slate-900">{{ $rev->po_number }}</td>
+                                            <td class="px-8 py-4">@include('partials.po-status', ['po' => $rev])</td>
+                                            <td class="px-8 py-4 text-right font-mono font-bold text-slate-700">
+                                                {{ number_format($rev->total, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-8 py-4">
+                                                <a href="{{ route('po.view', $rev->id) }}" class="inline-flex items-center gap-1 text-indigo-600 font-bold hover:gap-2 transition-all">
+                                                    View <i class="bi bi-arrow-right"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Sidebar: Summary & Actions --}}
+            <aside class="lg:col-span-4 space-y-6">
+                
+                {{-- Quick Actions Card (If Director) --}}
+                @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
+                    <div class="bg-indigo-600 rounded-3xl shadow-xl p-8 text-white relative overflow-hidden group" 
+                         x-data="poApproval({
+                            signUrl: '{{ route('po.sign') }}',
+                            rejectUrl: '{{ route('po.reject') }}',
+                            id: '{{ $purchaseOrder->id }}',
+                            filename: '{{ $purchaseOrder->filename }}',
+                            csrf: '{{ csrf_token() }}'
+                         })">
+                        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <h3 class="text-xl font-black mb-2 flex items-center gap-3">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            Action Required
+                        </h3>
+                        <p class="text-indigo-100 text-sm font-medium mb-8 leading-relaxed">
+                            Please review the document and provide your digital signature to authorize this purchase.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <button @click="openSign()" :disabled="loading"
+                                    class="w-full flex items-center justify-center gap-3 bg-white text-indigo-600 py-4 rounded-2xl font-black shadow-lg hover:shadow-indigo-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
+                                <span x-show="!loading" class="flex items-center gap-2">
+                                    <i class="bi bi-vector-pen text-lg"></i>
+                                    Sign & Approve
+                                </span>
+                                <span x-show="loading" class="animate-spin h-5 w-5 border-3 border-indigo-600 border-t-transparent rounded-full"></span>
+                            </button>
+                            <button @click="openReject()" :disabled="loading"
+                                    class="w-full flex items-center justify-center gap-2 bg-white/10 text-white border border-white/20 py-3.5 rounded-2xl font-bold hover:bg-white/20 transition-all">
+                                Reject with Reason
                             </button>
                         </div>
 
-                        {{-- Sign confirm modal --}}
+                        {{-- Modals --}}
                         <template x-teleport="body">
-                            <div x-show="showSignConfirm" x-cloak
-                                class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-                                <div @click.outside="showSignConfirm=false"
-                                    class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
-                                    <h3 class="text-sm font-semibold text-slate-900">
-                                        Confirm Signature
-                                    </h3>
-                                    <p class="text-sm text-slate-600">
-                                        This will sign and approve the current purchase order PDF.
-                                        You can review the document in the preview section below before confirming.
-                                    </p>
-                                    <div class="flex justify-end gap-2 pt-2">
-                                        <button type="button" @click="showSignConfirm=false"
-                                            class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                                            :disabled="loading">
-                                            Cancel
+                            <div x-show="showSignConfirm" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+                                <div @click.outside="showSignConfirm=false" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6">
+                                    <div class="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto">
+                                        <i class="bi bi-vector-pen text-3xl"></i>
+                                    </div>
+                                    <div class="text-center space-y-2">
+                                        <h3 class="text-2xl font-black text-slate-900">Authorize Purchase</h3>
+                                        <p class="text-sm text-slate-500 leading-relaxed">
+                                            Your digital signature will be applied to the official PDF. This action is irreversible and legally binding.
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col gap-3">
+                                        <button @click="submitSign" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 transition-all">
+                                            Apply Digital Signature
                                         </button>
-                                        <button type="button" @click="submitSign"
-                                            class="inline-flex items-center rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                            :disabled="loading">
-                                            Confirm
+                                        <button @click="showSignConfirm=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                                            Maybe later
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </template>
 
-                        {{-- Reject modal --}}
                         <template x-teleport="body">
-                            <div x-show="showReject" x-cloak
-                                class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
-                                <div @click.outside="!loading && (showReject=false)"
-                                    class="w-full max-w-md rounded-xl bg-white shadow-lg ring-1 ring-slate-200 p-5 space-y-4">
-                                    <h3 class="text-sm font-semibold text-slate-900">
-                                        Reject Purchase Order
-                                    </h3>
-                                    <p class="text-sm text-slate-600">
-                                        Please provide a clear reason for rejecting this PO. The reason will be stored with the
-                                        record.
-                                    </p>
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-700 mb-1">
-                                            Rejection reason
-                                        </label>
-                                        <textarea x-model="reason" rows="3"
-                                            class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-red-500 focus:ring-red-500"
-                                            placeholder="Explain why this purchase order is rejected..."></textarea>
+                            <div x-show="showReject" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+                                <div @click.outside="!loading && (showReject=false)" class="relative w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl p-8 space-y-6 text-center">
+                                    <div class="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 mx-auto">
+                                        <i class="bi bi-x-octagon text-3xl"></i>
                                     </div>
-                                    <div class="flex justify-between items-center pt-2">
-                                        <p class="text-xs text-slate-400" x-text="reason.length + ' / 500'"></p>
-                                        <div class="flex gap-2">
-                                            <button type="button" @click="showReject=false"
-                                                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                                                :disabled="loading">
-                                                Cancel
-                                            </button>
-                                            <button type="button" @click="submitReject"
-                                                class="inline-flex items-center rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-                                                :disabled="loading || !reason.trim()">
-                                                Reject PO
-                                            </button>
-                                        </div>
+                                    <div class="space-y-2">
+                                        <h3 class="text-2xl font-black text-slate-900">Reject Order</h3>
+                                        <p class="text-sm text-slate-500">Provide a reason to help the requester improve this PO.</p>
+                                    </div>
+                                    <textarea x-model="reason" rows="4" class="w-full rounded-2xl border-slate-200 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300" placeholder="e.g., Price mismatch with quotation..."></textarea>
+                                    <div class="flex flex-col gap-3">
+                                        <button @click="submitReject" :disabled="!reason.trim() || loading" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 transition-all disabled:opacity-50">
+                                            Confirm Rejection
+                                        </button>
+                                        <button @click="showReject=false" class="w-full py-3 text-sm font-bold text-slate-400 hover:text-slate-600">Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         </template>
                     </div>
                 @endif
-            </div>
 
-            {{-- Details table-ish layout --}}
-            <div class="border-t border-slate-100 pt-4 grid gap-4 sm:grid-cols-2 text-sm text-slate-800">
-                <div class="space-y-1">
-                    <div class="text-xs font-semibold uppercase text-slate-500">
-                        Vendor
-                    </div>
-                    <div>{{ $purchaseOrder->vendor_name }}</div>
+                {{-- Financial & Info Card --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-50">
+                    <div class="p-8">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <i class="bi bi-wallet2 text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Valuation</p>
+                                <p class="text-2xl font-black text-slate-900 mt-1">
+                                    <span class="text-sm font-bold text-slate-300 uppercase mr-1">{{ $purchaseOrder->currency }}</span>
+                                    {{ number_format($purchaseOrder->total, 2, '.', ',') }}
+                                </p>
+                            </div>
+                        </div>
 
-                    <div class="mt-3 text-xs font-semibold uppercase text-slate-500">
-                        Invoice Number
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor Profile</label>
+                                <p class="text-sm font-extrabold text-slate-800 mt-1">{{ $purchaseOrder->vendor_name }}</p>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Department Category</label>
+                                <p class="text-sm font-extrabold text-slate-800 mt-1">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>{{ $purchaseOrder->invoice_number }}</div>
 
-                    <div class="mt-3 text-xs font-semibold uppercase text-slate-500">
-                        Category
+                    <div class="p-8 bg-slate-50/30 grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inv. Date</label>
+                            <p class="text-xs font-bold text-slate-700 mt-1">{{ $purchaseOrder->invoice_date->format('d M Y') }}</p>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pymt. Date</label>
+                            <p class="text-xs font-bold text-slate-700 mt-1">{{ \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d M Y') }}</p>
+                        </div>
                     </div>
-                    <div>{{ $purchaseOrder->category->name ?? '-' }}</div>
                 </div>
 
-                <div class="space-y-1">
-                    <div class="text-xs font-semibold uppercase text-slate-500">
-                        Payment Date
+                {{-- Related Files --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
+                        @if ($user->id == $purchaseOrder->creator_id || $user->hasRole('purchaser'))
+                            <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        @endif
                     </div>
-                    <div>
-                        {{ \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d-m-Y') }}
-                    </div>
-
-                    <div class="mt-3 text-xs font-semibold uppercase text-slate-500">
-                        Total
-                    </div>
-                    <div class="font-semibold">
-                        {{ $purchaseOrder->currency . ' ' . number_format($purchaseOrder->total, 2, '.', ',') }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- PDF preview card --}}
-        <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
-                <h2 class="text-sm font-semibold text-slate-900">
-                    Invoice Document
-                </h2>
-                <span class="text-xs text-slate-500">
-                    PDF preview
-                </span>
-            </div>
-            <div class="bg-slate-50">
-                <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}" width="100%" height="700"
-                    class="block w-full border-0"></iframe>
-            </div>
-        </div>
-
-        {{-- Upload controls --}}
-        @if (!$director)
-            <div class="container mb-4 space-y-4">
-                @if ($user->id == $purchaseOrder->creator_id || $user->hasRole('purchaser'))
-                    <div class="flex justify-end">
-                        <button type="button" @click="$dispatch('open-upload-modal')"
-                            class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
-                            Upload related files
-                        </button>
-                    </div>
-
-                    @push('modals')
-                        @include('partials.upload-files-modal', [
-                            'doc_id' => $purchaseOrder->po_number,
+                    <div class="p-8">
+                        @include('partials.file-attachments', [
+                            'files' => $files,
+                            'showDelete' => $user->id === $purchaseOrder->creator_id || $user->hasRole('purchaser'),
+                            'title' => ''
                         ])
-                    @endpush
-                @endif
-
-            </div>
-        @endif
-
-        <section aria-label="Related Documents">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                @include('partials.file-attachments', [
-                    'files' => $files,
-                    'showDelete' =>
-                        $user->id === $purchaseOrder->creator_id ||
-                        $user->hasRole('purchaser'),
-                    'title' => 'Related Documents',
-                ])
-            </div>
-        </section>
-
-
-        {{-- Revision history --}}
-        @if ($purchaseOrder->status === 4 || $purchaseOrder->revision_count > 0)
-            <section aria-label="history" class="space-y-4">
-                <div class="flex justify-end">
-                    <form action="{{ route('po.create') }}" method="post">
-                        @csrf
-                        <input type="hidden" name="parent_po_number" value="{{ $purchaseOrder->po_number }}">
-                        <button type="submit"
-                            class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100">
-                            Create Revision
-                        </button>
-                    </form>
-                </div>
-
-                <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl">
-                    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-sm font-semibold text-slate-900">
-                            Revision History
-                        </h2>
-                        <p class="text-xs text-slate-500">
-                            All revisions linked to this PO number.
-                        </p>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50">
-                                <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                                    <th class="px-4 py-2">PO Number</th>
-                                    <th class="px-4 py-2">Category</th>
-                                    <th class="px-4 py-2">Vendor</th>
-                                    <th class="px-4 py-2">Invoice Date</th>
-                                    <th class="px-4 py-2">Invoice No.</th>
-                                    <th class="px-4 py-2">Payment Date</th>
-                                    <th class="px-4 py-2">Currency</th>
-                                    <th class="px-4 py-2">Total</th>
-                                    <th class="px-4 py-2">Created At</th>
-                                    <th class="px-4 py-2">Created By</th>
-                                    <th class="px-4 py-2">Approved Date</th>
-                                    <th class="px-4 py-2">Status</th>
-                                    <th class="px-4 py-2">Action</th>
-                                    <th class="px-4 py-2">Reason</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                @forelse ($revisions as $revision)
-                                    <tr class="hover:bg-slate-50/60">
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->po_number }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->category->name ?? '-' }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->vendor_name }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->invoice_date }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->invoice_number }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->tanggal_pembayaran }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->currency }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ number_format($revision->total, 2, '.', ',') }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->created_at }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->user->name }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->approved_date }}
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            @include('partials.po-status', ['po' => $revision])
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            @include('partials.po-actions', ['po' => $revision])
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap">
-                                            {{ $revision->reason }}
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="14" class="px-4 py-6 text-center text-sm text-slate-500">
-                                            No revision data.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
                     </div>
                 </div>
-            </section>
-        @endif
+
+                {{-- Requester Info Footer --}}
+                <div class="p-6 bg-slate-900 rounded-3xl text-white flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-lg">
+                        {{ substr($purchaseOrder->user->name, 0, 1) }}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Originator</p>
+                        <p class="text-sm font-bold truncate">{{ $purchaseOrder->user->name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Dept</p>
+                        <p class="text-xs font-bold text-indigo-300">{{ $purchaseOrder->user->department->name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+
+            </aside>
+        </div>
     </div>
+
+    @push('modals')
+        @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
+    @endpush
 
     <script>
         function poApproval(config) {

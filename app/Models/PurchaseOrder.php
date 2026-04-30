@@ -115,6 +115,11 @@ class PurchaseOrder extends Model implements Approvable
         return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
     }
 
+    public function downloadLogs()
+    {
+        return $this->hasMany(PurchaseOrderDownloadLog::class)->latest();
+    }
+
     public function category()
     {
         return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');

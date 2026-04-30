@@ -221,7 +221,6 @@
                                     @endif
                                 </button>
                             </th>
-                            <th class="px-4 py-3 font-medium hidden sm:table-cell">Invoice Info</th>
                             <th class="px-4 py-3 font-medium">Vendor</th>
                             <th class="px-4 py-3 font-medium">Creator</th>
                             <th class="px-4 py-3 font-medium hidden md:table-cell">Status</th>
@@ -258,18 +257,6 @@
                                 <td class="px-4 py-3">
                                     <span class="font-medium text-slate-900">{{ $po->po_number }}</span>
                                 </td>
-                                <td class="px-4 py-3 hidden sm:table-cell">
-                                    <div class="flex flex-col text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-slate-600 text-xs">Date:</span>
-                                            <span class="font-medium text-xs">{{ $po->invoice_date ? $po->invoice_date->format('d/m/Y') : '-' }}</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <span class="text-slate-600 text-xs">No:</span>
-                                            <span class="font-medium whitespace-nowrap text-xs">{{ $po->invoice_number ?: '-' }}</span>
-                                        </div>
-                                    </div>
-                                </td>
                                 <td class="px-4 py-3">
                                     <span class="font-medium">{{ $po->vendor_name }}</span>
                                 </td>
@@ -280,17 +267,25 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 hidden md:table-cell">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $po->getStatusEnum()->cssClass() }}"
-                                            title="{{ $po->getStatusEnum()->description() }}">
-                                        {{ $po->getStatusEnum()->label() }}
-                                        @if($po->getStatusEnum()->isPendingApproval())
-                                            <span class="ml-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" title="Awaiting approval"></span>
+                                    <div class="flex flex-col gap-1.5">
+                                        <span class="inline-flex items-center w-fit px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}"
+                                                title="{{ $po->getStatusEnum()->description() }}">
+                                            {{ $po->getStatusEnum()->label() }}
+                                            @if($po->getStatusEnum()->isPendingApproval())
+                                                <span class="ml-1.5 w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
+                                            @endif
+                                        </span>
+                                        
+                                        @if($po->workflow_status === 'IN_REVIEW' && $po->current_approver)
+                                            <span class="text-[10px] font-medium text-slate-400 italic">
+                                                With: {{ $po->current_approver }}
+                                            </span>
+                                        @elseif($po->approved_date)
+                                            <span class="text-[10px] text-slate-400">
+                                                Approved {{ $po->approved_date->diffForHumans() }}
+                                            </span>
                                         @endif
-                                    </span>
-                                    
-                                    @if($po->approved_date)
-                                        <div class="text-xs text-slate-500 mt-1">{{ $po->approved_date->diffForHumans() }}</div>
-                                    @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 font-mono text-slate-900 hidden lg:table-cell">
                                     {{ number_format($po->total, 0, ',', '.') }}
@@ -463,116 +458,94 @@
                         {{-- Purchase Order Content --}}
                         <div x-show="!loading" x-transition>
                             @if($selectedPurchaseOrder)
-                                <div class="space-y-6">
-                                    {{-- Basic Information --}}
-                                    <div class="bg-gray-50 rounded-lg p-4">
-                                        <h4 class="text-sm font-medium text-gray-900 mb-3">Basic Information</h4>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">PO Number</dt>
-                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->po_number }}</dd>
-                                            </div>
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Vendor</dt>
-                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->vendor_name }}</dd>
-                                            </div>
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invoice Date</dt>
-                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->invoice_date ? $selectedPurchaseOrder->invoice_date->format('M d, Y') : '-' }}</dd>
-                                            </div>
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Invoice Number</dt>
-                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->invoice_number ?: '-' }}</dd>
-                                            </div>
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Amount</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $selectedPurchaseOrder->total ? 'Rp ' . number_format($selectedPurchaseOrder->total, 0, ',', '.') : '-' }}</dd>
-                                            </div>
-                                            <div>
-                                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Payment Date</dt>
-                                                <dd class="mt-1 text-sm text-gray-900">{{ $selectedPurchaseOrder->tanggal_pembayaran ? $selectedPurchaseOrder->tanggal_pembayaran->format('M d, Y') : '-' }}</dd>
-                                            </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[80vh]">
+                                    {{-- Left Side: PDF Viewer (75% width on desktop) --}}
+                                    <div class="lg:col-span-8 flex flex-col h-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                                        <div class="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Document Preview</span>
+                                            <a href="{{ $pdfUrl }}" target="_blank" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                                                <i class="bi bi-box-arrow-up-right"></i> Open External
+                                            </a>
                                         </div>
+                                        @if($pdfUrl)
+                                            <iframe src="{{ $pdfUrl }}#toolbar=0"
+                                                    class="flex-1 w-full border-0"
+                                                    title="Purchase Order PDF">
+                                            </iframe>
+                                        @else
+                                            <div class="flex-1 flex items-center justify-center text-slate-400 italic text-sm">
+                                                No PDF document available for this PO.
+                                            </div>
+                                        @endif
                                     </div>
 
-                                    {{-- Approval Information --}}
-                                    @if($selectedPurchaseOrder->approvalRequest)
-                                        <div class="bg-blue-50 rounded-lg p-4">
-                                            <h4 class="text-sm font-medium text-gray-900 mb-3">Approval Status</h4>
-                                            <div class="space-y-2">
-                                                <div class="flex items-center justify-between">
-                                                    <span class="text-sm text-gray-600">Current Status:</span>
-                                                    <span class="text-sm font-medium">{{ $selectedPurchaseOrder->workflow_status }}</span>
-                                                </div>
-                                                @if($selectedPurchaseOrder->workflow_step)
-                                                    <div class="flex items-center justify-between">
-                                                        <span class="text-sm text-gray-600">Current Approver:</span>
-                                                        <span class="text-sm font-medium">{{ $selectedPurchaseOrder->workflow_step }}</span>
-                                                    </div>
-                                                @endif
+                                    {{-- Right Side: Quick Action Sidebar (25% width on desktop) --}}
+                                    <div class="lg:col-span-4 flex flex-col h-full space-y-6">
+                                        {{-- PO Header & Status --}}
+                                        <div class="space-y-2">
+                                            <h3 class="text-2xl font-black text-slate-900 leading-none">
+                                                {{ $selectedPurchaseOrder->po_number }}
+                                            </h3>
+                                            <div class="flex items-center gap-2">
+                                                @include('partials.po-status', ['po' => $selectedPurchaseOrder])
                                             </div>
                                         </div>
-                                    @endif
 
-                                    {{-- PDF Viewer --}}
-                                    @if($pdfUrl)
-                                        <div class="bg-gray-50 rounded-lg p-4">
-                                            <div class="flex items-center justify-between mb-3">
-                                                <h4 class="text-sm font-medium text-gray-900">Purchase Order PDF</h4>
-                                                <button wire:click="downloadPdf"
-                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                    </svg>
-                                                    Download
+                                        {{-- Verification Checklist --}}
+                                        <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4">
+                                            <div>
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor</label>
+                                                <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->vendor_name }}</p>
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Date</label>
+                                                <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->invoice_date ? $selectedPurchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
+                                            </div>
+                                            <div class="pt-4 border-t border-slate-100">
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount</label>
+                                                <p class="text-xl font-black text-slate-900">
+                                                    <span class="text-xs text-slate-400 mr-1">{{ $selectedPurchaseOrder->currency }}</span>
+                                                    {{ number_format($selectedPurchaseOrder->total, 0, ',', '.') }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Workflow Info --}}
+                                        @if($selectedPurchaseOrder->workflow_status === 'IN_REVIEW')
+                                            <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                                                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Current Step</p>
+                                                <p class="text-xs font-bold text-indigo-700 mt-1">Waiting for {{ $selectedPurchaseOrder->workflow_step ?: 'Approver' }}</p>
+                                            </div>
+                                        @endif
+
+                                        {{-- Action Buttons --}}
+                                        <div class="flex flex-col gap-3 mt-auto">
+                                            @if($this->canApproveSelectedPO())
+                                                <button wire:click="approvePurchaseOrder"
+                                                        class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] transition-all">
+                                                    Approve PO
+                                                </button>
+                                            @endif
+
+                                            @if($this->canRejectSelectedPO())
+                                                <button wire:click="$dispatch('open-reject-modal')"
+                                                        class="w-full py-3 bg-white text-rose-600 border border-rose-200 rounded-2xl font-bold hover:bg-rose-50 transition-all">
+                                                    Reject Order
+                                                </button>
+                                            @endif
+
+                                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                                <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}"
+                                                   class="flex items-center justify-center py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
+                                                    Full History
+                                                </a>
+                                                <button wire:click="closeDetailModal"
+                                                        type="button"
+                                                        class="flex items-center justify-center py-2.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">
+                                                    Close
                                                 </button>
                                             </div>
-                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
-                                                <iframe src="{{ $pdfUrl }}"
-                                                        class="w-full h-96 border-0"
-                                                        title="Purchase Order PDF">
-                                                    <p class="p-4 text-center text-gray-500">
-                                                        Your browser does not support PDFs.
-                                                        <a href="{{ $pdfUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">Click here to view the PDF</a>
-                                                    </p>
-                                                </iframe>
-                                            </div>
                                         </div>
-                                    @endif
-
-                                    {{-- Actions --}}
-                                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                                        @if($this->canApproveSelectedPO())
-                                            <button wire:click="approvePurchaseOrder"
-                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                                Approve
-                                            </button>
-                                        @endif
-
-                                        @if($this->canRejectSelectedPO())
-                                            <button wire:click="$dispatch('open-reject-modal')"
-                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                Reject
-                                            </button>
-                                        @endif
-
-                                        @if($this->canEditSelectedPO())
-                                            <button wire:click="editPurchaseOrder"
-                                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                Edit
-                                            </button>
-                                        @endif
-
-                                        <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}"
-                                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Full Page
-                                        </a>
-
-                                        <button wire:click="closeDetailModal"
-                                                type="button"
-                                                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            Close
-                                        </button>
                                     </div>
                                 </div>
                             @endif

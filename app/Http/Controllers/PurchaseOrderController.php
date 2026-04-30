@@ -126,7 +126,14 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::find($id);
+        $purchaseOrder = PurchaseOrder::with([
+            'user', 
+            'category', 
+            'approvalRequest.actions.causer', 
+            'approvalRequest.steps', 
+            'downloadLogs.user',
+            'latestDownloadLog.user'
+        ])->findOrFail($id);
 
         $revisions = PurchaseOrder::where('parent_po_number', $purchaseOrder->po_number)->get();
 
@@ -134,7 +141,6 @@ class PurchaseOrderController extends Controller
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
         $director = $user->hasRole('director');
 
-        $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (! Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
             // abort(500, 'PDF file not found.');
