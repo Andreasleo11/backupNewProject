@@ -32,6 +32,8 @@ class PurchaseOrderIndex extends Component
     public $amountTo = '';
 
     public $creatorFilter = '';
+    
+    public $categoryFilter = '';
 
     public $perPage = 10;
 
@@ -57,6 +59,7 @@ class PurchaseOrderIndex extends Component
         'amountFrom' => ['except' => ''],
         'amountTo' => ['except' => ''],
         'creatorFilter' => ['except' => ''],
+        'categoryFilter' => ['except' => ''],
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -112,12 +115,17 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingCategoryFilter()
+    {
+        $this->resetPage();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
     }
 
-    public function sortBy($column)
+    public function sortByColumn($column)
     {
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -133,12 +141,12 @@ class PurchaseOrderIndex extends Component
         $this->search = '';
         $this->statusFilter = '';
         $this->vendorFilter = '';
-        $this->monthFilter = '';
+        $this->creatorFilter = '';
+        $this->categoryFilter = '';
         $this->dateFrom = '';
         $this->dateTo = '';
         $this->amountFrom = '';
         $this->amountTo = '';
-        $this->creatorFilter = '';
         $this->sortBy = 'created_at';
         $this->sortDirection = 'desc';
         $this->selectedIds = [];
@@ -531,7 +539,7 @@ class PurchaseOrderIndex extends Component
         $query = PurchaseOrder::query()
             ->select([
                 'id', 'po_number', 'invoice_date', 'invoice_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
+                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran', 'purchase_order_category_id'
             ])
             ->with([
                 'user:id,name',
@@ -562,6 +570,11 @@ class PurchaseOrderIndex extends Component
         // Direct column filters
         if ($this->vendorFilter) {
             $query->where('vendor_name', $this->vendorFilter);
+        }
+
+        // Category filtering
+        if ($this->categoryFilter) {
+            $query->where('purchase_order_category_id', $this->categoryFilter);
         }
 
         // Creator filtering
@@ -595,8 +608,9 @@ class PurchaseOrderIndex extends Component
 
         // Optimized sorting with whitelist
         $sortableColumns = [
-            'po_number', 'invoice_date', 'vendor_name',
-            'total', 'approved_date', 'created_at', 'tanggal_pembayaran'
+            'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
+            'total', 'approved_date', 'created_at', 'tanggal_pembayaran',
+            'purchase_order_category_id'
         ];
 
         if (in_array($this->sortBy, $sortableColumns)) {
@@ -611,6 +625,11 @@ class PurchaseOrderIndex extends Component
     public function getPurchaseOrdersProperty()
     {
         return $this->getPurchaseOrdersQuery()->paginate($this->perPage);
+    }
+
+    public function getFilteredTotalProperty()
+    {
+        return $this->getPurchaseOrdersQuery()->sum('total');
     }
 
     public function getStatsProperty()
@@ -636,11 +655,16 @@ class PurchaseOrderIndex extends Component
 
     public function getCanBulkActionProperty()
     {
+        return $this->bulkActionReason === null;
+    }
+
+    public function getBulkActionReasonProperty()
+    {
         if (empty($this->selectedIds)) {
-            return false;
+            return "No items selected.";
         }
 
-        // Only allow bulk actions if all selected POs are in IN_REVIEW
+        // Check for items not in IN_REVIEW
         $invalidCount = PurchaseOrder::whereIn('id', $this->selectedIds)
             ->where(function($query) {
                 $query->whereDoesntHave('approvalRequest')
@@ -650,7 +674,11 @@ class PurchaseOrderIndex extends Component
             })
             ->count();
 
-        return $invalidCount === 0;
+        if ($invalidCount > 0) {
+            return "Selection contains items already processed or in Draft.";
+        }
+
+        return null;
     }
 
     public function filterByStat($type)
@@ -700,6 +728,9 @@ class PurchaseOrderIndex extends Component
                 ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
                 ->distinct()
                 ->pluck('users.name', 'users.name')
+                ->toArray(),
+            'categories' => ['' => 'All Categories'] + \App\Models\PurchaseOrderCategory::query()
+                ->pluck('name', 'id')
                 ->toArray(),
         ];
     }
