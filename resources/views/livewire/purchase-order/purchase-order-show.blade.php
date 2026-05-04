@@ -6,25 +6,24 @@
                 <div>
                     <div class="flex items-center gap-4 flex-wrap">
                         <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
-                            {{ $purchaseOrder->po_number }}
+                            Purchase Order #{{ $purchaseOrder->id }}
                         </h1>
-                        @include('partials.po-status', ['po' => $purchaseOrder])
                         
                         @if($purchaseOrder->workflow_status === 'IN_REVIEW' && $purchaseOrder->current_approver)
-                            <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 text-xs font-bold animate-pulse">
+                            <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 text-xs font-bold">
                                 <span class="relative flex h-2 w-2">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                                 </span>
-                                Currently with: {{ $purchaseOrder->current_approver }}
+                                Pending: {{ $purchaseOrder->current_approver }}
                             </div>
                         @endif
                     </div>
                     <nav class="mt-3" aria-label="Breadcrumb">
                         <ol class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-                            <li><a href="{{ route('po.index') }}" class="hover:text-indigo-600 transition-colors">Purchase Orders</a></li>
+                            <li><a href="{{ route('po.index') }}" class="hover:text-indigo-600 transition-colors">Purchase Order list</a></li>
                             <li><i class="bi bi-chevron-right text-[10px]"></i></li>
-                            <li class="text-slate-600">Purchase Order Detail</li>
+                            <li class="text-slate-600">Detail</li>
                         </ol>
                     </nav>
                 </div>
@@ -38,7 +37,7 @@
                     <a href="{{ route('po.download', $purchaseOrder->id) }}" 
                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98]">
                         <i class="bi bi-cloud-arrow-down-fill text-lg"></i>
-                        Download PDF
+                        Export as PDF
                     </a>
                 </div>
             </div>
@@ -226,7 +225,7 @@
                                     <button @click="showReject = true"
                                             class="w-full mt-3 bg-indigo-500/30 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-500/50 transition-all flex items-center justify-center gap-2 border border-white/10">
                                         <i class="bi bi-x-lg"></i>
-                                        Reject Order
+                                        Reject
                                     </button>
                                 </div>
                             </div>
@@ -267,10 +266,10 @@
                                         <i class="bi bi-x-octagon text-3xl"></i>
                                     </div>
                                     <div class="space-y-2">
-                                        <h3 class="text-2xl font-black">Reject Order</h3>
+                                        <h3 class="text-2xl font-black">Reject PO</h3>
                                         <p class="text-sm text-slate-500">Provide a reason to help the requester improve this PO.</p>
                                     </div>
-                                    <textarea wire:model="reason" rows="4" class="w-full rounded-2xl border-slate-200 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300" placeholder="e.g., Price mismatch with quotation..."></textarea>
+                                    <textarea wire:model="reason" rows="4" class="w-full px-4 py-3 rounded-2xl border-slate-200 focus:border-rose-500 focus:ring-rose-500 text-sm placeholder:text-slate-300" placeholder="e.g., Price mismatch with quotation..."></textarea>
                                     <div class="flex flex-col gap-3">
                                         <button wire:click="reject" :disabled="!reason || $wire.loading" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black shadow-lg hover:bg-rose-700 transition-all disabled:opacity-50">
                                             Confirm Rejection
@@ -301,11 +300,15 @@
 
                         <div class="grid grid-cols-1 gap-4">
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor Profile</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">PO Number</label>
+                                <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->po_number }}</p>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vendor</label>
                                 <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->vendor_name }}</p>
                             </div>
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Department Category</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
                                 <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
                             </div>
                         </div>
@@ -313,34 +316,17 @@
 
                     <div class="p-6 bg-slate-50/30 grid grid-cols-2 gap-4 text-slate-900">
                         <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inv. Date</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Date</label>
                             <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->invoice_date ? $purchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
                         </div>
                         <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pymt. Date</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Date</label>
                             <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->tanggal_pembayaran ? \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d M Y') : '-' }}</p>
                         </div>
                     </div>
                 </div>
 
-                {{-- Related Files --}}
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
-                        @if (Auth::id() == $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'))
-                            <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-                        @endif
-                    </div>
-                    <div class="p-6">
-                        @include('partials.file-attachments', [
-                            'files' => $files,
-                            'showDelete' => Auth::id() === $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'),
-                            'title' => ''
-                        ])
-                    </div>
-                </div>
+                
 
                 {{-- Requester Info Footer --}}
                 <div class="p-6 bg-slate-900 rounded-3xl text-white flex items-center gap-4">
@@ -348,7 +334,7 @@
                         {{ substr($purchaseOrder->user->name, 0, 1) }}
                     </div>
                     <div class="flex-1">
-                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Originator</p>
+                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Creator</p>
                         <p class="text-sm font-bold truncate">{{ $purchaseOrder->user->name }}</p>
                     </div>
                     <div class="text-right">
@@ -358,6 +344,25 @@
                 </div>
 
             </aside>
+        </div>
+
+        {{-- Related Files --}}
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
+                @if (Auth::id() == $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'))
+                    <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                @endif
+            </div>
+            <div class="p-6">
+                @include('partials.file-attachments', [
+                    'files' => $files,
+                    'showDelete' => Auth::id() === $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'),
+                    'title' => ''
+                ])
+            </div>
         </div>
     </div>
 
