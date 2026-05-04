@@ -2,64 +2,106 @@
 
 namespace App\Models;
 
-use App\Notifications\PurchaseOrderApproved;
-use App\Notifications\PurchaseOrderCanceled;
-use App\Notifications\PurchaseOrderCreated;
-use App\Notifications\PurchaseOrderRejected;
+use App\Domain\Approval\Contracts\Approvable;
+use App\Enums\PurchaseOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class PurchaseOrder extends Model
+class PurchaseOrder extends Model implements Approvable
 {
     use HasFactory;
+
+    protected $casts = [
+        'invoice_date' => 'date',
+        'approved_date' => 'datetime',
+        'tanggal_pembayaran' => 'date',
+        'downloaded_at' => 'datetime',
+        'total' => 'decimal:2',
+        'revision_count' => 'integer',
+    ];
 
     protected $fillable = [
         'po_number',
         'approved_date',
-        'status',
         'filename',
         'reason',
         'creator_id',
         'downloaded_at',
         'vendor_name',
         'invoice_date',
+        'invoice_number',
         'currency',
         'total',
         'tanggal_pembayaran',
-        'invoice_number',
         'purchase_order_category_id',
         'parent_po_number',
         'revision_count',
     ];
 
-    // Queries
-    public function scopeApproved($query)
+    /**
+     * Get the current status enum based on workflow status
+     */
+    public function getStatusEnum(): PurchaseOrderStatus
     {
-        return $query->where('status', 2);
+        return PurchaseOrderStatus::fromWorkflowStatus($this->workflow_status);
     }
 
-    public function scopeWaiting($query)
+    /**
+     * Check if PO can be edited (only rejected/cancelled can be revised)
+     */
+    public function canBeEdited(): bool
     {
-        return $query->where('status', 1);
+        $status = $this->getStatusEnum();
+        return in_array($status, [PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]);
     }
 
-    public function scopeRejected($query)
+    /**
+     * Check if PO is in a terminal state (cannot be changed further)
+     */
+    public function isTerminal(): bool
     {
-        return $query->where('status', 3);
+        return $this->getStatusEnum()->isTerminal();
     }
 
-    public function scopeCanceled($query)
+    /**
+     * Scope: Filter by workflow status
+     */
+    public function scopeWithWorkflowStatus($query, string $workflowStatus)
     {
-        return $query->where('status', 4);
+        if ($workflowStatus === 'DRAFT') {
+            // DRAFT: No approval request or approval request is DRAFT
+            return $query->whereDoesntHave('approvalRequest')
+                        ->orWhereHas('approvalRequest', function ($q) {
+                            $q->where('status', 'DRAFT');
+                        });
+        }
+
+        // Other statuses: Must have approval request with matching status
+        return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
+            $q->where('status', $workflowStatus);
+        });
     }
 
-    public function scopeApprovedForCurrentMonth($query)
+    /**
+     * Scope: Filter editable POs (can be revised)
+     */
+    public function scopeEditable($query)
     {
-        return $query
-            ->where('status', 2)
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->whereIn('status', ['REJECTED', 'CANCELLED']);
+        });
+    }
+
+    /**
+     * Scope: Filter POs approved in current month
+     */
+    public function scopeApprovedThisMonth($query)
+    {
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->where('status', 'APPROVED')
+              ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        });
     }
 
     public function user()
@@ -72,114 +114,87 @@ class PurchaseOrder extends Model
         return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
     }
 
+    public function downloadLogs()
+    {
+        return $this->hasMany(PurchaseOrderDownloadLog::class)->latest();
+    }
+
     public function category()
     {
         return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
     }
 
-    protected static function boot()
+    // === APPROVAL SYSTEM INTEGRATION ===
+
+    public function approvalRequest(): MorphOne
     {
-        parent::boot();
-
-        static::created(function ($report) {
-            $report->sendNotification('created');
-        });
-
-        static::updated(function ($report) {
-            if ($report->isDirty('status')) {
-                $statusMapping = [
-                    2 => 'approved',
-                    3 => 'rejected',
-                    4 => 'canceled',
-                ];
-
-                // Send a notification based on the new status
-                $report->sendNotification($statusMapping[$report->status]);
-                if (isset($statusMapping[$report->status])) {
-                }
-            }
-        });
+        return $this->morphOne(\App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::class, 'approvable');
     }
 
-    public function getVendorNames()
+    public function getApprovableTypeLabel(): string
     {
-        $vendorNames = Vendor::pluck('name');
-
-        return response()->json([
-            'vendorNames' => $vendorNames,
-        ]);
+        return 'Purchase Order';
     }
 
-    public function sendNotification($event)
+    public function getApprovableIdentifier(): string
     {
-        $details = $this->prepareNotificationDetails();
-        $users = $this->getNotificationUsers($event);
+        return $this->id;
+    }
 
-        if ($users->isNotEmpty()) {
-            Notification::send($users, $this->getNotificationInstance($event, $details));
-        } else {
-            Log::warning(
-                "No valid users found to send the notification for Purchase Order {$event}.",
-            );
+    public function getApprovableShowUrl(): string
+    {
+        return route('po.view', $this->id);
+    }
+
+    public function getApprovableDepartmentName(): ?string
+    {
+        return $this->user?->department?->name;
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        // Return branch information if available
+        return $this->user?->branch?->name;
+    }
+
+    /**
+     * Get workflow status from approval request.
+     * This replaces the legacy status column.
+     */
+    public function getWorkflowStatusAttribute(): ?string
+    {
+        // Load approval request if not already loaded
+        if (!$this->relationLoaded('approvalRequest')) {
+            $this->load('approvalRequest:id,approvable_id,approvable_type,status');
         }
+
+        // Return status from approval request, or DRAFT if no approval
+        return $this->approvalRequest?->status ?? 'DRAFT';
     }
 
-    private function prepareNotificationDetails()
+    /**
+     * Get current workflow step (approver label).
+     */
+    public function getWorkflowStepAttribute(): ?string
     {
-        $total = number_format($this->total, 2, '.', ',');
+        $approval = $this->approvalRequest;
 
-        return [
-            'greeting' => 'Purchase Order Notification',
-            'actionText' => 'Check Now',
-            'actionURL' => route('po.view', $this->id),
-            'body' => "Details of the Purchase Order: <br>
-                - PO Number : {$this->po_number} <br>
-                - Vendor Name : {$this->vendor_name} <br>
-                - Invoice Date : {$this->invoice_date} <br>
-                - Invoice Number : {$this->invoice_number} <br>
-                - Total : {$this->currency} {$total} <br>
-                - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
-                - Status : {$this->getStatusText($this->status)}",
-        ];
-    }
-
-    private function getStatusText($status)
-    {
-        return match ($status) {
-            1 => 'WAITING',
-            2 => 'APPROVED',
-            3 => 'REJECTED',
-            4 => 'CANCELED',
-            default => 'UNDEFINED',
-        };
-    }
-
-    private function getNotificationUsers($event)
-    {
-        if ($event == 'created') {
-            return User::role('DIRECTOR')->get();
-        } elseif ($event == 'approved') {
-            $deptHeadAccounting = User::where('name', 'benny')->first();
-            $accountingUser = User::where('name', 'nessa')->first();
-
-            return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
-        } elseif ($event == 'canceled') {
-            $director = User::role('DIRECTOR')->first();
-
-            return collect([$this->user, $director])->filter();
-        } else {
-            return collect([$this->user])->filter();
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
+            return null;
         }
+
+        $currentStep = $approval->steps()
+            ->where('sequence', $approval->current_step)
+            ->first();
+
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
     }
 
-    private function getNotificationInstance($event, $details)
+    /**
+     * Get current approver name (alias for workflow_step).
+     */
+    public function getCurrentApproverAttribute(): ?string
     {
-        return match ($event) {
-            'created' => new PurchaseOrderCreated($this, $details),
-            'approved' => new PurchaseOrderApproved($this, $details),
-            'rejected' => new PurchaseOrderRejected($this, $details),
-            'canceled' => new PurchaseOrderCanceled($this, $details),
-            default => null,
-        };
+        return $this->workflow_step;
     }
 }

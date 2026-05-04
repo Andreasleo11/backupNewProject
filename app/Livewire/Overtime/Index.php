@@ -9,7 +9,6 @@ use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Auth;
 use Carbon\Carbon;
-use DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;

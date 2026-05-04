@@ -22,6 +22,7 @@
     "laravel/sanctum": "^3.3",
     "laravel/tinker": "^2.8",
     "laravel/ui": "^4.3",
+    "livewire/livewire": "*",
     "maatwebsite/excel": "^3.1",
     "milon/barcode": "^11.0",
     "pusher/pusher-php-server": "^7.2",

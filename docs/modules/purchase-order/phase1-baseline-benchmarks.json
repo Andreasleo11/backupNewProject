@@ -1,0 +1,12 @@
+{
+    "timestamp": "2026-04-24T09:08:40.304526Z",
+    "benchmarks": {
+        "model_instantiation": 0.4341602325439453,
+        "simple_query": 10.885000228881836,
+        "complex_query": 10.396003723144531,
+        "memory_usage": 2728,
+        "loc": 564,
+        "methods": 19
+    },
+    "notes": "Baseline measurements before Phase 1 refactoring"
+}

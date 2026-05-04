@@ -69,21 +69,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/pr/markasreceivedall', [DetailPurchaseRequestController::class, 'receivedAll'])->name('pr.receive.all');
 
     // Purchase Orders
-    Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
-    Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
+    // Livewire Index (Phase 2)
+    Route::get('purchaseOrders', \App\Livewire\PurchaseOrder\PurchaseOrderIndex::class)->name('po.index');
+    Route::get('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
     Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
-    Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
     Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'sign'])->name('po.sign');
     Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name('po.reject');
-    Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
-    Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
     Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name('po.rejectAll');
     Route::get('/purchase-orders/export', [PurchaseOrderController::class, 'exportExcel'])->name('po.export');
+    Route::get('/purchaseOrder/{id}', \App\Livewire\PurchaseOrder\PurchaseOrderShow::class)->name('po.view');
+    Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
+    Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
     Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
     Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
     Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');
     Route::post('purchase-orders/reject-selected', [PurchaseOrderController::class, 'rejectSelected'])->name('purchase_orders.reject_selected');
-    Route::get('purchaseOrders/dashboard', [PurchaseOrderController::class, 'dashboard'])->name('po.dashboard');
+    // Livewire Dashboard (Phase 2)
+    Route::get('purchaseOrders/dashboard', \App\Livewire\PurchaseOrder\PurchaseOrderDashboard::class)->name('po.dashboard');
     Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']);
     Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
     Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
