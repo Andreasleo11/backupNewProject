@@ -242,9 +242,9 @@ class NavigationService
                     ],
                     [
                         'label' => 'Purchase Orders',
-                        'route' => 'po.dashboard',
+                        'route' => 'po.index',
                         'icon' => 'clipboard-document-check',
-                        'active' => request()->routeIs('po.dashboard'),
+                        'active' => request()->routeIs('po.index'),
                         'permission' => 'po.view-any',
                     ],
                     [

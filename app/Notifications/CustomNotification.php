@@ -2,27 +2,29 @@
 
 namespace App\Notifications;
 
-use App\Models\PurchaseOrder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PurchaseOrderCanceled extends Notification implements ShouldQueue
+class CustomNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $report;
+    protected string $subject;
 
-    public $details;
+    protected string $message;
+
+    protected ?string $actionUrl;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(PurchaseOrder $report, $details)
+    public function __construct(string $subject, string $message, ?string $actionUrl = null)
     {
-        $this->report = $report;
-        $this->details = $details;
+        $this->subject = $subject;
+        $this->message = $message;
+        $this->actionUrl = $actionUrl;
     }
 
     /**
@@ -40,11 +42,15 @@ class PurchaseOrderCanceled extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->line('There\'s a Purchase Order has just canceled!')
-            ->greeting($this->details['greeting'])
-            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
-            ->action($this->details['actionText'], $this->details['actionURL']);
+        $mail = (new MailMessage)
+            ->subject($this->subject)
+            ->line($this->message);
+
+        if ($this->actionUrl) {
+            $mail->action('View Details', $this->actionUrl);
+        }
+
+        return $mail;
     }
 
     /**
@@ -55,10 +61,9 @@ class PurchaseOrderCanceled extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Purchase Order with document number = ' .
-                $this->report->id .
-                ' has just been canceled!',
-            'status' => $this->report->status,
+            'subject' => $this->subject,
+            'message' => $this->message,
+            'action_url' => $this->actionUrl,
         ];
     }
 }
