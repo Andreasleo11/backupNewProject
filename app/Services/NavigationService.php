@@ -248,6 +248,13 @@ class NavigationService
                         'permission' => 'po.view-any',
                     ],
                     [
+                        'label' => 'Invoices',
+                        'route' => 'invoices.index',
+                        'icon' => 'receipt',
+                        'active' => request()->routeIs('invoices.index'),
+                        'permission' => 'po.view-any',
+                    ],
+                    [
                         'label' => 'Forecast Prediction',
                         'route' => 'purchasing_home',
                         'icon' => 'chart-bar',

@@ -1,6 +1,8 @@
 {{-- Premium Upload Files Modal --}}
-<div x-data="{
+<template x-teleport="body">
+    <div x-data="{
     open: false,
+    docId: '{{ $doc_id ?? '' }}',
     isDragging: false,
     files: [],
     uploading: false,
@@ -11,8 +13,6 @@
                 document.body.classList.add('overflow-hidden');
             } else {
                 document.body.classList.remove('overflow-hidden');
-                // Optional: clear files on close? 
-                // this.files = []; 
             }
         });
     },
@@ -75,7 +75,13 @@
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-}" x-show="open" x-cloak @open-upload-modal.window="open = true"
+}" x-show="open" x-cloak 
+    @open-upload-modal.window="
+        open = true; 
+        if ($event.detail && $event.detail.docId) { 
+            docId = $event.detail.docId; 
+        }
+    "
     class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
     @keydown.escape.window="open = false">
 
@@ -104,7 +110,7 @@
             <form x-ref="uploadForm" action="{{ route('file.upload') }}" method="post" enctype="multipart/form-data"
                 class="flex flex-col">
                 @csrf
-                <input type="hidden" name="doc_num" value="{{ $doc_id }}">
+                <input type="hidden" name="doc_num" :value="docId">
                 {{-- Hidden real input --}}
                 <input type="file" x-ref="uploadInput" name="files[]" class="hidden" multiple>
 
@@ -211,4 +217,4 @@
             </form>
         </div>
     </div>
-</div>
+</template>

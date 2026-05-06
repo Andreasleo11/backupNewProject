@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchaseOrder/{id}', \App\Livewire\PurchaseOrder\PurchaseOrderShow::class)->name('po.view');
     Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
     Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
+    Route::get('/invoices', \App\Livewire\Invoice\InvoiceIndex::class)->name('invoices.index');
     Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
     Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
     Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');

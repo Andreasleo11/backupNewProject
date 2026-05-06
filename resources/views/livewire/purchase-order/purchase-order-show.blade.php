@@ -112,6 +112,9 @@
                     </div>
                 </div>
 
+                {{-- Invoice Management --}}
+                <livewire:purchase-order.invoice-manager :purchaseOrderId="$purchaseOrder->id" />
+
                 {{-- Revisions --}}
                 @if ($purchaseOrder->status === 4 || $purchaseOrder->revision_count > 0 || count($revisions) > 0)
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -312,18 +315,6 @@
                                 <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="p-6 bg-slate-50/30 grid grid-cols-2 gap-4 text-slate-900">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Date</label>
-                            <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->invoice_date ? $purchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment Date</label>
-                            <p class="text-xs font-bold text-slate-700 mt-0.5">{{ $purchaseOrder->tanggal_pembayaran ? \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d M Y') : '-' }}</p>
-                        </div>
-                    </div>
                 </div>
 
                 
