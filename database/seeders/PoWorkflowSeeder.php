@@ -23,6 +23,7 @@ class PoWorkflowSeeder extends Seeder
         if ($existingRule) {
             $this->command->warn("⚠️  PO baseline director approval rule already exists (ID: {$existingRule->id})");
             $this->command->info('ℹ️  Skipping seeder - workflow already configured');
+
             return;
         }
 
@@ -31,8 +32,9 @@ class PoWorkflowSeeder extends Seeder
             ->where('guard_name', config('auth.defaults.guard', 'web'))
             ->first();
 
-        if (!$directorRole) {
+        if (! $directorRole) {
             $this->command->error('❌ Director role not found. Run roles and permissions seeders first.');
+
             return;
         }
 
@@ -58,9 +60,9 @@ class PoWorkflowSeeder extends Seeder
 
             $this->command->info("✅ Created PO baseline director approval rule (ID: {$rule->id})");
             $this->command->info("   - Model: {$modelType}");
-            $this->command->info("   - Code: po.baseline.director");
+            $this->command->info('   - Code: po.baseline.director');
             $this->command->info("   - Approver: Director role (ID: {$directorRole->id})");
-            $this->command->info("   - Workflow: Single-step director approval");
+            $this->command->info('   - Workflow: Single-step director approval');
         });
 
         $this->command->info('🎉 PO Approval Workflow seeding completed successfully!');

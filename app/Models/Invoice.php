@@ -26,7 +26,7 @@ class Invoice extends Model
     protected $casts = [
         'invoice_date' => 'date',
         'payment_date' => 'date',
-        'total'        => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     public function getActivitylogOptions(): LogOptions

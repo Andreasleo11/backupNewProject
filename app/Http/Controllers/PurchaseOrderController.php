@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use App\Http\Requests\UpdatePoRequest;
@@ -15,9 +14,7 @@ use App\Services\PdfProcessingService;
 use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseOrderController extends Controller
@@ -116,7 +113,6 @@ class PurchaseOrderController extends Controller
                 ->with('error', 'Failed to create purchase order. Please try again.');
         }
     }
-
 
     public function sign(Request $request)
     {

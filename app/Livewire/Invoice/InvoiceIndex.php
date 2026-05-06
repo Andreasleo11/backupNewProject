@@ -11,8 +11,11 @@ class InvoiceIndex extends Component
     use WithPagination;
 
     public $search = '';
+
     public $perPage = 10;
+
     public $sortBy = 'created_at';
+
     public $sortDirection = 'desc';
 
     protected $queryString = [
@@ -55,17 +58,17 @@ class InvoiceIndex extends Component
             if (strlen($searchTerm) > 0) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('invoice_number', 'like', '%' . $searchTerm . '%')
-                      ->orWhereHas('purchaseOrder', function ($poQuery) use ($searchTerm) {
-                          $poQuery->where('po_number', 'like', '%' . $searchTerm . '%')
-                                  ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%');
-                      });
+                        ->orWhereHas('purchaseOrder', function ($poQuery) use ($searchTerm) {
+                            $poQuery->where('po_number', 'like', '%' . $searchTerm . '%')
+                                ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%');
+                        });
                 });
             }
         }
 
         // Optimized sorting
         $sortableColumns = [
-            'invoice_number', 'invoice_date', 'payment_date', 'total', 'created_at'
+            'invoice_number', 'invoice_date', 'payment_date', 'total', 'created_at',
         ];
 
         if (in_array($this->sortBy, $sortableColumns)) {

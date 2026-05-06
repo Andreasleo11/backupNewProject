@@ -24,6 +24,7 @@ return new class extends Migration
         // Idempotency guard — safe to re-run after a failed deploy
         if (DB::table('invoices')->exists()) {
             Log::info('[backfill_invoices] invoices table already has rows — skipping.');
+
             return;
         }
 
@@ -35,7 +36,7 @@ return new class extends Migration
                 ->groupBy('po_number')
                 ->pluck('po_number');
 
-            $totalInvoices  = 0;
+            $totalInvoices = 0;
             $totalSoftDeleted = 0;
 
             foreach ($groups as $poNumber) {
@@ -58,13 +59,13 @@ return new class extends Migration
                 //    (the parent PO's own invoice data is also captured)
                 $invoiceRows = $records->map(fn ($po) => [
                     'purchase_order_id' => $parentId,
-                    'invoice_number'    => $po->invoice_number ?? null,
-                    'invoice_date'      => $po->invoice_date ?? null,
-                    'payment_date'      => $po->tanggal_pembayaran ?? null,
-                    'total'             => $po->total ?? null,
-                    'total_currency'    => $po->currency ?? null,
-                    'created_at'        => $po->created_at,
-                    'updated_at'        => now(),
+                    'invoice_number' => $po->invoice_number ?? null,
+                    'invoice_date' => $po->invoice_date ?? null,
+                    'payment_date' => $po->tanggal_pembayaran ?? null,
+                    'total' => $po->total ?? null,
+                    'total_currency' => $po->currency ?? null,
+                    'created_at' => $po->created_at,
+                    'updated_at' => now(),
                 ])->toArray();
 
                 // Use insertOrIgnore to skip duplicate (po_id, invoice_number) silently

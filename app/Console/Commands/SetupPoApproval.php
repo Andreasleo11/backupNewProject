@@ -9,11 +9,11 @@ use App\Models\PurchaseOrder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Spatie\Permission\Models\Role;
 
 class SetupPoApproval extends Command
 {
     protected $signature = 'po:setup-approval {--force : Force recreation of approval workflow}';
+
     protected $description = 'Setup PO approval workflow and synchronize all existing PO data with approval requests';
 
     public function __construct(private Approvals $approvals)
@@ -38,18 +38,19 @@ class SetupPoApproval extends Command
 
         // DEBUG: Try without transaction first
         // DB::transaction(function () use ($forceRecreation, $baselineRule) {
-            // Step 1: Migrate all legacy POs in one atomic operation
-            $this->migrateAllLegacyPos($baselineRule);
+        // Step 1: Migrate all legacy POs in one atomic operation
+        $this->migrateAllLegacyPos($baselineRule);
 
-            // Step 2: Verify the complete setup
-            $this->verifyCompleteSetup();
+        // Step 2: Verify the complete setup
+        $this->verifyCompleteSetup();
 
-            // Debug: Check if transaction committed
-            $approvalCount = ApprovalRequest::where('approvable_type', \App\Models\PurchaseOrder::class)->count();
-            Log::info('Final check', ['approval_requests_count' => $approvalCount]);
+        // Debug: Check if transaction committed
+        $approvalCount = ApprovalRequest::where('approvable_type', \App\Models\PurchaseOrder::class)->count();
+        Log::info('Final check', ['approval_requests_count' => $approvalCount]);
         // });
 
         $this->info('🎉 PO Approval Workflow Setup completed successfully!');
+
         return 0;
     }
 
@@ -65,15 +66,18 @@ class SetupPoApproval extends Command
 
         // Get all POs that have approval requests but need status synchronization
         $posNeedingSync = PurchaseOrder::whereHas('approvalRequest', function ($query) {
-                $query->whereColumn('approval_requests.status', '!=',
-                    DB::raw("CASE
+            $query->whereColumn(
+                'approval_requests.status',
+                '!=',
+                DB::raw("CASE
                         WHEN purchase_orders.status = 1 THEN 'IN_REVIEW'
                         WHEN purchase_orders.status = 2 THEN 'APPROVED'
                         WHEN purchase_orders.status = 3 THEN 'REJECTED'
                         WHEN purchase_orders.status = 4 THEN 'CANCELLED'
                         ELSE 'IN_REVIEW'
-                    END"));
-            })
+                    END")
+            );
+        })
             ->with('approvalRequest')
             ->get();
 
@@ -81,6 +85,7 @@ class SetupPoApproval extends Command
 
         if ($totalToProcess === 0) {
             $this->info('✅ All POs have properly synchronized approval requests');
+
             return;
         }
 
@@ -416,7 +421,7 @@ class SetupPoApproval extends Command
             ->where('active', true)
             ->first();
 
-        if (!$baselineRule) {
+        if (! $baselineRule) {
             $this->error('❌ Required workflow data is missing!');
             $this->error('');
             $this->error('The PO approval workflow has not been seeded into the database.');
@@ -438,15 +443,18 @@ class SetupPoApproval extends Command
     {
         if ($type === 'user') {
             $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($id);
+
             return $user->name ?? 'Unknown User';
         }
         $role = \Spatie\Permission\Models\Role::find($id);
+
         return $role->name ?? 'Unknown Role';
     }
 
     private function getRoleSlug(int $roleId): ?string
     {
         $role = \Spatie\Permission\Models\Role::find($roleId);
+
         return $role->name ?? null;
     }
 
@@ -454,9 +462,11 @@ class SetupPoApproval extends Command
     {
         if ($type === 'user') {
             $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($id);
+
             return $user->name ?? 'Unknown User';
         }
         $role = \Spatie\Permission\Models\Role::find($id);
+
         return $this->getRoleLabel($role->name ?? '');
     }
 

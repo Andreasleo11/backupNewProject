@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Enums\PurchaseOrderStatus;
 use App\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

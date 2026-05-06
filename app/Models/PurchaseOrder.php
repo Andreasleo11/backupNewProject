@@ -17,12 +17,12 @@ class PurchaseOrder extends Model implements Approvable
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $casts = [
-        'invoice_date'     => 'date',
-        'approved_date'    => 'datetime',
+        'invoice_date' => 'date',
+        'approved_date' => 'datetime',
         'tanggal_pembayaran' => 'date',
-        'downloaded_at'    => 'datetime',
-        'total'            => 'decimal:2',
-        'revision_count'   => 'integer',
+        'downloaded_at' => 'datetime',
+        'total' => 'decimal:2',
+        'revision_count' => 'integer',
     ];
 
     protected $fillable = [
@@ -121,9 +121,9 @@ class PurchaseOrder extends Model implements Approvable
     {
         if ($workflowStatus === 'DRAFT') {
             return $query->whereDoesntHave('approvalRequest')
-                         ->orWhereHas('approvalRequest', function ($q) {
-                             $q->where('status', 'DRAFT');
-                         });
+                ->orWhereHas('approvalRequest', function ($q) {
+                    $q->where('status', 'DRAFT');
+                });
         }
 
         return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
@@ -148,7 +148,7 @@ class PurchaseOrder extends Model implements Approvable
     {
         return $query->whereHas('approvalRequest', function ($q) {
             $q->where('status', 'APPROVED')
-              ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
+                ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
         });
     }
 

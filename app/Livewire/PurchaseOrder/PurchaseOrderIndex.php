@@ -6,8 +6,8 @@ use App\Jobs\PurchaseOrder\ProcessPurchaseOrderApprovalJob;
 use App\Jobs\PurchaseOrder\ProcessPurchaseOrderRejectionJob;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -32,7 +32,7 @@ class PurchaseOrderIndex extends Component
     public $amountTo = '';
 
     public $creatorFilter = '';
-    
+
     public $categoryFilter = '';
 
     public $perPage = 10;
@@ -66,8 +66,11 @@ class PurchaseOrderIndex extends Component
 
     // Modal properties
     public $showDetailModal = false;
+
     public $selectedPurchaseOrder;
+
     public $modalLoading = false;
+
     public $pdfUrl = null;
 
     public function updatingSearch()
@@ -171,7 +174,7 @@ class PurchaseOrderIndex extends Component
             'approvalRequest.steps' => function ($query) {
                 $query->orderBy('sequence');
             },
-            'approvalRequest.actions.causer'
+            'approvalRequest.actions.causer',
         ])->findOrFail($poId);
 
         // Generate PDF preview URL if file exists
@@ -201,6 +204,7 @@ class PurchaseOrderIndex extends Component
     {
         try {
             $pdfService = app(\App\Services\PdfProcessingService::class);
+
             return $pdfService->download($this->selectedPurchaseOrder->id, auth()->id());
         } catch (\Exception $e) {
             Log::error('PDF download failed', [
@@ -222,8 +226,9 @@ class PurchaseOrderIndex extends Component
 
     public function approvePurchaseOrder()
     {
-        if (!$this->canApproveSelectedPO()) {
+        if (! $this->canApproveSelectedPO()) {
             session()->flash('error', 'You do not have permission to approve this purchase order.');
+
             return;
         }
 
@@ -247,12 +252,13 @@ class PurchaseOrderIndex extends Component
 
     public function rejectPurchaseOrder($reason = null)
     {
-        if (!$this->canRejectSelectedPO()) {
+        if (! $this->canRejectSelectedPO()) {
             session()->flash('error', 'You do not have permission to reject this purchase order.');
+
             return;
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = 'Rejected by ' . auth()->user()->name;
         }
 
@@ -276,12 +282,14 @@ class PurchaseOrderIndex extends Component
 
     public function editPurchaseOrder()
     {
-        if (!$this->canEditSelectedPO()) {
+        if (! $this->canEditSelectedPO()) {
             session()->flash('error', 'This purchase order cannot be edited.');
+
             return;
         }
 
         $this->closeDetailModal();
+
         return redirect()->route('po.edit', $this->selectedPurchaseOrder->id);
     }
 
@@ -309,6 +317,7 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected for export.');
+
             return;
         }
 
@@ -321,6 +330,7 @@ class PurchaseOrderIndex extends Component
 
         if (empty($poIds)) {
             session()->flash('error', 'No purchase orders found matching current filters.');
+
             return;
         }
 
@@ -402,25 +412,26 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
+
             return;
         }
 
         try {
             $count = count($this->selectedIds);
-            
+
             foreach ($this->selectedIds as $id) {
                 $po = PurchaseOrder::find($id);
                 if ($po && $po->getStatusEnum()->canApprove()) {
                     // Add to processing list for UI feedback
                     $this->processingIds[] = $id;
-                    
+
                     // Dispatch the background job
                     ProcessPurchaseOrderApprovalJob::dispatch($po, auth()->id());
                 }
             }
 
             session()->flash('info', "Processing {$count} purchase orders in the background. Please wait...");
-            
+
             $this->selectedIds = [];
             $this->selectAll = false;
 
@@ -447,23 +458,25 @@ class PurchaseOrderIndex extends Component
         foreach ($this->processingIds as $key => $id) {
             if ($error = Cache::get("po_process_error_{$id}")) {
                 Cache::forget("po_process_error_{$id}");
-                
+
                 // Remove from processingIds so we stop polling it
                 unset($this->processingIds[$key]);
-                
+
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => "Processing failed for PO #{$id}: {$error}"
+                    'message' => "Processing failed for PO #{$id}: {$error}",
                 ]);
             }
         }
         $this->processingIds = array_values($this->processingIds);
 
-        if (empty($this->processingIds)) return;
+        if (empty($this->processingIds)) {
+            return;
+        }
 
         // 2. Check if remaining POs are still in IN_REVIEW status
         $stillProcessing = PurchaseOrder::whereIn('id', $this->processingIds)
-            ->whereHas('approvalRequest', function($q) {
+            ->whereHas('approvalRequest', function ($q) {
                 $q->where('status', 'IN_REVIEW');
             })
             ->pluck('id')
@@ -471,10 +484,10 @@ class PurchaseOrderIndex extends Component
 
         // Find which ones are done
         $completed = array_diff($this->processingIds, $stillProcessing);
-        
-        if (!empty($completed)) {
+
+        if (! empty($completed)) {
             $this->processingIds = array_values($stillProcessing);
-            
+
             if (empty($this->processingIds)) {
                 session()->flash('success', 'All background approvals have been completed.');
             }
@@ -492,22 +505,23 @@ class PurchaseOrderIndex extends Component
 
         if (empty($idsToReject)) {
             $this->dispatch('toast', message: 'No purchase orders selected for rejection.', type: 'error');
+
             return;
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = 'Rejected by ' . auth()->user()->name;
         }
 
         try {
             $count = count($idsToReject);
-            
+
             foreach ($idsToReject as $id) {
                 $po = PurchaseOrder::find($id);
                 if ($po && $po->getStatusEnum()->canReject()) {
                     // Add to processing list for UI feedback
                     $this->processingIds[] = $id;
-                    
+
                     // Dispatch the background job
                     ProcessPurchaseOrderRejectionJob::dispatch($po, auth()->id(), $reason);
                 }
@@ -519,7 +533,7 @@ class PurchaseOrderIndex extends Component
             } else {
                 $this->dispatch('toast', message: "Processing {$count} rejections in the background...", type: 'info');
             }
-            
+
             $this->selectedIds = [];
             $this->selectAll = false;
 
@@ -539,12 +553,12 @@ class PurchaseOrderIndex extends Component
         $query = PurchaseOrder::query()
             ->select([
                 'id', 'po_number', 'invoice_date', 'invoice_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran', 'purchase_order_category_id'
+                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran', 'purchase_order_category_id',
             ])
             ->with([
                 'user:id,name',
                 'approvalRequest.steps',
-                'approvalRequest.actions'
+                'approvalRequest.actions',
             ]);
 
         // Optimized search across multiple fields
@@ -553,11 +567,11 @@ class PurchaseOrderIndex extends Component
             if (strlen($searchTerm) > 0) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('po_number', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('invoice_number', 'like', '%' . $searchTerm . '%')
-                      ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                          $userQuery->where('name', 'like', '%' . $searchTerm . '%');
-                      });
+                        ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('invoice_number', 'like', '%' . $searchTerm . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                            $userQuery->where('name', 'like', '%' . $searchTerm . '%');
+                        });
                 });
             }
         }
@@ -610,7 +624,7 @@ class PurchaseOrderIndex extends Component
         $sortableColumns = [
             'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
             'total', 'approved_date', 'created_at', 'tanggal_pembayaran',
-            'purchase_order_category_id'
+            'purchase_order_category_id',
         ];
 
         if (in_array($this->sortBy, $sortableColumns)) {
@@ -640,14 +654,14 @@ class PurchaseOrderIndex extends Component
         return [
             'pending_me' => PurchaseOrder::whereHas('approvalRequest', function ($q) {
                 $q->where('status', 'IN_REVIEW');
-            })->get()->filter(fn($po) => $po->getStatusEnum()->canApprove())->count(),
-            
+            })->get()->filter(fn ($po) => $po->getStatusEnum()->canApprove())->count(),
+
             'in_review' => PurchaseOrder::withWorkflowStatus('IN_REVIEW')->count(),
-            
+
             'rejected_month' => PurchaseOrder::withWorkflowStatus('REJECTED')
                 ->whereBetween('updated_at', [$currentMonth, $endOfMonth])
                 ->count(),
-                
+
             'total_valuation' => PurchaseOrder::whereBetween('created_at', [$currentMonth, $endOfMonth])
                 ->sum('total'),
         ];
@@ -661,24 +675,23 @@ class PurchaseOrderIndex extends Component
     public function getBulkActionReasonProperty()
     {
         if (empty($this->selectedIds)) {
-            return "No items selected.";
+            return 'No items selected.';
         }
 
         // Check for items not in IN_REVIEW
         $invalidCount = PurchaseOrder::whereIn('id', $this->selectedIds)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereDoesntHave('approvalRequest')
-                    ->orWhereHas('approvalRequest', function($q) {
+                    ->orWhereHas('approvalRequest', function ($q) {
                         $q->whereIn('status', ['APPROVED', 'REJECTED', 'CANCELLED', 'DRAFT']);
                     });
             })
             ->count();
 
         if ($invalidCount > 0) {
-            return "Selection contains items already processed or in Draft.";
+            return 'Selection contains items already processed or in Draft.';
         }
 
-        return null;
     }
 
     public function filterByStat($type)
@@ -691,7 +704,7 @@ class PurchaseOrderIndex extends Component
                 $this->statusFilter = 'IN_REVIEW';
                 // Note: The actual filtering for 'pending_me' happens in the query logic
                 // if we add a specific filter property for it.
-                $this->search = ''; 
+                $this->search = '';
                 break;
             case 'in_review':
                 $this->statusFilter = 'IN_REVIEW';
