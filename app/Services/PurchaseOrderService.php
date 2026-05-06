@@ -29,12 +29,9 @@ class PurchaseOrderService
                 $purchaseOrder->filename = $data['pdf_file'] ?? null;
                 $purchaseOrder->creator_id = auth()->id();
                 $purchaseOrder->vendor_name = $data['vendor_name'];
-                $purchaseOrder->invoice_date = $data['invoice_date'];
-                $purchaseOrder->invoice_number = $data['invoice_number'];
                 $purchaseOrder->currency = $data['currency'];
                 $purchaseOrder->total = $data['total'];
                 $purchaseOrder->purchase_order_category_id = $data['purchase_order_category_id'];
-                $purchaseOrder->tanggal_pembayaran = $data['tanggal_pembayaran'];
 
                 // Handle parent PO revision logic
                 if (! empty($data['parent_po_number'])) {
@@ -93,9 +90,6 @@ class PurchaseOrderService
                 // Update fields
                 $po->po_number = $data['po_number'];
                 $po->vendor_name = $data['vendor_name'];
-                $po->invoice_date = $data['invoice_date'];
-                $po->invoice_number = $data['invoice_number'];
-                $po->tanggal_pembayaran = $data['tanggal_pembayaran'];
                 $po->currency = $data['currency'];
                 $po->purchase_order_category_id = $data['purchase_order_category_id'];
                 $po->total = $data['total']; // Note: commas should be removed by validation

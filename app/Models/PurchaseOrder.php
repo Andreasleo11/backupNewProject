@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PurchaseOrder extends Model implements Approvable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $casts = [
         'invoice_date'     => 'date',
@@ -40,6 +42,14 @@ class PurchaseOrder extends Model implements Approvable
         'parent_po_number',
         'revision_count',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     // =========================================================================
     // Relationships

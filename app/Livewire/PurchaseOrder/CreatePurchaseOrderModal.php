@@ -19,17 +19,11 @@ class CreatePurchaseOrderModal extends Component
 
     public $vendor_name;
 
-    public $invoice_date;
-
-    public $invoice_number;
-
     public $currency = 'IDR';
 
     public $total;
 
     public $purchase_order_category_id;
-
-    public $tanggal_pembayaran;
 
     public $pdf_file;
 
@@ -43,24 +37,18 @@ class CreatePurchaseOrderModal extends Component
     protected $rules = [
         'po_number' => 'required|string|max:50|unique:purchase_orders,po_number',
         'vendor_name' => 'required|string|max:255',
-        'invoice_date' => 'required|date|before_or_equal:today',
-        'invoice_number' => 'required|string|max:100',
         'currency' => 'required|string|size:3',
         'total' => 'required|numeric|min:0',
         'purchase_order_category_id' => 'required|exists:purchase_order_categories,id',
-        'tanggal_pembayaran' => 'required|date|after:invoice_date',
         'pdf_file' => 'required|file|mimes:pdf|max:5120', // 5MB max
     ];
 
     protected $validationAttributes = [
         'po_number' => 'PO number',
         'vendor_name' => 'vendor name',
-        'invoice_date' => 'invoice date',
-        'invoice_number' => 'invoice number',
         'currency' => 'currency',
         'total' => 'total amount',
         'purchase_order_category_id' => 'category',
-        'tanggal_pembayaran' => 'payment date',
         'pdf_file' => 'PDF file',
     ];
 
@@ -102,12 +90,9 @@ class CreatePurchaseOrderModal extends Component
     {
         $this->po_number = null;
         $this->vendor_name = null;
-        $this->invoice_date = now()->format('Y-m-d');
-        $this->invoice_number = null;
         $this->currency = 'IDR';
         $this->total = null;
         $this->purchase_order_category_id = null;
-        $this->tanggal_pembayaran = null;
         $this->pdf_file = null;
     }
 
@@ -122,15 +107,6 @@ class CreatePurchaseOrderModal extends Component
         $this->validate();
 
         try {
-            // Convert invoice_date from dd.mm.yy format if needed
-            $invoiceDate = $this->invoice_date;
-            if (strpos($invoiceDate, '.') !== false) {
-                $date = \DateTime::createFromFormat('d.m.y', $invoiceDate);
-                if ($date) {
-                    $invoiceDate = $date->format('Y-m-d');
-                }
-            }
-
             // Process and store the PDF file
             $pdfService = app(PdfProcessingService::class);
             $pdfService->validatePdfFile($this->pdf_file);
@@ -143,12 +119,9 @@ class CreatePurchaseOrderModal extends Component
             $data = [
                 'po_number' => $poNumber,
                 'vendor_name' => $this->vendor_name,
-                'invoice_date' => $invoiceDate,
-                'invoice_number' => $this->invoice_number,
                 'currency' => $this->currency,
                 'total' => floatval($this->total),
                 'purchase_order_category_id' => intval($this->purchase_order_category_id),
-                'tanggal_pembayaran' => $this->tanggal_pembayaran,
                 'pdf_file' => $filename,
             ];
 

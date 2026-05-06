@@ -88,7 +88,43 @@ class PurchaseOrderShow extends Component
             ]);
         }
         
-        return $activities->sortByDesc('date');
+        // 4. Model System Logs (PO & Invoice)
+        $poLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\PurchaseOrder::class)
+            ->where('subject_id', $po->id)
+            ->with('causer')
+            ->get()
+            ->map(function ($log) {
+                return (object)[
+                    'type' => 'system',
+                    'date' => $log->created_at,
+                    'user' => $log->causer->name ?? 'System',
+                    'label' => 'Purchase Order ' . ucfirst($log->description),
+                    'icon' => 'bi-journal-text',
+                    'color' => 'gray'
+                ];
+            });
+
+        $invoiceIds = $po->invoices()->pluck('id');
+        $invoiceLogs = collect();
+        
+        if ($invoiceIds->isNotEmpty()) {
+            $invoiceLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\Invoice::class)
+                ->whereIn('subject_id', $invoiceIds)
+                ->with('causer')
+                ->get()
+                ->map(function ($log) {
+                    return (object)[
+                        'type' => 'system',
+                        'date' => $log->created_at,
+                        'user' => $log->causer->name ?? 'System',
+                        'label' => 'Invoice ' . ucfirst($log->description),
+                        'icon' => 'bi-receipt',
+                        'color' => 'gray'
+                    ];
+                });
+        }
+
+        return $activities->concat($poLogs)->concat($invoiceLogs)->sortByDesc('date');
     }
 
     public function getRevisionsProperty()

@@ -246,6 +246,23 @@ po_comments (
 );
 ```
 
+### Invoice Field Deprecation
+
+**Status:** ✅ **Completed (2026-05-06)**
+
+As part of the invoice management refactor, the following fields have been deprecated from the purchase order create and edit forms:
+
+- `invoice_date` (deprecated)
+- `invoice_number` (deprecated)
+- `tanggal_pembayaran` (payment date, deprecated)
+
+These fields are now handled through the separate `invoices` table with a 1-to-many relationship. The purchase order forms no longer collect invoice information - invoices are managed independently through the `InvoiceManager` component.
+
+**Migration Notes:**
+- Deprecated fields remain in the database schema for backward compatibility
+- Existing data is preserved but no longer editable through PO forms
+- Invoice management now occurs through the dedicated invoice system
+
 ### API Specifications
 
 #### REST Endpoints Structure
@@ -347,6 +364,10 @@ class PurchaseOrderRepository implements PurchaseOrderRepositoryInterface
 
 **Change History:**
 
+- v2.4 (2026-05-06): Invoice Field Deprecation
+  - Removed `invoice_date`, `invoice_number`, and `tanggal_pembayaran` from PO create/edit forms
+  - Invoice fields now handled exclusively through separate invoice management system
+  - Maintained backward compatibility by keeping deprecated fields in database schema
 - v2.3 (2026-05-06): Invoice Management Refactor
   - Migrated from single-invoice PO system to 1-to-many Invoice architecture
   - Added `invoices` table and soft deletes to `purchase_orders`

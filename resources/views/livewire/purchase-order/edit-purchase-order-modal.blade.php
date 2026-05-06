@@ -98,38 +98,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- Invoice Date --}}
-                                    <div>
-                                        <label for="invoice_date_edit" class="block text-sm font-medium text-gray-700">
-                                            Invoice Date <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="mt-1">
-                                            <input type="date"
-                                                   wire:model.blur="invoice_date"
-                                                   id="invoice_date_edit"
-                                                   max="{{ now()->format('Y-m-d') }}"
-                                                   class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('invoice_date') border-red-300 @enderror">
-                                            @error('invoice_date')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    </div>
 
-                                    {{-- Invoice Number --}}
-                                    <div>
-                                        <label for="invoice_number_edit" class="block text-sm font-medium text-gray-700">
-                                            Invoice Number <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="mt-1">
-                                            <input type="text"
-                                                   wire:model.blur="invoice_number"
-                                                   id="invoice_number_edit"
-                                                   class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('invoice_number') border-red-300 @enderror">
-                                            @error('invoice_number')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    </div>
 
                                     {{-- Currency --}}
                                     <div>
@@ -194,21 +163,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- Payment Date --}}
-                                    <div>
-                                        <label for="tanggal_pembayaran_edit" class="block text-sm font-medium text-gray-700">
-                                            Payment Date <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="mt-1">
-                                            <input type="date"
-                                                   wire:model.blur="tanggal_pembayaran"
-                                                   id="tanggal_pembayaran_edit"
-                                                   class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('tanggal_pembayaran') border-red-300 @enderror">
-                                            @error('tanggal_pembayaran')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    </div>
+
                                 </div>
 
                                 {{-- Current PDF Info --}}

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Invoice extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'purchase_order_id',
@@ -26,6 +28,14 @@ class Invoice extends Model
         'payment_date' => 'date',
         'total'        => 'decimal:2',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     // =========================================================================
     // Relationships
