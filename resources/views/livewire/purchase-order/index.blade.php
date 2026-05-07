@@ -708,16 +708,29 @@
         {{-- Full-screen create form --}}
         <div class="min-h-screen bg-gray-50 py-8">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {{-- Header with back button --}}
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-4">
-                        <button wire:click="exitFormMode"
-                                class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
-                            <i class="bi bi-arrow-left"></i>
-                            Back to List
-                        </button>
-                        <h1 class="text-2xl font-semibold text-gray-900">Create New Purchase Order</h1>
-                    </div>
+                {{-- Breadcrumb Navigation --}}
+                <nav class="flex mb-8" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <button wire:click="exitFormMode"
+                                    class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                                <i class="bi bi-house-door mr-2"></i>
+                                Purchase Orders
+                            </button>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
+                                <span class="text-sm font-medium text-gray-500">Create</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+
+                {{-- Page Header --}}
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Create New Purchase Order</h1>
+                    <p class="mt-2 text-sm text-gray-600">Fill in the details below to create a new purchase order.</p>
                 </div>
 
                 {{-- Create form --}}
@@ -729,16 +742,29 @@
         {{-- Full-screen edit form --}}
         <div class="min-h-screen bg-gray-50 py-8">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {{-- Header with back button --}}
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-4">
-                        <button wire:click="exitFormMode"
-                                class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
-                            <i class="bi bi-arrow-left"></i>
-                            Back to List
-                        </button>
-                        <h1 class="text-2xl font-semibold text-gray-900">Edit Purchase Order</h1>
-                    </div>
+                {{-- Breadcrumb Navigation --}}
+                <nav class="flex mb-8" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <button wire:click="exitFormMode"
+                                    class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                                <i class="bi bi-house-door mr-2"></i>
+                                Purchase Orders
+                            </button>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
+                                <span class="text-sm font-medium text-gray-500">Edit</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+
+                {{-- Page Header --}}
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Purchase Order</h1>
+                    <p class="mt-2 text-sm text-gray-600">Update the purchase order details below.</p>
                 </div>
 
                 {{-- Edit form --}}
