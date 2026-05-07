@@ -1,4 +1,9 @@
-<div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+<div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm"
+     x-data="poForm({
+         totalFormatted: @entangle('total').live,
+         pdfFileName: @js($purchaseOrder->filename ? basename($purchaseOrder->filename) : null),
+         isSubmitting: false
+     })"
     {{-- Status Warning --}}
     @if($purchaseOrder && !$canEdit())
         <div class="rounded-md bg-yellow-50 p-4 mb-6">
@@ -109,7 +114,9 @@
                             <span class="text-gray-500 sm:text-sm">{{ $currency }}</span>
                         </div>
                         <input type="text"
-                               wire:model.blur="total"
+                               x-model="totalFormatted"
+                           @input="updateTotalFormatted($event.target.value)"
+                           @blur="$wire.set('total', $event.target.value.replace(/,/g, ''))"
                                id="total_edit"
                                placeholder="0"
                                class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror"
@@ -174,10 +181,10 @@
                                 </svg>
                             </div>
                             <div class="text-sm text-gray-900">
-                                <p class="font-medium">{{ $pdf_file->getClientOriginalName() }}</p>
+                                <p class="font-medium" x-text="pdfFileName || @js($pdf_file->getClientOriginalName())"></p>
                                 <p class="text-gray-500">{{ number_format($pdf_file->getSize() / 1024, 1) }} KB</p>
                             </div>
-                            <button type="button" wire:click="$set('pdf_file', null)" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                            <button type="button" @click="removeFile()" class="text-red-600 hover:text-red-800 text-sm font-medium">
                                 Remove file
                             </button>
                         @else
@@ -187,7 +194,7 @@
                             <div class="flex text-sm text-gray-600">
                                 <label for="pdf_file_edit" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                     <span>Upload a new PDF file</span>
-                                    <input id="pdf_file_edit" name="pdf_file" type="file" accept=".pdf" wire:model="pdf_file" class="sr-only">
+                                    <input id="pdf_file_edit" name="pdf_file" type="file" accept=".pdf" wire:model="pdf_file" @change="handleFileSelect($event)" x-ref="pdfFileInput" class="sr-only">
                                 </label>
                                 <p class="pl-1">or drag and drop</p>
                             </div>
@@ -204,6 +211,8 @@
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button type="submit"
                         wire:loading.attr="disabled"
+                        x-bind:disabled="isSubmitting"
+                        @click="submitForm()"
                         class="inline-flex items-center px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <span wire:loading.remove>Update Purchase Order</span>
                     <span wire:loading>
@@ -218,31 +227,44 @@
         </form>
     @endif
 
+    {{-- Alpine.js TALL Stack Integration --}}
     <script>
-        function formatTotalInput(value) {
-            value = value.replace(/,/g, '');
-            const parts = value.split('.');
-            if (parts.length > 2) {
-                parts.splice(2);
-            }
-            parts[0] = parts[0].replace(/\D/g, '');
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            return parts.join('.');
-        }
+        function poForm(data) {
+            return {
+                ...data,
 
-        // Use Livewire's ready event to ensure DOM is available
-        document.addEventListener('livewire:loaded', function() {
-            const totalInput = document.getElementById('total_edit');
-            if (totalInput) {
-                totalInput.addEventListener('input', function(e) {
-                    e.target.value = formatTotalInput(e.target.value);
-                });
+                formatTotal(value) {
+                    if (!value) return '';
+                    let cleanValue = value.toString().replace(/,/g, '');
+                    const parts = cleanValue.split('.');
+                    if (parts.length > 2) {
+                        parts.splice(2);
+                    }
+                    parts[0] = parts[0].replace(/\D/g, '');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    return parts.join('.');
+                },
 
-                // Format existing value on load
-                if (totalInput.value) {
-                    totalInput.value = formatTotalInput(totalInput.value);
+                updateTotalFormatted(value) {
+                    this.totalFormatted = this.formatTotal(value);
+                },
+
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    this.pdfFileName = file ? file.name : null;
+                },
+
+                removeFile() {
+                    this.pdfFileName = null;
+                    this.$refs.pdfFileInput.value = '';
+                    $wire.set('pdf_file', null);
+                },
+
+                submitForm() {
+                    this.isSubmitting = true;
+                    this.$wire.call('save');
                 }
             }
-        });
+        }
     </script>
 </div>
