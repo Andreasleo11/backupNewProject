@@ -248,7 +248,7 @@ po_comments (
 
 ### Invoice Field Deprecation
 
-**Status:** ✅ **Completed (2026-05-06)**
+**Status:** ✅ **Completed (2026-05-07)**
 
 As part of the invoice management refactor, the following fields have been deprecated from the purchase order create and edit forms:
 
@@ -258,9 +258,18 @@ As part of the invoice management refactor, the following fields have been depre
 
 These fields are now handled through the separate `invoices` table with a 1-to-many relationship. The purchase order forms no longer collect invoice information - invoices are managed independently through the `InvoiceManager` component.
 
+**Changes Made:**
+- ✅ Removed invoice field validation from `StorePoRequest` and `UpdatePoRequest`
+- ✅ Removed invoice field processing from `PurchaseOrderController` store/update methods
+- ✅ Removed invoice field handling from `PurchaseOrderService` create/update methods
+- ✅ Removed invoice field inputs from traditional form views (`purchase_order.create` and `purchase_order.edit`)
+- ✅ Updated dashboard analytics to use `created_at` instead of `invoice_date` for monthly filtering
+- ✅ Removed invoice_date filter from export functionality
+
 **Migration Notes:**
 - Deprecated fields remain in the database schema for backward compatibility
 - Existing data is preserved but no longer editable through PO forms
+- Dashboard analytics now use PO creation date instead of invoice date
 - Invoice management now occurs through the dedicated invoice system
 
 ### API Specifications

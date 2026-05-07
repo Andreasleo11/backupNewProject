@@ -57,47 +57,7 @@
                     @enderror
                 </div>
 
-                {{-- Invoice Date --}}
-                <div>
-                    <label for="invoice_date" class="block text-sm font-medium text-slate-700 mb-1">
-                        Invoice Date
-                    </label>
-                    <input id="invoice_date" name="invoice_date" type="text" required
-                        value="{{ old('invoice_date', $po->invoice_date) }}" aria-describedby="poDateHelp"
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500">
-                    <p id="poDateHelp" class="mt-1 text-xs text-slate-500">
-                        Use <span class="font-mono">dd.mm.yy</span> format.
-                    </p>
-                    @error('invoice_date')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                {{-- Invoice Number --}}
-                <div>
-                    <label for="invoice_number" class="block text-sm font-medium text-slate-700 mb-1">
-                        Invoice Number
-                    </label>
-                    <input id="invoice_number" name="invoice_number" type="text" required
-                        value="{{ old('invoice_number', $po->invoice_number) }}"
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('invoice_number')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Payment Date --}}
-                <div>
-                    <label for="tanggal_pembayaran" class="block text-sm font-medium text-slate-700 mb-1">
-                        Payment Date
-                    </label>
-                    <input id="tanggal_pembayaran" name="tanggal_pembayaran" type="date" required
-                        value="{{ old('tanggal_pembayaran', $po->tanggal_pembayaran) }}"
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500">
-                    @error('tanggal_pembayaran')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
                 {{-- Category --}}
                 <div>

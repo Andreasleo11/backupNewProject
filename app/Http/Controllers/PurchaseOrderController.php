@@ -74,18 +74,6 @@ class PurchaseOrderController extends Controller
             // Process validated data
             $validated = $request->validated();
 
-            // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
-            if (isset($validated['invoice_date'])) {
-                $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
-                if ($date) {
-                    $validated['invoice_date'] = $date->format('Y-m-d');
-                } else {
-                    return redirect()
-                        ->back()
-                        ->withInputs(['invoice_date' => 'Invalid date format']);
-                }
-            }
-
             // Store the uploaded PDF with a unique filename
             $file = $validated['pdf_file'];
             $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
@@ -252,9 +240,7 @@ class PurchaseOrderController extends Controller
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'LIKE', '%' . $request->vendor_name . '%');
         }
-        if ($request->filled('invoice_date')) {
-            $query->whereDate('invoice_date', $request->invoice_date);
-        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -352,7 +338,7 @@ class PurchaseOrderController extends Controller
 
         // This could also be moved to the service if complex, but keeping simple for now
         $monthlyTotals = PurchaseOrder::selectRaw(
-            "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
+            "DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total",
         )
             ->where('vendor_name', $vendorName)
             ->groupBy('month')

@@ -332,7 +332,7 @@ class PurchaseOrderService
             $vendorTotals = PurchaseOrder::selectRaw(
                 'vendor_name, COUNT(id) as po_count, SUM(total) as total',
             )
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$selectedMonth])
                 ->groupBy('vendor_name')
                 ->orderByDesc('total')
                 ->get();
@@ -340,7 +340,7 @@ class PurchaseOrderService
             // Fetch top 5 vendors
             $topVendors = PurchaseOrder::selectRaw('vendor_name')
                 ->selectRaw('SUM(total) as total')
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$selectedMonth])
                 ->groupBy('vendor_name')
                 ->orderByDesc('total')
                 ->take(5)
@@ -348,14 +348,14 @@ class PurchaseOrderService
 
             // Sum of totals for each month (for chart)
             $monthlyTotals = PurchaseOrder::selectRaw(
-                "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
+                "DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total",
             )
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get();
 
             // List of available months for the filter dropdown
-            $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
+            $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
                 ->distinct()
                 ->orderByDesc('month')
                 ->pluck('month');
@@ -415,9 +415,9 @@ class PurchaseOrderService
     {
         try {
             return PurchaseOrder::where('vendor_name', $vendorName)
-                ->select('id', 'po_number', 'invoice_date', 'total', 'status')
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month])
-                ->orderBy('invoice_date', 'desc')
+                ->select('id', 'po_number', 'created_at', 'total', 'status')
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
+                ->orderBy('created_at', 'desc')
                 ->orderByDesc('total')
                 ->get();
 
