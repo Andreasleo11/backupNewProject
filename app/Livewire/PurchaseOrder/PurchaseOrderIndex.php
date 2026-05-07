@@ -49,6 +49,10 @@ class PurchaseOrderIndex extends Component
 
     public $processingIds = []; // Track IDs currently being processed in background
 
+    // Form mode state management
+    public $formMode = 'index'; // 'index', 'create', 'edit'
+    public $editingPo = null;
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -284,13 +288,47 @@ class PurchaseOrderIndex extends Component
     {
         if (! $this->canEditSelectedPO()) {
             session()->flash('error', 'This purchase order cannot be edited.');
-
             return;
         }
 
         $this->closeDetailModal();
+        $this->enterEditMode();
+    }
 
-        return redirect()->route('po.edit', $this->selectedPurchaseOrder->id);
+    public function enterCreateMode()
+    {
+        $this->closeDetailModal();
+        $this->formMode = 'create';
+        $this->resetPage();
+    }
+
+    public function enterEditMode()
+    {
+        $this->editingPo = $this->selectedPurchaseOrder;
+        $this->formMode = 'edit';
+    }
+
+    public function exitFormMode()
+    {
+        $this->formMode = 'index';
+        $this->editingPo = null;
+        $this->resetValidation();
+        // Optionally refresh data
+        $this->refreshData();
+    }
+
+    public function handlePoCreated($poData)
+    {
+        $this->exitFormMode();
+        $this->refreshData();
+        session()->flash('success', 'Purchase Order created successfully!');
+    }
+
+    public function handlePoUpdated($poData)
+    {
+        $this->exitFormMode();
+        $this->refreshData();
+        session()->flash('success', 'Purchase Order updated successfully!');
     }
 
     private function canApproveSelectedPO(): bool

@@ -8,24 +8,26 @@
         <div wire:poll.3s="checkProcessingStatus" class="hidden"></div>
     @endif
 
-    {{-- Page Header --}}
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Purchase Orders</h1>
-            <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                <a href="{{ route('po.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
-                <i class="bi bi-chevron-right text-[10px]"></i>
-                <span class="text-slate-600">List</span>
-            </nav>
-        </div>
-        
-        <div class="flex items-center gap-2">
-            <div wire:loading.delay wire:target="search, statusFilter, vendorFilter, dateFrom, dateTo, amountFrom, amountTo, sortBy, sortDirection" class="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl animate-pulse">
-                <div class="h-2 w-2 rounded-full bg-indigo-600 animate-bounce"></div>
-                <span class="text-xs font-black uppercase tracking-widest">Updating...</span>
+    {{-- Conditional rendering based on form mode --}}
+    @if($formMode === 'index')
+        {{-- Page Header --}}
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Purchase Orders</h1>
+                <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    <a href="{{ route('po.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
+                    <i class="bi bi-chevron-right text-[10px]"></i>
+                    <span class="text-slate-600">List</span>
+                </nav>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div wire:loading.delay wire:target="search, statusFilter, vendorFilter, dateFrom, dateTo, amountFrom, amountTo, sortBy, sortDirection" class="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl animate-pulse">
+                    <div class="h-2 w-2 rounded-full bg-indigo-600 animate-bounce"></div>
+                    <span class="text-xs font-black uppercase tracking-widest">Updating...</span>
+                </div>
             </div>
         </div>
-    </div>
 
     {{-- Compact Stats Bar --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -118,11 +120,11 @@
 
             {{-- Create Button --}}
             @if (auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin'))
-                <a href="{{ route('po.create') }}"
-                   class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all">
+                <button wire:click="enterCreateMode"
+                       class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all">
                     <i class="bi bi-plus-lg"></i>
                     New PO
-                </a>
+                </button>
             @endif
         </div>
 
@@ -701,4 +703,47 @@
             </div>
         </div>
     </template>
+
+    @elseif($formMode === 'create')
+        {{-- Full-screen create form --}}
+        <div class="min-h-screen bg-gray-50 py-8">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                {{-- Header with back button --}}
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <button wire:click="exitFormMode"
+                                class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                            <i class="bi bi-arrow-left"></i>
+                            Back to List
+                        </button>
+                        <h1 class="text-2xl font-semibold text-gray-900">Create New Purchase Order</h1>
+                    </div>
+                </div>
+
+                {{-- Create form --}}
+                @livewire('purchase-order.create-purchase-order-form')
+            </div>
+        </div>
+
+    @elseif($formMode === 'edit')
+        {{-- Full-screen edit form --}}
+        <div class="min-h-screen bg-gray-50 py-8">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                {{-- Header with back button --}}
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <button wire:click="exitFormMode"
+                                class="inline-flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                            <i class="bi bi-arrow-left"></i>
+                            Back to List
+                        </button>
+                        <h1 class="text-2xl font-semibold text-gray-900">Edit Purchase Order</h1>
+                    </div>
+                </div>
+
+                {{-- Edit form --}}
+                @livewire('purchase-order.edit-purchase-order-form', ['poId' => $editingPo?->id])
+            </div>
+        </div>
+    @endif
 </div>
