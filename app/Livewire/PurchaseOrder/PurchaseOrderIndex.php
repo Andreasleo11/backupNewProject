@@ -313,8 +313,16 @@ class PurchaseOrderIndex extends Component
         $this->formMode = 'index';
         $this->editingPo = null;
         $this->resetValidation();
-        // Optionally refresh data
+        // Refresh the component data
         $this->refreshData();
+    }
+
+    public function refreshData()
+    {
+        // Force refresh of computed properties by updating a dependency
+        $this->selectedIds = [];
+        $this->selectAll = false;
+        // This will trigger Livewire to recalculate all computed properties
     }
 
     public function handlePoCreated($poData)

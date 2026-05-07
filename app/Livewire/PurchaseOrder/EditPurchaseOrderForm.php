@@ -101,6 +101,12 @@ class EditPurchaseOrderForm extends Component
         return $this->purchaseOrder && $this->purchaseOrder->getStatusEnum()->canEdit();
     }
 
+    public function exitFormMode()
+    {
+        // Dispatch event to parent to exit form mode
+        $this->dispatch('exitFormMode');
+    }
+
     public function save()
     {
         if (! $this->canEdit()) {

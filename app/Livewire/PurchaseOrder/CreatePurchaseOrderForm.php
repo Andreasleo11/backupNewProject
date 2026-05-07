@@ -75,6 +75,12 @@ class CreatePurchaseOrderForm extends Component
         $this->pdf_file = null;
     }
 
+    public function exitFormMode()
+    {
+        // Dispatch event to parent to exit form mode
+        $this->dispatch('exitFormMode');
+    }
+
     public function updatedTotal($value)
     {
         // Remove commas from total input
