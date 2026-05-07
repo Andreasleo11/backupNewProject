@@ -55,6 +55,7 @@ class EditPurchaseOrderForm extends Component
         if ($poId) {
             $this->purchaseOrderId = $poId;
             $this->loadPurchaseOrder();
+            $this->authorize('update', $this->purchaseOrder);
         }
         $this->loadFormData();
     }
@@ -96,14 +97,16 @@ class EditPurchaseOrderForm extends Component
         $this->total = str_replace(',', '', $value);
     }
 
-    public function canEdit()
+    public function getCanEditProperty()
     {
-        return $this->purchaseOrder && $this->purchaseOrder->getStatusEnum()->canEdit();
+        return $this->purchaseOrder && auth()->user()->can('update', $this->purchaseOrder);
     }
 
     public function save()
     {
-        if (! $this->canEdit()) {
+        $this->authorize('update', $this->purchaseOrder);
+
+        if (! $this->canEdit) {
             $this->addError('general', 'This purchase order cannot be edited in its current status.');
             return;
         }

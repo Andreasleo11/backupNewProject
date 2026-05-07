@@ -92,24 +92,6 @@ class PurchaseOrder extends Model implements Approvable
         return PurchaseOrderStatus::fromWorkflowStatus($this->workflow_status);
     }
 
-    /**
-     * Check if PO can be edited (only rejected/cancelled can be revised).
-     */
-    public function canBeEdited(): bool
-    {
-        $status = $this->getStatusEnum();
-
-        return in_array($status, [PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]);
-    }
-
-    /**
-     * Check if PO is in a terminal state (cannot be changed further).
-     */
-    public function isTerminal(): bool
-    {
-        return $this->getStatusEnum()->isTerminal();
-    }
-
     // =========================================================================
     // Query Scopes
     // =========================================================================

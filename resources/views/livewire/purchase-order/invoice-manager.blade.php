@@ -4,11 +4,11 @@
             <i class="bi bi-receipt text-emerald-500"></i>
             Invoices & Payments
         </h2>
-        @if (Auth::id() == \App\Models\PurchaseOrder::find($purchaseOrderId)->creator_id || Auth::user()->hasRole('purchaser') || Auth::user()->hasRole('super-admin'))
+        @can('manageInvoices', $purchaseOrder)
             <button wire:click="create" class="h-8 px-3 rounded-lg bg-indigo-50 text-indigo-600 flex items-center gap-2 hover:bg-indigo-100 transition-colors text-xs font-bold">
                 <i class="bi bi-plus-lg"></i> Add Invoice
             </button>
-        @endif
+        @endcan
     </div>
 
     @php
@@ -80,12 +80,12 @@
                                     <i class="bi bi-paperclip"></i> {{ $fileCount }}
                                 </span>
                                 
-                                @if (Auth::id() == \App\Models\PurchaseOrder::find($purchaseOrderId)->creator_id || Auth::user()->hasRole('purchaser') || Auth::user()->hasRole('super-admin'))
+                                @can('manageInvoices', $purchaseOrder)
                                     <button @click="$dispatch('open-upload-modal', { docId: 'INV-{{ $invoice->id }}' })" 
                                             class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-600 hover:text-white transition-colors border border-indigo-100">
                                         Upload
                                     </button>
-                                @endif
+                                @endcan
                             </div>
                             
                             @if($fileCount > 0)
@@ -100,7 +100,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            @if (Auth::id() == \App\Models\PurchaseOrder::find($purchaseOrderId)->creator_id || Auth::user()->hasRole('purchaser') || Auth::user()->hasRole('super-admin'))
+                            @can('manageInvoices', $purchaseOrder)
                                 <div class="flex items-center justify-end gap-2">
                                     <button wire:click="edit({{ $invoice->id }})" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all shadow-sm border border-indigo-100">
                                         <i class="bi bi-pencil"></i>
@@ -109,7 +109,7 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
-                            @endif
+                            @endcan
                         </td>
                     </tr>
                 @empty

@@ -141,6 +141,7 @@ class PurchaseOrderShow extends Component
 
     public function approve(Approvals $approvals, PdfProcessingService $pdfService)
     {
+        $this->authorize('approve', $this->purchaseOrder);
         $this->loading = true;
 
         try {
@@ -174,6 +175,7 @@ class PurchaseOrderShow extends Component
 
     public function reject(Approvals $approvals)
     {
+        $this->authorize('reject', $this->purchaseOrder);
         $this->validate([
             'reason' => 'required|min:3|max:500',
         ]);

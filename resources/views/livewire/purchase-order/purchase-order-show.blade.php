@@ -47,7 +47,7 @@
             {{-- Main Content: Timeline & PDF --}}
             <div class="lg:col-span-8 space-y-6">
                 
-                @role('super-admin')
+                @can('viewActivityLog', $purchaseOrder)
                     {{-- Activity Feed --}}
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden" x-data="{ showHistory: false }">
                         <div @click="showHistory = !showHistory" class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between cursor-pointer group/header hover:bg-slate-100/80 transition-all">
@@ -96,7 +96,7 @@
                             </div>
                         </div>
                     </div>
-                @endrole
+                @endcan
 
                 {{-- PDF View --}}
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -199,7 +199,7 @@
                 @endif
 
                 {{-- Quick Actions Card --}}
-                @if ($purchaseOrder->workflow_status === 'IN_REVIEW' && $director)
+                @can('approve', $purchaseOrder)
                     <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group {{ $loading ? 'opacity-90' : '' }}" 
                          x-data="{ showSignConfirm: false, showReject: false }">
                         <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
@@ -283,7 +283,7 @@
                             </div>
                         </template>
                     </div>
-                @endif
+                @endcan
 
                 {{-- Financial & Info Card --}}
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-50">
@@ -317,8 +317,6 @@
                         </div>
                 </div>
 
-                
-
                 {{-- Requester Info Footer --}}
                 <div class="p-6 bg-slate-900 rounded-3xl text-white flex items-center gap-4">
                     <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-lg">
@@ -341,16 +339,16 @@
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                 <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
-                @if (Auth::id() == $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'))
+                @can('manageAttachments', $purchaseOrder)
                     <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
                         <i class="bi bi-plus-lg"></i>
                     </button>
-                @endif
+                @endcan
             </div>
             <div class="p-6">
                 @include('partials.file-attachments', [
                     'files' => $files,
-                    'showDelete' => Auth::id() === $purchaseOrder->creator_id || Auth::user()->hasRole('purchaser'),
+                    'showDelete' => auth()->user()->can('manageAttachments', $purchaseOrder),
                     'title' => ''
                 ])
             </div>

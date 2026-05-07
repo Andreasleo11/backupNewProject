@@ -198,6 +198,7 @@ class PurchaseOrderDashboard extends Component
 
     public function showCreateModal()
     {
+        $this->authorize('create', \App\Models\PurchaseOrder::class);
         return redirect()->route('po.create');
     }
 

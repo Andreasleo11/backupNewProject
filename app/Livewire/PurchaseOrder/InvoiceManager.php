@@ -31,17 +31,20 @@ class InvoiceManager extends Component
 
     public $total_currency = 'IDR';
 
+    public $purchaseOrder;
+
     public function mount($purchaseOrderId)
     {
         $this->purchaseOrderId = $purchaseOrderId;
+        $this->purchaseOrder = PurchaseOrder::findOrFail($purchaseOrderId);
         $this->loadInvoices();
     }
 
     public function loadInvoices()
     {
-        $po = PurchaseOrder::with(['invoices.files'])->findOrFail($this->purchaseOrderId);
-        $this->invoices = $po->invoices;
-        $this->purchaseOrderTotal = $po->total;
+        $this->purchaseOrder->load(['invoices.files']);
+        $this->invoices = $this->purchaseOrder->invoices;
+        $this->purchaseOrderTotal = $this->purchaseOrder->total;
     }
 
     public function rules()
@@ -57,17 +60,18 @@ class InvoiceManager extends Component
 
     public function create()
     {
+        $this->authorize('manageInvoices', $this->purchaseOrder);
         $this->resetForm();
 
         // Default to PO currency
-        $po = PurchaseOrder::findOrFail($this->purchaseOrderId);
-        $this->total_currency = $po->currency ?? 'IDR';
+        $this->total_currency = $this->purchaseOrder->currency ?? 'IDR';
 
         $this->showModal = true;
     }
 
     public function edit($id)
     {
+        $this->authorize('manageInvoices', $this->purchaseOrder);
         $this->resetForm();
 
         $invoice = Invoice::findOrFail($id);
@@ -84,6 +88,7 @@ class InvoiceManager extends Component
 
     public function save()
     {
+        $this->authorize('manageInvoices', $this->purchaseOrder);
         $validated = $this->validate();
 
         try {
@@ -111,6 +116,7 @@ class InvoiceManager extends Component
 
     public function delete($id)
     {
+        $this->authorize('manageInvoices', $this->purchaseOrder);
         try {
             $invoice = Invoice::findOrFail($id);
             $invoice->delete();

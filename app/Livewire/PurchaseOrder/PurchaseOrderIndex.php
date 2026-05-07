@@ -226,11 +226,7 @@ class PurchaseOrderIndex extends Component
 
     public function approvePurchaseOrder()
     {
-        if (! $this->canApproveSelectedPO()) {
-            session()->flash('error', 'You do not have permission to approve this purchase order.');
-
-            return;
-        }
+        $this->authorize('approve', $this->selectedPurchaseOrder);
 
         try {
             $poService = app(PurchaseOrderService::class);
@@ -252,11 +248,7 @@ class PurchaseOrderIndex extends Component
 
     public function rejectPurchaseOrder($reason = null)
     {
-        if (! $this->canRejectSelectedPO()) {
-            session()->flash('error', 'You do not have permission to reject this purchase order.');
-
-            return;
-        }
+        $this->authorize('reject', $this->selectedPurchaseOrder);
 
         if (! $reason) {
             $reason = 'Rejected by ' . auth()->user()->name;
@@ -282,10 +274,7 @@ class PurchaseOrderIndex extends Component
 
     public function editPurchaseOrder()
     {
-        if (! $this->canEditSelectedPO()) {
-            session()->flash('error', 'This purchase order cannot be edited.');
-            return;
-        }
+        $this->authorize('update', $this->selectedPurchaseOrder);
 
         $this->closeDetailModal();
     }
@@ -315,26 +304,6 @@ class PurchaseOrderIndex extends Component
         $this->exitFormMode();
         $this->refreshData();
         session()->flash('success', 'Purchase Order updated successfully!');
-    }
-
-    private function canApproveSelectedPO(): bool
-    {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canApprove() &&
-               auth()->check();
-    }
-
-    private function canRejectSelectedPO(): bool
-    {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canReject() &&
-               auth()->check();
-    }
-
-    private function canEditSelectedPO(): bool
-    {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canEdit();
     }
 
     public function exportSelected()

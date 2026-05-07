@@ -119,13 +119,13 @@
             </div>
 
             {{-- Create Button --}}
-            @if (auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin'))
+            @can('create', App\Models\PurchaseOrder::class)
                 <a href="{{ route('po.create') }}"
                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all">
                     <i class="bi bi-plus-lg"></i>
                     New PO
                 </a>
-            @endif
+            @endcan
         </div>
 
         {{-- Advanced Filters (Collapsible Drawer) --}}
@@ -333,11 +333,11 @@
                                     <button wire:click="openDetailModal({{ $po->id }})" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="View">
                                         <i class="bi bi-eye text-base"></i>
                                     </button>
-                                    @if($po->getStatusEnum()->canEdit())
+                                    @can('update', $po)
                                         <a href="{{ route('po.edit', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
                                             <i class="bi bi-pencil text-base"></i>
                                         </a>
-                                    @endif
+                                    @endcan
                                     <a href="{{ route('po.view', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all" title="Open">
                                         <i class="bi bi-box-arrow-up-right text-base"></i>
                                     </a>
@@ -428,7 +428,7 @@
     </div>
 
     {{-- Floating Bulk Action Bar - Compact & Fixed Bug --}}
-    @role('director')
+    @can('bulkApprove', App\Models\PurchaseOrder::class)
         <template x-teleport="body">
             <div x-show="selectedIds.length > 0"
                 x-transition:enter="transition ease-out duration-300"
@@ -468,8 +468,7 @@
                 </div>
             </div>
         </template>
-    @endrole
-
+    @endcan
     
     {{-- Purchase Order Detail Modal --}}
     <template x-teleport="body">
@@ -607,26 +606,26 @@
 
                                         {{-- Action Buttons --}}
                                         <div class="flex flex-col gap-3 mt-auto">
-                                            @if($this->canApproveSelectedPO())
+                                            @can('approve', $selectedPurchaseOrder)
                                                 <button wire:click="approvePurchaseOrder"
                                                         class="w-full py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] transition-all">
                                                     Approve & Sign
                                                 </button>
-                                            @endif
+                                            @endcan
 
-                                            @if($selectedPurchaseOrder->getStatusEnum()->canEdit())
+                                            @can('update', $selectedPurchaseOrder)
                                                 <a href="{{ route('po.edit', $selectedPurchaseOrder->id) }}"
                                                    class="w-full py-3 bg-white text-amber-600 border border-amber-200 rounded-2xl font-bold hover:bg-amber-50 transition-all text-center">
                                                     Edit Purchase Order
                                                 </a>
-                                            @endif
+                                            @endcan
 
-                                            @if($this->canRejectSelectedPO())
+                                            @can('reject', $selectedPurchaseOrder)
                                                 <button wire:click="$dispatch('open-reject-modal')"
                                                         class="w-full py-3 bg-white text-rose-600 border border-rose-200 rounded-2xl font-bold hover:bg-rose-50 transition-all">
                                                     Reject
                                                 </button>
-                                            @endif
+                                            @endcan
 
                                             <div class="grid grid-cols-2 gap-3 pt-2">
                                                 <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}"

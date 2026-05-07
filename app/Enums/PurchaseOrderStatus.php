@@ -38,8 +38,8 @@ enum PurchaseOrderStatus: int
     public function canEdit(): bool
     {
         return match ($this) {
-            self::REJECTED, self::CANCELLED => true,  // Can edit rejected/cancelled for revisions
-            self::PENDING_APPROVAL, self::APPROVED, self::DRAFT => false,
+            self::DRAFT, self::REJECTED, self::CANCELLED => true,  // Can edit draft, rejected, or cancelled for revisions
+            self::PENDING_APPROVAL, self::APPROVED => false,
         };
     }
 

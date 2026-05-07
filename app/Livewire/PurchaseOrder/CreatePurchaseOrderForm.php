@@ -46,6 +46,7 @@ class CreatePurchaseOrderForm extends Component
 
     public function mount()
     {
+        $this->authorize('create', \App\Models\PurchaseOrder::class);
         $this->loadFormData();
     }
 
@@ -83,6 +84,7 @@ class CreatePurchaseOrderForm extends Component
 
     public function save()
     {
+        $this->authorize('create', \App\Models\PurchaseOrder::class);
         $this->validate();
 
         try {
