@@ -140,15 +140,13 @@ class EditPurchaseOrderForm extends Component
             $poService = app(PurchaseOrderService::class);
             $purchaseOrder = $poService->update($this->purchaseOrderId, $data);
 
-            // Dispatch success event to parent index
-            $this->dispatch('handlePoUpdated', [
-                'po' => $purchaseOrder,
-                'message' => 'Purchase Order updated successfully!',
-            ])->to(PurchaseOrderIndex::class);
+            // Flash success message and redirect
+            session()->flash('success', 'Purchase Order updated successfully!');
+            return redirect()->route('po.index');
 
         } catch (\Exception $e) {
             Log::error('Failed to update PO via full-screen form', [
-                'po_id' => $this->purchaseOrderId,
+                'id' => $this->purchaseOrderId,
                 'data' => $this->all(),
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),

@@ -198,7 +198,7 @@ class PurchaseOrderDashboard extends Component
 
     public function showCreateModal()
     {
-        $this->dispatch('openCreateModal');
+        return redirect()->route('po.create');
     }
 
     public function showBulkActions()

@@ -49,10 +49,6 @@ class PurchaseOrderIndex extends Component
 
     public $processingIds = []; // Track IDs currently being processed in background
 
-    // Form mode state management
-    public $formMode = 'index'; // 'index', 'create', 'edit'
-    public $editingPo = null;
-
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -292,29 +288,11 @@ class PurchaseOrderIndex extends Component
         }
 
         $this->closeDetailModal();
-        $this->enterEditMode();
     }
 
-    public function enterCreateMode()
+    public function refresh()
     {
-        $this->closeDetailModal();
-        $this->formMode = 'create';
         $this->resetPage();
-    }
-
-    public function enterEditMode()
-    {
-        $this->editingPo = $this->selectedPurchaseOrder;
-        $this->formMode = 'edit';
-    }
-
-    public function exitFormMode()
-    {
-        $this->formMode = 'index';
-        $this->editingPo = null;
-        $this->resetValidation();
-        // Refresh the component data
-        $this->refreshData();
     }
 
     public function refreshData()

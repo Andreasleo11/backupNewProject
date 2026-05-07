@@ -8,8 +8,8 @@
         <div wire:poll.3s="checkProcessingStatus" class="hidden"></div>
     @endif
 
-    {{-- Conditional rendering based on form mode --}}
-    @if($formMode === 'index')
+    
+    {{-- Page Header --}}
         {{-- Page Header --}}
         <div class="flex items-center justify-between mb-6">
             <div>
@@ -120,11 +120,11 @@
 
             {{-- Create Button --}}
             @if (auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin'))
-                <button wire:click="enterCreateMode"
+                <a href="{{ route('po.create') }}"
                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all">
                     <i class="bi bi-plus-lg"></i>
                     New PO
-                </button>
+                </a>
             @endif
         </div>
 
@@ -334,9 +334,9 @@
                                         <i class="bi bi-eye text-base"></i>
                                     </button>
                                     @if($po->getStatusEnum()->canEdit())
-                                        <button wire:click="enterEditMode" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
+                                        <a href="{{ route('po.edit', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
                                             <i class="bi bi-pencil text-base"></i>
-                                        </button>
+                                        </a>
                                     @endif
                                     <a href="{{ route('po.view', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all" title="Open">
                                         <i class="bi bi-box-arrow-up-right text-base"></i>
@@ -614,6 +614,13 @@
                                                 </button>
                                             @endif
 
+                                            @if($selectedPurchaseOrder->getStatusEnum()->canEdit())
+                                                <a href="{{ route('po.edit', $selectedPurchaseOrder->id) }}"
+                                                   class="w-full py-3 bg-white text-amber-600 border border-amber-200 rounded-2xl font-bold hover:bg-amber-50 transition-all text-center">
+                                                    Edit Purchase Order
+                                                </a>
+                                            @endif
+
                                             @if($this->canRejectSelectedPO())
                                                 <button wire:click="$dispatch('open-reject-modal')"
                                                         class="w-full py-3 bg-white text-rose-600 border border-rose-200 rounded-2xl font-bold hover:bg-rose-50 transition-all">
@@ -689,72 +696,4 @@
         </div>
     </template>
 
-    @elseif($formMode === 'create')
-        {{-- Full-screen create form --}}
-        <div class="min-h-screen bg-gray-50 py-8">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {{-- Breadcrumb Navigation --}}
-                <nav class="flex mb-8" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <button wire:click="exitFormMode"
-                                    class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
-                                <i class="bi bi-house-door mr-2"></i>
-                                Purchase Orders
-                            </button>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
-                                <span class="text-sm font-medium text-gray-500">Create Purchase Order</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
-
-                {{-- Page Header --}}
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900">Create New Purchase Order</h1>
-                    <p class="mt-2 text-sm text-gray-600">Fill in the details below to create a new purchase order.</p>
-                </div>
-
-                {{-- Create form --}}
-                @livewire('purchase-order.create-purchase-order-form')
-            </div>
-        </div>
-
-    @elseif($formMode === 'edit')
-        {{-- Full-screen edit form --}}
-        <div class="min-h-screen bg-gray-50 py-8">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                {{-- Breadcrumb Navigation --}}
-                <nav class="flex mb-8" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <button wire:click="exitFormMode"
-                                    class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
-                                <i class="bi bi-house-door mr-2"></i>
-                                Purchase Orders
-                            </button>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
-                                <span class="text-sm font-medium text-gray-500">Edit Purchase Order</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
-
-                {{-- Page Header --}}
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900">Edit Purchase Order</h1>
-                    <p class="mt-2 text-sm text-gray-600">Update the purchase order details below.</p>
-                </div>
-
-                {{-- Edit form --}}
-                @livewire('purchase-order.edit-purchase-order-form', ['poId' => $editingPo?->id])
-            </div>
-        </div>
-    @endif
 </div>

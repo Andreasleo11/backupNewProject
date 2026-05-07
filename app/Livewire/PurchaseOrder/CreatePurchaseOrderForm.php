@@ -108,14 +108,9 @@ class CreatePurchaseOrderForm extends Component
             $poService = app(PurchaseOrderService::class);
             $purchaseOrder = $poService->create($data);
 
-            // Dispatch success event to parent index
-            $this->dispatch('handlePoCreated', [
-                'po' => $purchaseOrder,
-                'message' => 'Purchase Order created successfully!',
-            ])->to(PurchaseOrderIndex::class);
-
-            // Reset form
-            $this->resetForm();
+            // Flash success message and redirect
+            session()->flash('success', 'Purchase Order created successfully!');
+            return redirect()->route('po.index');
 
         } catch (\Exception $e) {
             Log::error('Failed to create PO via full-screen form', [

@@ -94,7 +94,7 @@
                         <span class="text-gray-500 sm:text-sm">{{ $currency }}</span>
                     </div>
                     <input type="text"
-                           x-model="totalFormatted"
+                           :value="totalFormatted"
                            @input="updateTotalFormatted($event.target.value)"
                            @blur="$wire.set('total', $event.target.value.replace(/,/g, ''))"
                            id="total"
@@ -142,8 +142,11 @@
                             </svg>
                         </div>
                         <div class="text-sm text-gray-900">
-                            <p class="font-medium" x-text="pdfFileName || @js($pdf_file->getClientOriginalName())"></p>
-                            <p class="text-gray-500">{{ number_format($pdf_file->getSize() / 1024, 1) }} KB</p>
+                            <p class="font-medium" x-text="pdfFileName || '{{ $pdf_file->getClientOriginalName() }}'"></p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <p class="text-gray-500" x-text="'{{ number_format($pdf_file->getSize() / 1024, 1) }} KB'"></p>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" x-show="pdfFileName" x-text="'Ready to upload'"></span>
+                            </div>
                         </div>
                         <button type="button" @click="removeFile()" class="text-red-600 hover:text-red-800 text-sm font-medium">
                             Remove file
@@ -193,6 +196,13 @@
             return {
                 ...data,
 
+                init() {
+                    // Listen for form reset events from Livewire
+                    this.$wire.on('formReset', () => {
+                        this.resetFormState();
+                    });
+                },
+
                 formatTotal(value) {
                     if (!value) return '';
                     let cleanValue = value.toString().replace(/,/g, '');
@@ -222,7 +232,17 @@
 
                 submitForm() {
                     this.isSubmitting = true;
-                    this.$wire.call('save');
+                    this.$wire.call('save').then(() => {
+                        this.resetFormState();
+                    }).catch(() => {
+                        this.isSubmitting = false;
+                    });
+                },
+
+                resetFormState() {
+                    this.isSubmitting = false;
+                    this.pdfFileName = null;
+                    this.totalFormatted = '';
                 }
             }
         }
