@@ -32,7 +32,7 @@ class EditPurchaseOrderForm extends Component
     protected function rules()
     {
         return [
-            'po_number' => 'required|string|max:50|unique:purchase_orders,po_number,' . $this->purchaseOrderId,
+            'po_number' => 'required|numeric|unique:purchase_orders,po_number,' . $this->purchaseOrderId,
             'vendor_name' => 'required|string|max:255',
             'currency' => 'required|string|size:3',
             'total' => 'required|numeric|min:0',
@@ -91,11 +91,11 @@ class EditPurchaseOrderForm extends Component
         // PDF file is optional for edits
     }
 
-    public function updatedTotal($value)
+    public function clearPdfFile()
     {
-        // Remove commas from total input
-        $this->total = str_replace(',', '', $value);
+        $this->pdf_file = null;
     }
+
 
     public function getCanEditProperty()
     {

@@ -1,8 +1,10 @@
 <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm"
      x-data="poForm({
-         totalFormatted: @entangle('total').live,
+         total: @entangle('total').live,
+         currency: @entangle('currency'),
          pdfFileName: @js($purchaseOrder->filename ? basename($purchaseOrder->filename) : null),
-         isSubmitting: false
+         isSubmitting: false,
+         showUpload: false
      })">
     
     <form wire:submit="save" class="p-8 space-y-6">
@@ -71,7 +73,7 @@
                     Currency <span class="text-red-500">*</span>
                 </label>
                 <div class="mt-1">
-                    <select wire:model.blur="currency"
+                    <select wire:model.live="currency"
                             id="currency_edit"
                             class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('currency') border-red-300 @enderror">
                         <option value="IDR" {{ $currency === 'IDR' ? 'selected' : '' }}>IDR - Indonesian Rupiah</option>
@@ -92,16 +94,14 @@
                 </label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 sm:text-sm">{{ $currency }}</span>
+                        <span class="text-gray-500 sm:text-sm" x-text="currency"></span>
                     </div>
                     <input type="text"
-                            :value="totalFormatted"
+                            x-model="totalFormatted"
                         @input="updateTotalFormatted($event.target.value)"
-                        @blur="$wire.set('total', $event.target.value.replace(/,/g, ''))"
                             id="total_edit"
                             placeholder="0"
-                            class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror"
-                            oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(\..*)\./g, '$1');">
+                            class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror">
                     @error('total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -131,63 +131,106 @@
             </div>
         </div>
 
-        {{-- Current PDF Info --}}
-        @if($purchaseOrder && $purchaseOrder->filename)
-            <div class="bg-gray-50 rounded-md p-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">Current PDF File</p>
-                            <p class="text-xs text-gray-500">{{ basename($purchaseOrder->filename) }}</p>
+        {{-- Document Management --}}
+        <div class="col-span-full border-t border-slate-100 pt-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-4">
+                Purchase Order Document
+            </label>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Current Document Card --}}
+                @if($purchaseOrder && $purchaseOrder->filename)
+                    <div class="relative group overflow-hidden bg-slate-50 border border-slate-200 rounded-2xl transition-all hover:border-indigo-200 hover:bg-indigo-50/30 p-4">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
+                                <svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-black text-slate-900 truncate">
+                                    {{ basename($purchaseOrder->filename) }}
+                                </p>
+                                <p class="text-xs text-slate-500">Current active document</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ Storage::url($purchaseOrder->filename) }}" target="_blank" class="p-2 text-slate-400 hover:text-indigo-600 transition-colors" title="View Document">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Upload/Change Action --}}
+                <div class="relative min-h-[88px]">
+                    <div x-show="!showUpload && !@js($pdf_file)" class="h-full">
+                        <button type="button" @click="showUpload = true" class="w-full h-full p-4 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-slate-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all group">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            <span class="text-sm font-black uppercase tracking-wider">Replace Document</span>
+                        </button>
+                    </div>
+
+                    <div x-show="showUpload || @js($pdf_file)" x-cloak class="h-full">
+                        <div class="p-4 border-2 border-indigo-100 bg-indigo-50/20 rounded-2xl">
+                            <div wire:loading.remove wire:target="pdf_file">
+                                @if($pdf_file)
+                                    <div class="flex items-center gap-4">
+                                        <div class="p-2 bg-green-100 rounded-lg">
+                                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-black text-slate-900 truncate" x-text="pdfFileName"></p>
+                                            <p class="text-xs text-green-600 font-bold">New document ready</p>
+                                        </div>
+                                        <button type="button" @click="removeFile(); showUpload = false" class="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="flex items-center justify-between gap-4">
+                                        <label for="pdf_file_edit" class="flex-1 cursor-pointer flex items-center gap-3">
+                                            <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100">
+                                                <svg class="h-5 w-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-sm font-bold text-slate-600">Select new PDF...</span>
+                                            <input id="pdf_file_edit" name="pdf_file" type="file" accept=".pdf" wire:model="pdf_file" @change="handleFileSelect($event)" x-ref="pdfFileInput" class="sr-only">
+                                        </label>
+                                        <button type="button" @click="showUpload = false" class="text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-tight">Cancel</button>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Uploading State --}}
+                            <div wire:loading wire:target="pdf_file" class="flex items-center gap-4">
+                                <svg class="animate-spin h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="text-sm font-bold text-indigo-600 animate-pulse">Uploading document...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        @endif
-
-        {{-- PDF File Upload --}}
-        <div>
-            <label class="block text-sm font-medium text-gray-700">
-                Replace PDF File <span class="text-gray-500">(optional)</span>
-            </label>
-            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/60 border-dashed rounded-xl hover:border-indigo-400 transition-all bg-slate-50/50">
-                <div class="space-y-1 text-center">
-                    @if($pdf_file)
-                        <div class="flex items-center justify-center">
-                            <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-sm text-gray-900">
-                            <p class="font-medium" x-text="pdfFileName || @js($pdf_file->getClientOriginalName())"></p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-gray-500" x-text="'{{ number_format($pdf_file->getSize() / 1024, 1) }} KB'"></p>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" x-show="pdfFileName" x-text="'Ready to upload'"></span>
-                            </div>
-                        </div>
-                        <button type="button" @click="removeFile()" class="text-red-600 hover:text-red-800 text-sm font-medium">
-                            Remove file
-                        </button>
-                    @else
-                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                        <div class="flex text-sm text-gray-600">
-                            <label for="pdf_file_edit" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                <span>Upload a new PDF file</span>
-                                <input id="pdf_file_edit" name="pdf_file" type="file" accept=".pdf" wire:model="pdf_file" @change="handleFileSelect($event)" x-ref="pdfFileInput" class="sr-only">
-                            </label>
-                            <p class="pl-1">or drag and drop</p>
-                        </div>
-                        <p class="text-xs text-gray-500">PDF up to 5MB (leave empty to keep current file)</p>
-                    @endif
-                </div>
-            </div>
             @error('pdf_file')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-2 text-sm text-red-600 font-bold flex items-center gap-1">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    {{ $message }}
+                </p>
             @enderror
         </div>
 
@@ -215,8 +258,17 @@
         function poForm(data) {
             return {
                 ...data,
+                totalFormatted: '',
 
                 init() {
+                    // Initial format
+                    this.totalFormatted = this.formatTotal(this.total);
+
+                    // Watch for changes from Livewire
+                    this.$watch('total', (val) => {
+                        this.totalFormatted = this.formatTotal(val);
+                    });
+
                     // Listen for form reset events from Livewire
                     this.$wire.on('formReset', () => {
                         this.resetFormState();
@@ -224,7 +276,7 @@
                 },
 
                 formatTotal(value) {
-                    if (!value) return '';
+                    if (value === null || value === undefined || value === '') return '';
                     let cleanValue = value.toString().replace(/,/g, '');
                     const parts = cleanValue.split('.');
                     if (parts.length > 2) {
@@ -232,11 +284,12 @@
                     }
                     parts[0] = parts[0].replace(/\D/g, '');
                     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                    return parts.join('.');
+                    return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
                 },
 
                 updateTotalFormatted(value) {
                     this.totalFormatted = this.formatTotal(value);
+                    this.total = this.totalFormatted.replace(/,/g, '');
                 },
 
                 handleFileSelect(event) {
@@ -246,8 +299,10 @@
 
                 removeFile() {
                     this.pdfFileName = null;
-                    this.$refs.pdfFileInput.value = '';
-                    $wire.set('pdf_file', null);
+                    if (this.$refs.pdfFileInput) {
+                        this.$refs.pdfFileInput.value = '';
+                    }
+                    this.$wire.clearPdfFile();
                 },
 
                 submitForm() {

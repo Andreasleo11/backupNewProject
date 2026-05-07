@@ -1,10 +1,11 @@
 <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm"
      x-data="poForm({
-         totalFormatted: @entangle('total').live,
+         total: @entangle('total').live,
+         currency: @entangle('currency'),
          pdfFileName: null,
          isSubmitting: false
      })">
-    <form wire:submit="save" class="p-8 space-y-6">
+    <form class="p-8 space-y-6">
         {{-- General Error --}}
         @if($errors->has('general'))
             <div class="rounded-md bg-red-50 p-4">
@@ -70,7 +71,7 @@
                     Currency <span class="text-red-500">*</span>
                 </label>
                 <div class="mt-1">
-                        <select wire:model.blur="currency"
+                        <select wire:model.live="currency"
                                 id="currency"
                                 class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('currency') border-red-300 @enderror">
                         <option value="IDR">IDR - Indonesian Rupiah</option>
@@ -91,16 +92,14 @@
                 </label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 sm:text-sm">{{ $currency }}</span>
+                        <span class="text-gray-500 sm:text-sm" x-text="currency"></span>
                     </div>
                     <input type="text"
-                           :value="totalFormatted"
+                           x-model="totalFormatted"
                            @input="updateTotalFormatted($event.target.value)"
-                           @blur="$wire.set('total', $event.target.value.replace(/,/g, ''))"
                            id="total"
                            placeholder="0"
-                           class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror"
-                           oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(\..*)\./g, '$1');">
+                           class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror">
                     @error('total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -134,7 +133,7 @@
                 PDF File <span class="text-red-500">*</span>
             </label>
             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/60 border-dashed rounded-xl hover:border-indigo-400 transition-all bg-slate-50/50">
-                <div class="space-y-1 text-center">
+                <div class="space-y-1 text-center" wire:loading.remove wire:target="pdf_file">
                     @if($pdf_file)
                         <div class="flex items-center justify-center">
                             <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +144,7 @@
                             <p class="font-medium" x-text="pdfFileName || '{{ $pdf_file->getClientOriginalName() }}'"></p>
                             <div class="flex items-center gap-2 mt-1">
                                 <p class="text-gray-500" x-text="'{{ number_format($pdf_file->getSize() / 1024, 1) }} KB'"></p>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" x-show="pdfFileName" x-text="'Ready to upload'"></span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" x-text="'Ready to upload'"></span>
                             </div>
                         </div>
                         <button type="button" @click="removeFile()" class="text-red-600 hover:text-red-800 text-sm font-medium">
@@ -165,6 +164,20 @@
                         <p class="text-xs text-gray-500">PDF up to 5MB</p>
                     @endif
                 </div>
+                
+                {{-- Uploading State --}}
+                <div class="space-y-3 text-center" wire:loading wire:target="pdf_file">
+                    <div class="flex justify-center">
+                        <svg class="animate-spin h-10 w-10 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-sm font-bold text-indigo-600 animate-pulse">
+                        Uploading PDF file...
+                    </div>
+                    <p class="text-xs text-slate-400">Please wait while we process your document</p>
+                </div>
             </div>
             @error('pdf_file')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -173,18 +186,37 @@
 
         {{-- Actions --}}
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="submit"
+            <button type="button"
+                    wire:click="save(true)"
                     wire:loading.attr="disabled"
-                    x-bind:disabled="isSubmitting"
-                    @click="submitForm()"
+                    class="inline-flex items-center px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50">
+                <span wire:loading.remove wire:target="save(true)">
+                    <i class="bi bi-bookmark mr-2"></i>
+                    Save as Draft
+                </span>
+                <span wire:loading wire:target="save(true)">
+                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-slate-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                </span>
+            </button>
+            
+            <button type="button"
+                    wire:click="save(false)"
+                    wire:loading.attr="disabled"
                     class="inline-flex items-center px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                <span wire:loading.remove>Create Purchase Order</span>
-                <span wire:loading>
+                <span wire:loading.remove wire:target="save(false)">
+                    <i class="bi bi-send mr-2"></i>
+                    Create & Submit for Review
+                </span>
+                <span wire:loading wire:target="save(false)">
                     <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Creating...
+                    Submitting...
                 </span>
             </button>
         </div>
@@ -195,8 +227,17 @@
         function poForm(data) {
             return {
                 ...data,
+                totalFormatted: '',
 
                 init() {
+                    // Initial format
+                    this.totalFormatted = this.formatTotal(this.total);
+
+                    // Watch for changes from Livewire
+                    this.$watch('total', (val) => {
+                        this.totalFormatted = this.formatTotal(val);
+                    });
+
                     // Listen for form reset events from Livewire
                     this.$wire.on('formReset', () => {
                         this.resetFormState();
@@ -204,7 +245,7 @@
                 },
 
                 formatTotal(value) {
-                    if (!value) return '';
+                    if (value === null || value === undefined || value === '') return '';
                     let cleanValue = value.toString().replace(/,/g, '');
                     const parts = cleanValue.split('.');
                     if (parts.length > 2) {
@@ -212,11 +253,12 @@
                     }
                     parts[0] = parts[0].replace(/\D/g, '');
                     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                    return parts.join('.');
+                    return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
                 },
 
                 updateTotalFormatted(value) {
                     this.totalFormatted = this.formatTotal(value);
+                    this.total = this.totalFormatted.replace(/,/g, '');
                 },
 
                 handleFileSelect(event) {
@@ -226,22 +268,13 @@
 
                 removeFile() {
                     this.pdfFileName = null;
-                    this.$refs.pdfFileInput.value = '';
-                    $wire.set('pdf_file', null);
-                },
-
-                submitForm() {
-                    this.isSubmitting = true;
-                    this.$wire.call('save').then(() => {
-                        this.resetFormState();
-                    }).catch(() => {
-                        this.isSubmitting = false;
-                    });
+                    this.$wire.clearPdfFile();
                 },
 
                 resetFormState() {
                     this.isSubmitting = false;
                     this.pdfFileName = null;
+                    this.total = '';
                     this.totalFormatted = '';
                 }
             }

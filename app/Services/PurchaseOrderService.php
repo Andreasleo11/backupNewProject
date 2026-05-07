@@ -18,11 +18,11 @@ class PurchaseOrderService
      *
      * @throws \Exception
      */
-    public function create(array $data): PurchaseOrder
+    public function create(array $data, bool $isDraft = false): PurchaseOrder
     {
         try {
-            return DB::transaction(function () use ($data) {
-                // Create the purchase order and submit for director approval
+            return DB::transaction(function () use ($data, $isDraft) {
+                // Create the purchase order
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->po_number = $data['po_number'];
                 $purchaseOrder->filename = $data['pdf_file'] ?? null;
@@ -47,8 +47,8 @@ class PurchaseOrderService
 
                 $purchaseOrder->save();
 
-                // Submit for approval - this creates approval request (status remains PENDING_APPROVAL)
-                $this->approvals->submit($purchaseOrder, auth()->id());
+                $status = $isDraft ? 'DRAFT' : 'IN_REVIEW';
+                $this->approvals->submit($purchaseOrder, auth()->id(), [], $status);
 
                 Log::info('Purchase order created and submitted for approval', [
                     'po_number' => $purchaseOrder->po_number,

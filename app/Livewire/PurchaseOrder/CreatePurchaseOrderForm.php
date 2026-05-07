@@ -27,7 +27,7 @@ class CreatePurchaseOrderForm extends Component
     protected $listeners = ['createModeEntered' => 'loadFormData'];
 
     protected $rules = [
-        'po_number' => 'required|string|max:50|unique:purchase_orders,po_number',
+        'po_number' => 'required|numeric|unique:purchase_orders,po_number',
         'vendor_name' => 'required|string|max:255',
         'currency' => 'required|string|size:3',
         'total' => 'required|numeric|min:0',
@@ -76,13 +76,13 @@ class CreatePurchaseOrderForm extends Component
         $this->pdf_file = null;
     }
 
-    public function updatedTotal($value)
+    public function clearPdfFile()
     {
-        // Remove commas from total input
-        $this->total = str_replace(',', '', $value);
+        $this->pdf_file = null;
     }
 
-    public function save()
+
+    public function save($isDraft = false)
     {
         $this->authorize('create', \App\Models\PurchaseOrder::class);
         $this->validate();
@@ -108,10 +108,11 @@ class CreatePurchaseOrderForm extends Component
 
             // Create PO using service
             $poService = app(PurchaseOrderService::class);
-            $purchaseOrder = $poService->create($data);
+            $purchaseOrder = $poService->create($data, $isDraft);
 
             // Flash success message and redirect
-            session()->flash('success', 'Purchase Order created successfully!');
+            $message = $isDraft ? 'Purchase Order saved as draft.' : 'Purchase Order created and submitted for review.';
+            session()->flash('success', $message);
             return redirect()->route('po.index');
 
         } catch (\Exception $e) {
