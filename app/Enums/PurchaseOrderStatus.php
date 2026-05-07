@@ -25,6 +25,14 @@ enum PurchaseOrderStatus: int
     }
 
     /**
+     * Get the legacy integer value for backward compatibility
+     */
+    public function legacyValue(): int
+    {
+        return $this->value;
+    }
+
+    /**
      * Check if the status allows editing
      */
     public function canEdit(): bool
