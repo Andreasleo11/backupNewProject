@@ -126,7 +126,7 @@
             <label class="block text-sm font-medium text-gray-700">
                 PDF File <span class="text-red-500">*</span>
             </label>
-            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/60 border-dashed rounded-xl hover:border-indigo-400 transition-all bg-slate-50/50"
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/60 border-dashed rounded-xl hover:border-indigo-400 transition-all bg-slate-50/50">
                 <div class="space-y-1 text-center">
                     @if($pdf_file)
                         <div class="flex items-center justify-center">
@@ -180,15 +180,30 @@
 
     {{-- amount formatting --}}
     <script>
-        document.getElementById('total').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/,/g, '');
+        function formatTotalInput(value) {
+            value = value.replace(/,/g, '');
             const parts = value.split('.');
             if (parts.length > 2) {
                 parts.splice(2);
             }
             parts[0] = parts[0].replace(/\D/g, '');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            e.target.value = parts.join('.');
+            return parts.join('.');
+        }
+
+        // Use Livewire's ready event to ensure DOM is available
+        document.addEventListener('livewire:loaded', function() {
+            const totalInput = document.getElementById('total');
+            if (totalInput) {
+                totalInput.addEventListener('input', function(e) {
+                    e.target.value = formatTotalInput(e.target.value);
+                });
+
+                // Format existing value on load
+                if (totalInput.value) {
+                    totalInput.value = formatTotalInput(totalInput.value);
+                }
+            }
         });
     </script>
 </div>
