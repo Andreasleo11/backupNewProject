@@ -237,15 +237,7 @@
                                 <i class="bi {{ $sortBy === 'vendor_name' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
                             </button>
                         </th>
-                        <th class="px-4 py-4 hidden md:table-cell">
-                            <button type="button" 
-                                    wire:click="sortByColumn('invoice_date')" 
-                                    wire:loading.attr="disabled"
-                                    class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
-                                Invoice Info
-                                <i class="bi {{ $sortBy === 'invoice_date' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
-                            </button>
-                        </th>
+                        {{-- Invoice Info column removed - deprecated fields --}}
                         <th class="px-4 py-4">
                             <button type="button" 
                                     wire:click="sortByColumn('created_at')" 
@@ -288,12 +280,7 @@
                                     <span class="text-sm font-bold text-slate-800 truncate max-w-[180px]">{{ $po->vendor_name }}</span>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 hidden md:table-cell">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-mono font-bold text-slate-700">{{ $po->invoice_number ?: '---' }}</span>
-                                    <span class="text-xs font-medium text-slate-400">{{ $po->invoice_date?->format('d M Y') ?? 'NO DATE' }}</span>
-                                </div>
-                            </td>
+                            {{-- Invoice Info column removed - deprecated fields --}}
                             <td class="px-4 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shadow-inner">
@@ -346,6 +333,11 @@
                                     <button wire:click="openDetailModal({{ $po->id }})" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="View">
                                         <i class="bi bi-eye text-base"></i>
                                     </button>
+                                    @if($po->getStatusEnum()->canEdit())
+                                        <button wire:click="enterEditMode" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
+                                            <i class="bi bi-pencil text-base"></i>
+                                        </button>
+                                    @endif
                                     <a href="{{ route('po.view', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all" title="Open">
                                         <i class="bi bi-box-arrow-up-right text-base"></i>
                                     </a>
@@ -565,14 +557,7 @@
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
                                                 <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->category->name }}</p>
                                             </div>
-                                            <div>
-                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Date</label>
-                                                <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->invoice_date ? $selectedPurchaseOrder->invoice_date->format('d M Y') : '-' }}</p>
-                                            </div>
-                                            <div>
-                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoice Number</label>
-                                                <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->invoice_number ?? '-' }}</p>
-                                            </div>
+                                            {{-- Invoice fields removed - deprecated --}}
                                             <div class="pt-3 border-t border-slate-100">
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount</label>
                                                 <p class="text-xl font-black text-slate-900">
@@ -721,7 +706,7 @@
                         <li>
                             <div class="flex items-center">
                                 <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
-                                <span class="text-sm font-medium text-gray-500">Create</span>
+                                <span class="text-sm font-medium text-gray-500">Create Purchase Order</span>
                             </div>
                         </li>
                     </ol>
@@ -755,7 +740,7 @@
                         <li>
                             <div class="flex items-center">
                                 <i class="bi bi-chevron-right text-gray-400 text-sm mx-1"></i>
-                                <span class="text-sm font-medium text-gray-500">Edit</span>
+                                <span class="text-sm font-medium text-gray-500">Edit Purchase Order</span>
                             </div>
                         </li>
                     </ol>

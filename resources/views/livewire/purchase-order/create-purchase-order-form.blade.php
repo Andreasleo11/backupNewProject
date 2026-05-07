@@ -1,4 +1,4 @@
-<div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl">
+<div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
     <form wire:submit="save" class="p-8 space-y-6">
         {{-- General Error --}}
         @if($errors->has('general'))
@@ -29,7 +29,7 @@
                         <input type="number"
                                wire:model.blur="po_number"
                                id="po_number"
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('po_number') border-red-300 @enderror">
+                               class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('po_number') border-red-300 @enderror">
                     @error('po_number')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -47,7 +47,7 @@
                            id="vendor_name"
                            list="vendors-list"
                            placeholder="Start typing to search..."
-                           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('vendor_name') border-red-300 @enderror">
+                           class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('vendor_name') border-red-300 @enderror">
                     <datalist id="vendors-list">
                         @foreach($vendors as $vendor)
                             <option value="{{ $vendor }}">
@@ -67,7 +67,7 @@
                 <div class="mt-1">
                         <select wire:model.blur="currency"
                                 id="currency"
-                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('currency') border-red-300 @enderror">
+                                class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('currency') border-red-300 @enderror">
                         <option value="IDR">IDR - Indonesian Rupiah</option>
                         <option value="USD">USD - US Dollar</option>
                         <option value="EUR">EUR - Euro</option>
@@ -92,7 +92,7 @@
                            wire:model.blur="total"
                            id="total"
                            placeholder="0"
-                           class="pl-12 py-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('total') border-red-300 @enderror"
+                           class="pl-12 py-2.5 block w-full bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('total') border-red-300 @enderror"
                            oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(\..*)\./g, '$1');">
                     @error('total')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -108,7 +108,7 @@
                 <div class="mt-1">
                     <select wire:model.blur="purchase_order_category_id"
                             id="purchase_order_category_id"
-                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('purchase_order_category_id') border-red-300 @enderror">
+                            class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('purchase_order_category_id') border-red-300 @enderror">
                         <option value="">Select a category</option>
                         @foreach($categories as $category)
                             <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
@@ -126,7 +126,7 @@
             <label class="block text-sm font-medium text-gray-700">
                 PDF File <span class="text-red-500">*</span>
             </label>
-            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200/60 border-dashed rounded-xl hover:border-indigo-400 transition-all bg-slate-50/50"
                 <div class="space-y-1 text-center">
                     @if($pdf_file)
                         <div class="flex items-center justify-center">
@@ -165,7 +165,7 @@
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button type="submit"
                     wire:loading.attr="disabled"
-                    class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="inline-flex items-center px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 <span wire:loading.remove>Create Purchase Order</span>
                 <span wire:loading>
                     <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
