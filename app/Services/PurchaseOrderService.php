@@ -415,7 +415,7 @@ class PurchaseOrderService
     {
         try {
             return PurchaseOrder::where('vendor_name', $vendorName)
-                ->select('id', 'po_number', 'created_at', 'total', 'status')
+                ->select('id', 'po_number', 'created_at', 'total')
                 ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
                 ->orderBy('created_at', 'desc')
                 ->orderByDesc('total')

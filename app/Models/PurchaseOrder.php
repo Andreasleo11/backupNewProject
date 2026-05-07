@@ -114,6 +114,42 @@ class PurchaseOrder extends Model implements Approvable
     }
 
     /**
+     * Scope: Legacy helper for approved POs.
+     * @deprecated Use withWorkflowStatus('APPROVED')
+     */
+    public function scopeApproved($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'APPROVED');
+    }
+
+    /**
+     * Scope: Legacy helper for waiting POs.
+     * @deprecated Use withWorkflowStatus('IN_REVIEW')
+     */
+    public function scopeWaiting($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'IN_REVIEW');
+    }
+
+    /**
+     * Scope: Legacy helper for rejected POs.
+     * @deprecated Use withWorkflowStatus('REJECTED')
+     */
+    public function scopeRejected($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'REJECTED');
+    }
+
+    /**
+     * Scope: Legacy helper for canceled POs.
+     * @deprecated Use withWorkflowStatus('CANCELLED')
+     */
+    public function scopeCanceled($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'CANCELLED');
+    }
+
+    /**
      * Scope: Filter editable POs (can be revised).
      */
     public function scopeEditable($query)
