@@ -6,11 +6,15 @@ use App\Domain\Approval\Contracts\Approvable;
 use App\Enums\PurchaseOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PurchaseOrder extends Model implements Approvable
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $casts = [
         'invoice_date' => 'date',
@@ -39,74 +43,31 @@ class PurchaseOrder extends Model implements Approvable
         'revision_count',
     ];
 
-    /**
-     * Get the current status enum based on workflow status
-     */
-    public function getStatusEnum(): PurchaseOrderStatus
+    public function getActivitylogOptions(): LogOptions
     {
-        return PurchaseOrderStatus::fromWorkflowStatus($this->workflow_status);
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
-    /**
-     * Check if PO can be edited (only rejected/cancelled can be revised)
-     */
-    public function canBeEdited(): bool
-    {
-        $status = $this->getStatusEnum();
-        return in_array($status, [PurchaseOrderStatus::REJECTED, PurchaseOrderStatus::CANCELLED]);
-    }
-
-    /**
-     * Check if PO is in a terminal state (cannot be changed further)
-     */
-    public function isTerminal(): bool
-    {
-        return $this->getStatusEnum()->isTerminal();
-    }
-
-    /**
-     * Scope: Filter by workflow status
-     */
-    public function scopeWithWorkflowStatus($query, string $workflowStatus)
-    {
-        if ($workflowStatus === 'DRAFT') {
-            // DRAFT: No approval request or approval request is DRAFT
-            return $query->whereDoesntHave('approvalRequest')
-                        ->orWhereHas('approvalRequest', function ($q) {
-                            $q->where('status', 'DRAFT');
-                        });
-        }
-
-        // Other statuses: Must have approval request with matching status
-        return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
-            $q->where('status', $workflowStatus);
-        });
-    }
-
-    /**
-     * Scope: Filter editable POs (can be revised)
-     */
-    public function scopeEditable($query)
-    {
-        return $query->whereHas('approvalRequest', function ($q) {
-            $q->whereIn('status', ['REJECTED', 'CANCELLED']);
-        });
-    }
-
-    /**
-     * Scope: Filter POs approved in current month
-     */
-    public function scopeApprovedThisMonth($query)
-    {
-        return $query->whereHas('approvalRequest', function ($q) {
-            $q->where('status', 'APPROVED')
-              ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
-        });
-    }
+    // =========================================================================
+    // Relationships
+    // =========================================================================
 
     public function user()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     public function latestDownloadLog()
@@ -119,16 +80,106 @@ class PurchaseOrder extends Model implements Approvable
         return $this->hasMany(PurchaseOrderDownloadLog::class)->latest();
     }
 
-    public function category()
+    // =========================================================================
+    // Status helpers
+    // =========================================================================
+
+    /**
+     * Get the current status enum based on workflow status.
+     */
+    public function getStatusEnum(): PurchaseOrderStatus
     {
-        return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
+        return PurchaseOrderStatus::fromWorkflowStatus($this->workflow_status);
     }
 
-    // === APPROVAL SYSTEM INTEGRATION ===
+    // =========================================================================
+    // Query Scopes
+    // =========================================================================
+
+    /**
+     * Scope: Filter by workflow status.
+     */
+    public function scopeWithWorkflowStatus($query, string $workflowStatus)
+    {
+        if ($workflowStatus === 'DRAFT') {
+            return $query->whereDoesntHave('approvalRequest')
+                ->orWhereHas('approvalRequest', function ($q) {
+                    $q->where('status', 'DRAFT');
+                });
+        }
+
+        return $query->whereHas('approvalRequest', function ($q) use ($workflowStatus) {
+            $q->where('status', $workflowStatus);
+        });
+    }
+
+    /**
+     * Scope: Legacy helper for approved POs.
+     * @deprecated Use withWorkflowStatus('APPROVED')
+     */
+    public function scopeApproved($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'APPROVED');
+    }
+
+    /**
+     * Scope: Legacy helper for waiting POs.
+     * @deprecated Use withWorkflowStatus('IN_REVIEW')
+     */
+    public function scopeWaiting($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'IN_REVIEW');
+    }
+
+    /**
+     * Scope: Legacy helper for rejected POs.
+     * @deprecated Use withWorkflowStatus('REJECTED')
+     */
+    public function scopeRejected($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'REJECTED');
+    }
+
+    /**
+     * Scope: Legacy helper for canceled POs.
+     * @deprecated Use withWorkflowStatus('CANCELLED')
+     */
+    public function scopeCanceled($query)
+    {
+        return $this->scopeWithWorkflowStatus($query, 'CANCELLED');
+    }
+
+    /**
+     * Scope: Filter editable POs (can be revised).
+     */
+    public function scopeEditable($query)
+    {
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->whereIn('status', ['REJECTED', 'CANCELLED']);
+        });
+    }
+
+    /**
+     * Scope: Filter POs approved in current month.
+     */
+    public function scopeApprovedThisMonth($query)
+    {
+        return $query->whereHas('approvalRequest', function ($q) {
+            $q->where('status', 'APPROVED')
+                ->whereBetween('updated_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        });
+    }
+
+    // =========================================================================
+    // Approval System Integration (Approvable contract)
+    // =========================================================================
 
     public function approvalRequest(): MorphOne
     {
-        return $this->morphOne(\App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::class, 'approvable');
+        return $this->morphOne(
+            \App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest::class,
+            'approvable'
+        );
     }
 
     public function getApprovableTypeLabel(): string
@@ -153,9 +204,12 @@ class PurchaseOrder extends Model implements Approvable
 
     public function getApprovableBranchValue(): ?string
     {
-        // Return branch information if available
         return $this->user?->branch?->name;
     }
+
+    // =========================================================================
+    // Dynamic / Computed Attributes
+    // =========================================================================
 
     /**
      * Get workflow status from approval request.
@@ -163,17 +217,15 @@ class PurchaseOrder extends Model implements Approvable
      */
     public function getWorkflowStatusAttribute(): ?string
     {
-        // Load approval request if not already loaded
-        if (!$this->relationLoaded('approvalRequest')) {
+        if (! $this->relationLoaded('approvalRequest')) {
             $this->load('approvalRequest:id,approvable_id,approvable_type,status');
         }
 
-        // Return status from approval request, or DRAFT if no approval
         return $this->approvalRequest?->status ?? 'DRAFT';
     }
 
     /**
-     * Get current workflow step (approver label).
+     * Get current workflow step label (approver label).
      */
     public function getWorkflowStepAttribute(): ?string
     {

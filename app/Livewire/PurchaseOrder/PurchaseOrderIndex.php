@@ -6,8 +6,8 @@ use App\Jobs\PurchaseOrder\ProcessPurchaseOrderApprovalJob;
 use App\Jobs\PurchaseOrder\ProcessPurchaseOrderRejectionJob;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,19 +21,34 @@ class PurchaseOrderIndex extends Component
 
     public $vendorFilter = '';
 
+    public $currencyFilter = '';
+
+
     public $monthFilter = '';
-
-    public $dateFrom = '';
-
-    public $dateTo = '';
 
     public $amountFrom = '';
 
     public $amountTo = '';
 
     public $creatorFilter = '';
-    
+
     public $categoryFilter = '';
+    
+    public $invoicingFilter = '';
+
+    public $visibleColumns = ['po_number', 'vendor', 'total', 'status', 'actions'];
+
+    public $availableColumns = [
+        'po_number' => 'PO Number',
+        'vendor' => 'Vendor',
+        'creator' => 'Creator',
+        'total' => 'Valuation',
+        'invoicing' => 'Invoicing',
+        'status' => 'Status',
+        'actions' => 'Actions',
+    ];
+
+
 
     public $perPage = 10;
 
@@ -53,21 +68,28 @@ class PurchaseOrderIndex extends Component
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
         'vendorFilter' => ['except' => ''],
+        'currencyFilter' => ['except' => ''],
+
         'monthFilter' => ['except' => ''],
-        'dateFrom' => ['except' => ''],
-        'dateTo' => ['except' => ''],
         'amountFrom' => ['except' => ''],
         'amountTo' => ['except' => ''],
         'creatorFilter' => ['except' => ''],
         'categoryFilter' => ['except' => ''],
+        'invoicingFilter' => ['except' => ''],
+        'visibleColumns' => ['except' => ['po_number', 'vendor', 'total', 'status', 'actions']],
+
+
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
 
     // Modal properties
     public $showDetailModal = false;
+
     public $selectedPurchaseOrder;
+
     public $modalLoading = false;
+
     public $pdfUrl = null;
 
     public function updatingSearch()
@@ -85,17 +107,13 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingCurrencyFilter()
+    {
+        $this->resetPage();
+    }
+
+
     public function updatingMonthFilter()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDateFrom()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDateTo()
     {
         $this->resetPage();
     }
@@ -120,6 +138,12 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingInvoicingFilter()
+    {
+        $this->resetPage();
+    }
+
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -136,6 +160,16 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function toggleColumn($column)
+    {
+        if (in_array($column, $this->visibleColumns)) {
+            $this->visibleColumns = array_diff($this->visibleColumns, [$column]);
+        } else {
+            $this->visibleColumns[] = $column;
+        }
+    }
+
+
     public function clearFilters()
     {
         $this->search = '';
@@ -143,14 +177,23 @@ class PurchaseOrderIndex extends Component
         $this->vendorFilter = '';
         $this->creatorFilter = '';
         $this->categoryFilter = '';
-        $this->dateFrom = '';
-        $this->dateTo = '';
+        $this->currencyFilter = '';
+        $this->invoicingFilter = '';
+
         $this->amountFrom = '';
         $this->amountTo = '';
         $this->sortBy = 'created_at';
         $this->sortDirection = 'desc';
         $this->selectedIds = [];
         $this->selectAll = false;
+        $this->resetPage();
+    }
+
+    public function clearAmountFilters()
+    {
+        $this->amountFrom = '';
+        $this->amountTo = '';
+        $this->currencyFilter = '';
         $this->resetPage();
     }
 
@@ -171,8 +214,10 @@ class PurchaseOrderIndex extends Component
             'approvalRequest.steps' => function ($query) {
                 $query->orderBy('sequence');
             },
-            'approvalRequest.actions.causer'
-        ])->findOrFail($poId);
+        ])
+            ->withCount('invoices')
+            ->withSum('invoices as invoiced_total', 'total')
+            ->findOrFail($poId);
 
         // Generate PDF preview URL if file exists
         $this->generatePdfUrl();
@@ -201,6 +246,7 @@ class PurchaseOrderIndex extends Component
     {
         try {
             $pdfService = app(\App\Services\PdfProcessingService::class);
+
             return $pdfService->download($this->selectedPurchaseOrder->id, auth()->id());
         } catch (\Exception $e) {
             Log::error('PDF download failed', [
@@ -222,10 +268,7 @@ class PurchaseOrderIndex extends Component
 
     public function approvePurchaseOrder()
     {
-        if (!$this->canApproveSelectedPO()) {
-            session()->flash('error', 'You do not have permission to approve this purchase order.');
-            return;
-        }
+        $this->authorize('approve', $this->selectedPurchaseOrder);
 
         try {
             $poService = app(PurchaseOrderService::class);
@@ -247,12 +290,9 @@ class PurchaseOrderIndex extends Component
 
     public function rejectPurchaseOrder($reason = null)
     {
-        if (!$this->canRejectSelectedPO()) {
-            session()->flash('error', 'You do not have permission to reject this purchase order.');
-            return;
-        }
+        $this->authorize('reject', $this->selectedPurchaseOrder);
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = 'Rejected by ' . auth()->user()->name;
         }
 
@@ -276,39 +316,43 @@ class PurchaseOrderIndex extends Component
 
     public function editPurchaseOrder()
     {
-        if (!$this->canEditSelectedPO()) {
-            session()->flash('error', 'This purchase order cannot be edited.');
-            return;
-        }
+        $this->authorize('update', $this->selectedPurchaseOrder);
 
         $this->closeDetailModal();
-        return redirect()->route('po.edit', $this->selectedPurchaseOrder->id);
     }
 
-    private function canApproveSelectedPO(): bool
+    public function refresh()
     {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canApprove() &&
-               auth()->check();
+        $this->resetPage();
     }
 
-    private function canRejectSelectedPO(): bool
+    public function refreshData()
     {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canReject() &&
-               auth()->check();
+        // Force refresh of computed properties by updating a dependency
+        $this->selectedIds = [];
+        $this->selectAll = false;
+        // This will trigger Livewire to recalculate all computed properties
     }
 
-    private function canEditSelectedPO(): bool
+    public function handlePoCreated($poData)
     {
-        return $this->selectedPurchaseOrder &&
-               $this->selectedPurchaseOrder->getStatusEnum()->canEdit();
+        $this->exitFormMode();
+        $this->refreshData();
+        session()->flash('success', 'Purchase Order created successfully!');
+    }
+
+    public function handlePoUpdated($poData)
+    {
+        $this->exitFormMode();
+        $this->refreshData();
+        session()->flash('success', 'Purchase Order updated successfully!');
     }
 
     public function exportSelected()
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected for export.');
+
             return;
         }
 
@@ -321,6 +365,7 @@ class PurchaseOrderIndex extends Component
 
         if (empty($poIds)) {
             session()->flash('error', 'No purchase orders found matching current filters.');
+
             return;
         }
 
@@ -347,8 +392,6 @@ class PurchaseOrderIndex extends Component
             // CSV headers
             fputcsv($file, [
                 'PO Number',
-                'Invoice Date',
-                'Invoice Number',
                 'Vendor Name',
                 'Creator',
                 'Status',
@@ -362,8 +405,6 @@ class PurchaseOrderIndex extends Component
             foreach ($purchaseOrders as $po) {
                 fputcsv($file, [
                     $po->po_number,
-                    $po->invoice_date ? $po->invoice_date->format('Y-m-d') : '',
-                    $po->invoice_number ?: '',
                     $po->vendor_name,
                     $po->user?->name ?: '',
                     $po->getStatusEnum()->label(),
@@ -402,25 +443,26 @@ class PurchaseOrderIndex extends Component
     {
         if (empty($this->selectedIds)) {
             session()->flash('error', 'No purchase orders selected.');
+
             return;
         }
 
         try {
             $count = count($this->selectedIds);
-            
+
             foreach ($this->selectedIds as $id) {
                 $po = PurchaseOrder::find($id);
                 if ($po && $po->getStatusEnum()->canApprove()) {
                     // Add to processing list for UI feedback
                     $this->processingIds[] = $id;
-                    
+
                     // Dispatch the background job
                     ProcessPurchaseOrderApprovalJob::dispatch($po, auth()->id());
                 }
             }
 
             session()->flash('info', "Processing {$count} purchase orders in the background. Please wait...");
-            
+
             $this->selectedIds = [];
             $this->selectAll = false;
 
@@ -447,23 +489,25 @@ class PurchaseOrderIndex extends Component
         foreach ($this->processingIds as $key => $id) {
             if ($error = Cache::get("po_process_error_{$id}")) {
                 Cache::forget("po_process_error_{$id}");
-                
+
                 // Remove from processingIds so we stop polling it
                 unset($this->processingIds[$key]);
-                
+
                 $this->dispatch('notify', [
                     'type' => 'error',
-                    'message' => "Processing failed for PO #{$id}: {$error}"
+                    'message' => "Processing failed for PO #{$id}: {$error}",
                 ]);
             }
         }
         $this->processingIds = array_values($this->processingIds);
 
-        if (empty($this->processingIds)) return;
+        if (empty($this->processingIds)) {
+            return;
+        }
 
         // 2. Check if remaining POs are still in IN_REVIEW status
         $stillProcessing = PurchaseOrder::whereIn('id', $this->processingIds)
-            ->whereHas('approvalRequest', function($q) {
+            ->whereHas('approvalRequest', function ($q) {
                 $q->where('status', 'IN_REVIEW');
             })
             ->pluck('id')
@@ -471,10 +515,10 @@ class PurchaseOrderIndex extends Component
 
         // Find which ones are done
         $completed = array_diff($this->processingIds, $stillProcessing);
-        
-        if (!empty($completed)) {
+
+        if (! empty($completed)) {
             $this->processingIds = array_values($stillProcessing);
-            
+
             if (empty($this->processingIds)) {
                 session()->flash('success', 'All background approvals have been completed.');
             }
@@ -492,22 +536,23 @@ class PurchaseOrderIndex extends Component
 
         if (empty($idsToReject)) {
             $this->dispatch('toast', message: 'No purchase orders selected for rejection.', type: 'error');
+
             return;
         }
 
-        if (!$reason) {
+        if (! $reason) {
             $reason = 'Rejected by ' . auth()->user()->name;
         }
 
         try {
             $count = count($idsToReject);
-            
+
             foreach ($idsToReject as $id) {
                 $po = PurchaseOrder::find($id);
                 if ($po && $po->getStatusEnum()->canReject()) {
                     // Add to processing list for UI feedback
                     $this->processingIds[] = $id;
-                    
+
                     // Dispatch the background job
                     ProcessPurchaseOrderRejectionJob::dispatch($po, auth()->id(), $reason);
                 }
@@ -519,7 +564,7 @@ class PurchaseOrderIndex extends Component
             } else {
                 $this->dispatch('toast', message: "Processing {$count} rejections in the background...", type: 'info');
             }
-            
+
             $this->selectedIds = [];
             $this->selectAll = false;
 
@@ -538,14 +583,17 @@ class PurchaseOrderIndex extends Component
         // Use optimized query with selective field loading and relationship optimization
         $query = PurchaseOrder::query()
             ->select([
-                'id', 'po_number', 'invoice_date', 'invoice_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran', 'purchase_order_category_id'
+                'id', 'po_number',
+                'vendor_name', 'creator_id', 'currency', 'total', 'approved_date', 'created_at', 'purchase_order_category_id',
             ])
             ->with([
                 'user:id,name',
                 'approvalRequest.steps',
-                'approvalRequest.actions'
-            ]);
+                'approvalRequest.actions',
+            ])
+            ->withCount('invoices')
+            ->withSum('invoices as invoiced_total', 'total');
+
 
         // Optimized search across multiple fields
         if ($this->search) {
@@ -553,11 +601,10 @@ class PurchaseOrderIndex extends Component
             if (strlen($searchTerm) > 0) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('po_number', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
-                      ->orWhere('invoice_number', 'like', '%' . $searchTerm . '%')
-                      ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
-                          $userQuery->where('name', 'like', '%' . $searchTerm . '%');
-                      });
+                        ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                            $userQuery->where('name', 'like', '%' . $searchTerm . '%');
+                        });
                 });
             }
         }
@@ -584,33 +631,44 @@ class PurchaseOrderIndex extends Component
             });
         }
 
-        // Optimized date filtering using database functions
-        if ($this->monthFilter) {
-            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$this->monthFilter]);
-        }
-
-        if ($this->dateFrom) {
-            $query->where('invoice_date', '>=', $this->dateFrom);
-        }
-
-        if ($this->dateTo) {
-            $query->where('invoice_date', '<=', $this->dateTo);
-        }
-
         // Amount range filtering
-        if ($this->amountFrom) {
-            $query->where('total', '>=', $this->amountFrom);
+        if ($this->currencyFilter) {
+            $query->where('currency', $this->currencyFilter);
+            
+            if ($this->amountFrom) {
+                $query->where('total', '>=', $this->amountFrom);
+            }
+
+            if ($this->amountTo) {
+                $query->where('total', '<=', $this->amountTo);
+            }
         }
 
-        if ($this->amountTo) {
-            $query->where('total', '<=', $this->amountTo);
+
+        // Invoicing status filtering
+        if ($this->invoicingFilter) {
+            switch ($this->invoicingFilter) {
+                case 'not_invoiced':
+                    $query->has('invoices', '=', 0);
+                    break;
+                case 'partially_invoiced':
+                    $query->has('invoices', '>', 0)
+                        ->whereHas('invoices', function ($q) {
+                            // Sum of invoices < PO total
+                        })->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) < purchase_orders.total');
+                    break;
+                case 'fully_invoiced':
+                    $query->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) >= purchase_orders.total');
+                    break;
+            }
         }
+
 
         // Optimized sorting with whitelist
         $sortableColumns = [
-            'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
-            'total', 'approved_date', 'created_at', 'tanggal_pembayaran',
-            'purchase_order_category_id'
+            'po_number', 'vendor_name',
+            'total', 'approved_date', 'created_at',
+            'purchase_order_category_id',
         ];
 
         if (in_array($this->sortBy, $sortableColumns)) {
@@ -629,7 +687,12 @@ class PurchaseOrderIndex extends Component
 
     public function getFilteredTotalProperty()
     {
-        return $this->getPurchaseOrdersQuery()->sum('total');
+        return $this->getPurchaseOrdersQuery()
+            ->select('currency')
+            ->selectRaw('SUM(total) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
     }
 
     public function getStatsProperty()
@@ -640,16 +703,20 @@ class PurchaseOrderIndex extends Component
         return [
             'pending_me' => PurchaseOrder::whereHas('approvalRequest', function ($q) {
                 $q->where('status', 'IN_REVIEW');
-            })->get()->filter(fn($po) => $po->getStatusEnum()->canApprove())->count(),
-            
+            })->get()->filter(fn ($po) => $po->getStatusEnum()->canApprove())->count(),
+
             'in_review' => PurchaseOrder::withWorkflowStatus('IN_REVIEW')->count(),
-            
+
             'rejected_month' => PurchaseOrder::withWorkflowStatus('REJECTED')
                 ->whereBetween('updated_at', [$currentMonth, $endOfMonth])
                 ->count(),
-                
+
             'total_valuation' => PurchaseOrder::whereBetween('created_at', [$currentMonth, $endOfMonth])
-                ->sum('total'),
+                ->select('currency')
+                ->selectRaw('SUM(total) as total')
+                ->groupBy('currency')
+                ->pluck('total', 'currency')
+                ->toArray(),
         ];
     }
 
@@ -661,24 +728,23 @@ class PurchaseOrderIndex extends Component
     public function getBulkActionReasonProperty()
     {
         if (empty($this->selectedIds)) {
-            return "No items selected.";
+            return 'No items selected.';
         }
 
         // Check for items not in IN_REVIEW
         $invalidCount = PurchaseOrder::whereIn('id', $this->selectedIds)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereDoesntHave('approvalRequest')
-                    ->orWhereHas('approvalRequest', function($q) {
+                    ->orWhereHas('approvalRequest', function ($q) {
                         $q->whereIn('status', ['APPROVED', 'REJECTED', 'CANCELLED', 'DRAFT']);
                     });
             })
             ->count();
 
         if ($invalidCount > 0) {
-            return "Selection contains items already processed or in Draft.";
+            return 'Selection contains items already processed or in Draft.';
         }
 
-        return null;
     }
 
     public function filterByStat($type)
@@ -691,7 +757,7 @@ class PurchaseOrderIndex extends Component
                 $this->statusFilter = 'IN_REVIEW';
                 // Note: The actual filtering for 'pending_me' happens in the query logic
                 // if we add a specific filter property for it.
-                $this->search = ''; 
+                $this->search = '';
                 break;
             case 'in_review':
                 $this->statusFilter = 'IN_REVIEW';
@@ -718,12 +784,6 @@ class PurchaseOrderIndex extends Component
                 ->whereNotNull('vendor_name')
                 ->pluck('vendor_name', 'vendor_name')
                 ->toArray(),
-            'months' => ['' => 'All Months'] + PurchaseOrder::query()
-                ->selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
-                ->whereNotNull('invoice_date')
-                ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
-                ->pluck('month_label', 'month_value')
-                ->toArray(),
             'creators' => ['' => 'All Creators'] + PurchaseOrder::query()
                 ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
                 ->distinct()
@@ -732,6 +792,19 @@ class PurchaseOrderIndex extends Component
             'categories' => ['' => 'All Categories'] + \App\Models\PurchaseOrderCategory::query()
                 ->pluck('name', 'id')
                 ->toArray(),
+            'invoicing_statuses' => [
+                '' => 'All Invoicing',
+                'not_invoiced' => 'Not Invoiced',
+                'partially_invoiced' => 'Partially Invoiced',
+                'fully_invoiced' => 'Fully Invoiced',
+            ],
+            'currencies' => ['' => 'Select Currency'] + PurchaseOrder::query()
+                ->distinct()
+                ->whereNotNull('currency')
+                ->pluck('currency', 'currency')
+                ->toArray(),
+
+
         ];
     }
 

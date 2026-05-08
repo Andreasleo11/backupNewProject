@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\PurchaseOrder;
 
 use App\Services\PdfProcessingService;
 use App\Services\PurchaseOrderService;
@@ -8,53 +8,37 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class EditPurchaseOrderModal extends Component
+class EditPurchaseOrderForm extends Component
 {
     use WithFileUploads;
 
-    public $showModal = false;
+    public $layout = 'new.layouts.app';
 
     public $purchaseOrderId;
-
     public $purchaseOrder;
 
     // Form fields
     public $po_number;
-
     public $vendor_name;
-
-    public $invoice_date;
-
-    public $invoice_number;
-
     public $currency;
-
     public $total;
-
     public $purchase_order_category_id;
-
-    public $tanggal_pembayaran;
-
     public $pdf_file;
 
     // Form validation
     public $vendors = [];
-
     public $categories = [];
 
-    protected $listeners = ['openEditModal' => 'openModal'];
+    protected $listeners = ['editModeEntered' => 'loadPurchaseOrder'];
 
     protected function rules()
     {
         return [
-            'po_number' => 'required|string|max:50|unique:purchase_orders,po_number,' . $this->purchaseOrderId,
+            'po_number' => 'required|numeric|unique:purchase_orders,po_number,' . $this->purchaseOrderId,
             'vendor_name' => 'required|string|max:255',
-            'invoice_date' => 'required|date|before_or_equal:today',
-            'invoice_number' => 'required|string|max:100',
             'currency' => 'required|string|size:3',
             'total' => 'required|numeric|min:0',
             'purchase_order_category_id' => 'required|exists:purchase_order_categories,id',
-            'tanggal_pembayaran' => 'required|date|after:invoice_date',
             'pdf_file' => 'nullable|file|mimes:pdf|max:5120', // 5MB max, optional for edit
         ];
     }
@@ -62,17 +46,19 @@ class EditPurchaseOrderModal extends Component
     protected $validationAttributes = [
         'po_number' => 'PO number',
         'vendor_name' => 'vendor name',
-        'invoice_date' => 'invoice date',
-        'invoice_number' => 'invoice number',
         'currency' => 'currency',
         'total' => 'total amount',
         'purchase_order_category_id' => 'category',
-        'tanggal_pembayaran' => 'payment date',
         'pdf_file' => 'PDF file',
     ];
 
-    public function mount()
+    public function mount($id = null)
     {
+        if ($id) {
+            $this->purchaseOrderId = $id;
+            $this->loadPurchaseOrder();
+            $this->authorize('update', $this->purchaseOrder);
+        }
         $this->loadFormData();
     }
 
@@ -92,68 +78,45 @@ class EditPurchaseOrderModal extends Component
             ->toArray();
     }
 
-    public function openModal($poId)
-    {
-        $this->purchaseOrderId = $poId;
-        $this->loadPurchaseOrder();
-        $this->showModal = true;
-    }
-
-    public function closeModal()
-    {
-        $this->showModal = false;
-        $this->resetForm();
-        $this->resetValidation();
-    }
-
     public function loadPurchaseOrder()
     {
+        if (!$this->purchaseOrderId) return;
+
         $this->purchaseOrder = \App\Models\PurchaseOrder::findOrFail($this->purchaseOrderId);
 
         // Populate form fields
         $this->po_number = $this->purchaseOrder->po_number;
         $this->vendor_name = $this->purchaseOrder->vendor_name;
-        $this->invoice_date = $this->purchaseOrder->invoice_date;
-        $this->invoice_number = $this->purchaseOrder->invoice_number;
         $this->currency = $this->purchaseOrder->currency;
         $this->total = $this->purchaseOrder->total;
         $this->purchase_order_category_id = $this->purchaseOrder->purchase_order_category_id;
-        $this->tanggal_pembayaran = $this->purchaseOrder->tanggal_pembayaran;
         // PDF file is optional for edits
     }
 
-    public function updatedTotal($value)
+    public function clearPdfFile()
     {
-        // Remove commas from total input
-        $this->total = str_replace(',', '', $value);
+        $this->pdf_file = null;
     }
 
-    public function canEdit()
+
+    public function getCanEditProperty()
     {
-        return $this->purchaseOrder && $this->purchaseOrder->getStatusEnum()->canEdit();
+        return $this->purchaseOrder && auth()->user()->can('update', $this->purchaseOrder);
     }
 
     public function save()
     {
-        if (! $this->canEdit()) {
-            $this->addError('general', 'This purchase order cannot be edited in its current status.');
+        $this->authorize('update', $this->purchaseOrder);
 
+        if (! $this->canEdit) {
+            $this->addError('general', 'This purchase order cannot be edited in its current status.');
             return;
         }
 
         $this->validate();
 
         try {
-            // Convert invoice_date from dd.mm.yy format if needed
-            $invoiceDate = $this->invoice_date;
-            if (strpos($invoiceDate, '.') !== false) {
-                $date = \DateTime::createFromFormat('d.m.y', $invoiceDate);
-                if ($date) {
-                    $invoiceDate = $date->format('Y-m-d');
-                }
-            }
-
-            // Handle PDF file if uploaded
+            // Handle PDF file update
             $filename = $this->purchaseOrder->filename; // Keep existing file by default
             if ($this->pdf_file) {
                 $pdfService = app(PdfProcessingService::class);
@@ -168,12 +131,9 @@ class EditPurchaseOrderModal extends Component
             $data = [
                 'po_number' => is_int($this->po_number) ? $this->po_number : intval($this->po_number),
                 'vendor_name' => $this->vendor_name,
-                'invoice_date' => $invoiceDate,
-                'invoice_number' => $this->invoice_number,
                 'currency' => $this->currency,
                 'total' => floatval($this->total),
                 'purchase_order_category_id' => intval($this->purchase_order_category_id),
-                'tanggal_pembayaran' => $this->tanggal_pembayaran,
             ];
 
             // Only include PDF file if it was uploaded
@@ -185,21 +145,13 @@ class EditPurchaseOrderModal extends Component
             $poService = app(PurchaseOrderService::class);
             $purchaseOrder = $poService->update($this->purchaseOrderId, $data);
 
-            // Dispatch success event
-            $this->dispatch('poUpdated', [
-                'po' => $purchaseOrder,
-                'message' => 'Purchase Order updated successfully!',
-            ]);
-
-            // Close modal and reset
-            $this->closeModal();
-
-            // Refresh parent component
-            $this->dispatch('refreshDashboard');
+            // Flash success message and redirect
+            session()->flash('success', 'Purchase Order updated successfully!');
+            return redirect()->route('po.index');
 
         } catch (\Exception $e) {
-            Log::error('Failed to update PO via modal', [
-                'po_id' => $this->purchaseOrderId,
+            Log::error('Failed to update PO via full-screen form', [
+                'id' => $this->purchaseOrderId,
                 'data' => $this->all(),
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
@@ -211,6 +163,6 @@ class EditPurchaseOrderModal extends Component
 
     public function render()
     {
-        return view('livewire.purchase-order.edit-purchase-order-modal');
+        return view('livewire.purchase-order.edit-purchase-order-form');
     }
 }

@@ -4,8 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 
 class PurchaseOrderProcessFailedNotification extends Notification
 {
@@ -28,7 +26,7 @@ class PurchaseOrderProcessFailedNotification extends Notification
             'title' => "Purchase Order {$this->action} Failed",
             'message' => "Failed to {$this->action} PO #{$this->poNumber}: {$this->errorMessage}",
             'po_number' => $this->poNumber,
-            'type' => 'error'
+            'type' => 'error',
         ];
     }
 

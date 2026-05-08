@@ -3,11 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
-use App\Http\Requests\StorePoRequest;
-use App\Http\Requests\UpdatePoRequest;
-use App\Models\File;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderCategory;
 use App\Models\PurchaseOrderDownloadLog;
@@ -15,9 +11,7 @@ use App\Services\PdfProcessingService;
 use App\Services\PurchaseOrderService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseOrderController extends Controller
@@ -62,61 +56,6 @@ class PurchaseOrderController extends Controller
             return response()->json(['message' => 'Failed to reject selection: ' . $e->getMessage()], 500);
         }
     }
-
-    public function create(Request $request)
-    {
-        $categories = PurchaseOrderCategory::all();
-        $parentPONumber = $request->get('parent_po_number', null);
-
-        return view('purchase_order.create', compact('categories', 'parentPONumber'));
-    }
-
-    public function store(StorePoRequest $request)
-    {
-        try {
-            // Process validated data
-            $validated = $request->validated();
-
-            // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
-            if (isset($validated['invoice_date'])) {
-                $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
-                if ($date) {
-                    $validated['invoice_date'] = $date->format('Y-m-d');
-                } else {
-                    return redirect()
-                        ->back()
-                        ->withInputs(['invoice_date' => 'Invalid date format']);
-                }
-            }
-
-            // Store the uploaded PDF with a unique filename
-            $file = $validated['pdf_file'];
-            $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
-            $file->storeAs('public/pdfs', $filename);
-
-            // Remove commas from the total and convert it to a float
-            $validated['total'] = (float) str_replace(',', '', $validated['total']);
-
-            // Add the processed filename to validated data
-            $validated['pdf_file'] = $filename;
-
-            // Use the service to create the PO
-            $purchaseOrder = $this->poService->create($validated);
-
-            return redirect()->route('po.index')->with('success', 'PO created successfully.');
-        } catch (\Exception $e) {
-            Log::error('Failed to create PO via controller', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Failed to create purchase order. Please try again.');
-        }
-    }
-
 
     public function sign(Request $request)
     {
@@ -256,9 +195,7 @@ class PurchaseOrderController extends Controller
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'LIKE', '%' . $request->vendor_name . '%');
         }
-        if ($request->filled('invoice_date')) {
-            $query->whereDate('invoice_date', $request->invoice_date);
-        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -269,62 +206,6 @@ class PurchaseOrderController extends Controller
         $filteredData = $query->get();
 
         return Excel::download(new PurchaseOrderExport($filteredData), 'purchase_orders.xlsx');
-    }
-
-    public function edit($id)
-    {
-        $categories = PurchaseOrderCategory::all();
-        $po = PurchaseOrder::find($id);
-
-        return view('purchase_order.edit', compact('po', 'categories'));
-    }
-
-    public function update(UpdatePoRequest $request, $id)
-    {
-        try {
-            // Validate the request (already done automatically by UpdatePoRequest)
-            $validatedData = $request->validated();
-
-            // Handle PDF file upload if provided
-            if ($request->hasFile('pdf_file')) {
-                $file = $validatedData['pdf_file'];
-                $filename = 'PO_' . $validatedData['po_number'] . '_' . time() . '.pdf';
-                $file->storeAs('public/pdfs', $filename);
-                $validatedData['pdf_file'] = $filename;
-            }
-
-            // Remove commas from total
-            $validatedData['total'] = str_replace(',', '', $validatedData['total']);
-
-            // Use the service to update the PO
-            $updatedPo = $this->poService->update($id, $validatedData);
-
-            // Redirect back with a success message
-            return redirect()->back()->with('success', 'PO Successfully Updated!');
-        } catch (\Exception $e) {
-            Log::error('Failed to update PO via controller', [
-                'po_id' => $id,
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Failed to update purchase order. Please try again.');
-        }
-    }
-
-    public function dashboard(Request $request)
-    {
-        try {
-            $month = $request->get('month');
-            $data = $this->poService->getDashboardData($month);
-
-            return view('purchase_order.dashboard', $data);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to load dashboard: ' . $e->getMessage());
-        }
     }
 
     public function filter(Request $request)
@@ -356,7 +237,7 @@ class PurchaseOrderController extends Controller
 
         // This could also be moved to the service if complex, but keeping simple for now
         $monthlyTotals = PurchaseOrder::selectRaw(
-            "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
+            "DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total",
         )
             ->where('vendor_name', $vendorName)
             ->groupBy('month')

@@ -40,6 +40,7 @@ The Purchase Order module has been modernized with:
 - **Bulk Operations**: Mass approve/reject with proper validation
 - **PDF Management**: Complete document lifecycle (sign, reject, download, validate)
 - **Audit Trails**: Complete transaction logging and approval history
+- **Invoice Management**: 1-to-Many relationship between POs and Invoices, complete with a standalone datatable and individual invoice file attachments.
 
 #### Data Integrity & Performance
 
@@ -143,7 +144,7 @@ purchase_orders (
 #### Optimized Schema (Phase 2)
 
 ```sql
--- Improved structure
+-- Improved structure (Phase 2 & Refactor)
 purchase_orders (
     id BIGINT PRIMARY KEY,
     po_number VARCHAR(50) UNIQUE,
@@ -151,9 +152,9 @@ purchase_orders (
     total DECIMAL(15,2) NOT NULL,
     currency VARCHAR(3) DEFAULT 'IDR',
     vendor_name VARCHAR(255) NOT NULL,
-    invoice_date DATE NOT NULL,
-    invoice_number VARCHAR(100),
-    tanggal_pembayaran DATE,
+    invoice_date DATE NULL, -- Legacy column
+    invoice_number VARCHAR(100) NULL, -- Legacy column
+    tanggal_pembayaran DATE NULL, -- Legacy column
     purchase_order_category_id BIGINT REFERENCES purchase_order_categories(id),
     creator_id BIGINT REFERENCES users(id),
     approved_date TIMESTAMP NULL,
@@ -162,10 +163,26 @@ purchase_orders (
     revision_count INT DEFAULT 0,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
+    deleted_at TIMESTAMP NULL, -- Added Soft Deletes
     INDEX idx_po_status_date (status, created_at),
     INDEX idx_po_vendor (vendor_name),
-    INDEX idx_po_date_range (invoice_date),
     FOREIGN KEY (creator_id) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- Invoice table (1-to-Many Architecture)
+invoices (
+    id BIGINT PRIMARY KEY,
+    purchase_order_id BIGINT REFERENCES purchase_orders(id) ON DELETE CASCADE,
+    invoice_number VARCHAR(100) UNIQUE,
+    invoice_date DATE,
+    payment_date DATE NULL,
+    total DECIMAL(15,2) NOT NULL,
+    total_currency VARCHAR(3) DEFAULT 'IDR',
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    INDEX idx_invoice_po (purchase_order_id),
+    INDEX idx_invoice_number (invoice_number)
 ) ENGINE=InnoDB;
 
 -- Audit logging
@@ -228,6 +245,32 @@ po_comments (
     created_at TIMESTAMP
 );
 ```
+
+### Invoice Field Deprecation
+
+**Status:** ✅ **Completed (2026-05-07)**
+
+As part of the invoice management refactor, the following fields have been deprecated from the purchase order create and edit forms:
+
+- `invoice_date` (deprecated)
+- `invoice_number` (deprecated)
+- `tanggal_pembayaran` (payment date, deprecated)
+
+These fields are now handled through the separate `invoices` table with a 1-to-many relationship. The purchase order forms no longer collect invoice information - invoices are managed independently through the `InvoiceManager` component.
+
+**Changes Made:**
+- ✅ Removed invoice field validation from `StorePoRequest` and `UpdatePoRequest`
+- ✅ Removed invoice field processing from `PurchaseOrderController` store/update methods
+- ✅ Removed invoice field handling from `PurchaseOrderService` create/update methods
+- ✅ Removed invoice field inputs from traditional form views (`purchase_order.create` and `purchase_order.edit`)
+- ✅ Updated dashboard analytics to use `created_at` instead of `invoice_date` for monthly filtering
+- ✅ Removed invoice_date filter from export functionality
+
+**Migration Notes:**
+- Deprecated fields remain in the database schema for backward compatibility
+- Existing data is preserved but no longer editable through PO forms
+- Dashboard analytics now use PO creation date instead of invoice date
+- Invoice management now occurs through the dedicated invoice system
 
 ### API Specifications
 
@@ -330,6 +373,16 @@ class PurchaseOrderRepository implements PurchaseOrderRepositoryInterface
 
 **Change History:**
 
+- v2.4 (2026-05-06): Invoice Field Deprecation
+  - Removed `invoice_date`, `invoice_number`, and `tanggal_pembayaran` from PO create/edit forms
+  - Invoice fields now handled exclusively through separate invoice management system
+  - Maintained backward compatibility by keeping deprecated fields in database schema
+- v2.3 (2026-05-06): Invoice Management Refactor
+  - Migrated from single-invoice PO system to 1-to-many Invoice architecture
+  - Added `invoices` table and soft deletes to `purchase_orders`
+  - Created standalone `InvoiceIndex` datatable with TALL stack
+  - Added `InvoiceManager` component to PO Show for inline tracking
+  - Updated file attachment modal to support dynamic `docId` for invoices
 - v2.2 (2026-04-29): Database schema optimization
   - Removed redundant approval_request_id column from purchase_orders table
   - Approval relationships now handled purely through polymorphic relationships
@@ -372,6 +425,8 @@ This document reflects the current implementation state of the Purchase Order mo
 - **CreatePurchaseOrderModal**: Full-featured PO creation with validation
 - **EditPurchaseOrderModal**: Pre-populated editing with status validation
 - **PurchaseOrderDetail**: Comprehensive detail view with PDF preview
+- **InvoiceManager**: Inline CRUD management of invoices with completion progress bar
+- **InvoiceIndex**: Standalone datatable for comprehensive invoice tracking
 - **Chart.js Integration**: Dynamic data visualization with Alpine.js reactivity
 
 #### Approval Workflow Integration:
