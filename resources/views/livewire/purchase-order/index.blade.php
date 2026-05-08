@@ -2,6 +2,18 @@
     showFilters: false,
     selectedIds: @entangle('selectedIds').live
 }" class="space-y-4">
+    {{-- Global Progress Bar --}}
+    <div wire:loading.delay class="fixed top-0 left-0 right-0 h-1 z-[200] overflow-hidden">
+        <div class="h-full bg-indigo-600 w-full origin-left animate-[loading_2s_ease-in-out_infinite] shadow-[0_0_15px_rgba(79,70,229,0.5)]"></div>
+    </div>
+
+    <style>
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
     
     {{-- Background Polling Status --}}
     @if(!empty($processingIds))
@@ -10,24 +22,29 @@
 
     
     {{-- Page Header --}}
-        {{-- Page Header --}}
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Purchase Orders</h1>
-                <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    <a href="{{ route('po.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
-                    <i class="bi bi-chevron-right text-[10px]"></i>
-                    <span class="text-slate-600">List</span>
-                </nav>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <div wire:loading.delay wire:target="search, statusFilter, vendorFilter, dateFrom, dateTo, amountFrom, amountTo, sortBy, sortDirection" class="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl animate-pulse">
-                    <div class="h-2 w-2 rounded-full bg-indigo-600 animate-bounce"></div>
-                    <span class="text-xs font-black uppercase tracking-widest">Updating...</span>
-                </div>
-            </div>
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase">Purchase Orders</h1>
+            <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                <a href="{{ route('po.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
+                <i class="bi bi-chevron-right text-[10px]"></i>
+                <span class="text-slate-600">List</span>
+            </nav>
         </div>
+
+        <div class="flex items-center gap-3">
+            {{-- Modern Loading Pill --}}
+            <div wire:loading.delay class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 text-slate-600 rounded-2xl shadow-sm">
+                <div class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-widest">Processing...</span>
+            </div>
+            
+            <div class="h-8 w-[1px] bg-slate-200 mx-1"></div>
+        </div>
+    </div>
 
     {{-- Compact Stats Bar --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -299,6 +316,21 @@
 
     {{-- Table Section - Compact --}}
     <div class="bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm relative z-0">
+        {{-- Table Loading Overlay --}}
+        <div wire:loading.delay.longer 
+             wire:target="search, statusFilter, invoicingFilter, vendorFilter, currencyFilter, monthFilter, amountFrom, amountTo, sortBy, sortDirection, perPage, clearFilters, resetPage, toggleColumn"
+             class="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center transition-all">
+            <div class="flex flex-col items-center gap-3">
+                <div class="relative">
+                    <div class="h-12 w-12 rounded-full border-4 border-slate-200/20 border-t-indigo-600 animate-spin"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="bi bi-arrow-repeat text-indigo-600 text-xl"></i>
+                    </div>
+                </div>
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] animate-pulse">Refreshing</span>
+            </div>
+        </div>
+
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead>
