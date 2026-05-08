@@ -12,6 +12,8 @@ class CreatePurchaseOrderForm extends Component
 {
     use WithFileUploads;
 
+    public $layout = 'new.layouts.app';
+
     // Form fields
     public $po_number;
     public $vendor_name;

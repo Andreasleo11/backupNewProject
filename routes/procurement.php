@@ -71,8 +71,8 @@ Route::middleware('auth')->group(function () {
     // Purchase Orders
     // Livewire Index (Phase 2)
     Route::get('purchaseOrders', \App\Livewire\PurchaseOrder\PurchaseOrderIndex::class)->name('po.index');
-    Route::get('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
-    Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
+    Route::get('purchaseOrder/create', \App\Livewire\PurchaseOrder\CreatePurchaseOrderForm::class)->name('po.create');
+
     Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'sign'])->name('po.sign');
     Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name('po.reject');
     Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name('po.rejectAll');
@@ -81,8 +81,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
     Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
     Route::get('/invoices', \App\Livewire\Invoice\InvoiceIndex::class)->name('invoices.index');
-    Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
-    Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
+    Route::get('/purchaseOrder/{id}/edit', \App\Livewire\PurchaseOrder\EditPurchaseOrderForm::class)->name('po.edit');
+
     Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');
     Route::post('purchase-orders/reject-selected', [PurchaseOrderController::class, 'rejectSelected'])->name('purchase_orders.reject_selected');
     // Livewire Dashboard (Phase 2)

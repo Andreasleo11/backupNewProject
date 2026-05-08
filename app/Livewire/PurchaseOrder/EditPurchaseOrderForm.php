@@ -12,6 +12,8 @@ class EditPurchaseOrderForm extends Component
 {
     use WithFileUploads;
 
+    public $layout = 'new.layouts.app';
+
     public $purchaseOrderId;
     public $purchaseOrder;
 

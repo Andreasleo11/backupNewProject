@@ -1,11 +1,47 @@
-<div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm"
-     x-data="poForm({
-         total: @entangle('total').live,
-         currency: @entangle('currency'),
-         pdfFileName: null,
-         isSubmitting: false
-     })">
-    <form class="p-8 space-y-6">
+<div>
+    @include('partials.alert-success-error')
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {{-- Breadcrumb Navigation --}}
+        <nav class="flex mb-8" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-bold uppercase tracking-widest">
+                <li class="inline-flex items-center">
+                    <a href="{{ route('po.dashboard') }}" class="text-slate-400 hover:text-indigo-600 transition-colors">
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="bi bi-chevron-right text-slate-300 text-sm mx-1"></i>
+                        <a href="{{ route('po.index') }}" class="text-slate-400 hover:text-indigo-600 transition-colors">
+                            List
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="bi bi-chevron-right text-slate-300 text-sm mx-1"></i>
+                        <span class="text-slate-600">Create</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        {{-- Page Header --}}
+        <div class="mb-8">
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight">Create New Purchase Order</h1>
+            <p class="mt-2 text-sm text-slate-500 font-medium">Fill in the details below to create a new purchase order.</p>
+        </div>
+
+        {{-- Create form --}}
+        <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm"
+              x-data="poForm({
+                  total: @entangle('total').live,
+                  currency: @entangle('currency'),
+                  pdfFileName: null,
+                  isSubmitting: false
+              })">
+            <form class="p-8 space-y-6">
         {{-- General Error --}}
         @if($errors->has('general'))
             <div class="rounded-md bg-red-50 p-4">
@@ -32,7 +68,7 @@
                     PO Number <span class="text-red-500">*</span>
                 </label>
                 <div class="mt-1">
-                        <input type="number"
+                        <input type="text"
                                wire:model.blur="po_number"
                                id="po_number"
                                class="block w-full px-3 py-2.5 bg-slate-50 border-transparent rounded-xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all shadow-inner @error('po_number') border-red-300 @enderror">
@@ -280,4 +316,6 @@
             }
         }
     </script>
+        </div>
+    </div>
 </div>
