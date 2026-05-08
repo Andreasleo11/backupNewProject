@@ -25,13 +25,21 @@ enum PurchaseOrderStatus: int
     }
 
     /**
+     * Get the legacy integer value for backward compatibility
+     */
+    public function legacyValue(): int
+    {
+        return $this->value;
+    }
+
+    /**
      * Check if the status allows editing
      */
     public function canEdit(): bool
     {
         return match ($this) {
-            self::REJECTED, self::CANCELLED => true,  // Can edit rejected/cancelled for revisions
-            self::PENDING_APPROVAL, self::APPROVED, self::DRAFT => false,
+            self::DRAFT, self::REJECTED, self::CANCELLED => true,  // Can edit draft, rejected, or cancelled for revisions
+            self::PENDING_APPROVAL, self::APPROVED => false,
         };
     }
 

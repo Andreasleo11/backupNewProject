@@ -4,16 +4,16 @@ namespace App\Jobs\PurchaseOrder;
 
 use App\Application\Approval\Contracts\Approvals;
 use App\Models\PurchaseOrder;
+use App\Models\User;
+use App\Notifications\PurchaseOrderProcessFailedNotification;
 use App\Services\PdfProcessingService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
-use App\Notifications\PurchaseOrderProcessFailedNotification;
-use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class ProcessPurchaseOrderApprovalJob implements ShouldQueue
 {
@@ -43,23 +43,23 @@ class ProcessPurchaseOrderApprovalJob implements ShouldQueue
 
                 // 3. Update approval date
                 $this->purchaseOrder->update([
-                    'approved_date' => now()
+                    'approved_date' => now(),
                 ]);
             });
 
             Log::info('Successfully processed async PO approval and signing', [
                 'po_id' => $this->purchaseOrder->id,
                 'po_number' => $this->purchaseOrder->po_number,
-                'user_id' => $this->userId
+                'user_id' => $this->userId,
             ]);
 
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
-            
+
             Log::error('Async PO approval failed', [
                 'po_id' => $this->purchaseOrder->id,
                 'user_id' => $this->userId,
-                'error' => $errorMessage
+                'error' => $errorMessage,
             ]);
 
             // 1. Store error in cache for real-time polling feedback
@@ -74,7 +74,7 @@ class ProcessPurchaseOrderApprovalJob implements ShouldQueue
                     $errorMessage
                 ));
             }
-            
+
             throw $e;
         }
     }

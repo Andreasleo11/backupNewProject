@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Enums\PurchaseOrderStatus;
 use App\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,22 +18,19 @@ class PurchaseOrderService
      *
      * @throws \Exception
      */
-    public function create(array $data): PurchaseOrder
+    public function create(array $data, bool $isDraft = false): PurchaseOrder
     {
         try {
-            return DB::transaction(function () use ($data) {
-                // Create the purchase order and submit for director approval
+            return DB::transaction(function () use ($data, $isDraft) {
+                // Create the purchase order
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->po_number = $data['po_number'];
                 $purchaseOrder->filename = $data['pdf_file'] ?? null;
                 $purchaseOrder->creator_id = auth()->id();
                 $purchaseOrder->vendor_name = $data['vendor_name'];
-                $purchaseOrder->invoice_date = $data['invoice_date'];
-                $purchaseOrder->invoice_number = $data['invoice_number'];
                 $purchaseOrder->currency = $data['currency'];
                 $purchaseOrder->total = $data['total'];
                 $purchaseOrder->purchase_order_category_id = $data['purchase_order_category_id'];
-                $purchaseOrder->tanggal_pembayaran = $data['tanggal_pembayaran'];
 
                 // Handle parent PO revision logic
                 if (! empty($data['parent_po_number'])) {
@@ -51,8 +47,8 @@ class PurchaseOrderService
 
                 $purchaseOrder->save();
 
-                // Submit for approval - this creates approval request (status remains PENDING_APPROVAL)
-                $this->approvals->submit($purchaseOrder, auth()->id());
+                $status = $isDraft ? 'DRAFT' : 'IN_REVIEW';
+                $this->approvals->submit($purchaseOrder, auth()->id(), [], $status);
 
                 Log::info('Purchase order created and submitted for approval', [
                     'po_number' => $purchaseOrder->po_number,
@@ -93,9 +89,6 @@ class PurchaseOrderService
                 // Update fields
                 $po->po_number = $data['po_number'];
                 $po->vendor_name = $data['vendor_name'];
-                $po->invoice_date = $data['invoice_date'];
-                $po->invoice_number = $data['invoice_number'];
-                $po->tanggal_pembayaran = $data['tanggal_pembayaran'];
                 $po->currency = $data['currency'];
                 $po->purchase_order_category_id = $data['purchase_order_category_id'];
                 $po->total = $data['total']; // Note: commas should be removed by validation
@@ -339,7 +332,7 @@ class PurchaseOrderService
             $vendorTotals = PurchaseOrder::selectRaw(
                 'vendor_name, COUNT(id) as po_count, SUM(total) as total',
             )
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$selectedMonth])
                 ->groupBy('vendor_name')
                 ->orderByDesc('total')
                 ->get();
@@ -347,7 +340,7 @@ class PurchaseOrderService
             // Fetch top 5 vendors
             $topVendors = PurchaseOrder::selectRaw('vendor_name')
                 ->selectRaw('SUM(total) as total')
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$selectedMonth])
                 ->groupBy('vendor_name')
                 ->orderByDesc('total')
                 ->take(5)
@@ -355,14 +348,14 @@ class PurchaseOrderService
 
             // Sum of totals for each month (for chart)
             $monthlyTotals = PurchaseOrder::selectRaw(
-                "DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total",
+                "DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as total",
             )
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get();
 
             // List of available months for the filter dropdown
-            $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
+            $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
                 ->distinct()
                 ->orderByDesc('month')
                 ->pluck('month');
@@ -422,9 +415,9 @@ class PurchaseOrderService
     {
         try {
             return PurchaseOrder::where('vendor_name', $vendorName)
-                ->select('id', 'po_number', 'invoice_date', 'total', 'status')
-                ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month])
-                ->orderBy('invoice_date', 'desc')
+                ->select('id', 'po_number', 'created_at', 'total')
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
+                ->orderBy('created_at', 'desc')
                 ->orderByDesc('total')
                 ->get();
 
