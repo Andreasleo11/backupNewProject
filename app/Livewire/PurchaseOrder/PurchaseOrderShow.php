@@ -27,13 +27,16 @@ class PurchaseOrderShow extends Component
     public function getPurchaseOrderProperty()
     {
         return PurchaseOrder::with([
-            'user',
+            'user.department',
             'category',
             'approvalRequest.actions.causer',
             'approvalRequest.steps',
             'downloadLogs.user',
             'latestDownloadLog.user',
-        ])->findOrFail($this->purchaseOrderId);
+        ])
+        ->withCount('invoices')
+        ->withSum('invoices as invoiced_total', 'total')
+        ->findOrFail($this->purchaseOrderId);
     }
 
     public function getActivitiesProperty()

@@ -5,9 +5,12 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <div class="flex items-center gap-4 flex-wrap">
-                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
-                            Purchase Order #{{ $purchaseOrder->id }}
+                        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+                            {{ $purchaseOrder->po_number }}
                         </h1>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
+                            ID: #{{ $purchaseOrder->id }}
+                        </span>
                         
                         @if($purchaseOrder->workflow_status === 'IN_REVIEW' && $purchaseOrder->current_approver)
                             <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 text-xs font-bold">
@@ -47,6 +50,20 @@
             {{-- Main Content: Timeline & PDF --}}
             <div class="lg:col-span-8 space-y-6">
                 
+                {{-- PDF View --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="bi bi-file-earmark-pdf-fill text-rose-500"></i>
+                            Original Document
+                        </h2>
+                    </div>
+                    <div class="p-2 bg-slate-800">
+                        <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}#toolbar=0"
+                            class="w-full h-[900px] rounded-2xl shadow-2xl" frameborder="0"></iframe>
+                    </div>
+                </div>
+
                 @can('viewActivityLog', $purchaseOrder)
                     {{-- Activity Feed --}}
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden" x-data="{ showHistory: false }">
@@ -98,19 +115,6 @@
                     </div>
                 @endcan
 
-                {{-- PDF View --}}
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                            <i class="bi bi-file-earmark-pdf-fill text-rose-500"></i>
-                            Original Document
-                        </h2>
-                    </div>
-                    <div class="p-2 bg-slate-800">
-                        <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}#toolbar=0"
-                            class="w-full h-[900px] rounded-2xl shadow-2xl" frameborder="0"></iframe>
-                    </div>
-                </div>
 
                 {{-- Invoice Management --}}
                 <livewire:purchase-order.invoice-manager :purchaseOrderId="$purchaseOrder->id" />
@@ -154,10 +158,41 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- Related Files --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
+                        @can('manageAttachments', $purchaseOrder)
+                            <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        @endcan
+                    </div>
+                    <div class="p-6">
+                        @include('partials.file-attachments', ['files' => $files, 'showDelete' => auth()->user()->can('manageAttachments', $purchaseOrder),'title' => ''])
+                    </div>
+                </div>
             </div>
 
             {{-- Sidebar: Summary & Actions --}}
-            <aside class="lg:col-span-4 space-y-6">
+            <aside class="lg:col-span-4 space-y-6 sticky top-6 h-fit">
+                
+                {{-- Requester Info --}}
+                <div class="p-6 bg-slate-900 rounded-3xl text-white flex items-center gap-4 shadow-xl shadow-slate-200">
+                    <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-lg border border-white/5">
+                        {{ substr($purchaseOrder->user->name, 0, 1) }}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Requester</p>
+                        <p class="text-sm font-bold truncate">{{ $purchaseOrder->user->name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Dept</p>
+                        <p class="text-xs font-bold text-indigo-300">{{ $purchaseOrder->user->department->name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+
                 
                 {{-- Rejection Status Card --}}
                 @if($purchaseOrder->getStatusEnum()->label() === 'Rejected')
@@ -289,15 +324,57 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden divide-y divide-slate-50">
                     <div class="p-6 text-slate-900">
                         <div class="flex items-center gap-4 mb-6">
-                            <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
                                 <i class="bi bi-wallet2 text-xl"></i>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Valuation</p>
-                                <p class="text-xl font-black text-slate-900 mt-0.5">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Valuation</p>
+                                <p class="text-xl font-black text-slate-900 mt-1.5">
                                     <span class="text-xs font-bold text-slate-300 uppercase mr-1">{{ $purchaseOrder->currency }}</span>
-                                    {{ number_format($purchaseOrder->total, 2, '.', ',') }}
+                                    {{ number_format($purchaseOrder->total, 0, ',', '.') }}
                                 </p>
+                            </div>
+                        </div>
+
+                        {{-- Invoicing Progress --}}
+                        <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            @php
+                                $invoicedTotal = $purchaseOrder->invoiced_total ?? 0;
+                                $percent = $purchaseOrder->total > 0 ? min(100, ($invoicedTotal / $purchaseOrder->total) * 100) : 0;
+                                $billingStatus = 'Not Invoiced';
+                                $billingColor = 'slate';
+                                
+                                if ($purchaseOrder->invoices_count > 0) {
+                                    if ($invoicedTotal >= $purchaseOrder->total) {
+                                        $billingStatus = 'Fully Billed';
+                                        $billingColor = 'emerald';
+                                    } else {
+                                        $billingStatus = 'Partially Billed';
+                                        $billingColor = 'amber';
+                                    }
+                                }
+                            @endphp
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoicing Progress</span>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-{{ $billingColor }}-100 text-{{ $billingColor }}-700 border border-{{ $billingColor }}-200">
+                                    {{ $billingStatus }}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                                    <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(var(--tw-color-{{ $billingColor }}-500),0.4)]" style="width: {{ $percent }}%"></div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Billed Amount</span>
+                                        <span class="text-xs font-black text-slate-700">{{ $purchaseOrder->currency }} {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="text-right flex flex-col">
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Progress</span>
+                                        <span class="text-xs font-black text-indigo-600">{{ round($percent) }}%</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -315,43 +392,9 @@
                                 <p class="text-sm font-extrabold text-slate-800 mt-0.5">{{ $purchaseOrder->category->name ?? 'General Procurement' }}</p>
                             </div>
                         </div>
-                </div>
-
-                {{-- Requester Info Footer --}}
-                <div class="p-6 bg-slate-900 rounded-3xl text-white flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-lg">
-                        {{ substr($purchaseOrder->user->name, 0, 1) }}
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Creator</p>
-                        <p class="text-sm font-bold truncate">{{ $purchaseOrder->user->name }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-black text-white/40 uppercase tracking-widest">Dept</p>
-                        <p class="text-xs font-bold text-indigo-300">{{ $purchaseOrder->user->department->name ?? 'N/A' }}</p>
                     </div>
                 </div>
-
             </aside>
-        </div>
-
-        {{-- Related Files --}}
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Attachments</h2>
-                @can('manageAttachments', $purchaseOrder)
-                    <button @click="$dispatch('open-upload-modal')" class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                @endcan
-            </div>
-            <div class="p-6">
-                @include('partials.file-attachments', [
-                    'files' => $files,
-                    'showDelete' => auth()->user()->can('manageAttachments', $purchaseOrder),
-                    'title' => ''
-                ])
-            </div>
         </div>
     </div>
 
