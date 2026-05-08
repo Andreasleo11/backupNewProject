@@ -52,10 +52,10 @@ class EditPurchaseOrderForm extends Component
         'pdf_file' => 'PDF file',
     ];
 
-    public function mount($poId = null)
+    public function mount($id = null)
     {
-        if ($poId) {
-            $this->purchaseOrderId = $poId;
+        if ($id) {
+            $this->purchaseOrderId = $id;
             $this->loadPurchaseOrder();
             $this->authorize('update', $this->purchaseOrder);
         }

@@ -30,7 +30,7 @@
         {{-- Page Header --}}
         <div class="mb-8">
             <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight">Edit Purchase Order</h1>
-            <p class="mt-2 text-sm text-slate-500 font-medium">Update the details of purchase order #{{ $purchaseOrder->po_number }}.</p>
+            <p class="mt-2 text-sm text-slate-500 font-medium">Update the details of purchase order #{{ $purchaseOrder->id }}</p>
         </div>
 
         {{-- Edit form --}}
