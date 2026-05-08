@@ -90,7 +90,9 @@ class PurchaseOrderAnalyticsService
                 SUM(total) as total_value
             ')
             ->whereBetween('invoice_date', $dateRange)
-            ->where('status', 2) // Approved
+            ->whereHas('approvalRequest', function ($query) {
+                $query->where('status', 'APPROVED');
+            })
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('days_aging')
             ->orderBy('days_aging')
@@ -119,7 +121,9 @@ class PurchaseOrderAnalyticsService
      */
     private function getOverduePOs(array $dateRange, array $filters): array
     {
-        $overdue = PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::APPROVED->legacyValue()) // Approved
+        $overdue = PurchaseOrder::whereHas('approvalRequest', function ($query) {
+                $query->where('status', 'APPROVED');
+            })
             ->whereNotNull('approved_date')
             ->where('tanggal_pembayaran', '<', now())
             ->whereBetween('invoice_date', $dateRange)
@@ -285,7 +289,11 @@ class PurchaseOrderAnalyticsService
             ")
             ->where('invoice_date', '>=', now()->subMonths(12))
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
-            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), function ($q) use ($filters) {
+                $q->whereHas('approvalRequest', function ($aq) use ($filters) {
+                    $aq->whereIn('status', array_map('strtoupper', $filters['statuses']));
+                });
+            })
             ->groupBy('month')
             ->orderBy('month');
 
@@ -379,7 +387,9 @@ class PurchaseOrderAnalyticsService
         $alerts = [];
 
         // Critical overdue POs (>90 days)
-        $criticalOverdue = PurchaseOrder::where('status', 1)
+        $criticalOverdue = PurchaseOrder::whereHas('approvalRequest', function ($query) {
+                $query->where('status', 'APPROVED');
+            })
             ->whereNotNull('approved_date')
             ->where('tanggal_pembayaran', '<', now()->subDays(90))
             ->whereBetween('invoice_date', $dateRange)
@@ -432,7 +442,10 @@ class PurchaseOrderAnalyticsService
             })
             ->count();
 
-        $pendingPOs = PurchaseOrder::where('status', 1) // Draft
+        $pendingPOs = PurchaseOrder::whereDoesntHave('approvalRequest')
+            ->orWhereHas('approvalRequest', function ($q) {
+                $q->where('status', 'DRAFT');
+            })
             ->where('creator_id', $user->id)
             ->count();
 
@@ -464,7 +477,11 @@ class PurchaseOrderAnalyticsService
     private function getTotalSpend(array $dateRange, array $filters): float
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), function ($q) use ($filters) {
+                $q->whereHas('approvalRequest', function ($aq) use ($filters) {
+                    $aq->whereIn('status', array_map('strtoupper', $filters['statuses']));
+                });
+            })
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->sum('total');
     }
@@ -475,7 +492,11 @@ class PurchaseOrderAnalyticsService
     private function getOrderCount(array $dateRange, array $filters): int
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), function ($q) use ($filters) {
+                $q->whereHas('approvalRequest', function ($aq) use ($filters) {
+                    $aq->whereIn('status', array_map('strtoupper', $filters['statuses']));
+                });
+            })
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->count();
     }
@@ -486,7 +507,11 @@ class PurchaseOrderAnalyticsService
     private function getAverageOrderValue(array $dateRange, array $filters): float
     {
         return PurchaseOrder::whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), function ($q) use ($filters) {
+                $q->whereHas('approvalRequest', function ($aq) use ($filters) {
+                    $aq->whereIn('status', array_map('strtoupper', $filters['statuses']));
+                });
+            })
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->avg('total') ?? 0;
     }
@@ -505,7 +530,11 @@ class PurchaseOrderAnalyticsService
                 MAX(invoice_date) as last_order
             ')
             ->whereBetween('invoice_date', $dateRange)
-            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), fn ($q) => $q->whereIn('status', $filters['statuses']))
+            ->when(isset($filters['statuses']) && ! empty($filters['statuses']), function ($q) use ($filters) {
+                $q->whereHas('approvalRequest', function ($aq) use ($filters) {
+                    $aq->whereIn('status', array_map('strtoupper', $filters['statuses']));
+                });
+            })
             ->when(isset($filters['categories']) && ! empty($filters['categories']), fn ($q) => $q->whereIn('purchase_order_category_id', $filters['categories']))
             ->groupBy('vendor_name')
             ->orderByDesc('total_spend')

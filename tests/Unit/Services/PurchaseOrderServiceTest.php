@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Services;
 
-use App\Enums\PurchaseOrderStatus;
-use App\Application\Approval\DTOs\ApprovalInfo;
-use App\Models\PurchaseOrder;
-use App\Services\PurchaseOrderService;
 use App\Application\Approval\Contracts\Approvals;
-use App\Models\User;
+use App\Application\Approval\DTOs\ApprovalInfo;
+use App\Enums\PurchaseOrderStatus;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use App\Models\PurchaseOrder;
+use App\Models\User;
+use App\Services\PurchaseOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -118,7 +118,7 @@ class PurchaseOrderServiceTest extends TestCase
         ]);
 
         // Create approval request to simulate REJECTED status
-        $approval = new ApprovalRequest();
+        $approval = new ApprovalRequest;
         $approval->approvable_id = $po->id;
         $approval->approvable_type = PurchaseOrder::class;
         $approval->status = 'REJECTED';

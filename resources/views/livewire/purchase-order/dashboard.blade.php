@@ -278,7 +278,6 @@
     </div>
     
     {{-- Modals --}}
-    <livewire:purchase-order.create-purchase-order-modal />
     <livewire:purchase-order.top-vendors-modal :show-modal="$showTopVendorsModal" />
     <livewire:purchase-order.vendor-details-modal :show-modal="$showVendorModal" />
     <livewire:purchase-order.purchase-order-detail />

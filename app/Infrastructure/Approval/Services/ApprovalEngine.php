@@ -113,9 +113,9 @@ final class ApprovalEngine implements Approvals
         });
     }
 
-    public function submit(Approvable $approvable, int $by, array $ctx = []): ApprovalInfo
+    public function submit(Approvable $approvable, int $by, array $ctx = [], string $status = 'IN_REVIEW'): ApprovalInfo
     {
-        $req = DB::transaction(function () use ($approvable, $by, $ctx) {
+        $req = DB::transaction(function () use ($approvable, $by, $ctx, $status) {
             /** @var ApprovalRequest $req */
             $req = $approvable->approvalRequest()->firstOrNew([]);
 
@@ -150,7 +150,7 @@ final class ApprovalEngine implements Approvals
             }
 
             $req->fill([
-                'status' => 'IN_REVIEW',
+                'status' => $status,
                 'rule_template_id' => $currentVersion->version_uuid, // Reference to version group
                 'rule_template_version_id' => $currentVersion->id, // Specific immutable version
                 'current_step' => 1,
@@ -174,8 +174,11 @@ final class ApprovalEngine implements Approvals
                 ]);
             }
 
-            $this->log($req, $by, 'DRAFT', 'IN_REVIEW', null);
-            $this->notifyCurrentApprover($req);
+            $this->log($req, $by, 'DRAFT', $status, null);
+            
+            if ($status === 'IN_REVIEW') {
+                $this->notifyCurrentApprover($req);
+            }
 
             return $req->fresh('steps');
         });

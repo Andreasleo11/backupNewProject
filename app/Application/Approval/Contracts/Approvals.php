@@ -10,7 +10,7 @@ interface Approvals
     /**
      * Start or submit an approval flow for a given approvable model.
      */
-    public function submit(Approvable $approvable, int $byUserId, array $context = []): ApprovalInfo;
+    public function submit(Approvable $approvable, int $byUserId, array $context = [], string $status = 'IN_REVIEW'): ApprovalInfo;
 
     /**
      * Approve the current step of the approvable's approval flow.
