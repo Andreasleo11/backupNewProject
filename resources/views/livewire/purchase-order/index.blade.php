@@ -440,42 +440,44 @@
                                     <span class="text-xs text-slate-400 mr-1">{{ $po->currency }}</span>{{ number_format($po->total, 0, ',', '.') }}
                                 </td>
                             @endif
-                            @if(in_array('invoicing', $visibleColumns))
-                                <td class="px-4 py-4">
-                                    @php
-                                        $invoicedTotal = $po->invoiced_total ?? 0;
-                                        $percent = $po->total > 0 ? min(100, ($invoicedTotal / $po->total) * 100) : 0;
-                                        $billingStatus = 'Pending';
-                                        $billingColor = 'slate';
-                                        
-                                        if ($po->invoices_count > 0) {
-                                            if ($invoicedTotal >= $po->total) {
-                                                $billingStatus = 'Fully Invoiced';
-                                                $billingColor = 'emerald';
-                                            } else {
-                                                $billingStatus = 'Partially Invoiced';
-                                                $billingColor = 'amber';
-                                            }
-                                        }
-                                    @endphp
-                                    <div class="flex flex-col gap-1.5">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-[10px] font-black text-{{ $billingColor }}-600 uppercase tracking-widest">{{ $billingStatus }}</span>
-                                            <span class="text-[10px] font-bold text-slate-400">{{ $po->invoices_count }} Inv</span>
-                                        </div>
-                                        @if($po->invoices_count > 0)
-                                            <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                                <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
-                                            </div>
-                                            <span class="text-[9px] font-bold text-slate-400 mt-0.5">
-                                                IDR {{ number_format($invoicedTotal, 0, ',', '.') }}
-                                            </span>
-                                        @else
-                                            <span class="text-[9px] font-medium text-slate-300 italic">Waiting for billing...</span>
-                                        @endif
-                                    </div>
-                                </td>
-                            @endif
+                             @if(in_array('invoicing', $visibleColumns))
+                                 <td class="px-4 py-4">
+                                     @php
+                                         $invoicedTotal = $po->invoiced_total ?? 0;
+                                         $percent = $po->total > 0 ? min(100, ($invoicedTotal / $po->total) * 100) : 0;
+                                         $billingStatus = 'Pending';
+                                         $billingColor = 'slate';
+
+                                         if ($po->invoices_count > 0) {
+                                             if ($invoicedTotal >= $po->total) {
+                                                 $billingStatus = 'Fully Invoiced';
+                                                 $billingColor = 'emerald';
+                                             } else {
+                                                 $billingStatus = 'Partially Invoiced';
+                                                 $billingColor = 'amber';
+                                             }
+                                         }
+                                     @endphp
+                                     <a href="{{ route('po.view', $po->id) }}#invoices-section" class="block hover:bg-slate-50/50 transition-colors rounded-lg p-2 -m-2 group">
+                                         <div class="flex flex-col gap-1.5">
+                                             <div class="flex items-center justify-between gap-2">
+                                                 <span class="text-[10px] font-black text-{{ $billingColor }}-600 uppercase tracking-widest group-hover:text-{{ $billingColor }}-700 transition-colors">{{ $billingStatus }}</span>
+                                                 <span class="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">{{ $po->invoices_count }} Inv</span>
+                                             </div>
+                                             @if($po->invoices_count > 0)
+                                                 <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                                     <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                                 </div>
+                                                 <span class="text-[9px] font-bold text-slate-400 mt-0.5 group-hover:text-slate-600 transition-colors">
+                                                     {{ $po->currency }} {{ number_format($invoicedTotal, 0, ',', '.') }}
+                                                 </span>
+                                             @else
+                                                 <span class="text-[9px] font-medium text-slate-300 italic group-hover:text-slate-400 transition-colors">Waiting for billing...</span>
+                                             @endif
+                                         </div>
+                                     </a>
+                                 </td>
+                             @endif
                             @if(in_array('status', $visibleColumns))
                                 <td class="px-4 py-4">
                                     <div class="flex flex-col gap-2">
@@ -746,39 +748,39 @@
                                                 </p>
                                             </div>
 
-                                            {{-- Invoicing Progress --}}
-                                            <div class="pt-3 border-t border-slate-100">
-                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoicing Progress</label>
-                                                @php
-                                                    $invoicedTotal = $selectedPurchaseOrder->invoiced_total ?? 0;
-                                                    $percent = $selectedPurchaseOrder->total > 0 ? min(100, ($invoicedTotal / $selectedPurchaseOrder->total) * 100) : 0;
-                                                    $billingStatus = 'Pending';
-                                                    $billingColor = 'slate';
-                                                    
-                                                    if ($selectedPurchaseOrder->invoices_count > 0) {
-                                                        if ($invoicedTotal >= $selectedPurchaseOrder->total) {
-                                                            $billingStatus = 'Fully Invoiced';
-                                                            $billingColor = 'emerald';
-                                                        } else {
-                                                            $billingStatus = 'Partially Invoiced';
-                                                            $billingColor = 'amber';
-                                                        }
-                                                    }
-                                                @endphp
-                                                <div class="flex flex-col gap-2 mt-1">
-                                                    <div class="flex items-center justify-between">
-                                                        <span class="text-xs font-bold text-{{ $billingColor }}-600">{{ $billingStatus }}</span>
-                                                        <span class="text-[10px] font-bold text-slate-400">{{ $selectedPurchaseOrder->invoices_count }} Invoices</span>
-                                                    </div>
-                                                    <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                                                        <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
-                                                    </div>
-                                                    <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                                                        <span>IDR {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
-                                                        <span>{{ round($percent) }}%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                             {{-- Invoicing Progress --}}
+                                             <a href="{{ route('po.view', $selectedPurchaseOrder->id) }}#invoices-section" class="block pt-3 border-t border-slate-100 hover:bg-slate-50/50 transition-colors rounded-lg p-3 -m-3 group">
+                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">Invoicing Progress</label>
+                                                 @php
+                                                     $invoicedTotal = $selectedPurchaseOrder->invoiced_total ?? 0;
+                                                     $percent = $selectedPurchaseOrder->total > 0 ? min(100, ($invoicedTotal / $selectedPurchaseOrder->total) * 100) : 0;
+                                                     $billingStatus = 'Pending';
+                                                     $billingColor = 'slate';
+
+                                                     if ($selectedPurchaseOrder->invoices_count > 0) {
+                                                         if ($invoicedTotal >= $selectedPurchaseOrder->total) {
+                                                             $billingStatus = 'Fully Invoiced';
+                                                             $billingColor = 'emerald';
+                                                         } else {
+                                                             $billingStatus = 'Partially Invoiced';
+                                                             $billingColor = 'amber';
+                                                         }
+                                                     }
+                                                 @endphp
+                                                 <div class="flex flex-col gap-2 mt-1">
+                                                     <div class="flex items-center justify-between">
+                                                         <span class="text-xs font-bold text-{{ $billingColor }}-600 group-hover:text-{{ $billingColor }}-700 transition-colors">{{ $billingStatus }}</span>
+                                                         <span class="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">{{ $selectedPurchaseOrder->invoices_count }} Invoices</span>
+                                                     </div>
+                                                     <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                                                         <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                                     </div>
+                                                      <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                                                          <span>{{ $selectedPurchaseOrder->currency }} {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
+                                                          <span>{{ round($percent) }}%</span>
+                                                      </div>
+                                                 </div>
+                                             </a>
                                         </div>
 
                                         {{-- Rejection Remarks (Most Important) --}}

@@ -35,7 +35,9 @@ class PurchaseOrderShow extends Component
             'latestDownloadLog.user',
         ])
         ->withCount('invoices')
-        ->withSum('invoices as invoiced_total', 'total')
+        ->withSum(['invoices as invoiced_total' => function ($query) {
+            $query->whereColumn('total_currency', 'purchase_orders.currency');
+        }], 'total')
         ->findOrFail($this->purchaseOrderId);
     }
 

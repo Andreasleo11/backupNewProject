@@ -1,4 +1,23 @@
-<div>
+<div x-data="{
+    init() {
+        // Handle anchor scrolling after page load
+        this.$nextTick(() => {
+            const hash = window.location.hash;
+            if (hash) {
+                const element = document.querySelector(hash);
+                if (element) {
+                    // Small delay to ensure all content is rendered
+                    setTimeout(() => {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    }
+}">
     <div class="px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1600px] mx-auto">
         {{-- Header --}}
         <header>
@@ -117,7 +136,9 @@
 
 
                 {{-- Invoice Management --}}
-                <livewire:purchase-order.invoice-manager :purchaseOrderId="$purchaseOrder->id" />
+                <div id="invoices-section">
+                    <livewire:purchase-order.invoice-manager :purchaseOrderId="$purchaseOrder->id" />
+                </div>
 
                 {{-- Revisions --}}
                 @if ($purchaseOrder->status === 4 || $purchaseOrder->revision_count > 0 || count($revisions) > 0)
@@ -337,7 +358,7 @@
                         </div>
 
                         {{-- Invoicing Progress --}}
-                        <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <a href="#invoices-section" class="block mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 hover:border-slate-200 transition-all cursor-pointer group">
                             @php
                                 $invoicedTotal = $purchaseOrder->invoiced_total ?? 0;
                                 $percent = $purchaseOrder->total > 0 ? min(100, ($invoicedTotal / $purchaseOrder->total) * 100) : 0;
@@ -355,8 +376,8 @@
                                 }
                             @endphp
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoicing Progress</span>
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-{{ $billingColor }}-100 text-{{ $billingColor }}-700 border border-{{ $billingColor }}-200">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-600 transition-colors">Invoicing Progress</span>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-{{ $billingColor }}-100 text-{{ $billingColor }}-700 border border-{{ $billingColor }}-200 group-hover:bg-{{ $billingColor }}-200 transition-colors">
                                     {{ $billingStatus }}
                                 </span>
                             </div>
@@ -367,16 +388,16 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex flex-col">
-                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Billed Amount</span>
-                                        <span class="text-xs font-black text-slate-700">{{ $purchaseOrder->currency }} {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-500 transition-colors">Billed Amount</span>
+                                        <span class="text-xs font-black text-slate-700 group-hover:text-slate-800 transition-colors">{{ $purchaseOrder->currency }} {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="text-right flex flex-col">
-                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Progress</span>
-                                        <span class="text-xs font-black text-indigo-600">{{ round($percent) }}%</span>
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-500 transition-colors">Progress</span>
+                                        <span class="text-xs font-black text-indigo-600 group-hover:text-indigo-700 transition-colors">{{ round($percent) }}%</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
 
                         <div class="grid grid-cols-1 gap-4">
                             <div>

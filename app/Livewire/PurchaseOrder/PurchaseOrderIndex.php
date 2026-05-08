@@ -216,7 +216,9 @@ class PurchaseOrderIndex extends Component
             },
         ])
             ->withCount('invoices')
-            ->withSum('invoices as invoiced_total', 'total')
+            ->withSum(['invoices as invoiced_total' => function ($query) {
+                $query->whereColumn('total_currency', 'purchase_orders.currency');
+            }], 'total')
             ->findOrFail($poId);
 
         // Generate PDF preview URL if file exists
@@ -592,7 +594,9 @@ class PurchaseOrderIndex extends Component
                 'approvalRequest.actions',
             ])
             ->withCount('invoices')
-            ->withSum('invoices as invoiced_total', 'total');
+            ->withSum(['invoices as invoiced_total' => function ($query) {
+                $query->whereColumn('total_currency', 'purchase_orders.currency');
+            }], 'total');
 
 
         // Optimized search across multiple fields
@@ -653,12 +657,10 @@ class PurchaseOrderIndex extends Component
                     break;
                 case 'partially_invoiced':
                     $query->has('invoices', '>', 0)
-                        ->whereHas('invoices', function ($q) {
-                            // Sum of invoices < PO total
-                        })->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) < purchase_orders.total');
+                        ->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id AND invoices.total_currency = purchase_orders.currency) < purchase_orders.total');
                     break;
                 case 'fully_invoiced':
-                    $query->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) >= purchase_orders.total');
+                    $query->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id AND invoices.total_currency = purchase_orders.currency) >= purchase_orders.total');
                     break;
             }
         }
