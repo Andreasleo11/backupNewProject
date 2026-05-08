@@ -200,8 +200,10 @@ class PurchaseOrderIndex extends Component
             'approvalRequest.steps' => function ($query) {
                 $query->orderBy('sequence');
             },
-            'approvalRequest.actions.causer',
-        ])->findOrFail($poId);
+        ])
+            ->withCount('invoices')
+            ->withSum('invoices as invoiced_total', 'total')
+            ->findOrFail($poId);
 
         // Generate PDF preview URL if file exists
         $this->generatePdfUrl();

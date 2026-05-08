@@ -690,6 +690,40 @@
                                                     {{ number_format($selectedPurchaseOrder->total, 0, ',', '.') }}
                                                 </p>
                                             </div>
+
+                                            {{-- Invoicing Progress --}}
+                                            <div class="pt-3 border-t border-slate-100">
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Invoicing Progress</label>
+                                                @php
+                                                    $invoicedTotal = $selectedPurchaseOrder->invoiced_total ?? 0;
+                                                    $percent = $selectedPurchaseOrder->total > 0 ? min(100, ($invoicedTotal / $selectedPurchaseOrder->total) * 100) : 0;
+                                                    $billingStatus = 'Pending';
+                                                    $billingColor = 'slate';
+                                                    
+                                                    if ($selectedPurchaseOrder->invoices_count > 0) {
+                                                        if ($invoicedTotal >= $selectedPurchaseOrder->total) {
+                                                            $billingStatus = 'Fully Invoiced';
+                                                            $billingColor = 'emerald';
+                                                        } else {
+                                                            $billingStatus = 'Partially Invoiced';
+                                                            $billingColor = 'amber';
+                                                        }
+                                                    }
+                                                @endphp
+                                                <div class="flex flex-col gap-2 mt-1">
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-xs font-bold text-{{ $billingColor }}-600">{{ $billingStatus }}</span>
+                                                        <span class="text-[10px] font-bold text-slate-400">{{ $selectedPurchaseOrder->invoices_count }} Invoices</span>
+                                                    </div>
+                                                    <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                                                        <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                                    </div>
+                                                    <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                                                        <span>IDR {{ number_format($invoicedTotal, 0, ',', '.') }}</span>
+                                                        <span>{{ round($percent) }}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {{-- Rejection Remarks (Most Important) --}}
