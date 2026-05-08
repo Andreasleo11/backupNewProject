@@ -83,7 +83,7 @@
     </div>
 
     {{-- Main Toolbar - Enterprise Compact --}}
-    <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-3 shadow-sm space-y-3">
+    <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-3 shadow-sm space-y-3 relative z-20">
         <div class="flex flex-wrap items-center justify-between gap-3">
             {{-- Search & Direct Filters --}}
             <div class="flex flex-1 items-center gap-3 min-w-0">
@@ -123,6 +123,38 @@
                         <i class="bi bi-sliders text-sm"></i>
                         Filters
                     </button>
+
+                    {{-- Column Visibility Dropdown --}}
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                                :class="open ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                                class="flex items-center gap-2 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all">
+                            <i class="bi bi-layout-three-columns text-sm"></i>
+                            Columns
+                        </button>
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             class="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-slate-100 z-50 p-2">
+                            <div class="px-3 py-2 border-b border-slate-50 mb-1">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Toggle Columns</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                @foreach($availableColumns as $key => $label)
+                                    <button wire:click="toggleColumn('{{ $key }}')"
+                                            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all hover:bg-slate-50 {{ in_array($key, $visibleColumns) ? 'text-indigo-600' : 'text-slate-500' }}">
+                                        {{ $label }}
+                                        @if(in_array($key, $visibleColumns))
+                                            <i class="bi bi-check2 text-lg"></i>
+                                        @endif
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -143,15 +175,18 @@
               x-transition:enter-end="opacity-100 translate-y-0"
               class="pt-3 border-t border-slate-100">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {{-- Vendor --}}
                 <div class="space-y-2">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Vendor</label>
-                    <select wire:model.live="vendorFilter"
-                            class="w-full bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4">
+                    <input list="vendorList" wire:model.live.debounce.300ms="vendorFilter"
+                           placeholder="Type vendor name..."
+                           class="w-full bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4 focus:ring-2 focus:ring-indigo-500/10 transition-all">
+                    <datalist id="vendorList">
                         @foreach($filters['vendors'] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
+                            @if($value !== '')
+                                <option value="{{ $value }}">
+                            @endif
                         @endforeach
-                    </select>
+                    </datalist>
                 </div>
 
 
@@ -248,46 +283,60 @@
                         <th class="pl-6 pr-4 py-4 w-12">
                             <input type="checkbox" wire:model.live="selectAll" class="h-5 w-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500/10 transition-all">
                         </th>
-                        <th class="px-4 py-4">
-                            <button type="button" 
-                                    wire:click="sortByColumn('po_number')" 
-                                    wire:loading.attr="disabled"
-                                    class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
-                                PO Number
-                                <i class="bi {{ $sortBy === 'po_number' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
-                            </button>
-                        </th>
-                        <th class="px-4 py-4">
-                            <button type="button" 
-                                    wire:click="sortByColumn('vendor_name')" 
-                                    wire:loading.attr="disabled"
-                                    class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
-                                Vendor
-                                <i class="bi {{ $sortBy === 'vendor_name' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
-                            </button>
-                        </th>
-                        <th class="px-4 py-4">
-                            <button type="button" 
-                                    wire:click="sortByColumn('created_at')" 
-                                    wire:loading.attr="disabled"
-                                    class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
-                                Creator
-                                <i class="bi {{ $sortBy === 'created_at' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
-                            </button>
-                        </th>
-                        <th class="px-4 py-4 hidden lg:table-cell">
-                            <button type="button" 
-                                    wire:click="sortByColumn('total')" 
-                                    wire:loading.attr="disabled"
-                                    class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
-                                Valuation
-                                <i class="bi {{ $sortBy === 'total' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
-                            </button>
-                        </th>
-                        <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Invoicing</th>
-                        <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Status</th>
+                        @if(in_array('po_number', $visibleColumns))
+                            <th class="px-4 py-4">
+                                <button type="button" 
+                                        wire:click="sortByColumn('po_number')" 
+                                        wire:loading.attr="disabled"
+                                        class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
+                                    PO Number
+                                    <i class="bi {{ $sortBy === 'po_number' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
+                                </button>
+                            </th>
+                        @endif
+                        @if(in_array('vendor', $visibleColumns))
+                            <th class="px-4 py-4">
+                                <button type="button" 
+                                        wire:click="sortByColumn('vendor_name')" 
+                                        wire:loading.attr="disabled"
+                                        class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
+                                    Vendor
+                                    <i class="bi {{ $sortBy === 'vendor_name' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
+                                </button>
+                            </th>
+                        @endif
+                        @if(in_array('creator', $visibleColumns))
+                            <th class="px-4 py-4">
+                                <button type="button" 
+                                        wire:click="sortByColumn('created_at')" 
+                                        wire:loading.attr="disabled"
+                                        class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
+                                    Creator
+                                    <i class="bi {{ $sortBy === 'created_at' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
+                                </button>
+                            </th>
+                        @endif
+                        @if(in_array('total', $visibleColumns))
+                            <th class="px-4 py-4 hidden lg:table-cell">
+                                <button type="button" 
+                                        wire:click="sortByColumn('total')" 
+                                        wire:loading.attr="disabled"
+                                        class="group flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider hover:text-indigo-600 transition-colors">
+                                    Valuation
+                                    <i class="bi {{ $sortBy === 'total' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
+                                </button>
+                            </th>
+                        @endif
+                        @if(in_array('invoicing', $visibleColumns))
+                            <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Invoicing</th>
+                        @endif
+                        @if(in_array('status', $visibleColumns))
+                            <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Status</th>
+                        @endif
+                        @if(in_array('actions', $visibleColumns))
+                            <th class="px-8 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Actions</th>
+                        @endif
 
-                        <th class="px-8 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -297,116 +346,130 @@
                             <td class="pl-6 pr-4 py-4">
                                 <input type="checkbox" wire:model.live="selectedIds" value="{{ $po->id }}" class="h-5 w-5 rounded border-slate-200 text-indigo-600 focus:ring-indigo-500/10 transition-all">
                             </td>
-                            <td class="px-4 py-4">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors cursor-pointer" wire:click="openDetailModal({{ $po->id }})">
-                                        {{ $po->po_number }}
-                                    </span>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ $po->category?->name ?? 'Uncategorized' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-slate-800 truncate max-w-[180px]">{{ $po->vendor_name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shadow-inner">
-                                        {{ mb_substr($po->user?->name ?? '?', 0, 1) }}
-                                    </div>
-                                    <div class="flex flex-col leading-tight">
-                                        <span class="text-xs font-bold text-slate-700">{{ $po->user?->name ?: 'System' }}</span>
-                                        <div class="flex items-center gap-2 text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
-                                            <span>{{ $po->created_at->format('d M Y') }}</span>
-                                            <span class="opacity-30">•</span>
-                                            <span>{{ $po->created_at->diffForHumans() }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-4 hidden lg:table-cell font-mono text-sm font-black text-slate-900">
-                                <span class="text-xs text-slate-400 mr-1">IDR</span>{{ number_format($po->total, 0, ',', '.') }}
-                            </td>
-                            <td class="px-4 py-4">
-                                @php
-                                    $invoicedTotal = $po->invoiced_total ?? 0;
-                                    $percent = $po->total > 0 ? min(100, ($invoicedTotal / $po->total) * 100) : 0;
-                                    $billingStatus = 'Pending';
-                                    $billingColor = 'slate';
-                                    
-                                    if ($po->invoices_count > 0) {
-                                        if ($invoicedTotal >= $po->total) {
-                                            $billingStatus = 'Fully Invoiced';
-                                            $billingColor = 'emerald';
-                                        } else {
-                                            $billingStatus = 'Partially Invoiced';
-                                            $billingColor = 'amber';
-                                        }
-                                    }
-                                @endphp
-                                <div class="flex flex-col gap-1.5">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="text-[10px] font-black text-{{ $billingColor }}-600 uppercase tracking-widest">{{ $billingStatus }}</span>
-                                        <span class="text-[10px] font-bold text-slate-400">{{ $po->invoices_count }} Inv</span>
-                                    </div>
-                                    @if($po->invoices_count > 0)
-                                        <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                            <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
-                                        </div>
-                                        <span class="text-[9px] font-bold text-slate-400 mt-0.5">
-                                            IDR {{ number_format($invoicedTotal, 0, ',', '.') }}
+                            @if(in_array('po_number', $visibleColumns))
+                                <td class="px-4 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors cursor-pointer" wire:click="openDetailModal({{ $po->id }})">
+                                            {{ $po->po_number }}
                                         </span>
-                                    @else
-                                        <span class="text-[9px] font-medium text-slate-300 italic">Waiting for billing...</span>
-                                    @endif
-                                </div>
-                            </td>
-
-                            <td class="px-4 py-4">
-                                <div class="flex flex-col gap-2">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ $po->category?->name ?? 'Uncategorized' }}</span>
+                                    </div>
+                                </td>
+                            @endif
+                            @if(in_array('vendor', $visibleColumns))
+                                <td class="px-4 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-slate-800 truncate max-w-[180px]">{{ $po->vendor_name }}</span>
+                                    </div>
+                                </td>
+                            @endif
+                            @if(in_array('creator', $visibleColumns))
+                                <td class="px-4 py-4">
                                     <div class="flex items-center gap-3">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}">
-                                            {{ $isProcessing ? 'Processing' : $po->getStatusEnum()->label() }}
-                                        </span>
-                                        @if($po->workflow_status === 'IN_REVIEW')
-                                            @php $daysPending = now()->diffInDays($po->approvalRequest?->submitted_at ?? $po->created_at); @endphp
-                                            @if($daysPending > 0)
-                                                <span class="text-xs font-black {{ $daysPending > 3 ? 'text-rose-500' : 'text-amber-500' }} flex items-center gap-1.5" title="Days in Review">
-                                                    <i class="bi bi-clock-history"></i>
-                                                    {{ $daysPending }}D
-                                                </span>
-                                            @endif
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shadow-inner">
+                                            {{ mb_substr($po->user?->name ?? '?', 0, 1) }}
+                                        </div>
+                                        <div class="flex flex-col leading-tight">
+                                            <span class="text-xs font-bold text-slate-700">{{ $po->user?->name ?: 'System' }}</span>
+                                            <div class="flex items-center gap-2 text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
+                                                <span>{{ $po->created_at->format('d M Y') }}</span>
+                                                <span class="opacity-30">•</span>
+                                                <span>{{ $po->created_at->diffForHumans() }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            @endif
+                            @if(in_array('total', $visibleColumns))
+                                <td class="px-4 py-4 hidden lg:table-cell font-mono text-sm font-black text-slate-900">
+                                    <span class="text-xs text-slate-400 mr-1">IDR</span>{{ number_format($po->total, 0, ',', '.') }}
+                                </td>
+                            @endif
+                            @if(in_array('invoicing', $visibleColumns))
+                                <td class="px-4 py-4">
+                                    @php
+                                        $invoicedTotal = $po->invoiced_total ?? 0;
+                                        $percent = $po->total > 0 ? min(100, ($invoicedTotal / $po->total) * 100) : 0;
+                                        $billingStatus = 'Pending';
+                                        $billingColor = 'slate';
+                                        
+                                        if ($po->invoices_count > 0) {
+                                            if ($invoicedTotal >= $po->total) {
+                                                $billingStatus = 'Fully Invoiced';
+                                                $billingColor = 'emerald';
+                                            } else {
+                                                $billingStatus = 'Partially Invoiced';
+                                                $billingColor = 'amber';
+                                            }
+                                        }
+                                    @endphp
+                                    <div class="flex flex-col gap-1.5">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-[10px] font-black text-{{ $billingColor }}-600 uppercase tracking-widest">{{ $billingStatus }}</span>
+                                            <span class="text-[10px] font-bold text-slate-400">{{ $po->invoices_count }} Inv</span>
+                                        </div>
+                                        @if($po->invoices_count > 0)
+                                            <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                                <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                            </div>
+                                            <span class="text-[9px] font-bold text-slate-400 mt-0.5">
+                                                IDR {{ number_format($invoicedTotal, 0, ',', '.') }}
+                                            </span>
+                                        @else
+                                            <span class="text-[9px] font-medium text-slate-300 italic">Waiting for billing...</span>
                                         @endif
                                     </div>
-                                    @if($po->workflow_status === 'IN_REVIEW')
-                                        <div class="flex flex-col gap-1.5">
-                                            <span class="text-[10px] font-bold text-slate-400 truncate max-w-[120px]">
-                                                @if($po->workflow_step)
-                                                    {{ Str::limit($po->workflow_step, 15) }}
-                                                @else
-                                                    Preparing
-                                                @endif
+                                </td>
+                            @endif
+                            @if(in_array('status', $visibleColumns))
+                                <td class="px-4 py-4">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider {{ $po->getStatusEnum()->cssClass() }}">
+                                                {{ $isProcessing ? 'Processing' : $po->getStatusEnum()->label() }}
                                             </span>
+                                            @if($po->workflow_status === 'IN_REVIEW')
+                                                @php $daysPending = now()->diffInDays($po->approvalRequest?->submitted_at ?? $po->created_at); @endphp
+                                                @if($daysPending > 0)
+                                                    <span class="text-xs font-black {{ $daysPending > 3 ? 'text-rose-500' : 'text-amber-500' }} flex items-center gap-1.5" title="Days in Review">
+                                                        <i class="bi bi-clock-history"></i>
+                                                        {{ $daysPending }}D
+                                                    </span>
+                                                @endif
+                                            @endif
                                         </div>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-8 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button wire:click="openDetailModal({{ $po->id }})" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="View">
-                                        <i class="bi bi-eye text-base"></i>
-                                    </button>
-                                    @can('update', $po)
-                                        <a href="{{ route('po.edit', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
-                                            <i class="bi bi-pencil text-base"></i>
+                                        @if($po->workflow_status === 'IN_REVIEW')
+                                            <div class="flex flex-col gap-1.5">
+                                                <span class="text-[10px] font-bold text-slate-400 truncate max-w-[120px]">
+                                                    @if($po->workflow_step)
+                                                        {{ Str::limit($po->workflow_step, 15) }}
+                                                    @else
+                                                        Preparing
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endif
+                            @if(in_array('actions', $visibleColumns))
+                                <td class="px-8 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button wire:click="openDetailModal({{ $po->id }})" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all" title="View">
+                                            <i class="bi bi-eye text-base"></i>
+                                        </button>
+                                        @can('update', $po)
+                                            <a href="{{ route('po.edit', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-600 transition-all" title="Edit">
+                                                <i class="bi bi-pencil text-base"></i>
+                                            </a>
+                                        @endcan
+                                        <a href="{{ route('po.view', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all" title="Open">
+                                            <i class="bi bi-box-arrow-up-right text-base"></i>
                                         </a>
-                                    @endcan
-                                    <a href="{{ route('po.view', $po->id) }}" class="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all" title="Open">
-                                        <i class="bi bi-box-arrow-up-right text-base"></i>
-                                    </a>
-                                </div>
-                            </td>
+                                    </div>
+                                </td>
+                            @endif
+
                         </tr>
                     @empty
                         <tr>

@@ -33,6 +33,19 @@ class PurchaseOrderIndex extends Component
     
     public $invoicingFilter = '';
 
+    public $visibleColumns = ['po_number', 'vendor', 'total', 'status', 'actions'];
+
+    public $availableColumns = [
+        'po_number' => 'PO Number',
+        'vendor' => 'Vendor',
+        'creator' => 'Creator',
+        'total' => 'Valuation',
+        'invoicing' => 'Invoicing',
+        'status' => 'Status',
+        'actions' => 'Actions',
+    ];
+
+
 
     public $perPage = 10;
 
@@ -58,6 +71,8 @@ class PurchaseOrderIndex extends Component
         'creatorFilter' => ['except' => ''],
         'categoryFilter' => ['except' => ''],
         'invoicingFilter' => ['except' => ''],
+        'visibleColumns' => ['except' => ['po_number', 'vendor', 'total', 'status', 'actions']],
+
 
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
@@ -133,6 +148,16 @@ class PurchaseOrderIndex extends Component
         }
         $this->resetPage();
     }
+
+    public function toggleColumn($column)
+    {
+        if (in_array($column, $this->visibleColumns)) {
+            $this->visibleColumns = array_diff($this->visibleColumns, [$column]);
+        } else {
+            $this->visibleColumns[] = $column;
+        }
+    }
+
 
     public function clearFilters()
     {
