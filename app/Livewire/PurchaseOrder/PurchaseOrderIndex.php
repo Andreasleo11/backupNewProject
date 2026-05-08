@@ -21,6 +21,9 @@ class PurchaseOrderIndex extends Component
 
     public $vendorFilter = '';
 
+    public $currencyFilter = '';
+
+
     public $monthFilter = '';
 
     public $amountFrom = '';
@@ -65,6 +68,8 @@ class PurchaseOrderIndex extends Component
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
         'vendorFilter' => ['except' => ''],
+        'currencyFilter' => ['except' => ''],
+
         'monthFilter' => ['except' => ''],
         'amountFrom' => ['except' => ''],
         'amountTo' => ['except' => ''],
@@ -101,6 +106,12 @@ class PurchaseOrderIndex extends Component
     {
         $this->resetPage();
     }
+
+    public function updatingCurrencyFilter()
+    {
+        $this->resetPage();
+    }
+
 
     public function updatingMonthFilter()
     {
@@ -166,7 +177,9 @@ class PurchaseOrderIndex extends Component
         $this->vendorFilter = '';
         $this->creatorFilter = '';
         $this->categoryFilter = '';
+        $this->currencyFilter = '';
         $this->invoicingFilter = '';
+
         $this->amountFrom = '';
         $this->amountTo = '';
         $this->sortBy = 'created_at';
@@ -180,6 +193,7 @@ class PurchaseOrderIndex extends Component
     {
         $this->amountFrom = '';
         $this->amountTo = '';
+        $this->currencyFilter = '';
         $this->resetPage();
     }
 
@@ -570,7 +584,7 @@ class PurchaseOrderIndex extends Component
         $query = PurchaseOrder::query()
             ->select([
                 'id', 'po_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'purchase_order_category_id',
+                'vendor_name', 'creator_id', 'currency', 'total', 'approved_date', 'created_at', 'purchase_order_category_id',
             ])
             ->with([
                 'user:id,name',
@@ -618,13 +632,18 @@ class PurchaseOrderIndex extends Component
         }
 
         // Amount range filtering
-        if ($this->amountFrom) {
-            $query->where('total', '>=', $this->amountFrom);
+        if ($this->currencyFilter) {
+            $query->where('currency', $this->currencyFilter);
+            
+            if ($this->amountFrom) {
+                $query->where('total', '>=', $this->amountFrom);
+            }
+
+            if ($this->amountTo) {
+                $query->where('total', '<=', $this->amountTo);
+            }
         }
 
-        if ($this->amountTo) {
-            $query->where('total', '<=', $this->amountTo);
-        }
 
         // Invoicing status filtering
         if ($this->invoicingFilter) {
@@ -668,7 +687,12 @@ class PurchaseOrderIndex extends Component
 
     public function getFilteredTotalProperty()
     {
-        return $this->getPurchaseOrdersQuery()->sum('total');
+        return $this->getPurchaseOrdersQuery()
+            ->select('currency')
+            ->selectRaw('SUM(total) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
     }
 
     public function getStatsProperty()
@@ -688,7 +712,11 @@ class PurchaseOrderIndex extends Component
                 ->count(),
 
             'total_valuation' => PurchaseOrder::whereBetween('created_at', [$currentMonth, $endOfMonth])
-                ->sum('total'),
+                ->select('currency')
+                ->selectRaw('SUM(total) as total')
+                ->groupBy('currency')
+                ->pluck('total', 'currency')
+                ->toArray(),
         ];
     }
 
@@ -770,6 +798,12 @@ class PurchaseOrderIndex extends Component
                 'partially_invoiced' => 'Partially Invoiced',
                 'fully_invoiced' => 'Fully Invoiced',
             ],
+            'currencies' => ['' => 'Select Currency'] + PurchaseOrder::query()
+                ->distinct()
+                ->whereNotNull('currency')
+                ->pluck('currency', 'currency')
+                ->toArray(),
+
 
         ];
     }

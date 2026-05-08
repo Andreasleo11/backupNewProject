@@ -74,9 +74,15 @@
             </div>
             <div>
                 <p class="text-xs font-black text-indigo-100 uppercase tracking-wider mb-0.5">Active Valuation</p>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-xs font-bold text-indigo-200">IDR</span>
-                    <p class="text-xl font-black leading-none">{{ number_format($this->filteredTotal, 0, ',', '.') }}</p>
+                <div class="space-y-1.5 mt-1 max-h-[60px] overflow-y-auto custom-scrollbar pr-1">
+                    @forelse($this->filteredTotal as $currency => $total)
+                        <div class="flex items-baseline justify-between gap-2 border-b border-white/10 pb-1 last:border-0 last:pb-0">
+                            <span class="text-[9px] font-black text-indigo-200 uppercase tracking-widest">{{ $currency }}</span>
+                            <p class="text-base font-black leading-none">{{ number_format($total, 0, ',', '.') }}</p>
+                        </div>
+                    @empty
+                        <p class="text-sm font-bold opacity-60 italic">No Valuation</p>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -112,6 +118,13 @@
                     <select wire:model.live="invoicingFilter"
                             class="bg-slate-50 border-transparent rounded-xl text-xs font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-indigo-500/10 py-2.5 px-4 transition-all">
                         @foreach($filters['invoicing_statuses'] as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+
+                    <select wire:model.live="currencyFilter"
+                            class="bg-slate-50 border-transparent rounded-xl text-xs font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-indigo-500/10 py-2.5 px-4 transition-all">
+                        @foreach($filters['currencies'] as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
@@ -208,21 +221,28 @@
                     amountFrom: @entangle('amountFrom').live,
                     amountTo: @entangle('amountTo').live
                 })">
-                    <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Total Valuation (IDR)</label>
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">
+                        Amount Range 
+                        @if($currencyFilter)
+                            <span class="text-indigo-500">({{ $currencyFilter }})</span>
+                        @else
+                            <span class="text-rose-400 italic">(Set Currency in Toolbar)</span>
+                        @endif
+                    </label>
 
                     {{-- Range Input --}}
                     <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-2 flex-1">
+                        <div class="flex items-center gap-2 flex-1 transition-all {{ !$currencyFilter ? 'opacity-30 pointer-events-none grayscale' : '' }}">
                             <input type="text"
                                    x-bind:value="formattedMin"
                                    @input="onFormattedMinChange($event.target.value)"
-                                   placeholder="Min"
+                                   placeholder="Min Amount"
                                    class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all">
-                            <span class="text-slate-300">-</span>
+                            <span class="text-slate-300">to</span>
                             <input type="text"
                                    x-bind:value="formattedMax"
                                    @input="onFormattedMaxChange($event.target.value)"
-                                   placeholder="Max"
+                                   placeholder="Max Amount"
                                    class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all">
                         </div>
 
@@ -249,9 +269,12 @@
         if ($search) $activePills[] = ['label' => 'Search', 'value' => $search, 'key' => 'search'];
         if ($statusFilter) $activePills[] = ['label' => 'Status', 'value' => $filters['statuses'][$statusFilter], 'key' => 'statusFilter'];
         if ($vendorFilter) $activePills[] = ['label' => 'Vendor', 'value' => $vendorFilter, 'key' => 'vendorFilter'];
+        if ($currencyFilter) $activePills[] = ['label' => 'Currency', 'value' => $currencyFilter, 'key' => 'currencyFilter'];
+
         if ($monthFilter) $activePills[] = ['label' => 'Month', 'value' => $filters['months'][$monthFilter] ?? $monthFilter, 'key' => 'monthFilter'];
-        if ($amountFrom) $activePills[] = ['label' => 'Min IDR', 'value' => number_format($amountFrom, 0, ',', '.'), 'key' => 'amountFrom'];
-        if ($amountTo) $activePills[] = ['label' => 'Max IDR', 'value' => number_format($amountTo, 0, ',', '.'), 'key' => 'amountTo'];
+        if ($amountFrom) $activePills[] = ['label' => 'Min Amount', 'value' => ($currencyFilter ?: '') . ' ' . number_format($amountFrom, 0, ',', '.'), 'key' => 'amountFrom'];
+        if ($amountTo) $activePills[] = ['label' => 'Max Amount', 'value' => ($currencyFilter ?: '') . ' ' . number_format($amountTo, 0, ',', '.'), 'key' => 'amountTo'];
+
         if ($creatorFilter) $activePills[] = ['label' => 'Creator', 'value' => $creatorFilter, 'key' => 'creatorFilter'];
         if ($categoryFilter) $activePills[] = ['label' => 'Category', 'value' => $filters['categories'][$categoryFilter] ?? $categoryFilter, 'key' => 'categoryFilter'];
         if ($invoicingFilter) $activePills[] = ['label' => 'Invoicing', 'value' => $filters['invoicing_statuses'][$invoicingFilter] ?? $invoicingFilter, 'key' => 'invoicingFilter'];
@@ -382,7 +405,7 @@
                             @endif
                             @if(in_array('total', $visibleColumns))
                                 <td class="px-4 py-4 hidden lg:table-cell font-mono text-sm font-black text-slate-900">
-                                    <span class="text-xs text-slate-400 mr-1">IDR</span>{{ number_format($po->total, 0, ',', '.') }}
+                                    <span class="text-xs text-slate-400 mr-1">{{ $po->currency }}</span>{{ number_format($po->total, 0, ',', '.') }}
                                 </td>
                             @endif
                             @if(in_array('invoicing', $visibleColumns))
