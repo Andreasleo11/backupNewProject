@@ -129,12 +129,12 @@
         </div>
 
         {{-- Advanced Filters (Collapsible Drawer) --}}
-        <div x-show="showFilters" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="pt-3 border-t border-slate-100">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div x-show="showFilters"
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 -translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              class="pt-3 border-t border-slate-100">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {{-- Vendor --}}
                 <div class="space-y-2">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Vendor</label>
@@ -146,14 +146,6 @@
                     </select>
                 </div>
 
-                {{-- Amount Range --}}
-                <div class="space-y-2">
-                    <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Total Valuation (IDR)</label>
-                    <div class="flex items-center gap-3">
-                        <input type="number" wire:model.live="amountFrom" placeholder="Min" class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4">
-                        <input type="number" wire:model.live="amountTo" placeholder="Max" class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4">
-                    </div>
-                </div>
 
                 {{-- Category --}}
                 <div class="space-y-2">
@@ -164,6 +156,45 @@
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
+                </div>
+            </div>
+
+            {{-- Amount Range Filter (Full Width) --}}
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <div class="space-y-3" x-data="amountRangeFilter({
+                    amountFrom: @entangle('amountFrom').live,
+                    amountTo: @entangle('amountTo').live
+                })">
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Total Valuation (IDR)</label>
+
+                    {{-- Range Input --}}
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 flex-1">
+                            <input type="text"
+                                   x-bind:value="formattedMin"
+                                   @input="onFormattedMinChange($event.target.value)"
+                                   placeholder="Min"
+                                   class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all">
+                            <span class="text-slate-300">-</span>
+                            <input type="text"
+                                   x-bind:value="formattedMax"
+                                   @input="onFormattedMaxChange($event.target.value)"
+                                   placeholder="Max"
+                                   class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4 focus:ring-2 focus:ring-indigo-500/10 focus:bg-white transition-all">
+                        </div>
+
+                        {{-- Quick Preset Buttons --}}
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" @click="setRange(0, 10000000)" class="px-3 py-1.5 text-[9px] font-bold bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors whitespace-nowrap">Under 10M</button>
+                            <button type="button" @click="setRange(10000000, 50000000)" class="px-3 py-1.5 text-[9px] font-bold bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors whitespace-nowrap">10M - 50M</button>
+                            <button type="button" @click="setRange(50000000, 100000000)" class="px-3 py-1.5 text-[9px] font-bold bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors whitespace-nowrap">50M - 100M</button>
+                            <button type="button" @click="setRange(100000000, null)" class="px-3 py-1.5 text-[9px] font-bold bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors whitespace-nowrap">Over 100M</button>
+                            <button type="button" @click="clearRange()" class="px-3 py-1.5 text-[9px] font-bold bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg transition-colors whitespace-nowrap">Clear</button>
+                        </div>
+                    </div>
+
+                    {{-- Validation Error --}}
+                    <div x-show="errorMessage" x-text="errorMessage" class="text-[9px] font-bold text-rose-600"></div>
                 </div>
             </div>
         </div>
@@ -679,5 +710,105 @@
             </div>
         </div>
     </template>
+
+    {{-- Alpine.js Amount Range Filter --}}
+    <script>
+        function amountRangeFilter(data) {
+            return {
+                ...data,
+                formattedMin: '',
+                formattedMax: '',
+                errorMessage: '',
+
+                init() {
+                    // Initialize formatted values
+                    this.updateFormattedValues();
+                    this.validateRange();
+
+                    // Watch for external Livewire changes (like when filters are cleared)
+                    this.$watch('amountFrom', (newVal) => {
+                        this.formattedMin = this.formatNumber(newVal);
+                        this.validateRange();
+                    });
+
+                    this.$watch('amountTo', (newVal) => {
+                        this.formattedMax = this.formatNumber(newVal);
+                        this.validateRange();
+                    });
+                },
+
+                updateFormattedValues() {
+                    this.formattedMin = this.formatNumber(this.amountFrom);
+                    this.formattedMax = this.formatNumber(this.amountTo);
+                },
+
+                formatNumber(value) {
+                    if (!value || value === '') return '';
+                    // Remove existing commas and format
+                    let cleanValue = value.toString().replace(/,/g, '');
+                    return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                },
+
+
+
+                setRange(min, max) {
+                    // Set raw values
+                    this.amountFrom = min || '';
+                    this.amountTo = max === null ? '' : (max || '');
+
+                    // Update formatted display
+                    this.updateFormattedValues();
+                    this.errorMessage = '';
+
+                    // Force sync with Livewire
+                    this.$wire.set('amountFrom', this.amountFrom, false);
+                    this.$wire.set('amountTo', this.amountTo, false);
+
+                    // Trigger re-render
+                    this.$wire.call('$refresh');
+                },
+
+                clearRange() {
+                    this.amountFrom = '';
+                    this.amountTo = '';
+                    this.formattedMin = '';
+                    this.formattedMax = '';
+                    this.errorMessage = '';
+
+                    // Call Livewire method to ensure proper clearing
+                    this.$wire.call('clearAmountFilters');
+                },
+
+                onFormattedMinChange(value) {
+                    const cleanValue = value.replace(/,/g, '');
+                    this.amountFrom = cleanValue;
+                    this.formattedMin = this.formatNumber(cleanValue);
+                    this.$wire.set('amountFrom', cleanValue, false);
+                    this.validateRange();
+                },
+
+                onFormattedMaxChange(value) {
+                    const cleanValue = value.replace(/,/g, '');
+                    this.amountTo = cleanValue;
+                    this.formattedMax = this.formatNumber(cleanValue);
+                    this.$wire.set('amountTo', cleanValue, false);
+                    this.validateRange();
+                },
+
+                validateRange() {
+                    this.errorMessage = '';
+
+                    if (this.amountFrom && this.amountTo) {
+                        const min = parseFloat(this.amountFrom);
+                        const max = parseFloat(this.amountTo);
+
+                        if (!isNaN(min) && !isNaN(max) && min >= max) {
+                            this.errorMessage = 'Minimum must be less than maximum';
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
 </div>

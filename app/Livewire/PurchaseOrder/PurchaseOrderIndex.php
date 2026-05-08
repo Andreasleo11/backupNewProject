@@ -139,6 +139,13 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function clearAmountFilters()
+    {
+        $this->amountFrom = '';
+        $this->amountTo = '';
+        $this->resetPage();
+    }
+
     public function openDetailModal($poId)
     {
         $this->showDetailModal = true;
