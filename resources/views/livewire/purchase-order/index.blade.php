@@ -109,6 +109,14 @@
                         @endforeach
                     </select>
 
+                    <select wire:model.live="invoicingFilter"
+                            class="bg-slate-50 border-transparent rounded-xl text-xs font-black uppercase tracking-wider text-slate-600 focus:ring-2 focus:ring-indigo-500/10 py-2.5 px-4 transition-all">
+                        @foreach($filters['invoicing_statuses'] as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+
+
                     <button @click="showFilters = !showFilters"
                             :class="showFilters ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
                             class="flex items-center gap-2 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all">
@@ -211,6 +219,8 @@
         if ($amountTo) $activePills[] = ['label' => 'Max IDR', 'value' => number_format($amountTo, 0, ',', '.'), 'key' => 'amountTo'];
         if ($creatorFilter) $activePills[] = ['label' => 'Creator', 'value' => $creatorFilter, 'key' => 'creatorFilter'];
         if ($categoryFilter) $activePills[] = ['label' => 'Category', 'value' => $filters['categories'][$categoryFilter] ?? $categoryFilter, 'key' => 'categoryFilter'];
+        if ($invoicingFilter) $activePills[] = ['label' => 'Invoicing', 'value' => $filters['invoicing_statuses'][$invoicingFilter] ?? $invoicingFilter, 'key' => 'invoicingFilter'];
+
     @endphp
 
     @if(count($activePills) > 0)
@@ -274,7 +284,9 @@
                                 <i class="bi {{ $sortBy === 'total' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
                             </button>
                         </th>
+                        <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Invoicing</th>
                         <th class="px-4 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Status</th>
+
                         <th class="px-8 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -316,6 +328,41 @@
                             <td class="px-4 py-4 hidden lg:table-cell font-mono text-sm font-black text-slate-900">
                                 <span class="text-xs text-slate-400 mr-1">IDR</span>{{ number_format($po->total, 0, ',', '.') }}
                             </td>
+                            <td class="px-4 py-4">
+                                @php
+                                    $invoicedTotal = $po->invoiced_total ?? 0;
+                                    $percent = $po->total > 0 ? min(100, ($invoicedTotal / $po->total) * 100) : 0;
+                                    $billingStatus = 'Pending';
+                                    $billingColor = 'slate';
+                                    
+                                    if ($po->invoices_count > 0) {
+                                        if ($invoicedTotal >= $po->total) {
+                                            $billingStatus = 'Fully Invoiced';
+                                            $billingColor = 'emerald';
+                                        } else {
+                                            $billingStatus = 'Partially Invoiced';
+                                            $billingColor = 'amber';
+                                        }
+                                    }
+                                @endphp
+                                <div class="flex flex-col gap-1.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-[10px] font-black text-{{ $billingColor }}-600 uppercase tracking-widest">{{ $billingStatus }}</span>
+                                        <span class="text-[10px] font-bold text-slate-400">{{ $po->invoices_count }} Inv</span>
+                                    </div>
+                                    @if($po->invoices_count > 0)
+                                        <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                            <div class="h-full bg-{{ $billingColor }}-500 rounded-full transition-all duration-500" style="width: {{ $percent }}%"></div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-slate-400 mt-0.5">
+                                            IDR {{ number_format($invoicedTotal, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-[9px] font-medium text-slate-300 italic">Waiting for billing...</span>
+                                    @endif
+                                </div>
+                            </td>
+
                             <td class="px-4 py-4">
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-3">

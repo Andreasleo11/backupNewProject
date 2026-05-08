@@ -30,6 +30,9 @@ class PurchaseOrderIndex extends Component
     public $creatorFilter = '';
 
     public $categoryFilter = '';
+    
+    public $invoicingFilter = '';
+
 
     public $perPage = 10;
 
@@ -54,6 +57,8 @@ class PurchaseOrderIndex extends Component
         'amountTo' => ['except' => ''],
         'creatorFilter' => ['except' => ''],
         'categoryFilter' => ['except' => ''],
+        'invoicingFilter' => ['except' => ''],
+
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -107,6 +112,12 @@ class PurchaseOrderIndex extends Component
         $this->resetPage();
     }
 
+    public function updatingInvoicingFilter()
+    {
+        $this->resetPage();
+    }
+
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -130,6 +141,7 @@ class PurchaseOrderIndex extends Component
         $this->vendorFilter = '';
         $this->creatorFilter = '';
         $this->categoryFilter = '';
+        $this->invoicingFilter = '';
         $this->amountFrom = '';
         $this->amountTo = '';
         $this->sortBy = 'created_at';
@@ -537,7 +549,10 @@ class PurchaseOrderIndex extends Component
                 'user:id,name',
                 'approvalRequest.steps',
                 'approvalRequest.actions',
-            ]);
+            ])
+            ->withCount('invoices')
+            ->withSum('invoices as invoiced_total', 'total');
+
 
         // Optimized search across multiple fields
         if ($this->search) {
@@ -583,6 +598,25 @@ class PurchaseOrderIndex extends Component
         if ($this->amountTo) {
             $query->where('total', '<=', $this->amountTo);
         }
+
+        // Invoicing status filtering
+        if ($this->invoicingFilter) {
+            switch ($this->invoicingFilter) {
+                case 'not_invoiced':
+                    $query->has('invoices', '=', 0);
+                    break;
+                case 'partially_invoiced':
+                    $query->has('invoices', '>', 0)
+                        ->whereHas('invoices', function ($q) {
+                            // Sum of invoices < PO total
+                        })->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) < purchase_orders.total');
+                    break;
+                case 'fully_invoiced':
+                    $query->whereRaw('(SELECT SUM(total) FROM invoices WHERE invoices.purchase_order_id = purchase_orders.id) >= purchase_orders.total');
+                    break;
+            }
+        }
+
 
         // Optimized sorting with whitelist
         $sortableColumns = [
@@ -703,6 +737,13 @@ class PurchaseOrderIndex extends Component
             'categories' => ['' => 'All Categories'] + \App\Models\PurchaseOrderCategory::query()
                 ->pluck('name', 'id')
                 ->toArray(),
+            'invoicing_statuses' => [
+                '' => 'All Invoicing',
+                'not_invoiced' => 'Not Invoiced',
+                'partially_invoiced' => 'Partially Invoiced',
+                'fully_invoiced' => 'Fully Invoiced',
+            ],
+
         ];
     }
 
