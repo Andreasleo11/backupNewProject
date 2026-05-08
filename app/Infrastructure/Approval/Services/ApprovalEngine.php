@@ -151,7 +151,7 @@ final class ApprovalEngine implements Approvals
 
             $req->fill([
                 'status' => 'IN_REVIEW',
-                'rule_template_id' => $currentVersion->version_uuid, // Reference to version group
+                'rule_template_id' => $currentVersion->id, // Reference to version group
                 'rule_template_version_id' => $currentVersion->id, // Specific immutable version
                 'current_step' => 1,
                 'submitted_by' => $by,

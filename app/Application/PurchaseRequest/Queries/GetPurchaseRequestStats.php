@@ -137,6 +137,8 @@ class GetPurchaseRequestStats
         // Now do the aggregation on a fresh query
         $totals = DB::table('detail_purchase_requests')
             ->whereIn('purchase_request_id', $prIds)
+            ->whereNull('deleted_at')
+            ->whereNull('is_approve')
             ->selectRaw('UPPER(COALESCE(currency, \'IDR\')) as currency, SUM(COALESCE(quantity, 0) * COALESCE(price, 0)) as total_value')
             ->groupBy('currency')
             ->pluck('total_value', 'currency')

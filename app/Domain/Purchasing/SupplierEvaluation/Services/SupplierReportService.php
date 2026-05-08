@@ -73,14 +73,14 @@ final class SupplierReportService
     {
         $result = [];
 
-        $categorySums = [
-            'kualitas_barang' => 0,
-            'ketepatan_kuantitas_barang' => 0,
-            'ketepatan_waktu_pengiriman' => 0,
-            'kerjasama_permintaan_mendadak' => 0,
-            'respon_klaim' => 0,
-            'sertifikasi' => 0,
-            'customer_stopline' => 0,
+        $categories = [
+            'kualitas_barang',
+            'ketepatan_kuantitas_barang',
+            'ketepatan_waktu_pengiriman',
+            'kerjasama_permintaan_mendadak',
+            'respon_klaim',
+            'sertifikasi',
+            'customer_stopline',
         ];
 
         $categorySums = array_fill_keys($categories, 0);
@@ -92,14 +92,14 @@ final class SupplierReportService
             );
 
             // Kalau tidak ada detail atau semua nilainya null = tidak ada PO bulan ini
-            $hasPo = $detail && collect($categories)->contains(fn ($c) => ! is_null($detail->$c));
+            $hasPo = $detail && collect($categories)->contains(fn ($c) => !is_null($detail->$c));
 
             $row = [];
             foreach ($categories as $cat) {
                 $value = $hasPo ? ($detail->$cat ?? 0) : null;
                 $row[$cat] = $value;
 
-                if (! is_null($value) && $value > 0) {
+                if (!is_null($value) && $value > 0) {
                     $categorySums[$cat] += $value;
                     $categoryCounts[$cat]++;
                 }

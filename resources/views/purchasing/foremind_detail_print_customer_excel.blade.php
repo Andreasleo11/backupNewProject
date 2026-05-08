@@ -191,6 +191,11 @@
                             </td>
                             <td></td> <!-- Empty cell for customer -->
                         </tr>
+                        <tr>
+                            <td colspan="14" style="text-align: left; font-style: italic;">
+                                ** Daijo tidak bertanggung jawab atas perubahan Qty Forecast, sewaktu - waktu Qty bisa berubah sesuai permintaan customer kami
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
