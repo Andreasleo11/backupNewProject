@@ -146,16 +146,6 @@
                     </select>
                 </div>
 
-                {{-- Date Range --}}
-                <div class="space-y-2">
-                    <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Invoice Period</label>
-                    <div class="flex items-center gap-3">
-                        <input type="date" wire:model.live="dateFrom" class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4">
-                        <span class="text-slate-300">-</span>
-                        <input type="date" wire:model.live="dateTo" class="flex-1 bg-slate-50 border-transparent rounded-xl text-xs font-bold text-slate-600 py-2.5 px-4">
-                    </div>
-                </div>
-
                 {{-- Amount Range --}}
                 <div class="space-y-2">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Total Valuation (IDR)</label>
@@ -186,8 +176,6 @@
         if ($statusFilter) $activePills[] = ['label' => 'Status', 'value' => $filters['statuses'][$statusFilter], 'key' => 'statusFilter'];
         if ($vendorFilter) $activePills[] = ['label' => 'Vendor', 'value' => $vendorFilter, 'key' => 'vendorFilter'];
         if ($monthFilter) $activePills[] = ['label' => 'Month', 'value' => $filters['months'][$monthFilter] ?? $monthFilter, 'key' => 'monthFilter'];
-        if ($dateFrom) $activePills[] = ['label' => 'From', 'value' => $dateFrom, 'key' => 'dateFrom'];
-        if ($dateTo) $activePills[] = ['label' => 'To', 'value' => $dateTo, 'key' => 'dateTo'];
         if ($amountFrom) $activePills[] = ['label' => 'Min IDR', 'value' => number_format($amountFrom, 0, ',', '.'), 'key' => 'amountFrom'];
         if ($amountTo) $activePills[] = ['label' => 'Max IDR', 'value' => number_format($amountTo, 0, ',', '.'), 'key' => 'amountTo'];
         if ($creatorFilter) $activePills[] = ['label' => 'Creator', 'value' => $creatorFilter, 'key' => 'creatorFilter'];
@@ -237,7 +225,6 @@
                                 <i class="bi {{ $sortBy === 'vendor_name' ? ($sortDirection === 'asc' ? 'bi-sort-up text-indigo-500' : 'bi-sort-down text-indigo-500') : 'bi-arrow-down-up opacity-0 group-hover:opacity-50' }}"></i>
                             </button>
                         </th>
-                        {{-- Invoice Info column removed - deprecated fields --}}
                         <th class="px-4 py-4">
                             <button type="button" 
                                     wire:click="sortByColumn('created_at')" 
@@ -280,7 +267,6 @@
                                     <span class="text-sm font-bold text-slate-800 truncate max-w-[180px]">{{ $po->vendor_name }}</span>
                                 </div>
                             </td>
-                            {{-- Invoice Info column removed - deprecated fields --}}
                             <td class="px-4 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shadow-inner">
@@ -556,7 +542,6 @@
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
                                                 <p class="text-sm font-bold text-slate-800">{{ $selectedPurchaseOrder->category->name }}</p>
                                             </div>
-                                            {{-- Invoice fields removed - deprecated --}}
                                             <div class="pt-3 border-t border-slate-100">
                                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount</label>
                                                 <p class="text-xl font-black text-slate-900">

@@ -23,10 +23,6 @@ class PurchaseOrderIndex extends Component
 
     public $monthFilter = '';
 
-    public $dateFrom = '';
-
-    public $dateTo = '';
-
     public $amountFrom = '';
 
     public $amountTo = '';
@@ -54,8 +50,6 @@ class PurchaseOrderIndex extends Component
         'statusFilter' => ['except' => ''],
         'vendorFilter' => ['except' => ''],
         'monthFilter' => ['except' => ''],
-        'dateFrom' => ['except' => ''],
-        'dateTo' => ['except' => ''],
         'amountFrom' => ['except' => ''],
         'amountTo' => ['except' => ''],
         'creatorFilter' => ['except' => ''],
@@ -89,16 +83,6 @@ class PurchaseOrderIndex extends Component
     }
 
     public function updatingMonthFilter()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDateFrom()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDateTo()
     {
         $this->resetPage();
     }
@@ -146,8 +130,6 @@ class PurchaseOrderIndex extends Component
         $this->vendorFilter = '';
         $this->creatorFilter = '';
         $this->categoryFilter = '';
-        $this->dateFrom = '';
-        $this->dateTo = '';
         $this->amountFrom = '';
         $this->amountTo = '';
         $this->sortBy = 'created_at';
@@ -350,8 +332,6 @@ class PurchaseOrderIndex extends Component
             // CSV headers
             fputcsv($file, [
                 'PO Number',
-                'Invoice Date',
-                'Invoice Number',
                 'Vendor Name',
                 'Creator',
                 'Status',
@@ -365,8 +345,6 @@ class PurchaseOrderIndex extends Component
             foreach ($purchaseOrders as $po) {
                 fputcsv($file, [
                     $po->po_number,
-                    $po->invoice_date ? $po->invoice_date->format('Y-m-d') : '',
-                    $po->invoice_number ?: '',
                     $po->vendor_name,
                     $po->user?->name ?: '',
                     $po->getStatusEnum()->label(),
@@ -545,8 +523,8 @@ class PurchaseOrderIndex extends Component
         // Use optimized query with selective field loading and relationship optimization
         $query = PurchaseOrder::query()
             ->select([
-                'id', 'po_number', 'invoice_date', 'invoice_number',
-                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'tanggal_pembayaran', 'purchase_order_category_id',
+                'id', 'po_number',
+                'vendor_name', 'creator_id', 'total', 'approved_date', 'created_at', 'purchase_order_category_id',
             ])
             ->with([
                 'user:id,name',
@@ -561,7 +539,6 @@ class PurchaseOrderIndex extends Component
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('po_number', 'like', '%' . $searchTerm . '%')
                         ->orWhere('vendor_name', 'like', '%' . $searchTerm . '%')
-                        ->orWhere('invoice_number', 'like', '%' . $searchTerm . '%')
                         ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
                             $userQuery->where('name', 'like', '%' . $searchTerm . '%');
                         });
@@ -591,19 +568,6 @@ class PurchaseOrderIndex extends Component
             });
         }
 
-        // Optimized date filtering using database functions
-        if ($this->monthFilter) {
-            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$this->monthFilter]);
-        }
-
-        if ($this->dateFrom) {
-            $query->where('invoice_date', '>=', $this->dateFrom);
-        }
-
-        if ($this->dateTo) {
-            $query->where('invoice_date', '<=', $this->dateTo);
-        }
-
         // Amount range filtering
         if ($this->amountFrom) {
             $query->where('total', '>=', $this->amountFrom);
@@ -615,8 +579,8 @@ class PurchaseOrderIndex extends Component
 
         // Optimized sorting with whitelist
         $sortableColumns = [
-            'po_number', 'invoice_date', 'invoice_number', 'vendor_name',
-            'total', 'approved_date', 'created_at', 'tanggal_pembayaran',
+            'po_number', 'vendor_name',
+            'total', 'approved_date', 'created_at',
             'purchase_order_category_id',
         ];
 
@@ -723,12 +687,6 @@ class PurchaseOrderIndex extends Component
                 ->distinct()
                 ->whereNotNull('vendor_name')
                 ->pluck('vendor_name', 'vendor_name')
-                ->toArray(),
-            'months' => ['' => 'All Months'] + PurchaseOrder::query()
-                ->selectRaw("DISTINCT DATE_FORMAT(invoice_date, '%Y-%m') as month_value, DATE_FORMAT(invoice_date, '%M %Y') as month_label")
-                ->whereNotNull('invoice_date')
-                ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m') DESC")
-                ->pluck('month_label', 'month_value')
                 ->toArray(),
             'creators' => ['' => 'All Creators'] + PurchaseOrder::query()
                 ->join('users', 'purchase_orders.creator_id', '=', 'users.id')
