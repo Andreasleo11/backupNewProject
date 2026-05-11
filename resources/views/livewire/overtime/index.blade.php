@@ -488,7 +488,17 @@
                                         {{-- Simple Actions --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap text-right">
                                             <div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
-                                                <a href="{{ route('overtime.consolidated', $group->date, array_filter(['dept' => $dept, 'branch' => $group->branches])) }}"
+                                                @php
+                                                    $consolidatedFilters = array_filter([
+                                                        'dept' => $dept,
+                                                        'branch' => $group->branches,
+                                                        'infoStatus' => $infoStatus,
+                                                        'startDate' => $startDate,
+                                                        'endDate' => $endDate,
+                                                        'search' => $search,
+                                                    ]);
+                                                @endphp
+                                                <a href="{{ route('overtime.consolidated', $group->date, $consolidatedFilters) }}"
                                                     class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
                                                     View Group <i class='bx bx-right-arrow-alt text-lg'></i>
                                                 </a>
