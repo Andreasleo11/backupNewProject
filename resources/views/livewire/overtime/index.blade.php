@@ -254,6 +254,14 @@
                         <option value="50">50</option>
                     </select>
 
+                    <button type="button" wire:click="toggleGroupByDate"
+                        class="h-10 px-3 flex items-center justify-center rounded-xl border transition-all text-xs font-black
+                        {{ $groupByDate ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}"
+                        title="{{ $groupByDate ? 'Disable grouping by date' : 'Enable grouping by date' }}">
+                        <i class='bx bx-group text-base'></i>
+                        <span class="ml-1">{{ $groupByDate ? 'Grouped' : 'Group by Date' }}</span>
+                    </button>
+
                     @if ($isPrivileged)
                         <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
                             class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all"
@@ -353,7 +361,7 @@
 
         {{-- ================================================================
          SECTION D: TABLE + EMPTY STATE
-    ================================================================ --}}
+        ================================================================ --}}
         @if ($dataheader->total() === 0 && !$anyChip ?? false)
             {{-- ===== ZERO-RECORD EMPTY STATE (New User Onboarding) ===== --}}
             <div class="glass-card rounded-2xl border border-slate-100/60 shadow-sm py-20 px-6 text-center">
@@ -408,150 +416,262 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100/60 bg-white/30 {{ $compact }}">
-                            @forelse ($dataheader as $fot)
-                                @php
-                                    $smart = OvertimePresenter::smartState($fot);
-                                    $steps = $fot->approvalRequest?->steps ?? collect();
-                                @endphp
-                                <tr wire:key="row-{{ $fot->id }}"
-                                    class="group hover:bg-indigo-50/20 transition-all duration-200"
-                                    :class="selectedIds.includes('{{ $fot->id }}') ? 'bg-indigo-50/40' : ''">
-                                    {{-- Selection --}}
-                                    @if ($canApprove)
-                                        <td class="px-6 py-4">
-                                            <input type="checkbox" x-model="selectedIds" value="{{ $fot->id }}"
-                                                class="row-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                                        </td>
-                                    @endif
+                            @if ($groupByDate)
+                                @forelse ($dataheader as $group)
+                                    @php
+                                        $smart = OvertimePresenter::smartState($group->headers->first());
+                                        $steps = $group->headers->first()->approvalRequest?->steps ?? collect();
+                                    @endphp
+                                    <tr wire:key="group-row-{{ $group->date }}"
+                                        class="group hover:bg-indigo-50/20 transition-all duration-200">
+                                        {{-- Selection --}}
+                                        @if ($canApprove)
+                                            <td class="px-6 py-4">
+                                                {{-- No bulk selection for groups --}}
+                                                <div class="w-4 h-4"></div>
+                                            </td>
+                                        @endif
 
-                                    {{-- Reference & Type --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap">
-                                        <div class="flex flex-col">
-                                            <span
-                                                class="font-black text-slate-800 tabular-nums">#{{ $fot->id }}</span>
-                                            <span
-                                                class="mt-1 inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-black uppercase w-fit
-                                            {{ $fot->is_planned ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600 border border-rose-100/50' }}">
-                                                {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    {{-- Creator --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap">
-                                        <div class="font-bold text-slate-800">{{ $fot->user?->name ?? 'Unknown' }}</div>
-                                    </td>
-
-                                    {{-- Dept/Branch --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap">
-                                        <span
-                                            class="inline-flex rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-black text-slate-600">
-                                            {{ $fot->department?->name ?? '-' }}
-                                        </span>
-                                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                                            {{ $fot->branch }}</div>
-                                    </td>
-
-                                    {{-- Date --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap">
-                                        <div class="flex flex-col">
-                                            <div class="font-bold text-slate-700 tabular-nums">
-                                                {{ $fot->first_overtime_date ? date('D, d M Y', strtotime($fot->first_overtime_date)) : '—' }}
+                                        {{-- Reference & Type --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex flex-col">
+                                                <span class="font-black text-slate-800 tabular-nums">GROUP</span>
+                                                <span class="mt-1 inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-black uppercase w-fit bg-indigo-50 text-indigo-600">
+                                                    {{ $group->total_forms }} Forms
+                                                </span>
                                             </div>
-                                            <div class="text-[9px] text-slate-400 mt-0.5">Submitted
-                                                {{ $fot->created_at?->diffForHumans() }}</div>
-                                        </div>
-                                    </td>
+                                        </td>
 
-                                    {{-- Consolidated Status --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
-                                        <div class="flex flex-col gap-1 min-w-[120px]">
+                                        {{-- Creator --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="font-bold text-slate-800">{{ $group->creators }}</div>
+                                        </td>
 
-                                            @if ($smart['stage'] === 'signing')
-                                                {{-- SIGNING PHASE --}}
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
-                                                    <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                    {{ $smart['label'] }} <span
-                                                        class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
-                                                </span>
-                                                <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 truncate max-w-[120px] px-1"
-                                                    title="Next: {{ $smart['current_actor'] }}">
-                                                    <i class='bx bx-right-arrow-alt'></i>
-                                                    {{ $smart['current_actor'] ?? 'Awaiting' }}
+                                        {{-- Dept/Branch --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <span class="inline-flex rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-black text-slate-600">
+                                                {{ $group->departments ?: 'Multiple' }}
+                                            </span>
+                                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                                {{ $group->branches }} ({{ $group->total_details }} employees)
+                                            </div>
+                                        </td>
+
+                                        {{-- Date --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex flex-col">
+                                                <div class="font-bold text-slate-700 tabular-nums">
+                                                    {{ $group->date ? date('D, d M Y', strtotime($group->date)) : '—' }}
                                                 </div>
-                                            @elseif($smart['stage'] === 'audit')
-                                                {{-- AUDIT PHASE --}}
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
-                                                    <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                    {{ $smart['label'] ?? 'Review' }} <span
-                                                        class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
-                                                </span>
-                                                <div
-                                                    class="text-[9px] font-black text-slate-300 uppercase tracking-tighter px-1">
-                                                    Awaiting Detail Review</div>
-                                            @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
-                                                {{-- RESULT PHASE --}}
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}"
-                                                    @if (isset($smart['reason'])) title="{{ $smart['reason'] }}" @endif>
-                                                    <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                    {{ $smart['label'] }}
-                                                </span>
+                                                <div class="text-[9px] text-slate-400 mt-0.5">Multiple forms</div>
+                                            </div>
+                                        </td>
 
-                                                {{-- Success Fraction (x/y approach) --}}
-                                                <div class="flex items-center text-[10px] font-black tabular-nums mt-0.5 px-1"
-                                                    title="{{ $fot->approved_count }} Approved, {{ $fot->rejected_count }} Rejected out of {{ $fot->details_count }}">
-                                                    <span class="text-emerald-500">{{ $fot->approved_count }}</span>
-                                                    <span class="text-slate-300 mx-0.5">/</span>
-                                                    <span class="text-slate-400">{{ $fot->details_count }}</span>
-                                                </div>
-
-                                                @if (isset($smart['reason']))
-                                                    <div class="text-[9px] text-rose-500 font-bold max-w-[140px] truncate px-1 mt-0.5"
-                                                        title="{{ $smart['reason'] }}">
-                                                        {{ $smart['reason'] }}
+                                        {{-- Consolidated Status --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
+                                            <div class="flex flex-col gap-1 min-w-[120px]">
+                                                @if ($group->is_mixed_status || $group->has_pending)
+                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit bg-amber-50 text-amber-700 border-amber-200">
+                                                        <i class="bx bx-time-five text-xs"></i>
+                                                        {{ $group->is_mixed_status ? 'Mixed Status' : 'Pending Review' }}
+                                                    </span>
+                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 truncate max-w-[120px]">
+                                                        <i class='bx bx-right-arrow-alt'></i>
+                                                        Review Required
+                                                    </div>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit bg-emerald-50 text-emerald-700 border-emerald-200">
+                                                        <i class="bx bx-check-double text-xs"></i>
+                                                        All Processed
+                                                    </span>
+                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 max-w-[140px]">
+                                                        @if($group->total_approved_details > 0)
+                                                            <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
+                                                        @endif
+                                                        @if($group->total_rejected_details > 0)
+                                                            <span class="text-rose-600 ml-1">{{ $group->total_rejected_details }}✗</span>
+                                                        @endif
+                                                        @if($group->total_pending_details > 0)
+                                                            <span class="text-amber-600 ml-1">{{ $group->total_pending_details }}○</span>
+                                                        @endif
+                                                        <i class='bx bx-right-arrow-alt ml-1'></i>
+                                                        View Details
                                                     </div>
                                                 @endif
-                                            @endif
-                                        </div>
-                                    </td>
+                                            </div>
+                                        </td>
 
-                                    {{-- Simple Actions --}}
-                                    <td class="{{ $rowPadding }} whitespace-nowrap text-right">
-                                        <div
-                                            class="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                            <a href="{{ route('overtime.detail', $fot->id) }}"
-                                                class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
-                                                Manage <i class='bx bx-right-arrow-alt text-lg'></i>
-                                            </a>
-                                            @can('delete', $fot)
-                                                <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
-                                                    class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
-                                                    <i class='bx bx-trash'></i>
-                                                </button>
-                                            @endcan
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-16 text-center">
-                                        <div
-                                            class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
-                                            <i class='bx bx-filter-alt text-3xl'></i>
-                                        </div>
-                                        <h3 class="text-sm font-black text-slate-700">No results match your filters</h3>
-                                        <p class="text-xs text-slate-400 mt-1">Try adjusting your date range or removing
-                                            some filters.</p>
-                                        <button wire:click="resetFilters"
-                                            class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-600 hover:bg-slate-200 transition-all">
-                                            <i class='bx bx-reset'></i> Clear All Filters
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforelse
+                                        {{-- Simple Actions --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap text-right">
+                                            <div class="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <a href="{{ route('overtime.consolidated', $group->date, array_filter(['dept' => $dept, 'branch' => $group->branches])) }}"
+                                                    class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
+                                                    View Group <i class='bx bx-right-arrow-alt text-lg'></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center">
+                                            <div class="flex flex-col items-center gap-3">
+                                                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50">
+                                                    <i class='bx bx-calendar-x text-3xl text-slate-300'></i>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-lg font-black text-slate-700 tracking-tight">No overtime groups found</h3>
+                                                    <p class="text-sm text-slate-500 mt-1">Try adjusting your filters or date range.</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            @else
+                                @forelse ($dataheader as $fot)
+                                    @php
+                                        $smart = OvertimePresenter::smartState($fot);
+                                        $steps = $fot->approvalRequest?->steps ?? collect();
+                                    @endphp
+                                    <tr wire:key="row-{{ $fot->id }}"
+                                        class="group hover:bg-indigo-50/20 transition-all duration-200"
+                                        :class="selectedIds.includes('{{ $fot->id }}') ? 'bg-indigo-50/40' : ''">
+                                        {{-- Selection --}}
+                                        @if ($canApprove)
+                                            <td class="px-6 py-4">
+                                                <input type="checkbox" x-model="selectedIds" value="{{ $fot->id }}"
+                                                    class="row-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                            </td>
+                                        @endif
+
+                                        {{-- Reference & Type --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex flex-col">
+                                                <span
+                                                    class="font-black text-slate-800 tabular-nums">#{{ $fot->id }}</span>
+                                                <span
+                                                    class="mt-1 inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[9px] font-black uppercase w-fit
+                                                {{ $fot->is_planned ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600 border border-rose-100/50' }}">
+                                                    {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        {{-- Creator --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="font-bold text-slate-800">{{ $fot->user?->name ?? 'Unknown' }}</div>
+                                        </td>
+
+                                        {{-- Dept/Branch --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <span
+                                                class="inline-flex rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-black text-slate-600">
+                                                {{ $fot->department?->name ?? '-' }}
+                                            </span>
+                                            <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                                {{ $fot->branch }} - {{ $fot->is_after_hour ? 'After-Hour' : 'Standard' }} ({{ $fot->details_count }})</div>
+                                        </td>
+
+                                        {{-- Date --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex flex-col">
+                                                <div class="font-bold text-slate-700 tabular-nums">
+                                                    {{ $fot->first_overtime_date ? date('D, d M Y', strtotime($fot->first_overtime_date)) : '—' }}
+                                                </div>
+                                                <div class="text-[9px] text-slate-400 mt-0.5">Submitted
+                                                    {{ $fot->created_at?->diffForHumans() }}</div>
+                                            </div>
+                                        </td>
+
+                                        {{-- Consolidated Status --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
+                                            <div class="flex flex-col gap-1 min-w-[120px]">
+
+                                                @if ($smart['stage'] === 'signing')
+                                                    {{-- SIGNING PHASE --}}
+                                                    <span
+                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
+                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                                        {{ $smart['label'] }} <span
+                                                            class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
+                                                    </span>
+                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 truncate max-w-[120px] px-1"
+                                                        title="Next: {{ $smart['current_actor'] }}">
+                                                        <i class='bx bx-right-arrow-alt'></i>
+                                                        {{ $smart['current_actor'] ?? 'Awaiting' }}
+                                                    </div>
+                                                @elseif($smart['stage'] === 'audit')
+                                                    {{-- AUDIT PHASE --}}
+                                                    <span
+                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
+                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                                        {{ $smart['label'] ?? 'Review' }} <span
+                                                            class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
+                                                    </span>
+                                                    <div
+                                                        class="text-[9px] font-black text-slate-300 uppercase tracking-tighter px-1">
+                                                        Awaiting Detail Review</div>
+                                                @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
+                                                    {{-- RESULT PHASE --}}
+                                                    <span
+                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}"
+                                                        @if (isset($smart['reason'])) title="{{ $smart['reason'] }}" @endif>
+                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                                        {{ $smart['label'] }}
+                                                    </span>
+
+                                                    {{-- Success Fraction (x/y approach) --}}
+                                                    <div class="flex items-center text-[10px] font-black tabular-nums mt-0.5 px-1"
+                                                        title="{{ $fot->approved_count }} Approved, {{ $fot->rejected_count }} Rejected out of {{ $fot->details_count }}">
+                                                        <span class="text-emerald-500">{{ $fot->approved_count }}</span>
+                                                        <span class="text-slate-300 mx-0.5">/</span>
+                                                        <span class="text-slate-400">{{ $fot->details_count }}</span>
+                                                    </div>
+
+                                                    @if (isset($smart['reason']))
+                                                        <div class="text-[9px] text-rose-500 font-bold max-w-[140px] truncate px-1 mt-0.5"
+                                                            title="{{ $smart['reason'] }}">
+                                                            {{ $smart['reason'] }}
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        </td>
+
+                                        {{-- Simple Actions --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap text-right">
+                                            <div
+                                                class="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <a href="{{ route('overtime.detail', $fot->id) }}"
+                                                    class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
+                                                    Manage <i class='bx bx-right-arrow-alt text-lg'></i>
+                                                </a>
+                                                @can('delete', $fot)
+                                                    <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
+                                                        class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
+                                                        <i class='bx bx-trash'></i>
+                                                    </button>
+                                                @endcan
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-16 text-center">
+                                            <div
+                                                class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
+                                                <i class='bx bx-filter-alt text-3xl'></i>
+                                            </div>
+                                            <h3 class="text-sm font-black text-slate-700">No results match your filters</h3>
+                                            <p class="text-xs text-slate-400 mt-1">Try adjusting your date range or removing
+                                                some filters.</p>
+                                            <button wire:click="resetFilters"
+                                                class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-600 hover:bg-slate-200 transition-all">
+                                                <i class='bx bx-reset'></i> Clear All Filters
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            @endif
                         </tbody>
                     </table>
 

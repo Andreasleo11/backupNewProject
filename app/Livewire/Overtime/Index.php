@@ -7,8 +7,8 @@ use App\Application\Overtime\Queries\OvertimeQueryBuilder;
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -52,6 +52,9 @@ class Index extends Component
 
     #[Url(as: 'range')]
     public ?string $range = null; // 'today'|'7d'|'30d'|'mtd'|null
+
+    #[Url(as: 'group_date')]
+    public bool $groupByDate = false;
 
     public array $departments = [];
 
@@ -97,6 +100,12 @@ class Index extends Component
     public function setInfoFilter(string $status): void
     {
         $this->infoStatus = $status;
+        $this->resetPage();
+    }
+
+    public function toggleGroupByDate(): void
+    {
+        $this->groupByDate = ! $this->groupByDate;
         $this->resetPage();
     }
 
@@ -147,14 +156,15 @@ class Index extends Component
             'endDate' => ['nullable', 'date'],
             'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval'])],
             'perPage' => ['integer', Rule::in([10, 25, 50])],
-            'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'status', 'workflow_status'])],
+            'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'workflow_status'])],
             'sortDirection' => ['string', Rule::in(['asc', 'desc'])],
+            'groupByDate' => ['boolean'],
         ];
     }
 
     public function updated($name, $value): void
     {
-        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned'])) {
+        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned', 'groupByDate'])) {
             $this->resetPage();
             $this->selectedIds = [];
         }
@@ -485,17 +495,63 @@ class Index extends Component
         $builder = new OvertimeQueryBuilder;
         $query = $builder->build(Auth::user(), $this->getFilterParams());
 
-        // Sorting
-        $query->reorder();
-        if ($this->sortField === 'id' && $this->sortDirection === 'desc' && Auth::user()->hasRole('verificator')) {
-            $query->orderBy('first_overtime_date', 'asc');
-        } else {
-            // Fix workflow_status sort if it relies on a mutator, mapping it to status
-            $sortColumn = $this->sortField === 'workflow_status' ? 'status' : $this->sortField;
-            $query->orderBy($sortColumn, $this->sortDirection);
-        }
+        if ($this->groupByDate) {
+            // Group by OT date - get all records first, then group
+            $allHeaders = $query->get();
 
-        $dataheader = $query->paginate($this->perPage);
+            $groupedData = $allHeaders->groupBy(function ($header) {
+                return $header->first_overtime_date;
+            })->map(function ($headers, $date) {
+                $firstHeader = $headers->first();
+                return (object) [
+                    'date' => $date,
+                    'headers' => $headers,
+                    'total_forms' => $headers->count(),
+                    'total_details' => $headers->sum('details_count'),
+                    'departments' => $headers->pluck('department.name')->unique()->filter()->implode(', '),
+                    'branches' => $headers->pluck('branch')->unique()->implode(', '),
+                    'creators' => $headers->pluck('user.name')->unique()->implode(', '),
+
+                    'statuses' => $headers->pluck('workflow_status')->unique(),
+                    'is_mixed_status' => $headers->pluck('workflow_status')->unique()->count() > 1,
+                    'has_pending' => $headers->sum('pending_count') > 0,
+                    'total_pending_details' => $headers->sum('pending_count'),
+                    'total_approved_details' => $headers->sum('approved_count'),
+                    'total_rejected_details' => $headers->sum('rejected_count'),
+                    'first_created_at' => $headers->min('created_at'),
+                ];
+            });
+
+            // Apply sorting to grouped data
+            $sortColumn = $this->sortField === 'workflow_status' ? 'status' : $this->sortField;
+            if ($sortColumn === 'first_overtime_date') {
+                $groupedData = $this->sortDirection === 'asc' ? $groupedData->sortBy('date') : $groupedData->sortByDesc('date');
+            } elseif ($sortColumn === 'id') {
+                $groupedData = $this->sortDirection === 'asc' ? $groupedData->sortBy('first_created_at') : $groupedData->sortByDesc('first_created_at');
+            }
+
+            // Manual pagination for grouped data
+            $paginatedGroups = collect($groupedData->values())->forPage($this->getPage(), $this->perPage);
+
+            $dataheader = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedGroups,
+                $groupedData->count(),
+                $this->perPage,
+                $this->getPage(),
+                ['path' => request()->url(), 'pageName' => 'page']
+            );
+        } else {
+            // Sorting
+            $query->reorder();
+            if ($this->sortField === 'id' && $this->sortDirection === 'desc' && Auth::user()->hasRole('verificator')) {
+                $query->orderBy('first_overtime_date', 'asc');
+            } else {
+                $sortColumn = $this->sortField;
+                $query->orderBy($sortColumn, $this->sortDirection);
+            }
+
+            $dataheader = $query->paginate($this->perPage);
+        }
 
         return view('livewire.overtime.index', [
             'dataheader' => $dataheader,
@@ -505,6 +561,7 @@ class Index extends Component
             'isPrivileged' => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
             'canApprove' => Auth::user()->can('overtime.approve'),
+            'groupByDate' => $this->groupByDate,
         ]);
     }
 }

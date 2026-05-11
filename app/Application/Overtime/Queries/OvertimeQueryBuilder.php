@@ -25,7 +25,6 @@ class OvertimeQueryBuilder
                 'header_form_overtime.user_id',
                 'header_form_overtime.dept_id',
                 'header_form_overtime.branch',
-                'header_form_overtime.status',
                 'header_form_overtime.is_push',
                 'header_form_overtime.is_planned',
                 'header_form_overtime.is_after_hour',

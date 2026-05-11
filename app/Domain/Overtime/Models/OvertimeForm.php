@@ -19,7 +19,6 @@ class OvertimeForm extends Model implements Approvable
         'user_id',
         'dept_id',
         'branch',
-        'status',
         'is_design',
         'is_export',
         'description',
