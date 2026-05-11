@@ -182,8 +182,11 @@ class OvertimePresenter
 
         // Add signing metadata
         $steps = $fot->approvalRequest?->steps ?? collect();
+        $currentStep = $steps->where('sequence', $fot->approvalRequest?->current_step)->first();
+
         $meta['total_steps'] = $steps->count();
         $meta['signed_steps'] = $steps->filter(fn ($s) => strtolower($s->status ?? '') === 'approved')->count();
+        $meta['current_role'] = $currentStep?->approver_snapshot_role_slug ?? 'approver';
         $meta['current_actor'] = $fot->workflow_step;
 
         return $meta;
