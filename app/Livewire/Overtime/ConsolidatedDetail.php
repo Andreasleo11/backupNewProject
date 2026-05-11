@@ -25,8 +25,34 @@ class ConsolidatedDetail extends Component
 
     public function render()
     {
+        $user = Auth::user();
         $builder = new OvertimeQueryBuilder;
-        $query = $builder->build(Auth::user());
+
+        // Determine default filter based on user permissions and pending approvals
+        $defaultFilter = [];
+
+        // Check if user has pending approvals (they are in current approval request steps)
+        $hasPendingApprovals = $builder->build($user, ['infoStatus' => 'my_approval'])->count() > 0;
+
+        if ($hasPendingApprovals) {
+            // User has pending approvals, show their approvals by default
+            $defaultFilter = ['infoStatus' => 'my_approval'];
+        } elseif ($user->can('overtime.review')) {
+            // User has review permission, we need to apply custom filtering
+            // Don't use default filter, we'll apply custom logic below
+        } else {
+            // Default fallback
+            $defaultFilter = ['infoStatus' => 'my_approval'];
+        }
+
+        $query = $builder->build($user, $defaultFilter);
+
+        // Apply custom filtering for review users
+        if (!$hasPendingApprovals && $user->can('overtime.review')) {
+            $query->workflowApproved()
+                  ->whereHas('details', fn ($q) => $q->whereNull('status'))
+                  ->where('is_push', '!=', 1);
+        }
 
         // Filter by the specific date - we need forms where the earliest start_date matches
         $query->whereRaw('
