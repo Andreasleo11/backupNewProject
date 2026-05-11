@@ -419,7 +419,7 @@
                             @if ($groupByDate)
                                 @forelse ($dataheader as $group)
                                     @php
-                                        $smart = OvertimePresenter::smartState($group->headers->first());
+                                        $smart = OvertimePresenter::consolidatedState($group->headers);
                                         $steps = $group->headers->first()->approvalRequest?->steps ?? collect();
                                     @endphp
                                     <tr wire:key="group-row-{{ $group->date }}"
