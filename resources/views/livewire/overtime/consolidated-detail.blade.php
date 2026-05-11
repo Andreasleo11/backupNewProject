@@ -6,7 +6,18 @@
     <!-- Top Action Bar -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-3">
-            <a href="{{ route('overtime.index') }}"
+            @php
+                $backFilters = array_filter([
+                    'dept' => $dept,
+                    'branch' => $branch,
+                    'infoStatus' => request('infoStatus'),
+                    'startDate' => request('startDate'),
+                    'endDate' => request('endDate'),
+                    'search' => request('search'),
+                ]);
+                $backUrl = route('overtime.index') . ($backFilters ? '?' . http_build_query($backFilters) : '');
+            @endphp
+            <a href="{{ $backUrl }}"
                 class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm border border-slate-200/60 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all">
                 <i class='bx bx-arrow-back text-xl'></i>
             </a>
