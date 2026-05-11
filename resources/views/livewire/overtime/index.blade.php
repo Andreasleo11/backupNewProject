@@ -157,41 +157,48 @@
         @endif
 
         {{-- ================================================================
-         SECTION B: ACTION REQUIRED SURFACING
+         SECTION B: UNIFIED ACTION CENTER
     ================================================================ --}}
+        @php
+            $urgentActions = [];
+            if ($stats['my_approval_count'] > 0 && $infoStatus !== 'my_approval') {
+                $urgentActions[] = [
+                    'count' => $stats['my_approval_count'],
+                    'label' => 'requiring your signature',
+                    'filter' => 'my_approval',
+                    'color' => 'indigo',
+                    'icon' => 'bx-edit',
+                    'button' => 'Review Now'
+                ];
+            }
+            if ($isDetailReviewer && $stats['pending'] > 0 && $infoStatus !== 'pending') {
+                $urgentActions[] = [
+                    'count' => $stats['pending'],
+                    'label' => 'awaiting detail verification',
+                    'filter' => 'pending',
+                    'color' => 'amber',
+                    'icon' => 'bx-bell-ring',
+                    'button' => 'Verify Now'
+                ];
+            }
+        @endphp
 
-        {{-- 1. Signature Action Strip (For ANY approver) --}}
-        @if ($stats['my_approval_count'] > 0 && $infoStatus !== 'my_approval')
-            <div
-                class="flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 shadow-md shadow-indigo-100/50">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                    <i class='bx bx-edit text-xl'></i>
-                </div>
-                <div class="flex-1 text-sm font-bold text-indigo-900 tracking-tight">
-                    You have <strong>{{ $stats['my_approval_count'] }}</strong> overtime
-                    {{ Str::plural('request', $stats['my_approval_count']) }} requiring your signature.
-                </div>
-                <button wire:click="setInfoFilter('my_approval')"
-                    class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-black text-white hover:bg-indigo-700 hover:-translate-y-0.5 transition-all shadow-md shadow-indigo-500/20 active:translate-y-0">
-                    Review Now
-                </button>
-            </div>
-        @endif
-
-        {{-- 2. Detail Review Action Strip (Verificator only) --}}
-        @if ($isDetailReviewer && $stats['pending'] > 0 && $infoStatus !== 'pending')
-            <div class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mt-2">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                    <i class='bx bx-bell-ring text-xl'></i>
-                </div>
-                <div class="flex-1 text-xs font-bold text-amber-800">
-                    <strong>{{ $stats['pending'] }} {{ Str::plural('form', $stats['pending']) }}</strong> are awaiting
-                    detail verification.
-                </div>
-                <button wire:click="setInfoFilter('pending')"
-                    class="rounded-lg bg-amber-500 px-3 py-1.5 text-[10px] font-black text-white hover:bg-amber-600 transition-colors">
-                    Verify Now
-                </button>
+        @if(count($urgentActions) > 0)
+            <div class="space-y-2">
+                @foreach($urgentActions as $action)
+                    <div class="flex items-center gap-3 rounded-xl border border-{{ $action['color'] }}-200 bg-{{ $action['color'] }}-50 px-4 py-3 shadow-md shadow-{{ $action['color'] }}-100/50">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-{{ $action['color'] }}-100 text-{{ $action['color'] }}-600">
+                            <i class='bx {{ $action["icon"] }} text-xl'></i>
+                        </div>
+                        <div class="flex-1 text-sm font-bold text-{{ $action['color'] }}-900 tracking-tight">
+                            <strong>{{ $action['count'] }}</strong> {{ $action['label'] }}
+                        </div>
+                        <button wire:click="setInfoFilter('{{ $action['filter'] }}')"
+                            class="rounded-lg bg-{{ $action['color'] }}-600 px-4 py-2 text-xs font-black text-white hover:bg-{{ $action['color'] }}-700 hover:-translate-y-0.5 transition-all shadow-md shadow-{{ $action['color'] }}-500/20 active:translate-y-0">
+                            {{ $action['button'] }}
+                        </button>
+                    </div>
+                @endforeach
             </div>
         @endif
 
@@ -229,46 +236,47 @@
                 </div>
 
                 <div class="flex items-center gap-2 px-1">
-                    <button @click="filtersOpen = !filtersOpen"
-                        class="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-black transition-all border
-                        {{ $startDate || $endDate || $dept || $infoStatus ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
-                        <i class='bx bx-slider-alt text-base'></i>
-                        <span>Filters</span>
-                        @php
-                            $activeCount = (int) !!$startDate + (int) !!$endDate + (int) !!$dept + (int) !!$infoStatus;
-                        @endphp
-                        @if ($activeCount > 0)
-                            <span
-                                class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">{{ $activeCount }}</span>
-                        @endif
-                    </button>
+                    {{-- Quick Actions --}}
+                    <div class="flex items-center gap-1">
+                        <button type="button" wire:click="toggleGroupByDate"
+                            class="h-10 px-3 flex items-center justify-center rounded-xl border transition-all text-xs font-black
+                            {{ $groupByDate ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}"
+                            title="{{ $groupByDate ? 'Show individual forms' : 'Group by date' }}">
+                            <i class='bx bx-group text-base'></i>
+                            <span class="hidden sm:inline ml-1">{{ $groupByDate ? 'Grouped' : 'Group' }}</span>
+                        </button>
 
-                    {{-- Action Menu --}}
+                        @if ($isPrivileged)
+                            <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
+                                class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all"
+                                title="Export CSV">
+                                <i class='bx bx-export text-xl'></i>
+                            </button>
+                        @endif
+                    </div>
+
+                    {{-- Separator --}}
                     <div class="h-8 w-px bg-slate-200 mx-1"></div>
 
-                    <select
-                        class="h-10 rounded-xl border-slate-200 bg-white text-xs font-black text-slate-700 focus:ring-indigo-500"
-                        wire:model.live="perPage">
+                    {{-- Controls --}}
+                    <select class="h-10 rounded-xl border-slate-200 bg-white text-xs font-black text-slate-700 focus:ring-indigo-500" wire:model.live="perPage">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                     </select>
 
-                    <button type="button" wire:click="toggleGroupByDate"
-                        class="h-10 px-3 flex items-center justify-center rounded-xl border transition-all text-xs font-black
-                        {{ $groupByDate ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}"
-                        title="{{ $groupByDate ? 'Disable grouping by date' : 'Enable grouping by date' }}">
-                        <i class='bx bx-group text-base'></i>
-                        <span class="ml-1">{{ $groupByDate ? 'Grouped' : 'Group by Date' }}</span>
+                    <button @click="filtersOpen = !filtersOpen"
+                        class="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-black transition-all border
+                        {{ $startDate || $endDate || $dept || $infoStatus ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
+                        <i class='bx bx-slider-alt text-base'></i>
+                        <span class="hidden sm:inline">Filters</span>
+                        @php
+                            $activeCount = (int) !!$startDate + (int) !!$endDate + (int) !!$dept + (int) !!$infoStatus;
+                        @endphp
+                        @if ($activeCount > 0)
+                            <span class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[10px] font-black">{{ $activeCount }}</span>
+                        @endif
                     </button>
-
-                    @if ($isPrivileged)
-                        <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
-                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all"
-                            title="Export CSV">
-                            <i class='bx bx-export text-xl'></i>
-                        </button>
-                    @endif
                 </div>
             </div>
 
@@ -467,27 +475,23 @@
                                             </div>
                                         </td>
 
-                                        {{-- Consolidated Status --}}
-                                        <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
-                                            <div class="flex flex-col gap-1 min-w-[120px]">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $group->consolidated_status['classes'] }}">
+                                        {{-- Status --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="relative group">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $group->consolidated_status['classes'] }}">
                                                     <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
                                                     {{ $group->consolidated_status['label'] }}
                                                 </span>
-                                                <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 max-w-[140px]">
+                                                {{-- Hover tooltip with details --}}
+                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-lg">
                                                     @if($group->consolidated_status['stage'] === 'processed' || $group->consolidated_status['stage'] === 'finalized')
-                                                        @if($group->total_approved_details > 0)
-                                                            <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
-                                                        @endif
-                                                        @if($group->total_rejected_details > 0)
-                                                            <span class="text-rose-600 ml-1">{{ $group->total_rejected_details }}✗</span>
-                                                        @endif
-                                                        @if($group->total_pending_details > 0)
-                                                            <span class="text-amber-600 ml-1">{{ $group->total_pending_details }}○</span>
-                                                        @endif
+                                                        @if($group->total_approved_details > 0)<span class="text-emerald-300">{{ $group->total_approved_details }} approved</span>@endif
+                                                        @if($group->total_rejected_details > 0)<span class="text-rose-300 ml-2">{{ $group->total_rejected_details }} rejected</span>@endif
+                                                        @if($group->total_pending_details > 0)<span class="text-amber-300 ml-2">{{ $group->total_pending_details }} pending</span>@endif
+                                                    @else
+                                                        {{ $group->consolidated_status['description'] }}
                                                     @endif
-                                                    <i class='bx bx-right-arrow-alt ml-1'></i>
-                                                    {{ $group->consolidated_status['description'] }}
+                                                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -573,58 +577,35 @@
                                             </div>
                                         </td>
 
-                                        {{-- Consolidated Status --}}
-                                        <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
-                                            <div class="flex flex-col gap-1 min-w-[120px]">
-
-                                                @if ($smart['stage'] === 'signing')
-                                                    {{-- SIGNING PHASE --}}
-                                                    <span
-                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
-                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                        {{ $smart['label'] }} <span
-                                                            class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
-                                                    </span>
-                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 truncate max-w-[120px] px-1"
-                                                        title="Next: {{ $smart['current_actor'] }}">
-                                                        <i class='bx bx-right-arrow-alt'></i>
-                                                        {{ $smart['current_actor'] ?? 'Awaiting' }}
-                                                    </div>
-                                                @elseif($smart['stage'] === 'audit')
-                                                    {{-- AUDIT PHASE --}}
-                                                    <span
-                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}">
-                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                        {{ $smart['label'] ?? 'Review' }} <span
-                                                            class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
-                                                    </span>
-                                                    <div
-                                                        class="text-[9px] font-black text-slate-300 uppercase tracking-tighter px-1">
-                                                        Awaiting Detail Review</div>
-                                                @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
-                                                    {{-- RESULT PHASE --}}
-                                                    <span
-                                                        class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $smart['classes'] }}"
-                                                        @if (isset($smart['reason'])) title="{{ $smart['reason'] }}" @endif>
-                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                        {{ $smart['label'] }}
-                                                    </span>
-
-                                                    {{-- Success Fraction (x/y approach) --}}
-                                                    <div class="flex items-center text-[10px] font-black tabular-nums mt-0.5 px-1"
-                                                        title="{{ $fot->approved_count }} Approved, {{ $fot->rejected_count }} Rejected out of {{ $fot->details_count }}">
-                                                        <span class="text-emerald-500">{{ $fot->approved_count }}</span>
-                                                        <span class="text-slate-300 mx-0.5">/</span>
-                                                        <span class="text-slate-400">{{ $fot->details_count }}</span>
-                                                    </div>
-
-                                                    @if (isset($smart['reason']))
-                                                        <div class="text-[9px] text-rose-500 font-bold max-w-[140px] truncate px-1 mt-0.5"
-                                                            title="{{ $smart['reason'] }}">
-                                                            {{ $smart['reason'] }}
-                                                        </div>
+                                        {{-- Status --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="relative group">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $smart['classes'] }}">
+                                                    <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                                    {{ $smart['label'] }}
+                                                    @if ($smart['stage'] === 'signing' && isset($smart['signed_steps']))
+                                                        <span class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
+                                                    @elseif($smart['stage'] === 'audit')
+                                                        <span class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
                                                     @endif
-                                                @endif
+                                                </span>
+
+                                                {{-- Hover tooltip with details --}}
+                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-lg">
+                                                    @if ($smart['stage'] === 'signing')
+                                                        Next: {{ $smart['current_actor'] ?? 'Awaiting' }}
+                                                    @elseif($smart['stage'] === 'audit')
+                                                        Awaiting Detail Review
+                                                    @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
+                                                        @if($fot->approved_count > 0)<span class="text-emerald-300">{{ $fot->approved_count }} approved</span>@endif
+                                                        @if($fot->rejected_count > 0)<span class="text-rose-300 ml-2">{{ $fot->rejected_count }} rejected</span>@endif
+                                                        @if($fot->pending_count > 0)<span class="text-amber-300 ml-2">{{ $fot->pending_count }} pending</span>@endif
+                                                        @if (isset($smart['reason']))<div class="mt-1 text-rose-300">{{ $smart['reason'] }}</div>@endif
+                                                    @else
+                                                        {{ $smart['label'] }}
+                                                    @endif
+                                                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                                                </div>
                                             </div>
                                         </td>
 
