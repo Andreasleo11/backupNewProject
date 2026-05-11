@@ -419,7 +419,6 @@
                                     class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1.5">Status {!! sortIcon('workflow_status', $sortField, $sortDirection) !!}</div>
                                 </th>
-                                <th class="{{ $rowPadding }} whitespace-nowrap text-slate-400">Details</th>
                                 <th class="{{ $rowPadding }} whitespace-nowrap text-right text-slate-400 pr-6">Action
                                 </th>
                             </tr>
@@ -479,36 +478,31 @@
                                         {{-- Status --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap">
                                             <div class="relative group">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $group->consolidated_status['classes'] }}">
-                                                    <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
-                                                    {{ $group->consolidated_status['label'] }}
-                                                </span>
-                                                {{-- Hover tooltip with details --}}
-                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-lg">
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $group->consolidated_status['classes'] }}">
+                                                        <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
+                                                        {{ $group->consolidated_status['label'] }}
+                                                    </span>
                                                     @if($group->consolidated_status['stage'] === 'processed' || $group->consolidated_status['stage'] === 'finalized')
-                                                        @if($group->total_approved_details > 0)<span class="text-emerald-300">{{ $group->total_approved_details }} approved</span>@endif
-                                                        @if($group->total_rejected_details > 0)<span class="text-rose-300 ml-2">{{ $group->total_rejected_details }} rejected</span>@endif
-                                                        @if($group->total_pending_details > 0)<span class="text-amber-300 ml-2">{{ $group->total_pending_details }} pending</span>@endif
-                                                    @else
-                                                        {{ $group->consolidated_status['description'] }}
+                                                        <div class="flex items-center gap-1 text-[9px] font-bold">
+                                                            @if($group->total_approved_details > 0)
+                                                                <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
+                                                            @endif
+                                                            @if($group->total_rejected_details > 0)
+                                                                <span class="text-rose-600">{{ $group->total_rejected_details }}✗</span>
+                                                            @endif
+                                                            @if($group->total_pending_details > 0)
+                                                                <span class="text-amber-600">{{ $group->total_pending_details }}○</span>
+                                                            @endif
+                                                        </div>
                                                     @endif
+                                                </div>
+
+                                                {{-- Hover tooltip with additional details --}}
+                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-lg">
+                                                    {{ $group->consolidated_status['description'] }}
                                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
                                                 </div>
-                                            </div>
-                                        </td>
-
-                                        {{-- Details --}}
-                                        <td class="{{ $rowPadding }} whitespace-nowrap">
-                                            <div class="flex items-center gap-1 text-[10px] font-bold">
-                                                @if($group->total_approved_details > 0)
-                                                    <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
-                                                @endif
-                                                @if($group->total_rejected_details > 0)
-                                                    <span class="text-rose-600">{{ $group->total_rejected_details }}✗</span>
-                                                @endif
-                                                @if($group->total_pending_details > 0)
-                                                    <span class="text-amber-600">{{ $group->total_pending_details }}○</span>
-                                                @endif
                                             </div>
                                         </td>
 
@@ -596,47 +590,45 @@
                                         {{-- Status --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap">
                                             <div class="relative group">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $smart['classes'] }}">
-                                                    <i class="bx {{ $smart['icon'] }} text-xs"></i>
-                                                    {{ $smart['label'] }}
-                                                    @if ($smart['stage'] === 'signing' && isset($smart['signed_steps']))
-                                                        <span class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
-                                                    @elseif($smart['stage'] === 'audit')
-                                                        <span class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
-                                                    @endif
-                                                </span>
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $smart['classes'] }}">
+                                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                                        {{ $smart['label'] }}
+                                                        @if ($smart['stage'] === 'signing' && isset($smart['signed_steps']))
+                                                            <span class="opacity-50 ml-1">{{ $smart['signed_steps'] }}/{{ $smart['total_steps'] }}</span>
+                                                        @elseif($smart['stage'] === 'audit')
+                                                            <span class="opacity-50 ml-1">{{ $fot->approved_count + $fot->rejected_count }}/{{ $fot->details_count }}</span>
+                                                        @endif
+                                                    </span>
 
-                                                {{-- Hover tooltip with details --}}
+                                                    @if($smart['stage'] === 'sync' || $smart['stage'] === 'rejected' || $smart['stage'] === 'processed')
+                                                        <div class="flex items-center gap-1 text-[9px] font-bold">
+                                                            @if($fot->approved_count > 0)
+                                                                <span class="text-emerald-600">{{ $fot->approved_count }}✓</span>
+                                                            @endif
+                                                            @if($fot->rejected_count > 0)
+                                                                <span class="text-rose-600">{{ $fot->rejected_count }}✗</span>
+                                                            @endif
+                                                            @if($fot->pending_count > 0)
+                                                                <span class="text-amber-600">{{ $fot->pending_count }}○</span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Hover tooltip with additional details --}}
                                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-lg">
                                                     @if ($smart['stage'] === 'signing')
                                                         Next: {{ $smart['current_actor'] ?? 'Awaiting' }}
                                                     @elseif($smart['stage'] === 'audit')
                                                         Awaiting Detail Review
-                                                    @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
-                                                        @if($fot->approved_count > 0)<span class="text-emerald-300">{{ $fot->approved_count }} approved</span>@endif
-                                                        @if($fot->rejected_count > 0)<span class="text-rose-300 ml-2">{{ $fot->rejected_count }} rejected</span>@endif
-                                                        @if($fot->pending_count > 0)<span class="text-amber-300 ml-2">{{ $fot->pending_count }} pending</span>@endif
-                                                        @if (isset($smart['reason']))<div class="mt-1 text-rose-300">{{ $smart['reason'] }}</div>@endif
+                                                    @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected' || $smart['stage'] === 'processed')
+                                                        @if (isset($smart['reason']))<div class="text-rose-300">{{ $smart['reason'] }}</div>@endif
                                                     @else
                                                         {{ $smart['label'] }}
                                                     @endif
                                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
                                                 </div>
-                                            </div>
-                                        </td>
-
-                                        {{-- Details --}}
-                                        <td class="{{ $rowPadding }} whitespace-nowrap">
-                                            <div class="flex items-center gap-1 text-[10px] font-bold">
-                                                @if($fot->approved_count > 0)
-                                                    <span class="text-emerald-600">{{ $fot->approved_count }}✓</span>
-                                                @endif
-                                                @if($fot->rejected_count > 0)
-                                                    <span class="text-rose-600">{{ $fot->rejected_count }}✗</span>
-                                                @endif
-                                                @if($fot->pending_count > 0)
-                                                    <span class="text-amber-600">{{ $fot->pending_count }}○</span>
-                                                @endif
                                             </div>
                                         </td>
 
@@ -659,7 +651,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $canApprove ? 8 : 7 }}" class="px-6 py-16 text-center">
+                                        <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-16 text-center">
                                             <div
                                                 class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
                                                 <i class='bx bx-filter-alt text-3xl'></i>
@@ -679,7 +671,7 @@
                     </table>
 
                     {{-- Skeleton Loader --}}
-                    @php $cols = $canApprove ? 8 : 7; @endphp
+                    @php $cols = $canApprove ? 7 : 6; @endphp
                     <table class="min-w-full" wire:loading wire:key="tbl-skeleton"
                         wire:target="resetFilters,setRange,sortBy,perPage,search,dept,startDate,endDate,infoStatus,clearFilter,gotoPage,nextPage,previousPage">
                         <tbody class="divide-y divide-slate-100/60">
