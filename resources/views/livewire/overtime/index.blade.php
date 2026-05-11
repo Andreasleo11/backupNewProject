@@ -470,21 +470,12 @@
                                         {{-- Consolidated Status --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap border-r border-slate-50">
                                             <div class="flex flex-col gap-1 min-w-[120px]">
-                                                @if ($group->is_mixed_status || $group->has_pending)
-                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit bg-amber-50 text-amber-700 border-amber-200">
-                                                        <i class="bx bx-time-five text-xs"></i>
-                                                        {{ $group->is_mixed_status ? 'Mixed Status' : 'Pending Review' }}
-                                                    </span>
-                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 truncate max-w-[120px]">
-                                                        <i class='bx bx-right-arrow-alt'></i>
-                                                        Review Required
-                                                    </div>
-                                                @else
-                                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit bg-emerald-50 text-emerald-700 border-emerald-200">
-                                                        <i class="bx bx-check-double text-xs"></i>
-                                                        All Processed
-                                                    </span>
-                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 max-w-[140px]">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide w-fit {{ $group->consolidated_status['classes'] }}">
+                                                    <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
+                                                    {{ $group->consolidated_status['label'] }}
+                                                </span>
+                                                <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 max-w-[140px]">
+                                                    @if($group->consolidated_status['stage'] === 'processed' || $group->consolidated_status['stage'] === 'finalized')
                                                         @if($group->total_approved_details > 0)
                                                             <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
                                                         @endif
@@ -494,10 +485,10 @@
                                                         @if($group->total_pending_details > 0)
                                                             <span class="text-amber-600 ml-1">{{ $group->total_pending_details }}○</span>
                                                         @endif
-                                                        <i class='bx bx-right-arrow-alt ml-1'></i>
-                                                        View Details
-                                                    </div>
-                                                @endif
+                                                    @endif
+                                                    <i class='bx bx-right-arrow-alt ml-1'></i>
+                                                    {{ $group->consolidated_status['description'] }}
+                                                </div>
                                             </div>
                                         </td>
 

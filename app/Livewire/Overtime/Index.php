@@ -499,28 +499,30 @@ class Index extends Component
             // Group by OT date - get all records first, then group
             $allHeaders = $query->get();
 
-            $groupedData = $allHeaders->groupBy(function ($header) {
-                return $header->first_overtime_date;
-            })->map(function ($headers, $date) {
-                $firstHeader = $headers->first();
-                return (object) [
-                    'date' => $date,
-                    'headers' => $headers,
-                    'total_forms' => $headers->count(),
-                    'total_details' => $headers->sum('details_count'),
-                    'departments' => $headers->pluck('department.name')->unique()->filter()->implode(', '),
-                    'branches' => $headers->pluck('branch')->unique()->implode(', '),
-                    'creators' => $headers->pluck('user.name')->unique()->implode(', '),
+                    $groupedData = $allHeaders->groupBy(function ($header) {
+                        return $header->first_overtime_date;
+                    })->map(function ($headers, $date) {
+                        $firstHeader = $headers->first();
 
-                    'statuses' => $headers->pluck('workflow_status')->unique(),
-                    'is_mixed_status' => $headers->pluck('workflow_status')->unique()->count() > 1,
-                    'has_pending' => $headers->sum('pending_count') > 0,
-                    'total_pending_details' => $headers->sum('pending_count'),
-                    'total_approved_details' => $headers->sum('approved_count'),
-                    'total_rejected_details' => $headers->sum('rejected_count'),
-                    'first_created_at' => $headers->min('created_at'),
-                ];
-            });
+                        // Get consolidated status using OvertimePresenter
+                        $consolidatedStatus = \App\Application\Overtime\Presenters\OvertimePresenter::consolidatedState($headers);
+
+                        return (object) [
+                            'date' => $date,
+                            'headers' => $headers,
+                            'total_forms' => $headers->count(),
+                            'total_details' => $headers->sum('details_count'),
+                            'departments' => $headers->pluck('department.name')->unique()->filter()->implode(', '),
+                            'branches' => $headers->pluck('branch')->unique()->implode(', '),
+                            'creators' => $headers->pluck('user.name')->unique()->implode(', '),
+
+                            'consolidated_status' => $consolidatedStatus,
+                            'total_pending_details' => $headers->sum('pending_count'),
+                            'total_approved_details' => $headers->sum('approved_count'),
+                            'total_rejected_details' => $headers->sum('rejected_count'),
+                            'first_created_at' => $headers->min('created_at'),
+                        ];
+                    });
 
             // Apply sorting to grouped data
             $sortColumn = $this->sortField === 'workflow_status' ? 'status' : $this->sortField;

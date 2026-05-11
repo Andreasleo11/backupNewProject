@@ -141,4 +141,102 @@ class OvertimePresenter
 
         return $meta;
     }
+
+    /**
+     * Get consolidated status for a group/collection of overtime forms
+     * Similar to smartState but for grouped views
+     */
+    public static function consolidatedState($forms): array
+    {
+        $forms = collect($forms);
+
+        // Get unique workflow statuses
+        $statuses = $forms->pluck('workflow_status')->map('strtoupper')->unique();
+        $hasMixedStatuses = $statuses->count() > 1;
+
+        // Check for pending details across all forms
+        $hasPendingDetails = $forms->sum('pending_count') > 0;
+
+        // Get sync/review status
+        $syncStatuses = $forms->map(function ($form) {
+            $review = self::reviewMeta($form);
+            return $review['label'];
+        })->unique();
+
+        // Priority 1: Mixed statuses
+        if ($hasMixedStatuses) {
+            return [
+                'label' => 'Mixed Status',
+                'classes' => 'bg-amber-100 text-amber-800 border-amber-200',
+                'icon' => 'bx-time-five',
+                'stage' => 'mixed',
+                'description' => 'Review Required',
+            ];
+        }
+
+        // Get the common status
+        $commonStatus = $statuses->first();
+
+        // Priority 2: If any sync errors/failures
+        if ($syncStatuses->contains('Sync Errors') || $syncStatuses->contains('Sync Failed') || $syncStatuses->contains('Partial Sync')) {
+            $worstSync = $syncStatuses->filter(fn ($s) => str_contains($s, 'Sync'))->first();
+            return [
+                'label' => $worstSync,
+                'classes' => 'bg-rose-100 text-rose-800 border-rose-200',
+                'icon' => 'bx-error-alt',
+                'stage' => 'sync',
+                'description' => 'Sync Issues',
+            ];
+        }
+
+        // Priority 3: If fully synced
+        if ($syncStatuses->contains('Synced Successfully')) {
+            return [
+                'label' => 'All Finalized',
+                'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                'icon' => 'bxs-check-shield',
+                'stage' => 'finalized',
+                'description' => 'View Details',
+            ];
+        }
+
+        // Priority 4: Approved but needs audit/review
+        if ($commonStatus === 'APPROVED') {
+            if ($hasPendingDetails) {
+                return [
+                    'label' => 'Pending Review',
+                    'classes' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                    'icon' => 'bx-time-five',
+                    'stage' => 'audit',
+                    'description' => 'Review Required',
+                ];
+            } else {
+                return [
+                    'label' => 'All Processed',
+                    'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    'icon' => 'bx-check-double',
+                    'stage' => 'processed',
+                    'description' => 'View Details',
+                ];
+            }
+        }
+
+        // Priority 5: Rejected
+        if ($commonStatus === 'REJECTED') {
+            return [
+                'label' => 'All Rejected',
+                'classes' => 'bg-rose-100 text-rose-800 border-rose-200',
+                'icon' => 'bx-x-circle',
+                'stage' => 'rejected',
+                'description' => 'View Details',
+            ];
+        }
+
+        // Priority 6: In signing process
+        $meta = self::statusMeta($commonStatus);
+        $meta['stage'] = 'signing';
+        $meta['description'] = 'In Progress';
+
+        return $meta;
+    }
 }
