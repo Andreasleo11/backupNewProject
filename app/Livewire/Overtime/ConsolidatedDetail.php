@@ -21,6 +21,12 @@ class ConsolidatedDetail extends Component
     public ?string $endDate = null;
     public ?string $infoStatus = null;
     public ?string $search = null;
+    public ?int $perPage = null;
+    public ?string $sortField = null;
+    public ?string $sortDirection = null;
+    public ?string $range = null;
+    public bool $groupByDate = false;
+    public bool $hideSigned = true;
 
     // Reject modal state
     public bool $showRejectModal = false;
@@ -44,6 +50,12 @@ class ConsolidatedDetail extends Component
         $this->endDate = request('endDate');
         $this->infoStatus = request('infoStatus');
         $this->search = request('search');
+        $this->perPage = request('per_page');
+        $this->sortField = request('sort');
+        $this->sortDirection = request('dir');
+        $this->range = request('range');
+        $this->groupByDate = request('group_date') == '1';
+        $this->hideSigned = request('hide_signed') != '0';
     }
 
     private function getFilterParams(): array
@@ -54,6 +66,10 @@ class ConsolidatedDetail extends Component
             'dept' => $this->dept,
             'infoStatus' => $this->infoStatus,
             'search' => $this->search,
+            'perPage' => $this->perPage,
+            'sortField' => $this->sortField,
+            'sortDirection' => $this->sortDirection,
+            'range' => $this->range,
         ];
     }
 
@@ -71,13 +87,6 @@ class ConsolidatedDetail extends Component
 
         if ($hasPendingApprovals) {
             // User has pending approvals, show their approvals by default
-            $defaultFilter = ['infoStatus' => 'my_approval'];
-        } elseif ($user->can('overtime.review')) {
-            // User is a reviewer but has no pending approvals, show forms that are pending review
-            $defaultFilter = ['infoStatus' => 'pending'];
-    
-        } else {
-            // Default fallback
             $defaultFilter = ['infoStatus' => 'my_approval'];
         }
 
@@ -121,7 +130,12 @@ class ConsolidatedDetail extends Component
             'end_date' => $this->endDate,
             'info_status' => $this->infoStatus,
             'q' => $this->search,
-            'group_date' => request('groupByDate'),
+            'per_page' => $this->perPage,
+            'sort' => $this->sortField,
+            'dir' => $this->sortDirection,
+            'range' => $this->range,
+            'group_date' => $this->groupByDate ? 1 : 0,
+            'hide_signed' => $this->hideSigned ? 1 : 0,
         ]);
 
         return view('livewire.overtime.consolidated-detail', [

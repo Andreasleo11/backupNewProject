@@ -111,8 +111,10 @@ class Index extends Component
 
     public function buildStats(): array
     {
+        $filterParams = $this->getFilterParams();
+
         $builder = new OvertimeQueryBuilder;
-        $h = $builder->build(Auth::user(), array_merge($this->getFilterParams(), [
+        $h = $builder->build(Auth::user(), array_merge($filterParams, [
             'excludeInfoStatus' => true,
         ]));
 
@@ -138,9 +140,12 @@ class Index extends Component
         $myApprovalCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'my_approval'])->count();
 
         // Calculate detailed approval stats
-        $fullyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'fully_approved'])->count();
-        $partiallyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'partially_approved'])->count();
-        $fullyRejectedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'fully_rejected'])->count();
+        $baseQuery = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['excludeInfoStatus' => true]));
+        $totalForms = $baseQuery->count();
+        $fullyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'fully_approved']))->count();
+        $partiallyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'partially_approved']))->count();
+        $fullyRejectedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'fully_rejected']))->count();
+        $pendingCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'pending']))->count();
 
         return [
             'approved' => $approved,
@@ -154,6 +159,12 @@ class Index extends Component
             'fully_approved' => $fullyApprovedCount,
             'partially_approved' => $partiallyApprovedCount,
             'fully_rejected' => $fullyRejectedCount,
+            'pending_forms' => $pendingCount,
+            'total_forms' => $totalForms,
+            'pct_fully_approved' => $totalForms > 0 ? round(($fullyApprovedCount * 100) / $totalForms) : 0,
+            'pct_partially_approved' => $totalForms > 0 ? round(($partiallyApprovedCount * 100) / $totalForms) : 0,
+            'pct_fully_rejected' => $totalForms > 0 ? round(($fullyRejectedCount * 100) / $totalForms) : 0,
+            'pct_pending_forms' => $totalForms > 0 ? round(($pendingCount * 100) / $totalForms) : 0,
         ];
     }
 
