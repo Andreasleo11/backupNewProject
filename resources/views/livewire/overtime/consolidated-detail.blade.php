@@ -75,6 +75,37 @@
                             {{ strtoupper($form->workflow_status) }}
                         </span>
 
+                        @can('approve', $form)
+                            @if($form->workflow_status === 'IN_REVIEW')
+                                @php
+                                    $currentStep = $form->approvalRequest?->steps->where('sequence', $form->approvalRequest->current_step)->first();
+                                    $canSign = $currentStep && $currentStep->approver_snapshot_role_slug;
+                                @endphp
+                                @if($canSign)
+                                    <button wire:click="sign({{ $form->id }}, {{ $currentStep->id }})"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-200 transition-all">
+                                        <i class='bx bx-check'></i>
+                                        Approve
+                                    </button>
+                                    <button wire:click="openRejectModal({{ $form->id }}, {{ $currentStep->id }})"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-200 transition-all">
+                                        <i class='bx bx-x'></i>
+                                        Reject
+                                    </button>
+                                @endif
+                            @endif
+                        @endcan
+
+                        @can('pushToPayroll', $form)
+                            @if($form->workflow_status === 'APPROVED' && $form->pending_count > 0)
+                                <button wire:click="pushAll({{ $form->id }})"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-200 transition-all">
+                                    <i class='bx bx-cloud-upload'></i>
+                                    Push All
+                                </button>
+                            @endif
+                        @endcan
+
                         <a href="{{ route('overtime.detail', $form->id) }}"
                             class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 transition-all">
                             <i class='bx bx-right-arrow-alt'></i>
@@ -114,6 +145,7 @@
                                     <th class="px-3 py-2 font-bold text-slate-600">Time</th>
                                     <th class="px-3 py-2 font-bold text-slate-600">Task</th>
                                     <th class="px-3 py-2 font-bold text-slate-600">Status</th>
+                                    <th class="px-3 py-2 font-bold text-slate-600">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -143,6 +175,24 @@
                                                 {{ $detail->status ?? 'Pending' }}
                                             </span>
                                         </td>
+                                        <td class="px-3 py-2">
+                                            <div class="flex items-center gap-1">
+                                                @can('pushToPayroll', $form)
+                                                    @if($form->workflow_status === 'APPROVED' && !$detail->status)
+                                                        <button wire:click="pushDetail({{ $form->id }}, {{ $detail->id }})"
+                                                            class="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                                                            title="Push to Payroll">
+                                                            <i class='bx bx-cloud-upload text-xs'></i>
+                                                        </button>
+                                                        <button wire:click="rejectDetail({{ $form->id }}, {{ $detail->id }})"
+                                                            class="inline-flex items-center justify-center w-6 h-6 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors"
+                                                            title="Reject Detail">
+                                                            <i class='bx bx-x text-xs'></i>
+                                                        </button>
+                                                    @endif
+                                                @endcan
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -160,4 +210,34 @@
             </div>
         @endforelse
     </div>
+
+    <!-- Reject Modal -->
+    @if($showRejectModal)
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Reject Overtime Form</h3>
+                <p class="text-slate-600 mb-4">Please provide a reason for rejection:</p>
+
+                <textarea wire:model="rejectReason"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    rows="4"
+                    placeholder="Enter rejection reason..."></textarea>
+
+                @error('rejectReason')
+                    <p class="text-rose-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button wire:click="$set('showRejectModal', false)"
+                        class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button wire:click="submitReject"
+                        class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors">
+                        Reject Form
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
