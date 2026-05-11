@@ -204,7 +204,7 @@ class Index extends Component
             $user = Auth::user();
             if ($user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
                 $myApprovalCount = app(OvertimeQueryBuilder::class)
-                    ->build($user, ['infoStatus' => 'my_approval'])
+                    ->build($user)
                     ->count();
 
                 if ($myApprovalCount >= 0) {
