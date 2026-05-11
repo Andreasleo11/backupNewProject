@@ -419,6 +419,7 @@
                                     class="{{ $rowPadding }} cursor-pointer whitespace-nowrap hover:bg-slate-100 transition-colors">
                                     <div class="flex items-center gap-1.5">Status {!! sortIcon('workflow_status', $sortField, $sortDirection) !!}</div>
                                 </th>
+                                <th class="{{ $rowPadding }} whitespace-nowrap text-slate-400">Details</th>
                                 <th class="{{ $rowPadding }} whitespace-nowrap text-right text-slate-400 pr-6">Action
                                 </th>
                             </tr>
@@ -493,6 +494,21 @@
                                                     @endif
                                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
                                                 </div>
+                                            </div>
+                                        </td>
+
+                                        {{-- Details --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex items-center gap-1 text-[10px] font-bold">
+                                                @if($group->total_approved_details > 0)
+                                                    <span class="text-emerald-600">{{ $group->total_approved_details }}✓</span>
+                                                @endif
+                                                @if($group->total_rejected_details > 0)
+                                                    <span class="text-rose-600">{{ $group->total_rejected_details }}✗</span>
+                                                @endif
+                                                @if($group->total_pending_details > 0)
+                                                    <span class="text-amber-600">{{ $group->total_pending_details }}○</span>
+                                                @endif
                                             </div>
                                         </td>
 
@@ -609,6 +625,21 @@
                                             </div>
                                         </td>
 
+                                        {{-- Details --}}
+                                        <td class="{{ $rowPadding }} whitespace-nowrap">
+                                            <div class="flex items-center gap-1 text-[10px] font-bold">
+                                                @if($fot->approved_count > 0)
+                                                    <span class="text-emerald-600">{{ $fot->approved_count }}✓</span>
+                                                @endif
+                                                @if($fot->rejected_count > 0)
+                                                    <span class="text-rose-600">{{ $fot->rejected_count }}✗</span>
+                                                @endif
+                                                @if($fot->pending_count > 0)
+                                                    <span class="text-amber-600">{{ $fot->pending_count }}○</span>
+                                                @endif
+                                            </div>
+                                        </td>
+
                                         {{-- Simple Actions --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap text-right">
                                             <div
@@ -628,7 +659,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-16 text-center">
+                                        <td colspan="{{ $canApprove ? 8 : 7 }}" class="px-6 py-16 text-center">
                                             <div
                                                 class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300 border border-slate-100 mb-4">
                                                 <i class='bx bx-filter-alt text-3xl'></i>
@@ -648,7 +679,7 @@
                     </table>
 
                     {{-- Skeleton Loader --}}
-                    @php $cols = $canApprove ? 7 : 6; @endphp
+                    @php $cols = $canApprove ? 8 : 7; @endphp
                     <table class="min-w-full" wire:loading wire:key="tbl-skeleton"
                         wire:target="resetFilters,setRange,sortBy,perPage,search,dept,startDate,endDate,infoStatus,clearFilter,gotoPage,nextPage,previousPage">
                         <tbody class="divide-y divide-slate-100/60">
