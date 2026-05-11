@@ -40,7 +40,7 @@ class OvertimeQueryBuilder
                 'department:id,name',
                 'failedDetails',
                 'approvalRequest.steps' => fn ($q) => $q
-                    ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label', 'acted_by'])
+                    ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label', 'approver_snapshot_role_slug', 'acted_by'])
                     ->orderBy('sequence'),
             ])
             ->withCount([
