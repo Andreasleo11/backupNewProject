@@ -487,7 +487,7 @@
 
                                         {{-- Simple Actions --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap text-right">
-                                            <div class="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                            <div class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
                                                 <a href="{{ route('overtime.consolidated', $group->date, array_filter(['dept' => $dept, 'branch' => $group->branches])) }}"
                                                     class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
                                                     View Group <i class='bx bx-right-arrow-alt text-lg'></i>
@@ -580,36 +580,13 @@
                                                          <span class="opacity-50 ml-1">{{ $fot->approved_count }}/{{ $fot->details_count }}</span>
                                                      @endif
                                                  </span>
-
-                                                 {{-- Hover tooltip with details --}}
-                                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 max-w-xs shadow-xl border border-slate-700">
-                                                     @if ($smart['stage'] === 'signing')
-                                                         <div class="font-semibold text-slate-200">Waiting on:</div>
-                                                         <div class="text-white">{{ ucwords(str_replace(['_', '-'], ' ', $smart['current_role'])) }}</div>
-                                                         @if($smart['current_actor'])
-                                                             <div class="text-slate-300 mt-1">{{ $smart['current_actor'] }}</div>
-                                                         @endif
-                                                     @elseif($smart['stage'] === 'audit')
-                                                         <div class="text-slate-200">Status: Awaiting Detail Review</div>
-                                                     @elseif($smart['stage'] === 'sync' || $smart['stage'] === 'rejected')
-                                                         <div class="flex flex-wrap gap-2 mt-1">
-                                                             @if($fot->approved_count > 0)<span class="text-emerald-300">{{ $fot->approved_count }} approved</span>@endif
-                                                             @if($fot->rejected_count > 0)<span class="text-rose-300">{{ $fot->rejected_count }} rejected</span>@endif
-                                                             @if($fot->pending_count > 0)<span class="text-amber-300">{{ $fot->pending_count }} pending</span>@endif
-                                                         </div>
-                                                         @if (isset($smart['reason']))<div class="mt-2 text-rose-300 border-t border-slate-600 pt-1">{{ $smart['reason'] }}</div>@endif
-                                                     @else
-                                                         <div class="text-slate-200">{{ $smart['label'] }}</div>
-                                                     @endif
-                                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
-                                                 </div>
                                              </div>
                                          </td>
 
                                         {{-- Simple Actions --}}
                                         <td class="{{ $rowPadding }} whitespace-nowrap text-right">
                                             <div
-                                                class="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                class="flex items-center justify-end gap-1 opacity-40 hover:opacity-100 transition-opacity">
                                                 <a href="{{ route('overtime.detail', $fot->id) }}"
                                                     class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
                                                     Manage <i class='bx bx-right-arrow-alt text-lg'></i>
