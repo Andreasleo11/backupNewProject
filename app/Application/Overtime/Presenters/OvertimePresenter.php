@@ -80,6 +80,53 @@ class OvertimePresenter
         }
 
         if ($status === 'APPROVED') {
+            // Check detail statuses to determine granular approval state
+            $approvedCount = (int) ($fot->approved_count ?? 0);
+            $rejectedCount = (int) ($fot->rejected_count ?? 0);
+            $pendingCount = (int) ($fot->pending_count ?? 0);
+            $totalDetails = (int) ($fot->details_count ?? 0);
+
+            if ($totalDetails === 0) {
+                return [
+                    'label' => 'Awaiting Review',
+                    'classes' => 'bg-amber-100 text-amber-700 border-amber-200/50',
+                    'icon' => 'bx-time-five',
+                ];
+            }
+
+            if ($approvedCount === $totalDetails) {
+                return [
+                    'label' => 'Fully Approved',
+                    'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200/50',
+                    'icon' => 'bx-check-double',
+                ];
+            }
+
+            if ($rejectedCount === $totalDetails) {
+                return [
+                    'label' => 'Fully Rejected',
+                    'classes' => 'bg-rose-100 text-rose-700 border-rose-200/50',
+                    'icon' => 'bx-x-circle',
+                ];
+            }
+
+            if ($approvedCount > 0 && ($rejectedCount > 0 || $pendingCount > 0)) {
+                return [
+                    'label' => 'Partially Approved',
+                    'classes' => 'bg-blue-100 text-blue-700 border-blue-200/50',
+                    'icon' => 'bx-check-circle',
+                ];
+            }
+
+            if ($pendingCount === $totalDetails) {
+                return [
+                    'label' => 'Awaiting Review',
+                    'classes' => 'bg-amber-100 text-amber-700 border-amber-200/50',
+                    'icon' => 'bx-time-five',
+                ];
+            }
+
+            // Fallback
             return [
                 'label' => 'Awaiting Review',
                 'classes' => 'bg-amber-100 text-amber-700 border-amber-200/50',
@@ -163,7 +210,33 @@ class OvertimePresenter
             return $review['label'];
         })->unique();
 
-        // Priority 1: Mixed statuses
+        // Count granular approval states across all forms
+        $fullyApprovedForms = $forms->filter(function ($form) {
+            $approvedCount = (int) ($form->approved_count ?? 0);
+            $totalDetails = (int) ($form->details_count ?? 0);
+            return $totalDetails > 0 && $approvedCount === $totalDetails;
+        })->count();
+
+        $partiallyApprovedForms = $forms->filter(function ($form) {
+            $approvedCount = (int) ($form->approved_count ?? 0);
+            $rejectedCount = (int) ($form->rejected_count ?? 0);
+            $pendingCount = (int) ($form->pending_count ?? 0);
+            return $approvedCount > 0 && ($rejectedCount > 0 || $pendingCount > 0);
+        })->count();
+
+        $fullyRejectedForms = $forms->filter(function ($form) {
+            $rejectedCount = (int) ($form->rejected_count ?? 0);
+            $totalDetails = (int) ($form->details_count ?? 0);
+            return $totalDetails > 0 && $rejectedCount === $totalDetails;
+        })->count();
+
+        $pendingReviewForms = $forms->filter(function ($form) {
+            $pendingCount = (int) ($form->pending_count ?? 0);
+            $totalDetails = (int) ($form->details_count ?? 0);
+            return $totalDetails > 0 && $pendingCount === $totalDetails;
+        })->count();
+
+        // Priority 1: Mixed workflow statuses
         if ($hasMixedStatuses) {
             return [
                 'label' => 'Mixed Status',
@@ -173,9 +246,6 @@ class OvertimePresenter
                 'description' => 'Review Required',
             ];
         }
-
-        // Get the common status
-        $commonStatus = $statuses->first();
 
         // Priority 2: If any sync errors/failures
         if ($syncStatuses->contains('Sync Errors') || $syncStatuses->contains('Sync Failed') || $syncStatuses->contains('Partial Sync')) {
@@ -200,28 +270,63 @@ class OvertimePresenter
             ];
         }
 
-        // Priority 4: Approved but needs audit/review
+        $commonStatus = $statuses->first();
+
+        // Priority 4: Workflow approved - check granular detail statuses
         if ($commonStatus === 'APPROVED') {
-            if ($hasPendingDetails) {
+            $totalForms = $forms->count();
+
+            if ($fullyApprovedForms === $totalForms) {
                 return [
-                    'label' => 'Pending Review',
-                    'classes' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                    'icon' => 'bx-time-five',
-                    'stage' => 'audit',
-                    'description' => 'Review Required',
-                ];
-            } else {
-                return [
-                    'label' => 'All Processed',
+                    'label' => 'All Fully Approved',
                     'classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                     'icon' => 'bx-check-double',
                     'stage' => 'processed',
                     'description' => 'View Details',
                 ];
             }
+
+            if ($fullyRejectedForms === $totalForms) {
+                return [
+                    'label' => 'All Fully Rejected',
+                    'classes' => 'bg-rose-100 text-rose-800 border-rose-200',
+                    'icon' => 'bx-x-circle',
+                    'stage' => 'processed',
+                    'description' => 'View Details',
+                ];
+            }
+
+            if ($partiallyApprovedForms > 0 || $fullyApprovedForms > 0 || $fullyRejectedForms > 0) {
+                return [
+                    'label' => 'Mixed Approval Status',
+                    'classes' => 'bg-blue-100 text-blue-800 border-blue-200',
+                    'icon' => 'bx-check-circle',
+                    'stage' => 'audit',
+                    'description' => 'Review Required',
+                ];
+            }
+
+            if ($pendingReviewForms === $totalForms) {
+                return [
+                    'label' => 'All Pending Review',
+                    'classes' => 'bg-amber-100 text-amber-800 border-amber-200',
+                    'icon' => 'bx-time-five',
+                    'stage' => 'audit',
+                    'description' => 'Review Required',
+                ];
+            }
+
+            // Fallback for approved status
+            return [
+                'label' => 'Under Review',
+                'classes' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                'icon' => 'bx-time-five',
+                'stage' => 'audit',
+                'description' => 'Review Required',
+            ];
         }
 
-        // Priority 5: Rejected
+        // Priority 5: Workflow rejected
         if ($commonStatus === 'REJECTED') {
             return [
                 'label' => 'All Rejected',
