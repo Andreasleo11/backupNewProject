@@ -496,9 +496,10 @@
                                                         'startDate' => $startDate,
                                                         'endDate' => $endDate,
                                                         'search' => $search,
+                                                        'groupByDate' => $groupByDate,
                                                     ]);
                                                 @endphp
-                                                <a href="{{ route('overtime.consolidated', $group->date, $consolidatedFilters) }}"
+                                                 <a href="{{ route('overtime.consolidated', ['date' => $group->date] + $consolidatedFilters) }}"
                                                     class="inline-flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all shadow-sm">
                                                     View Group <i class='bx bx-right-arrow-alt text-lg'></i>
                                                 </a>

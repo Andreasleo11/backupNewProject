@@ -7,14 +7,6 @@
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-3">
             @php
-                $backFilters = array_filter([
-                    'dept' => $dept,
-                    'branch' => $branch,
-                    'infoStatus' => request('infoStatus'),
-                    'startDate' => request('startDate'),
-                    'endDate' => request('endDate'),
-                    'search' => request('search'),
-                ]);
                 $backUrl = route('overtime.index') . ($backFilters ? '?' . http_build_query($backFilters) : '');
             @endphp
             <a href="{{ $backUrl }}"

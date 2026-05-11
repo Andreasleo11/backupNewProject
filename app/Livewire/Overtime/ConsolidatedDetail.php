@@ -17,6 +17,10 @@ class ConsolidatedDetail extends Component
     public string $date;
     public ?int $dept = null;
     public ?string $branch = null;
+    public ?string $startDate = null;
+    public ?string $endDate = null;
+    public ?string $infoStatus = null;
+    public ?string $search = null;
 
     // Reject modal state
     public bool $showRejectModal = false;
@@ -36,6 +40,10 @@ class ConsolidatedDetail extends Component
         $this->date = $date;
         $this->dept = request('dept');
         $this->branch = request('branch');
+        $this->startDate = request('startDate');
+        $this->endDate = request('endDate');
+        $this->infoStatus = request('infoStatus');
+        $this->search = request('search');
     }
 
     public function render()
@@ -101,6 +109,15 @@ class ConsolidatedDetail extends Component
         $rejectedDetails = $headers->sum('rejected_count');
         $pendingDetails = $headers->sum('pending_count');
 
+        $backFilters = array_filter([
+            'dept' => $this->dept,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'info_status' => $this->infoStatus,
+            'q' => $this->search,
+            'group_date' => request('groupByDate'),
+        ]);
+
         return view('livewire.overtime.consolidated-detail', [
             'headers' => $headers,
             'date' => $this->date,
@@ -111,6 +128,7 @@ class ConsolidatedDetail extends Component
             'pendingDetails' => $pendingDetails,
             'user' => Auth::user(),
             'canApprove' => Auth::user()->can('overtime.approve'),
+            'backFilters' => $backFilters,
         ]);
     }
 
