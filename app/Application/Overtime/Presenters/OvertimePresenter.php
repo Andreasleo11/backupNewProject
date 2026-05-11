@@ -15,13 +15,13 @@ class OvertimePresenter
         $status = strtoupper($status ?? 'DRAFT');
 
         return match ($status) {
-            'APPROVED' => ['label' => 'Fully Approved',        'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
-            'REJECTED' => ['label' => 'Rejected',              'classes' => 'bg-rose-100 text-rose-800 border-rose-200',         'icon' => 'bx-x-circle'],
-            'IN_REVIEW' => ['label' => 'In Review',             'classes' => 'bg-amber-100 text-amber-800 border-amber-200',       'icon' => 'bx-time-five'],
-            'SUBMITTED' => ['label' => 'Submitted',            'classes' => 'bg-sky-100 text-sky-800 border-sky-200',             'icon' => 'bx-paper-plane'],
-            'RETURNED' => ['label' => 'Returned',             'classes' => 'bg-orange-100 text-orange-800 border-orange-200',    'icon' => 'bx-undo'],
-            'DRAFT' => ['label' => 'Draft',                'classes' => 'bg-slate-100 text-slate-700 border-slate-200',       'icon' => 'bx-edit'],
-            'CANCELED' => ['label' => 'Canceled',             'classes' => 'bg-slate-200 text-slate-500 border-slate-300',       'icon' => 'bx-comment-minus'],
+            'APPROVED' => ['label' => 'Fully Approved', 'classes' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'bx-check-circle'],
+            'REJECTED' => ['label' => 'Rejected', 'classes' => 'bg-rose-100 text-rose-800 border-rose-200', 'icon' => 'bx-x-circle'],
+            'IN_REVIEW' => ['label' => 'In Review', 'classes' => 'bg-amber-100 text-amber-800 border-amber-200', 'icon' => 'bx-time-five'],
+            'SUBMITTED' => ['label' => 'Submitted', 'classes' => 'bg-sky-100 text-sky-800 border-sky-200', 'icon' => 'bx-paper-plane'],
+            'RETURNED' => ['label' => 'Returned', 'classes' => 'bg-orange-100 text-orange-800 border-orange-200', 'icon' => 'bx-undo'],
+            'DRAFT' => ['label' => 'Draft', 'classes' => 'bg-slate-100 text-slate-700 border-slate-200', 'icon' => 'bx-edit'],
+            'CANCELED' => ['label' => 'Canceled', 'classes' => 'bg-slate-200 text-slate-500 border-slate-300', 'icon' => 'bx-comment-minus'],
             default => ['label' => ucwords(strtolower(str_replace(['-', '_'], ' ', $status))), 'classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'icon' => 'bx-circle'],
         };
     }

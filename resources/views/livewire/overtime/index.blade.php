@@ -115,7 +115,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-300"
                 wire:loading.class="opacity-50 saturate-50 pointer-events-none"
                 wire:target="startDate,endDate,dept,infoStatus,search,range,perPage,clearFilter">
-                @foreach ([['key' => 'pending', 'label' => 'Awaiting Review', 'icon' => 'bx-time-five', 'color' => 'amber', 'bg' => 'bg-amber-500'], ['key' => 'approved', 'label' => 'Approved', 'icon' => 'bx-check-double', 'color' => 'emerald', 'bg' => 'bg-emerald-500'], ['key' => 'rejected', 'label' => 'Rejected', 'icon' => 'bx-x-circle', 'color' => 'rose', 'bg' => 'bg-rose-500']] as $card)
+                @foreach ([['key' => 'fully_approved', 'label' => 'Fully Approved', 'icon' => 'bx-check-double', 'color' => 'emerald', 'bg' => 'bg-emerald-500'], ['key' => 'partially_approved', 'label' => 'Partially Approved', 'icon' => 'bx-check-circle', 'color' => 'blue', 'bg' => 'bg-blue-500'], ['key' => 'fully_rejected', 'label' => 'Fully Rejected', 'icon' => 'bx-x-circle', 'color' => 'rose', 'bg' => 'bg-rose-500'], ['key' => 'pending', 'label' => 'Awaiting Review', 'icon' => 'bx-time-five', 'color' => 'amber', 'bg' => 'bg-amber-500']] as $card)
                     <button type="button" wire:click="setInfoFilter('{{ $card['key'] }}')"
                         class="group relative overflow-hidden rounded-2xl bg-white border border-slate-200/60 p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5
                     {{ $infoStatus === $card['key'] ? 'ring-2 ring-' . $card['color'] . '-500 border-transparent shadow-md' : '' }}">

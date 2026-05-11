@@ -137,6 +137,11 @@ class Index extends Component
 
         $myApprovalCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'my_approval'])->count();
 
+        // Calculate detailed approval stats
+        $fullyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'fully_approved'])->count();
+        $partiallyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'partially_approved'])->count();
+        $fullyRejectedCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'fully_rejected'])->count();
+
         return [
             'approved' => $approved,
             'rejected' => $rejected,
@@ -146,6 +151,9 @@ class Index extends Component
             'pct_rejected' => round(($rejected * 100) / $total),
             'pct_pending' => round(($pending * 100) / $total),
             'my_approval_count' => $myApprovalCount,
+            'fully_approved' => $fullyApprovedCount,
+            'partially_approved' => $partiallyApprovedCount,
+            'fully_rejected' => $fullyRejectedCount,
         ];
     }
 
@@ -154,7 +162,7 @@ class Index extends Component
         return [
             'startDate' => ['nullable', 'date'],
             'endDate' => ['nullable', 'date'],
-            'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval'])],
+            'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval', 'fully_approved', 'partially_approved', 'fully_rejected'])],
             'perPage' => ['integer', Rule::in([10, 25, 50])],
             'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'workflow_status'])],
             'sortDirection' => ['string', Rule::in(['asc', 'desc'])],
@@ -559,7 +567,7 @@ class Index extends Component
             'dataheader' => $dataheader,
             'departments' => $this->departments,
             'user' => Auth::user(),
-            'stats' => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0],
+            'stats' => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0, 'fully_approved' => 0, 'partially_approved' => 0, 'fully_rejected' => 0],
             'isPrivileged' => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
             'canApprove' => Auth::user()->can('overtime.approve'),
