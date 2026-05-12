@@ -51,6 +51,18 @@
                 <i class='bx bx-chevron-down text-slate-400 text-lg'></i>
             </div>
         </div>
+
+        {{-- View Mode Toggle --}}
+        <button wire:click="toggleViewMode"
+            class="h-12 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-sm font-medium transition-all flex items-center gap-2">
+            @if($viewMode === 'flattened')
+                <i class='bx bx-list-ul text-lg'></i>
+                <span>Flattened</span>
+            @else
+                <i class='bx bx-category text-lg'></i>
+                <span>Grouped</span>
+            @endif
+        </button>
     </div>
 
     {{-- Global Stats Pill --}}

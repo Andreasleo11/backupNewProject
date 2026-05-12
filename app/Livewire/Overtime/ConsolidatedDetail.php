@@ -28,6 +28,7 @@ class ConsolidatedDetail extends Component
     public ?string $range = null;
     public bool $groupByDate = false;
     public bool $hideSigned = true;
+    public string $viewMode = 'flattened'; // 'flattened' or 'grouped'
 
     // Reject modal state
     public bool $showRejectModal = false;
@@ -165,6 +166,7 @@ class ConsolidatedDetail extends Component
             'user' => Auth::user(),
             'canApprove' => Auth::user()->can('overtime.approve'),
             'backFilters' => $backFilters,
+            'viewMode' => $this->viewMode,
         ]);
     }
 
@@ -325,5 +327,10 @@ class ConsolidatedDetail extends Component
         );
         // Refresh the component data
         $this->render();
+    }
+
+    public function toggleViewMode(): void
+    {
+        $this->viewMode = $this->viewMode === 'flattened' ? 'grouped' : 'flattened';
     }
 }
