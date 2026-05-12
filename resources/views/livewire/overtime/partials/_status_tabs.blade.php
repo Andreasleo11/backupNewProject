@@ -19,7 +19,7 @@
     // My Sign — shown to users who can approve (Q1: always shown per user answer)
     $tabs[] = [
         'key'    => 'my_approval',
-        'label'  => 'My Sign',
+        'label'  => 'My Approval',
         'icon'   => 'bx-edit',
         'count'  => $stats['my_approval_count'] > 0 ? $stats['my_approval_count'] : null,
         'urgent' => $stats['my_approval_count'] > 0,
@@ -30,7 +30,7 @@
     if ($isDetailReviewer) {
         $tabs[] = [
             'key'    => 'pending',
-            'label'  => 'Audit',
+            'label'  => 'Pending',
             'icon'   => 'bx-time-five',
             'count'  => $stats['pending'] > 0 ? $stats['pending'] : null,
             'urgent' => $stats['pending'] > 0,
@@ -52,6 +52,14 @@
             'urgent' => false,
             'show'   => true,
         ];
+        $tabs[] = [
+            'key'    => 'partially_approved',
+            'label'  => 'Partially Approved',
+            'icon'   => 'bx-x-circle',
+            'count'  => $stats['partially_approved'] > 0 ? $stats['partially_approved'] : null,
+            'urgent' => false,
+            'show'   => true,
+        ];
     }
 @endphp
 
@@ -60,7 +68,7 @@
     wire:target="startDate,endDate,dept,search,range,perPage,clearFilter,resetFilters">
 
     {{-- Tab background pill --}}
-    <div class="flex items-center gap-0.5 rounded-xl bg-slate-100/80 p-0.5 w-full sm:w-auto">
+    <div class="flex items-center gap-0.5 rounded-xl bg-slate-100/80 p-0.5 w-max">
         @foreach ($tabs as $tab)
             @if (!$tab['show']) @continue @endif
 

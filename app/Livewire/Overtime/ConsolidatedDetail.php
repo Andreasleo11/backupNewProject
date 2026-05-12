@@ -81,15 +81,6 @@ class ConsolidatedDetail extends Component
         // Determine default filter based on user permissions and pending approvals
         $defaultFilter = $this->getFilterParams();
 
-        // Check if user has pending approvals (they are in current approval request steps)
-        $hasPendingApprovals = $builder->build($user, ['infoStatus' => 'my_approval'])->count() > 0;
-        
-
-        if ($hasPendingApprovals) {
-            // User has pending approvals, show their approvals by default
-            $defaultFilter = ['infoStatus' => 'my_approval'];
-        }
-
         $query = $builder->build($user, $defaultFilter);
 
         // Filter by the specific date - we need forms where the earliest start_date matches
