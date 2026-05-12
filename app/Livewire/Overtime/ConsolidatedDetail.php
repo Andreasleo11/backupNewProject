@@ -7,6 +7,7 @@ use App\Domain\Overtime\Models\OvertimeForm;
 use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Services\OvertimeApprovalService;
 use App\Infrastructure\Approval\Contracts\Approvals;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -33,6 +34,10 @@ class ConsolidatedDetail extends Component
     public string $rejectReason = '';
     public ?int $rejectFormId = null;
     public ?int $rejectApprovalId = null;
+
+    // Bulk action state
+    public array $selectedIds = [];
+    public array $departments = [];
 
     protected OvertimeApprovalService $approvalService;
 
@@ -104,16 +109,36 @@ class ConsolidatedDetail extends Component
             'user:id,name',
             'department:id,name',
             'failedDetails',
-            'approvalRequest.steps' => fn ($q) => $q
-                ->select(['id', 'approval_request_id', 'sequence', 'status', 'approver_snapshot_label', 'acted_by'])
-                ->orderBy('sequence'),
+            'details' => function ($q) {
+                if (!empty($this->search)) {
+                    $s = trim($this->search);
+                    $q->where(function ($qd) use ($s) {
+                        $qd->where('name', 'like', '%' . $s . '%')
+                          ->orWhere('NIK', 'like', $s . '%')
+                          ->orWhere('job_desc', 'like', '%' . $s . '%');
+                    });
+                }
+            },
+            'approvalRequest',
+            'approvalRequest.steps',
         ])->get();
 
+        // Calculate approval permissions for each form
+        $user = Auth::user();
+        foreach ($headers as $form) {
+            $form->can_approve = $user->can('approve', $form);
+        }
+
+        if(!$this->dept){
+            $this->departments = $headers->pluck('department')->unique('id')->values()->all();
+        }
+
         $totalForms = $headers->count();
-        $totalDetails = $headers->sum('details_count');
-        $approvedDetails = $headers->sum('approved_count');
-        $rejectedDetails = $headers->sum('rejected_count');
-        $pendingDetails = $headers->sum('pending_count');
+        // Calculate stats based on the explicitly filtered details relation
+        $totalDetails = $headers->sum(fn($h) => $h->details->count());
+        $approvedDetails = $headers->sum(fn($h) => $h->details->where('status', 'Approved')->count());
+        $rejectedDetails = $headers->sum(fn($h) => $h->details->where('status', 'Rejected')->count());
+        $pendingDetails = $headers->sum(fn($h) => $h->details->whereNull('status')->count());
 
         $backFilters = array_filter([
             'dept' => $this->dept,
@@ -158,6 +183,56 @@ class ConsolidatedDetail extends Component
         }
 
         // Refresh the component data
+        $this->render();
+    }
+
+    public function signSelected(): void
+    {
+        if (empty($this->selectedIds)) {
+            $this->dispatch('flash', type: 'warning', message: 'No forms selected for approval.');
+            return;
+        }
+
+        $successCount = 0;
+        $failCount = 0;
+        $selectedForms = OvertimeForm::with('approvalRequest.steps')->whereIn('id', $this->selectedIds)->get();
+
+        foreach ($selectedForms as $form) {
+            if (!$form) {
+                $failCount++;
+                continue;
+            }
+
+            try {
+                $this->authorize('approve', $form);
+
+                // Find the current step
+                $currentStep = $form->approvalRequest?->steps->where('sequence', $form->approvalRequest->current_step)->first();
+                if (!$currentStep) {
+                    $failCount++;
+                    continue;
+                }
+
+                $result = $this->approvalService->sign($form->id, $currentStep->id);
+                if ($result['success']) {
+                    $successCount++;
+                } else {
+                    $failCount++;
+                }
+            } catch (\Exception $e) {
+                $failCount++;
+            }
+        }
+
+        $this->selectedIds = [];
+
+        if ($successCount > 0) {
+            $this->dispatch('flash', type: 'success', message: "Successfully approved $successCount forms.");
+        }
+        if ($failCount > 0) {
+            $this->dispatch('flash', type: 'error', message: "Failed to approve $failCount forms.");
+        }
+
         $this->render();
     }
 
@@ -248,7 +323,6 @@ class ConsolidatedDetail extends Component
             type: $result['success'] ? 'success' : 'error',
             message: $result['message'] . " ({$result['total_success']} ok, {$result['total_failed']} failed)"
         );
-
         // Refresh the component data
         $this->render();
     }
