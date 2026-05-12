@@ -141,6 +141,11 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $group->consolidated_status['classes'] }}">
                                         <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
                                         {{ $group->consolidated_status['label'] }}
+                                        @if($group->consolidated_status['stage'] != 'signing')
+                                            <span class="opacity-50">
+                                               {{ $group->total_approved_details }} / {{ $group->total_details }}
+                                            </span>
+                                        @endif
                                     </span>
                                 </td>
 

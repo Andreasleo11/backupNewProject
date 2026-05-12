@@ -213,7 +213,10 @@ class Index extends Component
         // Only trigger if no explicit filter is given.
         if (empty($this->infoStatus)) {
             $user = Auth::user();
-            if ($user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
+            if($this->isDetailReviewer()){
+                $this->infoStatus = 'pending';
+                $this->groupByDate = true;
+            } elseif ($user->hasAnyRole(['department-head', 'general-manager', 'director'])) {
                 $myApprovalCount = app(OvertimeQueryBuilder::class)
                     ->build($user)
                     ->count();

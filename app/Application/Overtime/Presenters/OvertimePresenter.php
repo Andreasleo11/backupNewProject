@@ -311,21 +311,21 @@ class OvertimePresenter
 
             if ($pendingReviewForms === $totalForms) {
                 return [
-                    'label' => 'All Pending Review',
-                    'classes' => 'bg-amber-100 text-amber-800 border-amber-200',
+                    'label' => 'All Pending Audit',
+                    'classes' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                     'icon' => 'bx-time-five',
                     'stage' => 'audit',
-                    'description' => 'Review Required',
+                    'description' => 'Audit Required',
                 ];
             }
 
             // Fallback for approved status
             return [
-                'label' => 'Under Review',
+                'label' => 'Under Audit',
                 'classes' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                 'icon' => 'bx-time-five',
                 'stage' => 'audit',
-                'description' => 'Review Required',
+                'description' => 'Audit Required',
             ];
         }
 
