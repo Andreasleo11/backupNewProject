@@ -8,6 +8,7 @@ use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Domain\Overtime\Services\OvertimeApprovalService;
 use App\Infrastructure\Approval\Contracts\Approvals;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
+use App\Models\JobProgress;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -29,7 +30,6 @@ class ConsolidatedDetail extends Component
     public bool $groupByDate = false;
     public bool $hideSigned = true;
     public string $viewMode = 'flattened'; // 'flattened' or 'grouped'
-
     // Reject modal state
     public bool $showRejectModal = false;
     public string $rejectReason = '';
@@ -39,6 +39,17 @@ class ConsolidatedDetail extends Component
     // Bulk action state
     public array $selectedIds = [];
     public array $departments = [];
+
+    public bool $pushAllConfirmationOpen = false;
+    public bool $pushAllProgressOpen = false;
+    public ?int $currentJobProgressId = null;
+    public $headers = [];
+
+    protected $listeners = [
+        'openPushAllConfirmation' => 'openPushAllConfirmation',
+        'pushAllJobStarted' => 'handlePushAllJobStarted',
+        'pushAllJobCancelled' => 'handlePushAllJobCancelled',
+    ];
 
     protected OvertimeApprovalService $approvalService;
 
@@ -123,6 +134,7 @@ class ConsolidatedDetail extends Component
             'approvalRequest',
             'approvalRequest.steps',
         ])->get();
+        $this->headers = $headers;
 
         // Calculate approval permissions for each form
         $user = Auth::user();
@@ -165,8 +177,10 @@ class ConsolidatedDetail extends Component
             'pendingDetails' => $pendingDetails,
             'user' => Auth::user(),
             'canApprove' => Auth::user()->can('overtime.approve'),
+            'canPushToPayroll' => Auth::user()->can('overtime.push-to-payroll'),
             'backFilters' => $backFilters,
             'viewMode' => $this->viewMode,
+            'pushAllSummary' => $this->getPushAllSummary(),
         ]);
     }
 
@@ -326,6 +340,149 @@ class ConsolidatedDetail extends Component
             message: $result['message'] . " ({$result['total_success']} ok, {$result['total_failed']} failed)"
         );
         // Refresh the component data
+        $this->render();
+    }
+
+    public function getPushAllSummary(): array
+    {
+        $user = Auth::user();
+
+        // Get all eligible forms (approved and user has permission)
+        $eligibleForms = [];
+        $totalDetails = 0;
+
+        foreach ($this->headers as $form) {
+            if ($form->workflow_status === 'APPROVED' &&
+                $user->can('pushToPayroll', $form)) {
+
+                $detailCount = $form->details->whereNull('status')->count();
+                if ($detailCount > 0) {
+                    $eligibleForms[] = [
+                        'id' => $form->id,
+                        'name' => "Form #{$form->id}",
+                        'detail_count' => $detailCount,
+                    ];
+                    $totalDetails += $detailCount;
+                }
+            }
+        }
+
+        return [
+            'forms' => $eligibleForms,
+            'total_forms' => count($eligibleForms),
+            'total_details' => $totalDetails,
+            'estimated_time' => $this->estimatePushTime(count($eligibleForms), $totalDetails),
+        ];
+    }
+
+    private function estimatePushTime(int $formCount, int $detailCount): int
+    {
+        // Conservative estimate: 2 seconds per form + 0.5 seconds per detail
+        // This is a rough estimate and can be refined based on actual performance
+        return (int) (($formCount * 2) + ($detailCount * 0.5));
+    }
+
+    public function pushAllToJPayroll(): void
+    {
+        $this->infoStatus = null; // Reset infoStatus to include all forms in the summary
+        $user = Auth::user();
+
+        if (!$user->can('overtime.push-to-payroll')) {
+            $this->dispatch('flash', type: 'error', message: 'You do not have permission to push to JPayroll.');
+            return;
+        }
+
+        $summary = $this->getPushAllSummary();
+
+        if ($summary['total_forms'] === 0) {
+            $this->dispatch('flash', type: 'warning', message: 'No eligible forms found for pushing to JPayroll.');
+            return;
+        }
+
+        // Create job progress record
+        $jobProgress = JobProgress::create([
+            'job_type' => 'push_all_overtime_to_jpayroll',
+            'user_id' => $user->id,
+            'status' => 'pending',
+            'current_task' => 'Preparing to push all overtime data to JPayroll',
+            'results' => [
+                'total_forms' => $summary['total_forms'],
+                'total_details' => $summary['total_details'],
+                'estimated_time' => $summary['estimated_time'],
+            ],
+        ]);
+
+        $formIds = array_column($summary['forms'], 'id');
+
+        // Dispatch the job
+        \App\Jobs\PushAllOvertimeToJPayroll::dispatch(
+            $formIds,
+            $user->id,
+            $jobProgress->id
+        );
+
+        \Log::info('ConsolidatedDetail: PushAll job dispatched', [
+            'userId' => $user->id,
+            'jobProgressId' => $jobProgress->id,
+            'formCount' => count($formIds),
+            'forms' => $formIds,
+        ]);
+
+        $this->dispatch('pushAllJobStarted', jobProgressId: $jobProgress->id);
+    }
+
+    public function cancelPushAllJob(int $jobProgressId): void
+    {
+        $user = Auth::user();
+        $jobProgress = JobProgress::where('id', $jobProgressId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$jobProgress) {
+            $this->dispatch('flash', type: 'error', message: 'Job not found or access denied.');
+            return;
+        }
+
+        if ($jobProgress->isCompleted()) {
+            $this->dispatch('flash', type: 'warning', message: 'Job is already completed.');
+            return;
+        }
+
+        $jobProgress->update([
+            'status' => 'cancelled',
+            'current_task' => 'Operation cancelled by user',
+            'cancelled_at' => now(),
+        ]);
+
+        $this->dispatch('flash', type: 'info', message: 'Push operation has been cancelled.');
+        $this->dispatch('pushAllJobCancelled', jobProgressId: $jobProgressId);
+    }
+
+    public function openPushAllConfirmation(): void
+    {
+        $this->pushAllConfirmationOpen = true;
+    }
+
+    public function handlePushAllJobStarted(int $jobProgressId): void
+    {
+        \Log::debug('ConsolidatedDetail: handlePushAllJobStarted called', [
+            'jobProgressId' => $jobProgressId,
+        ]);
+
+        $this->pushAllConfirmationOpen = false;
+        $this->pushAllProgressOpen = true;
+        $this->currentJobProgressId = $jobProgressId;
+    }
+
+    public function handlePushAllJobCancelled(int $jobProgressId): void
+    {
+        $this->pushAllProgressOpen = false;
+        $this->currentJobProgressId = null;
+    }
+
+    public function refreshData(): void
+    {
+        // Refresh the component data after job completion
         $this->render();
     }
 

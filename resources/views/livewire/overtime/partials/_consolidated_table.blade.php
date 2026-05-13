@@ -81,19 +81,30 @@
                                     </div>
                                 </td>
 
-                                {{-- Status --}}
-                                <td class="px-4 py-3 text-center">
-                                    @php
-                                        $statusClasses = match ($detail->status) {
-                                            'Approved' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-                                            'Rejected' => 'bg-rose-50 text-rose-700 ring-rose-600/20',
-                                            default    => 'bg-amber-50 text-amber-700 ring-amber-600/20',
-                                        };
-                                    @endphp
+                            {{-- Status --}}
+                            <td class="px-4 py-3 text-center">
+                                @php
+                                    $statusClasses = match ($detail->status) {
+                                        'Approved' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+                                        'Rejected' => 'bg-rose-50 text-rose-700 ring-rose-600/20',
+                                        default    => 'bg-amber-50 text-amber-700 ring-amber-600/20',
+                                    };
+                                @endphp
+                                <div class="flex flex-col items-center gap-1">
                                     <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black tracking-wide ring-1 ring-inset {{ $statusClasses }}">
                                         {{ strtoupper($detail->status ?? 'Pending') }}
                                     </span>
-                                </td>
+                                    @if($detail->status === 'Rejected' && !empty($detail->reason))
+                                        <span class="text-[8px] text-rose-600 font-medium max-w-[120px] truncate" title="{{ $detail->reason }}">
+                                            {{ $detail->reason }}
+                                        </span>
+                                    @elseif($detail->status === 'Rejected' && empty($detail->reason))
+                                        <span class="text-[8px] text-rose-400 font-medium">
+                                            No reason provided
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
 
                                 {{-- Actions --}}
                                 <td class="px-4 py-3 text-center">
@@ -261,9 +272,20 @@
                                                         default    => 'bg-amber-50 text-amber-700 ring-amber-600/20',
                                                     };
                                                 @endphp
-                                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black tracking-wide ring-1 ring-inset {{ $statusClasses }}">
-                                                    {{ strtoupper($detail->status ?? 'Pending') }}
-                                                </span>
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black tracking-wide ring-1 ring-inset {{ $statusClasses }}">
+                                                        {{ strtoupper($detail->status ?? 'Pending') }}
+                                                    </span>
+                                                    @if($detail->status === 'Rejected' && !empty($detail->reason))
+                                                        <span class="text-[9px] text-rose-600 font-medium max-w-[140px] truncate" title="{{ $detail->reason }}">
+                                                            {{ $detail->reason }}
+                                                        </span>
+                                                    @elseif($detail->status === 'Rejected' && empty($detail->reason))
+                                                        <span class="text-[9px] text-rose-400 font-medium">
+                                                            No reason provided
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </td>
 
                                             {{-- Actions --}}

@@ -62,6 +62,16 @@
                 <i class='bx bx-category text-lg'></i>
             @endif
         </button>
+
+        {{-- Push All to JPayroll --}}
+        @if($canPushToPayroll)
+            <button wire:click="$dispatch('openPushAllConfirmation')"
+                class="h-10 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 border border-indigo-600 text-white text-sm font-medium transition-all flex items-center gap-2"
+                title="Push all eligible overtime data to JPayroll">
+                <i class='bx bx-cloud-upload text-base'></i>
+                <span class="hidden sm:inline">Push All</span>
+            </button>
+        @endif
     </div>
 
     {{-- Global Stats Pill --}}

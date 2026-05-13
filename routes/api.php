@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\JobProgressController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\PurchaseRequestController;
 use Illuminate\Support\Facades\Route;
