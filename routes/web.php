@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/pin', [NavPinController::class, 'pin'])->name('pin');
         Route::delete('/pin', [NavPinController::class, 'unpin'])->name('unpin');
     });
+
+    // Job Progress for async operations
+    Route::get('/job-progress/{id}', [\App\Http\Controllers\JobProgressController::class, 'show'])->name('job-progress.show');
 });
 
 Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');

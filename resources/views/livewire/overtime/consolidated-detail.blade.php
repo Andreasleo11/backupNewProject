@@ -34,5 +34,7 @@
     {{-- Overlays --}}
     @include('livewire.overtime.partials._consolidated_bulk_bar')
     @include('livewire.overtime.partials._consolidated_modals')
+    @include('livewire.overtime.partials._push_all_confirmation_modal')
+    @include('livewire.overtime.partials._push_all_progress_modal')
 
 </div>
