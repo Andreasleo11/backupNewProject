@@ -1,5 +1,5 @@
 {{-- ===== FLOATING BULK ACTION BAR ===== --}}
-@if (true)
+@if ($viewMode === 'grouped')
     <template x-teleport="body">
         <div x-cloak x-show="selectedIds.length > 0"
             x-transition:enter="transition cubic-bezier(0.34, 1.56, 0.64, 1) duration-500"

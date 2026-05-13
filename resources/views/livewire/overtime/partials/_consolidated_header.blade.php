@@ -22,45 +22,44 @@
         </div>
     </div>
 
-    {{-- Search Bar and Department Filter --}}
-    <div class="flex-1 flex items-center gap-3">
-        {{-- Search Bar --}}
-        <div class="flex-1 w-full max-w-lg relative group">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <i class='bx bx-search text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl'></i>
-            </div>
-            <input type="text" wire:model.live.debounce.400ms="search"
-                placeholder="Search employee, NIK, or task..."
-                class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium text-slate-800 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all shadow-sm placeholder-slate-400">
-
-            <div wire:loading wire:target="search" class="absolute inset-y-0 right-4 flex items-center">
-                <div class="h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
+    {{-- Search Bar (Primary) --}}
+    <div class="flex-1 max-w-lg relative group">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class='bx bx-search text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl'></i>
         </div>
+        <input type="text" wire:model.live.debounce.400ms="search"
+            placeholder="Search employee, NIK, or task..."
+            class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium text-slate-800 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all shadow-sm placeholder-slate-400">
 
+        <div wire:loading wire:target="search" class="absolute inset-y-0 right-4 flex items-center">
+            <div class="h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    </div>
+
+    {{-- Secondary Controls --}}
+    <div class="flex items-center gap-2 shrink-0">
         {{-- Department Filter --}}
         <div class="relative">
             <select wire:model.live="dept"
-                class="appearance-none bg-white border border-slate-200 rounded-2xl px-4 py-3 pr-10 text-sm font-medium text-slate-800 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all shadow-sm cursor-pointer min-w-[180px]">
+                class="appearance-none bg-white border border-slate-200 rounded-xl px-3 py-2 pr-8 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-indigo-50 focus:border-indigo-200 transition-all shadow-sm cursor-pointer min-w-[160px]">
                 <option value="">All Departments</option>
                 @foreach ($departments as $department)
                     <option value="{{ $department['id'] }}">{{ $department['name'] }}</option>
                 @endforeach
             </select>
-            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <i class='bx bx-chevron-down text-slate-400 text-lg'></i>
+            <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                <i class='bx bx-chevron-down text-slate-400 text-base'></i>
             </div>
         </div>
 
         {{-- View Mode Toggle --}}
         <button wire:click="toggleViewMode"
-            class="h-12 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-sm font-medium transition-all flex items-center gap-2">
+            class="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-all flex items-center justify-center"
+            title="{{ $viewMode === 'flattened' ? 'Switch to Grouped View' : 'Switch to Flattened View' }}">
             @if($viewMode === 'flattened')
                 <i class='bx bx-list-ul text-lg'></i>
-                <span>Flattened</span>
             @else
                 <i class='bx bx-category text-lg'></i>
-                <span>Grouped</span>
             @endif
         </button>
     </div>

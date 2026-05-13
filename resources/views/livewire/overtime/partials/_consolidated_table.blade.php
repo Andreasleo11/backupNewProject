@@ -8,12 +8,6 @@
                 {{-- Sticky header (PR style) --}}
                 <thead class="sticky top-0 z-10">
                     <tr class="bg-white shadow-sm ring-1 ring-slate-100">
-                        @if ($canApprove)
-                            <th class="w-12 px-4 py-4 border-b border-slate-100 text-center">
-                                <input type="checkbox" :checked="isAllSelected" @change="toggleAll"
-                                    class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition-all">
-                            </th>
-                        @endif
                         <th class="px-4 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             Form Ref
                         </th>
@@ -44,20 +38,8 @@
                     @foreach ($headers as $form)
                         @foreach ($form->details as $detail)
                             @php $hasDetails = true; @endphp
-                            <tr wire:key="detail-{{ $detail->id }}" 
-                                class="hover:bg-slate-50/50 transition-colors group"
-                                :class="selectedIds.includes('{{ $form->id }}') ? 'bg-indigo-50/40' : ''">
-                                
-                                {{-- Checkbox (Form Level) --}}
-                                @if ($canApprove)
-                                    <td class="px-4 py-3 text-center">
-                                        {{-- Only show checkbox if the form can be approved by this user --}}
-                                        @if ($form->can_approve)
-                                            <input type="checkbox" x-model="selectedIds" value="{{ $form->id }}"
-                                                class="row-checkbox form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition-all">
-                                        @endif
-                                    </td>
-                                @endif
+                        <tr wire:key="detail-{{ $detail->id }}"
+                            class="hover:bg-slate-50/50 transition-colors group">
 
                                 {{-- Form Ref --}}
                                 <td class="px-4 py-3">
@@ -142,7 +124,7 @@
 
                         @if (!$hasDetails)
                             <tr>
-                                <td colspan="{{ $canApprove ? 8 : 7 }}" class="px-4 py-20 text-center">
+                                <td colspan="7" class="px-4 py-20 text-center">
                                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                         <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
                                             <i class='bx bx-group text-3xl opacity-50'></i>

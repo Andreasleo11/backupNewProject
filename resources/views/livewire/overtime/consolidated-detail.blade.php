@@ -20,7 +20,7 @@
             this.selectedIds = [];
         }
     }
-}">
+}" x-init="$wire.viewMode === 'grouped' ? null : (selectedIds = [])">
 
     {{-- Zone 1: Header + Global Stats --}}
     @include('livewire.overtime.partials._consolidated_header')
