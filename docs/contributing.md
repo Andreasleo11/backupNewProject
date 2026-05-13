@@ -226,10 +226,13 @@ The **Approval Rule Template** is our pilot module for documentation-as-code.
 - [x] `docs/workflows/approval-rule-lifecycle.md` - Workflow diagram
 - [x] `docs/architecture/overview.md` - System architecture
 
+**Completed Modules:**
+
+- [x] Overtime Form (`docs/modules/overtime/`)
+
 **Next Modules to Document:**
 
 - [ ] Purchase Request (`docs/modules/purchase-request/`)
-- [ ] Overtime Form (`docs/modules/overtime-form/`)
 - [ ] Approval Engine (`docs/modules/approval-engine/`)
 
 ## Incremental Updates with Version Control
