@@ -17,7 +17,12 @@ class SearchFilter implements OvertimeFilter
                     $qq->orWhere('id', (int) $s);
                 }
                 $qq->orWhere('branch', 'like', $s . '%')
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $s . '%'));
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $s . '%'))
+                    ->orWhereHas('details', function ($d) use ($s) {
+                        $d->where('name', 'like', '%' . $s . '%')
+                          ->orWhere('NIK', 'like', $s . '%')
+                          ->orWhere('job_desc', 'like', '%' . $s . '%');
+                    });
             });
         }
     }

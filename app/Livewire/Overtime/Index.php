@@ -7,8 +7,8 @@ use App\Application\Overtime\Queries\OvertimeQueryBuilder;
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Domain\Overtime\Models\OvertimeFormDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
-use Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -52,6 +52,9 @@ class Index extends Component
 
     #[Url(as: 'range')]
     public ?string $range = null; // 'today'|'7d'|'30d'|'mtd'|null
+
+    #[Url(as: 'group_date')]
+    public bool $groupByDate = false;
 
     public array $departments = [];
 
@@ -100,10 +103,18 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function toggleGroupByDate(): void
+    {
+        $this->groupByDate = ! $this->groupByDate;
+        $this->resetPage();
+    }
+
     public function buildStats(): array
     {
+        $filterParams = $this->getFilterParams();
+
         $builder = new OvertimeQueryBuilder;
-        $h = $builder->build(Auth::user(), array_merge($this->getFilterParams(), [
+        $h = $builder->build(Auth::user(), array_merge($filterParams, [
             'excludeInfoStatus' => true,
         ]));
 
@@ -128,6 +139,14 @@ class Index extends Component
 
         $myApprovalCount = (new OvertimeQueryBuilder)->build(Auth::user(), ['infoStatus' => 'my_approval'])->count();
 
+        // Calculate detailed approval stats
+        $baseQuery = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['excludeInfoStatus' => true]));
+        $totalForms = $baseQuery->count();
+        $fullyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'fully_approved']))->count();
+        $partiallyApprovedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'partially_approved']))->count();
+        $fullyRejectedCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'fully_rejected']))->count();
+        $pendingCount = (new OvertimeQueryBuilder)->build(Auth::user(), array_merge($filterParams, ['infoStatus' => 'pending']))->count();
+
         return [
             'approved' => $approved,
             'rejected' => $rejected,
@@ -137,6 +156,15 @@ class Index extends Component
             'pct_rejected' => round(($rejected * 100) / $total),
             'pct_pending' => round(($pending * 100) / $total),
             'my_approval_count' => $myApprovalCount,
+            'fully_approved' => $fullyApprovedCount,
+            'partially_approved' => $partiallyApprovedCount,
+            'fully_rejected' => $fullyRejectedCount,
+            'pending_forms' => $pendingCount,
+            'total_forms' => $totalForms,
+            'pct_fully_approved' => $totalForms > 0 ? round(($fullyApprovedCount * 100) / $totalForms) : 0,
+            'pct_partially_approved' => $totalForms > 0 ? round(($partiallyApprovedCount * 100) / $totalForms) : 0,
+            'pct_fully_rejected' => $totalForms > 0 ? round(($fullyRejectedCount * 100) / $totalForms) : 0,
+            'pct_pending_forms' => $totalForms > 0 ? round(($pendingCount * 100) / $totalForms) : 0,
         ];
     }
 
@@ -145,16 +173,17 @@ class Index extends Component
         return [
             'startDate' => ['nullable', 'date'],
             'endDate' => ['nullable', 'date'],
-            'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval'])],
+            'infoStatus' => ['nullable', Rule::in(['pending', 'approved', 'rejected', 'my_approval', 'fully_approved', 'partially_approved', 'fully_rejected'])],
             'perPage' => ['integer', Rule::in([10, 25, 50])],
-            'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'status', 'workflow_status'])],
+            'sortField' => ['string', Rule::in(['id', 'first_overtime_date', 'workflow_status'])],
             'sortDirection' => ['string', Rule::in(['asc', 'desc'])],
+            'groupByDate' => ['boolean'],
         ];
     }
 
     public function updated($name, $value): void
     {
-        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned'])) {
+        if (in_array($name, ['startDate', 'endDate', 'dept', 'infoStatus', 'search', 'perPage', 'sortField', 'sortDirection', 'hideSigned', 'groupByDate'])) {
             $this->resetPage();
             $this->selectedIds = [];
         }
@@ -184,9 +213,12 @@ class Index extends Component
         // Only trigger if no explicit filter is given.
         if (empty($this->infoStatus)) {
             $user = Auth::user();
-            if ($user->hasAnyRole(['department-head', 'general-manager', 'verificator', 'director'])) {
+            if($this->isDetailReviewer()){
+                $this->infoStatus = 'pending';
+                $this->groupByDate = true;
+            } elseif ($user->hasAnyRole(['department-head', 'general-manager', 'director'])) {
                 $myApprovalCount = app(OvertimeQueryBuilder::class)
-                    ->build($user, ['infoStatus' => 'my_approval'])
+                    ->build($user)
                     ->count();
 
                 if ($myApprovalCount >= 0) {
@@ -485,26 +517,75 @@ class Index extends Component
         $builder = new OvertimeQueryBuilder;
         $query = $builder->build(Auth::user(), $this->getFilterParams());
 
-        // Sorting
-        $query->reorder();
-        if ($this->sortField === 'id' && $this->sortDirection === 'desc' && Auth::user()->hasRole('verificator')) {
-            $query->orderBy('first_overtime_date', 'asc');
-        } else {
-            // Fix workflow_status sort if it relies on a mutator, mapping it to status
-            $sortColumn = $this->sortField === 'workflow_status' ? 'status' : $this->sortField;
-            $query->orderBy($sortColumn, $this->sortDirection);
-        }
+        if ($this->groupByDate) {
+            // Group by OT date - get all records first, then group
+            $allHeaders = $query->get();
 
-        $dataheader = $query->paginate($this->perPage);
+            $groupedData = $allHeaders->groupBy(function ($header) {
+                return $header->first_overtime_date;
+            })->map(function ($headers, $date) {
+                $firstHeader = $headers->first();
+
+                // Get consolidated status using OvertimePresenter
+                $consolidatedStatus = \App\Application\Overtime\Presenters\OvertimePresenter::consolidatedState($headers);
+
+                return (object) [
+                    'date' => $date,
+                    'headers' => $headers,
+                    'total_forms' => $headers->count(),
+                    'total_details' => $headers->sum('details_count'),
+                    'departments' => $headers->pluck('department.name')->unique()->filter()->implode(', '),
+                    'branches' => $headers->pluck('branch')->unique()->implode(', '),
+                    'creators' => $headers->pluck('user.name')->unique()->implode(', '),
+
+                    'consolidated_status' => $consolidatedStatus,
+                    'total_pending_details' => $headers->sum('pending_count'),
+                    'total_approved_details' => $headers->sum('approved_count'),
+                    'total_rejected_details' => $headers->sum('rejected_count'),
+                    'first_created_at' => $headers->min('created_at'),
+                ];
+            });
+
+            // Apply sorting to grouped data
+            $sortColumn = $this->sortField === 'workflow_status' ? 'status' : $this->sortField;
+            if ($sortColumn === 'first_overtime_date') {
+                $groupedData = $this->sortDirection === 'asc' ? $groupedData->sortBy('date') : $groupedData->sortByDesc('date');
+            } elseif ($sortColumn === 'id') {
+                $groupedData = $this->sortDirection === 'asc' ? $groupedData->sortBy('first_created_at') : $groupedData->sortByDesc('first_created_at');
+            }
+
+            // Manual pagination for grouped data
+            $paginatedGroups = collect($groupedData->values())->forPage($this->getPage(), $this->perPage);
+
+            $dataheader = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedGroups,
+                $groupedData->count(),
+                $this->perPage,
+                $this->getPage(),
+                ['path' => request()->url(), 'pageName' => 'page']
+            );
+        } else {
+            // Sorting
+            $query->reorder();
+            if ($this->sortField === 'id' && $this->sortDirection === 'desc' && Auth::user()->hasRole('verificator')) {
+                $query->orderBy('first_overtime_date', 'asc');
+            } else {
+                $sortColumn = $this->sortField;
+                $query->orderBy($sortColumn, $this->sortDirection);
+            }
+
+            $dataheader = $query->paginate($this->perPage);
+        }
 
         return view('livewire.overtime.index', [
             'dataheader' => $dataheader,
             'departments' => $this->departments,
             'user' => Auth::user(),
-            'stats' => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0],
+            'stats' => $this->isDetailReviewer() ? $this->buildStats() : ['my_approval_count' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'total' => 0, 'pct_approved' => 0, 'pct_rejected' => 0, 'pct_pending' => 0, 'fully_approved' => 0, 'partially_approved' => 0, 'fully_rejected' => 0],
             'isPrivileged' => $this->isPrivilegedUser(),
             'isDetailReviewer' => $this->isDetailReviewer(),
             'canApprove' => Auth::user()->can('overtime.approve'),
+            'groupByDate' => $this->groupByDate,
         ]);
     }
 }

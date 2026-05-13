@@ -8,6 +8,7 @@ use App\Http\Controllers\hrd\ImportantDocController;
 use App\Livewire\Overtime\ApprovalHub as FormOvertimeHub;
 use App\Livewire\Overtime\BulkImport;
 use App\Livewire\Overtime\Detail as FormOvertimeDetail;
+use App\Livewire\Overtime\ConsolidatedDetail;
 use App\Livewire\Overtime\Form as FormOvertime;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/overtime-forms/create', FormOvertime::class)->name('overtime.create');
     Route::get('/overtime-forms/bulk', BulkImport::class)->name('overtime.bulk');
     Route::get('/overtime-forms/{id}', FormOvertimeDetail::class)->name('overtime.detail');
+    Route::get('/overtime-forms/consolidated/{date}', ConsolidatedDetail::class)->name('overtime.consolidated');
     Route::get('/overtime-forms/{id}/edit', FormOvertime::class)->name('overtime.edit');
 
     // === Form Overtime Actions (used by Detail Livewire via direct method calls) ===
