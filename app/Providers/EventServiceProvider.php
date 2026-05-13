@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Application\PurchaseRequest\Listeners\NotifyPurchasersOnApproval;
+use App\Events\ApprovalCompleted;
 use App\Listeners\BroadcastNotificationPushed;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -19,7 +21,11 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [SendEmailVerificationNotification::class],
         NotificationSent::class => [BroadcastNotificationPushed::class],
-    ];
+
+       ApprovalCompleted::class => [
+            NotifyPurchasersOnApproval::class,
+       ],
+   ];
 
     /**
      * Register any events for your application.
