@@ -71,11 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
     Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
 
-    // Defect Categories
-    Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
-    Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
-    Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
-    Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
+    Route::get('/qaqc/defectcategory', \App\Livewire\Qaqc\DefectCategoryManager::class)->name('qaqc.defectcategory');
 
     // Form Adjust Section
     Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
