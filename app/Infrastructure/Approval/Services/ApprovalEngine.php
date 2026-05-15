@@ -8,6 +8,7 @@ use App\Application\Auth\UserRoles;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Domain\Approval\Contracts\RuleResolver;
 use App\Domain\Signature\Repositories\UserSignatureRepository;
+use App\Events\ApprovalCompleted;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Notifications\ApprovalActionRequired;
@@ -190,7 +191,7 @@ final class ApprovalEngine implements Approvals
     {
         $req = $this->mustGetInReview($approvable);
 
-        DB::transaction(function () use ($req, $by, $remarks) {
+        DB::transaction(function () use ($req, $by, $remarks, $approvable) {
             $step = $this->mustGetCurrentStep($req);
             $this->guardActor($step, $by);
 
@@ -219,6 +220,9 @@ final class ApprovalEngine implements Approvals
                 $req->update(['status' => 'APPROVED']);
                 $this->log($req, $by, $from, 'APPROVED', $remarks);
                 $this->notifyFinalApproval($req);
+
+                // Dispatch generic approval completed event for module-specific handling
+                ApprovalCompleted::dispatch($approvable, $req);
             }
         });
     }
