@@ -94,3 +94,4 @@ require __DIR__ . '/master-data.php';
 require __DIR__ . '/legacy.php';
 
 require __DIR__ . '/ticketing.php';
+require __DIR__ . '/locker.php';
