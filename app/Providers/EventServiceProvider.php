@@ -18,14 +18,12 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<class-string, array<int, class-string>>
      */
-    protected $listen = [
-        Registered::class => [SendEmailVerificationNotification::class],
-        NotificationSent::class => [BroadcastNotificationPushed::class],
-        ApprovalCompleted::class => [
-            NotifyPurchasersOnApproval::class,
-            NotifyApprovedViewersOnApproval::class,
+   protected $listen = [
+       \App\Events\ApprovalCompleted::class => [
+           \App\Application\PurchaseRequest\Listeners\HandlePurchaseRequestApprovalNotifications::class,
        ],
    ];
+   
 
     /**
      * Register any events for your application.
