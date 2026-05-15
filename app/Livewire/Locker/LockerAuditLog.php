@@ -12,9 +12,25 @@ class LockerAuditLog extends Component
     use WithPagination;
 
     public string $search = '';
+    public string $typeFilter = '';
+    public ?string $dateFrom = null;
+    public ?string $dateTo = null;
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'typeFilter' => ['except' => ''],
+        'dateFrom' => ['except' => null],
+        'dateTo' => ['except' => null],
+    ];
 
     public function updatedSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'typeFilter', 'dateFrom', 'dateTo']);
         $this->resetPage();
     }
 
@@ -22,10 +38,19 @@ class LockerAuditLog extends Component
     public function logs()
     {
         return Activity::query()
-            ->whereIn('subject_type', ['App\Models\Locker', 'App\Models\LockerAssignment'])
+            ->whereIn('subject_type', ['App\Models\Locker', 'App\Models\LockerAssignment', 'App\Models\LockerIncident'])
             ->with(['causer', 'subject'])
+            ->when($this->search, function($q) {
+                $q->where(function($sub) {
+                    $sub->where('description', 'like', '%' . $this->search . '%')
+                        ->orWhere('properties', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->typeFilter, fn($q) => $q->where('subject_type', $this->typeFilter))
+            ->when($this->dateFrom, fn($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
+            ->when($this->dateTo, fn($q) => $q->whereDate('created_at', '<=', $this->dateTo))
             ->latest()
-            ->paginate(15);
+            ->paginate(30);
     }
 
     public function render()

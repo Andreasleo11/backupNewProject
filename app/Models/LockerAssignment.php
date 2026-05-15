@@ -37,4 +37,9 @@ class LockerAssignment extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'nik');
     }
+
+    public function incidents()
+    {
+        return $this->hasMany(LockerIncident::class, 'locker_assignment_id');
+    }
 }

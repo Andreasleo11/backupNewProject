@@ -1,6 +1,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" 
     x-data="{ 
-        isAssignModalOpen: @entangle('isAssignModalOpen')
+        isAssignModalOpen: @entangle('isAssignModalOpen'),
+        isIncidentModalOpen: @entangle('isIncidentModalOpen')
     }">
     
     {{-- Header Section --}}
@@ -96,14 +97,26 @@
                             <h3 class="text-xl font-black text-slate-800 tracking-tight">{{ $locker->locker_number }}</h3>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{{ $locker->location ?: 'No Location' }}</p>
                         </div>
-                        <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter {{ match($locker->status) {
-                            'available' => 'bg-emerald-50 text-emerald-600',
-                            'occupied' => 'bg-blue-50 text-blue-600',
-                            'maintenance' => 'bg-amber-50 text-amber-600',
-                            default => 'bg-slate-50 text-slate-600'
-                        } }}">
-                            {{ $locker->status }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            @if($locker->status === 'occupied' && $locker->currentAssignment && $locker->currentAssignment->incidents()->where('is_paid', false)->exists())
+                                <div class="group/fine relative">
+                                    <span class="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white animate-pulse">
+                                        <i class='bx bxs-error-circle'></i>
+                                    </span>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/fine:block w-32 px-2 py-1 bg-slate-900 text-white text-[9px] rounded shadow-xl z-20 text-center">
+                                        Unpaid fines active
+                                    </div>
+                                </div>
+                            @endif
+                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter {{ match($locker->status) {
+                                'available' => 'bg-emerald-50 text-emerald-600',
+                                'occupied' => 'bg-blue-50 text-blue-600',
+                                'maintenance' => 'bg-amber-50 text-amber-600',
+                                default => 'bg-slate-50 text-slate-600'
+                            } }}">
+                                {{ $locker->status }}
+                            </span>
+                        </div>
                     </div>
 
                     @if ($locker->status === 'occupied' && $locker->currentAssignment)
@@ -112,11 +125,36 @@
                                 <div class="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm">
                                     <i class='bx bx-user text-xl'></i>
                                 </div>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <p class="text-xs font-black text-slate-800 truncate">{{ $locker->currentAssignment->employee->name }}</p>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{{ $locker->currentAssignment->employee->nik }}</p>
                                 </div>
+                                <button wire:click="openIncidentModal({{ $locker->currentAssignment->id }})" 
+                                    class="h-8 w-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all shadow-sm group/btn"
+                                    title="Report Issue">
+                                    <i class='bx bx-error text-lg'></i>
+                                </button>
                             </div>
+
+                            {{-- Active Fines List --}}
+                            @php $unpaidFines = $locker->currentAssignment->incidents()->where('is_paid', false)->get(); @endphp
+                            @if($unpaidFines->count() > 0)
+                                <div class="mt-3 space-y-2">
+                                    @foreach($unpaidFines as $incident)
+                                        <div class="flex items-center justify-between p-2 rounded-xl bg-rose-50/50 border border-rose-100">
+                                            <div>
+                                                <p class="text-[9px] font-black text-rose-600 uppercase tracking-tighter">{{ str_replace('_', ' ', $incident->type) }}</p>
+                                                <p class="text-[10px] font-bold text-slate-700">Rp {{ number_format($incident->fine_amount, 0, ',', '.') }}</p>
+                                            </div>
+                                            <button wire:click="markFineAsPaid({{ $incident->id }})" 
+                                                class="px-2 py-1 rounded-lg bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-100">
+                                                Paid
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <div class="mt-3 pt-3 border-t border-slate-200/60">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Assigned Since</p>
                                 <p class="text-[10px] font-bold text-slate-600">{{ $locker->currentAssignment->assigned_at->format('M d, Y H:i') }}</p>
@@ -247,6 +285,81 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- Incident Modal --}}
+    <template x-teleport="body">
+        <div x-show="isIncidentModalOpen" x-cloak 
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+            
+            <div class="absolute inset-0" @click="isIncidentModalOpen = false"></div>
+            
+            <div class="relative w-full max-w-md transform transition-all" 
+                x-transition:enter="ease-out duration-300" 
+                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+                
+                <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Report Issue</h3>
+                            <p class="text-xs text-slate-500 font-medium mt-0.5">Log an incident or issue a fine</p>
+                        </div>
+                        <button @click="isIncidentModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <i class='bx bx-x text-2xl'></i>
+                        </button>
+                    </div>
+
+                    <form wire:submit.prevent="reportIncident" class="p-8 space-y-6">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Issue Type</label>
+                            <select wire:model="incidentType" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 transition-all">
+                                <option value="lost_key">Lost Physical Key</option>
+                                <option value="damage">Locker Damage</option>
+                                <option value="misuse">Unauthorized Misuse</option>
+                                <option value="other">Other Issue</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Fine Amount (IDR)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">Rp</span>
+                                <input type="number" wire:model="fineAmount" 
+                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                                    placeholder="0">
+                            </div>
+                            @error('fineAmount') <p class="mt-1 text-xs font-bold text-rose-500">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Internal Notes</label>
+                            <textarea wire:model="incidentNotes" rows="3"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+                                placeholder="Describe the incident..."></textarea>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-2">
+                            <button type="button" @click="isIncidentModalOpen = false" 
+                                class="flex-1 px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                class="flex-1 px-6 py-3 rounded-xl bg-rose-600 text-white font-bold shadow-lg shadow-rose-100 hover:bg-rose-700 hover:-translate-y-0.5 transition-all">
+                                Issue Fine
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
