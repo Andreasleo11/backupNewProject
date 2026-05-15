@@ -26,6 +26,7 @@ final class HandlePurchaseRequestApprovalNotifications
                     && $this->scopingManager->wantsNotification($user, get_class($pr), 'immediate');
             });
 
+        $watchers = [];
         // // 2) Permission-based watchers (pr.notify-approved)
         // $watchers = \App\Infrastructure\Persistence\Eloquent\Models\User::permission('pr.notify-approved')->get()->filter(function ($user) use ($pr) {
         //     return $this->scopingManager->wantsNotification($user, get_class($pr), 'immediate');
