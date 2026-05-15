@@ -439,6 +439,36 @@ class NavigationService
                     ],
                 ],
             ],
+            [
+                'type' => 'group',
+                'label' => 'Facility Management',
+                'icon' => 'building-office',
+                'permission' => 'employee.view-any',
+                'priority' => 62,
+                'children' => [
+                    [
+                        'label' => 'Locker Dashboard',
+                        'route' => 'lockers.dashboard',
+                        'icon' => 'view-columns',
+                        'active' => request()->routeIs('lockers.dashboard'),
+                        'permission' => 'employee.view-any',
+                    ],
+                    [
+                        'label' => 'Locker Settings',
+                        'route' => 'lockers.manage',
+                        'icon' => 'cog-8-tooth',
+                        'active' => request()->routeIs('lockers.manage'),
+                        'permission' => 'employee.view-any',
+                    ],
+                    [
+                        'label' => 'Locker Audit',
+                        'route' => 'lockers.audit',
+                        'icon' => 'clipboard-document-list',
+                        'active' => request()->routeIs('lockers.audit'),
+                        'permission' => 'employee.view-any',
+                    ],
+                ],
+            ],
 
             // Section: Oversight & Compliance
             ['type' => 'divider', 'label' => 'Oversight'],
