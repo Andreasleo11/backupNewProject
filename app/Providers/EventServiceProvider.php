@@ -2,8 +2,7 @@
 
 namespace App\Providers;
 
-use App\Application\PurchaseRequest\Listeners\NotifyApprovedViewersOnApproval;
-use App\Application\PurchaseRequest\Listeners\NotifyPurchasersOnApproval;
+use App\Application\PurchaseRequest\Listeners\HandlePurchaseRequestApprovalNotifications;
 use App\Events\ApprovalCompleted;
 use App\Listeners\BroadcastNotificationPushed;
 use Illuminate\Auth\Events\Registered;
@@ -19,9 +18,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
    protected $listen = [
-       \App\Events\ApprovalCompleted::class => [
-           \App\Application\PurchaseRequest\Listeners\HandlePurchaseRequestApprovalNotifications::class,
-       ],
+        Registered::class => [SendEmailVerificationNotification::class],
+        NotificationSent::class => [BroadcastNotificationPushed::class],
+        ApprovalCompleted::class => [
+            HandlePurchaseRequestApprovalNotifications::class,
+        ],
    ];
    
 
