@@ -47,11 +47,13 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('email:daily-stock-report')->dailyAt('01:30');
 
-        $schedule
-            ->command('notify:missing-reports')
-            ->weekdays()
-            ->dailyAt('13:30')
-            ->timezone('Asia/Jakarta');
+        //! under development
+        // $schedule
+        //     ->command('notify:missing-reports')
+        //     ->weekdays()
+        //     ->dailyAt('13:30')
+        //     ->timezone('Asia/Jakarta');
+
         // $schedule->command('app:update-forecast')->dailyAt('13:00')->timezone('Asia/Jakarta');
 
         // Hourly refresh all department snapshots (lightweight)
