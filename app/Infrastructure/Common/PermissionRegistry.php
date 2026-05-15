@@ -39,7 +39,6 @@ class PermissionRegistry
                     'pr.view', 'pr.view-all', 'pr.view-all-approved', 'pr.create', 'pr.edit', 'pr.delete', 'pr.delete-forever', 'pr.cancel', 'pr.print', 'pr.batch-approve', 'pr.approve', 'pr.reject',
                     'pr.auto-approve', // Replacement for GM/Moulding logic
                     'pr.view-prices', // Capability to see sensitive pricing data
-                    'pr.notify-approved', // Receive notifications when PRs are approved
                     'pr.admin', // Full bypass for PR logic
                 ],
                 'roles' => [
@@ -50,7 +49,7 @@ class PermissionRegistry
                     'director' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve', 'pr.view-prices', 'pr.view-all-approved'],
                     'purchaser' => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve', 'pr.view-prices'],
                     'purchasing-manager' => ['pr.view', 'pr.batch-approve', 'approval.view-log', 'pr.admin', 'pr.delete-forever', 'pr.view-prices'],
-                    'accounting-officer' => ['pr.view', 'pr.print', 'pr.view-prices', 'pr.view-all-approved', 'pr.notify-approved'],
+                    'accounting-officer' => ['pr.view', 'pr.print', 'pr.view-prices', 'pr.view-all-approved'],
                 ],
             ],
             'Approval Engine' => [
