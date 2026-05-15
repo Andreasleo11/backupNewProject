@@ -47,7 +47,7 @@ class PermissionRegistry
                     'department-head' => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.view-prices'],
                     'verificator' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.view-prices'],
                     'general-manager' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.auto-approve', 'pr.batch-approve', 'pr.view-prices'],
-                    'director' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve', 'pr.view-prices', 'pr.view-all-approved', 'pr.notify-approved'],
+                    'director' => ['pr.view', 'pr.print', 'pr.approve', 'pr.reject', 'pr.batch-approve', 'pr.auto-approve', 'pr.view-prices', 'pr.view-all-approved'],
                     'purchaser' => ['pr.view', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.print', 'pr.approve', 'pr.auto-approve', 'pr.view-prices'],
                     'purchasing-manager' => ['pr.view', 'pr.batch-approve', 'approval.view-log', 'pr.admin', 'pr.delete-forever', 'pr.view-prices'],
                     'accounting-officer' => ['pr.view', 'pr.print', 'pr.view-prices', 'pr.view-all-approved', 'pr.notify-approved'],

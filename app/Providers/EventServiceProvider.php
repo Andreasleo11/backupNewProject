@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Application\PurchaseRequest\Listeners\NotifyApprovedViewersOnApproval;
 use App\Application\PurchaseRequest\Listeners\NotifyPurchasersOnApproval;
 use App\Events\ApprovalCompleted;
 use App\Listeners\BroadcastNotificationPushed;
@@ -9,7 +10,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSent;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -21,9 +21,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [SendEmailVerificationNotification::class],
         NotificationSent::class => [BroadcastNotificationPushed::class],
-       \App\Events\ApprovalCompleted::class => [
-           \App\Application\PurchaseRequest\Listeners\NotifyPurchasersOnApproval::class,
-           \App\Application\PurchaseRequest\Listeners\NotifyApprovedViewersOnApproval::class,
+        ApprovalCompleted::class => [
+            NotifyPurchasersOnApproval::class,
+            NotifyApprovedViewersOnApproval::class,
        ],
    ];
 
