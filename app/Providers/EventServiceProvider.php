@@ -21,9 +21,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [SendEmailVerificationNotification::class],
         NotificationSent::class => [BroadcastNotificationPushed::class],
-
-       ApprovalCompleted::class => [
-            NotifyPurchasersOnApproval::class,
+       \App\Events\ApprovalCompleted::class => [
+           \App\Application\PurchaseRequest\Listeners\NotifyPurchasersOnApproval::class,
+           \App\Application\PurchaseRequest\Listeners\NotifyApprovedViewersOnApproval::class,
        ],
    ];
 
