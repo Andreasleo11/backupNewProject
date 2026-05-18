@@ -13,12 +13,13 @@ class AssetCategoryManager extends Component
     public $search = '';
     public $name;
     public $editingCategoryId = null;
+    public $showForm = false;
 
     protected $updatesQueryString = ['search'];
 
     public function render()
     {
-        $categories = AssetCategory::query()
+        $categories = AssetCategory::withCount('assets')
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%');
             })
@@ -33,6 +34,13 @@ class AssetCategoryManager extends Component
     {
         $this->name = '';
         $this->editingCategoryId = null;
+        $this->showForm = false;
+    }
+
+    public function showAddForm()
+    {
+        $this->resetFields();
+        $this->showForm = true;
     }
 
     public function store()
@@ -55,6 +63,7 @@ class AssetCategoryManager extends Component
         $category = AssetCategory::findOrFail($id);
         $this->editingCategoryId = $id;
         $this->name = $category->name;
+        $this->showForm = true;
     }
 
     public function delete($id)

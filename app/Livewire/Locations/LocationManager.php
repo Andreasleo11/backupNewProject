@@ -13,12 +13,13 @@ class LocationManager extends Component
     public $search = '';
     public $name;
     public $editingLocationId = null;
+    public $showForm = false;
 
     protected $updatesQueryString = ['search'];
 
     public function render()
     {
-        $locations = AssetLocation::query()
+        $locations = AssetLocation::withCount('assets')
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%');
             })
@@ -33,6 +34,13 @@ class LocationManager extends Component
     {
         $this->name = '';
         $this->editingLocationId = null;
+        $this->showForm = false;
+    }
+
+    public function showAddForm()
+    {
+        $this->resetFields();
+        $this->showForm = true;
     }
 
     public function store()
@@ -55,6 +63,7 @@ class LocationManager extends Component
         $location = AssetLocation::findOrFail($id);
         $this->editingLocationId = $id;
         $this->name = $location->name;
+        $this->showForm = true;
     }
 
     public function delete($id)
