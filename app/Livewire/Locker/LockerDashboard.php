@@ -23,6 +23,13 @@ class LockerDashboard extends Component
     public string $employeeSearch = '';
     public string $notes = '';
 
+    // Incident Properties
+    public bool $isIncidentModalOpen = false;
+    public ?int $selectedAssignmentId = null;
+    public string $incidentType = 'lost_key';
+    public float $fineAmount = 0;
+    public string $incidentNotes = '';
+
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
@@ -77,6 +84,12 @@ class LockerDashboard extends Component
         $assignment = $locker->currentAssignment;
 
         if ($assignment) {
+            // Check for unpaid fines
+            $hasUnpaidFines = $assignment->incidents()->where('is_paid', false)->exists();
+            if ($hasUnpaidFines) {
+                $this->dispatch('toast', message: 'Cannot release locker with unpaid fines', type: 'error');
+                return;
+            }
             $assignment->update(['released_at' => now()]);
         }
 
@@ -84,11 +97,46 @@ class LockerDashboard extends Component
         $this->dispatch('toast', message: 'Locker released successfully', type: 'success');
     }
 
+    public function openIncidentModal(int $assignmentId): void
+    {
+        $this->selectedAssignmentId = $assignmentId;
+        $this->incidentType = 'lost_key';
+        $this->fineAmount = 0;
+        $this->incidentNotes = '';
+        $this->isIncidentModalOpen = true;
+    }
+
+    public function reportIncident(): void
+    {
+        $this->validate([
+            'incidentType' => 'required|string',
+            'fineAmount' => 'required|numeric|min:0',
+        ]);
+
+        \App\Models\LockerIncident::create([
+            'locker_assignment_id' => $this->selectedAssignmentId,
+            'type' => $this->incidentType,
+            'fine_amount' => $this->fineAmount,
+            'notes' => $this->incidentNotes,
+            'reported_at' => now(),
+        ]);
+
+        $this->isIncidentModalOpen = false;
+        $this->dispatch('toast', message: 'Incident reported and fine issued', type: 'success');
+    }
+
+    public function markFineAsPaid(int $incidentId): void
+    {
+        $incident = \App\Models\LockerIncident::findOrFail($incidentId);
+        $incident->update(['is_paid' => true]);
+        $this->dispatch('toast', message: 'Fine marked as paid', type: 'success');
+    }
+
     #[Computed]
     public function lockers()
     {
         return Locker::query()
-            ->with(['currentAssignment.employee'])
+            ->with(['currentAssignment.employee', 'currentAssignment.incidents'])
             ->when($this->search, fn($q) => $q->where('locker_number', 'like', '%' . $this->search . '%')
                 ->orWhere('location', 'like', '%' . $this->search . '%'))
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
