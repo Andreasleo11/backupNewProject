@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
