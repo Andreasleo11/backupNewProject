@@ -65,4 +65,12 @@ Route::middleware('auth')->group(function () {
 
     // Stock Tinta
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
+
+    // Asset & Consumable Module (Livewire)
+    Route::get('assets/dashboard', \App\Livewire\Assets\AssetDashboard::class)->name('assets.dashboard');
+    Route::get('assets/manage', \App\Livewire\Assets\AssetManager::class)->name('assets.manage');
+    Route::get('consumables/manage', \App\Livewire\Consumables\ConsumableManager::class)->name('consumables.manage');
+    Route::get('locations/manage', \App\Livewire\Locations\LocationManager::class)->name('locations.manage');
+    Route::get('assets/categories', \App\Livewire\Assets\AssetCategoryManager::class)->name('assets.categories');
+    Route::get('consumables/categories', \App\Livewire\Consumables\ConsumableCategoryManager::class)->name('consumables.categories');
 });

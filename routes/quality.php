@@ -73,6 +73,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/qaqc/defectcategory', \App\Livewire\Qaqc\DefectCategoryManager::class)->name('qaqc.defectcategory');
 
+    // Legacy defect category routes (restored for partial modals and report wizard)
+    Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
+    Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
+    Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
+
     // Form Adjust Section
     Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
     Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
