@@ -20,6 +20,7 @@ class ConsumableManager extends Component
     public $name, $sku, $category_id, $current_stock, $min_stock, $location_id;
     public $unit, $reorder_point;
     public $editingConsumableId = null;
+    public $showForm = false;
 
     public $transactionType = 'In'; // In, Out
     public $transactionQuantity = 1;
@@ -67,6 +68,13 @@ class ConsumableManager extends Component
         $this->reorder_point = 5;
         $this->location_id = '';
         $this->editingConsumableId = null;
+        $this->showForm = false;
+    }
+
+    public function showAddForm()
+    {
+        $this->resetFields();
+        $this->showForm = true;
     }
 
     public function store()
@@ -106,6 +114,7 @@ class ConsumableManager extends Component
         $this->unit = $consumable->unit;
         $this->reorder_point = $consumable->reorder_point;
         $this->location_id = $consumable->location_id;
+        $this->showForm = true;
     }
 
     public function openTransactionModal($id)

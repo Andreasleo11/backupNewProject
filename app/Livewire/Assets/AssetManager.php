@@ -20,6 +20,7 @@ class AssetManager extends Component
     public $name, $asset_tag, $category_id, $status, $location_id, $assigned_to_user_id, $purchase_date;
     public $serial_number, $purchase_cost, $warranty_expiry, $notes;
     public $editingAssetId = null;
+    public $showForm = false;
 
     protected $updatesQueryString = ['search', 'selectedCategory', 'selectedStatus'];
 
@@ -61,6 +62,13 @@ class AssetManager extends Component
         $this->warranty_expiry = '';
         $this->notes = '';
         $this->editingAssetId = null;
+        $this->showForm = false;
+    }
+
+    public function showAddForm()
+    {
+        $this->resetFields();
+        $this->showForm = true;
     }
 
     public function store()
@@ -108,6 +116,7 @@ class AssetManager extends Component
         $this->purchase_cost = $asset->purchase_cost;
         $this->warranty_expiry = $asset->warranty_expiry;
         $this->notes = $asset->notes;
+        $this->showForm = true;
     }
 
     public function delete($id)

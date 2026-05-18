@@ -2,10 +2,14 @@
     <div class="mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-3xl font-bold text-gray-800">Locations</h1>
-            <p class="text-gray-600">Manage asset locations.</p>
+            <p class="text-gray-600">Manage asset locations. <span class="text-sm text-gray-500">({{ $locations->total() }})</span></p>
         </div>
-        <button wire:click="resetFields" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-            Add Location
+        <button wire:click="$toggle('showForm')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+            @if($showForm)
+                Hide Form
+            @else
+                + Add Location
+            @endif
         </button>
     </div>
 
@@ -16,20 +20,19 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 {{ $showForm ? 'lg:grid-cols-3' : '' }} gap-6">
         <!-- Table Section -->
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-md overflow-hidden">
-            <!-- Search -->
+        <div class="{{ $showForm ? 'lg:col-span-2' : '' }} bg-white rounded-2xl shadow-md overflow-hidden">
             <div class="p-4 border-b border-gray-100">
                 <input type="text" wire:model.debounce.300ms="search" placeholder="Search location..." class="px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
-            <!-- Table -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-gray-50 text-gray-600 uppercase text-sm">
                         <tr>
                             <th class="px-6 py-3">Name</th>
+                            <th class="px-6 py-3 text-center">Assets</th>
                             <th class="px-6 py-3">Actions</th>
                         </tr>
                     </thead>
@@ -37,12 +40,23 @@
                         @foreach($locations as $location)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 text-gray-800 font-medium">{{ $location->name }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">
+                                        {{ $location->assets_count }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <button wire:click="edit({{ $location->id }})" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</button>
-                                    <button wire:click="delete({{ $location->id }})" class="text-red-600 hover:text-red-900" onclick="confirm('Are you sure?') || event.stopImmediatePropagation()">Delete</button>
+                                    <button wire:click="edit({{ $location->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                    <button wire:click="delete({{ $location->id }})" class="text-red-600 hover:text-red-900" onclick="confirm('Delete this location? This may affect {{ $location->assets_count }} asset(s).') || event.stopImmediatePropagation()">Delete</button>
                                 </td>
                             </tr>
                         @endforeach
+
+                        @if($locations->isEmpty())
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-400">No locations found.</td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -52,6 +66,7 @@
         </div>
 
         <!-- Form Section -->
+        @if($showForm)
         <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100 h-fit">
             <h2 class="text-xl font-bold text-gray-800 mb-4">
                 {{ $editingLocationId ? 'Edit Location' : 'Add Location' }}
@@ -69,5 +84,6 @@
                 </div>
             </form>
         </div>
+        @endif
     </div>
 </div>
