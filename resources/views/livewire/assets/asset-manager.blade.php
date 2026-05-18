@@ -95,6 +95,7 @@
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $asset->location->name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $asset->assignedTo->name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
+                                    <a href="{{ route('assets.show', $asset->id) }}" class="text-green-600 hover:text-green-900 mr-3">View</a>
                                     <button wire:click="edit({{ $asset->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
                                     <button wire:click="delete({{ $asset->id }})" class="text-red-600 hover:text-red-900" onclick="confirm('Are you sure?') || event.stopImmediatePropagation()">Delete</button>
                                 </td>
