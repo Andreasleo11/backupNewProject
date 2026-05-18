@@ -2,32 +2,46 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class StockTransaction extends Model
 {
-    protected $table = 'stock_transaction';
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
-        'unique_code',
-        'stock_id',
-        'dept_id',
-        'in_time',
-        'is_out',
-        'is_return',
-        'receiver',
-        'remark',
-        'out_time',
-        // Add other fields as needed
+        'consumable_id',
+        'type',
+        'quantity',
+        'user_id',
+        'target_user_id',
+        'notes',
+        'reference',
     ];
 
-    public function historyTransaction()
+    public function getActivitylogOptions(): LogOptions
     {
-        return $this->belongsTo(MasterStock::class, 'stock_id');
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 
-    public function deptRelation()
+    public function consumable(): BelongsTo
     {
-        return $this->belongsTo(Department::class, 'dept_id');
+        return $this->belongsTo(Consumable::class, 'consumable_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function targetUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'target_user_id');
     }
 }
