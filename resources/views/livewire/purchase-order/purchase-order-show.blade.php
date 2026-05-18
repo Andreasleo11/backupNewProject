@@ -254,6 +254,26 @@
                     @endif
                 @endif
 
+                {{-- Submit for Approval Card --}}
+                @if($purchaseOrder->workflow_status === 'DRAFT')
+                    @can('update', $purchaseOrder)
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="p-6">
+                                <h3 class="text-xl font-black mb-1.5 flex items-center gap-3 text-slate-900">
+                                    <i class="bi bi-send-fill text-indigo-500"></i>
+                                    Submit for Approval
+                                </h3>
+                                <p class="text-xs text-slate-500 mb-6 font-medium tracking-wide">This purchase order is currently a draft and has not been submitted for review.</p>
+                                <button wire:click="submitForApproval"
+                                        class="w-full bg-indigo-600 text-white py-3 rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all active:scale-[0.98] shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                                    <i class="bi bi-send-check-fill"></i>
+                                    Submit Now
+                                </button>
+                            </div>
+                        </div>
+                    @endcan
+                @endif
+
                 {{-- Quick Actions Card --}}
                 @can('approve', $purchaseOrder)
                     <div class="bg-indigo-600 rounded-3xl shadow-xl p-6 text-white relative overflow-hidden group {{ $loading ? 'opacity-90' : '' }}" 

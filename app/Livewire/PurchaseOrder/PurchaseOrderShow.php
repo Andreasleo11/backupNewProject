@@ -206,6 +206,28 @@ class PurchaseOrderShow extends Component
         }
     }
 
+    public function submitForApproval(Approvals $approvals)
+    {
+        $this->authorize('update', $this->purchaseOrder);
+        $this->loading = true;
+
+        try {
+            $approvals->submit($this->purchaseOrder, Auth::id(), [], 'IN_REVIEW');
+
+            $this->purchaseOrder->refresh();
+
+            $this->dispatch('flash', message: 'Purchase order submitted for approval successfully!', type: 'success');
+        } catch (\Exception $e) {
+            Log::error('PurchaseOrderShow submission failed', [
+                'id' => $this->purchaseOrderId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->dispatch('toast', message: 'Submission failed: ' . $e->getMessage(), type: 'error');
+        } finally {
+            $this->loading = false;
+        }
+    }
+
     public function render()
     {
         return view('livewire.purchase-order.purchase-order-show', [
