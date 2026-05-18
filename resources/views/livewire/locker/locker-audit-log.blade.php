@@ -27,7 +27,7 @@
 
     {{-- Filters --}}
     <div class="sticky top-4 z-20 bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-100 p-2 mb-10">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
             {{-- Search --}}
             <div class="relative group">
                 <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg group-focus-within:text-indigo-500 transition-colors'></i>
@@ -51,7 +51,7 @@
             </select>
 
             {{-- Date Range --}}
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 md:col-span-2">
                 <input
                     type="date"
                     wire:model.live="dateFrom"
