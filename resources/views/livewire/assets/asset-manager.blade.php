@@ -60,6 +60,7 @@
                         <tr>
                             <th class="px-4 py-3">Tag</th>
                             <th class="px-4 py-3">Name</th>
+                            <th class="px-4 py-3">Brand</th>
                             <th class="px-4 py-3">Category</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3">Location</th>
@@ -77,6 +78,7 @@
                                         <div class="text-xs text-gray-400 font-mono">{{ $asset->serial_number }}</div>
                                     @endif
                                 </td>
+                                <td class="px-4 py-3 text-gray-600 text-sm">{{ $asset->brand ?? '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600 text-sm">{{ $asset->category->name }}</td>
                                 <td class="px-4 py-3">
                                     @php
@@ -104,7 +106,7 @@
 
                         @if($assets->isEmpty())
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-gray-400">No assets found.</td>
+                                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No assets found.</td>
                             </tr>
                         @endif
                     </tbody>
@@ -126,6 +128,12 @@
                     <label class="block text-sm font-medium text-gray-700">Name <span class="text-red-500">*</span></label>
                     <input type="text" wire:model="name" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                     @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Brand</label>
+                    <input type="text" wire:model="brand" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('brand') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">

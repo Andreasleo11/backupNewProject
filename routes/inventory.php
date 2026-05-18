@@ -68,9 +68,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('assets/dashboard', \App\Livewire\Assets\AssetDashboard::class)->name('assets.dashboard');
     Route::get('assets/manage', \App\Livewire\Assets\AssetManager::class)->name('assets.manage');
+    Route::get('assets/categories', \App\Livewire\Assets\AssetCategoryManager::class)->name('assets.categories');
     Route::get('assets/{id}', \App\Livewire\Assets\AssetShow::class)->name('assets.show');
     Route::get('consumables/manage', \App\Livewire\Consumables\ConsumableManager::class)->name('consumables.manage');
     Route::get('locations/manage', \App\Livewire\Locations\LocationManager::class)->name('locations.manage');
-    Route::get('assets/categories', \App\Livewire\Assets\AssetCategoryManager::class)->name('assets.categories');
     Route::get('consumables/categories', \App\Livewire\Consumables\ConsumableCategoryManager::class)->name('consumables.categories');
 });
