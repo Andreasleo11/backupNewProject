@@ -9,6 +9,7 @@ use App\Models\StockTransaction;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 
 class ConsumableManager extends Component
 {
@@ -25,6 +26,7 @@ class ConsumableManager extends Component
     public $transactionType = 'In'; // In, Out
     public $transactionQuantity = 1;
     public $targetUserId = null;
+    public $targetEmployeeNik = null;
     public $notes = '';
     public $reference = '';
     public $selectedConsumableId = null;
@@ -43,17 +45,20 @@ class ConsumableManager extends Component
             })
             ->paginate(10);
 
-        $transactions = StockTransaction::with(['consumable', 'user', 'targetUser'])
+        $transactions = StockTransaction::with(['consumable', 'user', 'targetUser', 'targetEmployee'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
+
+        $selectedConsumable = $this->selectedConsumableId ? Consumable::find($this->selectedConsumableId) : null;
 
         return view('livewire.consumables.consumable-manager', [
             'consumables' => $consumables,
             'transactions' => $transactions,
             'categories' => ConsumableCategory::all(),
             'locations' => AssetLocation::all(),
-            'users' => User::all(),
+            'employees' => \App\Infrastructure\Persistence\Eloquent\Models\Employee::all(),
+            'selectedConsumable' => $selectedConsumable,
         ]);
     }
 
@@ -82,9 +87,11 @@ class ConsumableManager extends Component
         $this->validate([
             'name' => 'required',
             'category_id' => 'required',
+            'current_stock' => 'required|integer|min:0',
+            'min_stock' => 'required|integer|min:0',
         ]);
 
-        Consumable::updateOrCreate(
+        $consumable = Consumable::updateOrCreate(
             ['id' => $this->editingConsumableId],
             [
                 'name' => $this->name,
@@ -100,6 +107,7 @@ class ConsumableManager extends Component
 
         $this->resetFields();
         session()->flash('message', $this->editingConsumableId ? 'Consumable updated.' : 'Consumable created.');
+        $this->dispatch('consumableUpdated', $consumable->id);
     }
 
     public function edit($id)
@@ -123,6 +131,7 @@ class ConsumableManager extends Component
         $this->transactionType = 'In';
         $this->transactionQuantity = 1;
         $this->targetUserId = null;
+        $this->targetEmployeeNik = null;
         $this->notes = '';
         $this->reference = '';
     }
@@ -132,31 +141,57 @@ class ConsumableManager extends Component
         $this->validate([
             'transactionQuantity' => 'required|integer|min:1',
             'transactionType' => 'required|in:In,Out',
+            'targetEmployeeNik' => 'required_if:transactionType,Out',
         ]);
 
-        $consumable = Consumable::findOrFail($this->selectedConsumableId);
-
-        if ($this->transactionType === 'Out' && $consumable->current_stock < $this->transactionQuantity) {
-            session()->flash('error', 'Not enough stock.');
+        if (! $this->selectedConsumableId) {
+            session()->flash('error', 'No consumable selected.');
             return;
         }
 
-        StockTransaction::create([
-            'consumable_id' => $this->selectedConsumableId,
-            'type' => $this->transactionType,
-            'quantity' => $this->transactionQuantity,
-            'user_id' => auth()->id() ?: 1, // Fallback for testing
-            'target_user_id' => $this->targetUserId ?: null,
-            'notes' => $this->notes,
-            'reference' => $this->reference,
-        ]);
+        try {
+            DB::transaction(function () {
+                $consumable = Consumable::where('id', $this->selectedConsumableId)->lockForUpdate()->firstOrFail();
 
-        if ($this->transactionType === 'In') {
-            $consumable->increment('current_stock', $this->transactionQuantity);
-        } else {
-            $consumable->decrement('current_stock', $this->transactionQuantity);
+                if ($this->transactionType === 'Out' && $consumable->current_stock < $this->transactionQuantity) {
+                    session()->flash('error', 'Not enough stock.');
+                    // Throw to rollback
+                    throw new \Exception('insufficient_stock');
+                }
+
+                StockTransaction::create([
+                    'consumable_id' => $this->selectedConsumableId,
+                    'type' => $this->transactionType,
+                    'quantity' => $this->transactionQuantity,
+                    'user_id' => auth()->id() ?: 1, // Fallback for testing
+                    'target_user_id' => $this->targetUserId ?: null,
+                    'target_employee_nik' => $this->targetEmployeeNik ?: null,
+                    'notes' => $this->notes,
+                    'reference' => $this->reference,
+                ]);
+
+                if ($this->transactionType === 'In') {
+                    $consumable->increment('current_stock', $this->transactionQuantity);
+                } else {
+                    // Double-check to avoid negative after concurrent changes
+                    if ($consumable->current_stock - $this->transactionQuantity < 0) {
+                        session()->flash('error', 'Not enough stock.');
+                        throw new \Exception('insufficient_stock');
+                    }
+                    $consumable->decrement('current_stock', $this->transactionQuantity);
+                }
+            });
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'insufficient_stock') {
+                return;
+            }
+            throw $e;
         }
 
         session()->flash('message', 'Stock updated.');
+        $id = $this->selectedConsumableId;
+        $this->selectedConsumableId = null;
+        $this->dispatch('consumableUpdated', $id);
+        $this->dispatch('transactionCreated');
     }
-}
+ }

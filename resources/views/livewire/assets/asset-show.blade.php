@@ -68,6 +68,11 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="text-xs font-medium text-gray-400 uppercase">Brand</label>
+                        <div class="text-lg font-medium text-gray-800">{{ $asset->brand ?? '-' }}</div>
+                    </div>
+
+                    <div class="mb-4">
                         <label class="text-xs font-medium text-gray-400 uppercase">Category</label>
                         <div class="text-lg font-medium text-gray-800">{{ $asset->category->name }}</div>
                     </div>
@@ -79,7 +84,7 @@
 
                     <div class="mb-4">
                         <label class="text-xs font-medium text-gray-400 uppercase">Assigned To</label>
-                        <div class="text-lg font-medium text-gray-800">{{ $asset->assignedTo->name ?? 'Unassigned' }}</div>
+                        <div class="text-lg font-medium text-gray-800">{{ $asset->employee->name ?? $asset->assignedTo->name ?? 'Unassigned' }}</div>
                     </div>
                 </div>
 

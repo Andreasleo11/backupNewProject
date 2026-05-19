@@ -6,6 +6,7 @@
 <div class="px-4 pt-3 pb-1" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
     <div class="relative group">
         <input type="text" x-model="q" placeholder="Explore menu..."
+            aria-label="Search navigation menu"
             class="w-full rounded-xl border border-slate-200/60 bg-white/50 backdrop-blur-md py-2.5 pl-10
                    text-sm text-slate-700 shadow-sm outline-none ring-offset-2
                    focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20
@@ -104,10 +105,10 @@
                     $label = $item['label'];
                     $isActive = $item['active'] ?? false;
                 @endphp
-                <div class="relative group/nav-item" x-data="{ hover: false, flyoutTop: 0, myIdx: 'si-{{ $loop->index }}', pinned: false, pinLoading: false, flyoutTimer: null }"
-                    @mouseenter="if (!{{ $isMobile ? 'true' : 'false' }}) { clearTimeout(flyoutTimer); flyoutTimer = setTimeout(() => { hover = true; flyoutTop = $el.getBoundingClientRect().top; $dispatch('sbflyout', { idx: myIdx }); $nextTick(() => { const el = document.getElementById('flyout-' + myIdx); if (el) { const rect = el.getBoundingClientRect(); if (rect.bottom > window.innerHeight - 20) { flyoutTop = Math.max(20, window.innerHeight - rect.height - 20); } } }); }, 125); }"
-                    @mouseleave="if (!{{ $isMobile ? 'true' : 'false' }}) { clearTimeout(flyoutTimer); hover = false; }"
-                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); hover = false; }"
+                <div class="relative group/nav-item" x-data="navItem({{ $isMobile ? 'true' : 'false' }}, 'si-{{ $loop->index }}')"
+                    @mouseenter="handleMouseEnter"
+                    @mouseleave="handleMouseLeave"
+                    @sbflyout.window="handleFlyoutWindow"
                     role="none">
                     <a href="{{ route($item['route'], $item['params'] ?? []) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
@@ -154,21 +155,12 @@
                     {{-- ⭐ Pin Button (visible on hover, expanded only) --}}
                     <button x-show="!sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }}"
                         :class="{ '!opacity-100': pinned }" :disabled="pinLoading"
-                        @click.prevent="
-                                pinLoading = true;
-                                if (pinned) {
-                                    $dispatch('nav-unpin', { routeName: '{{ $item['route'] }}' });
-                                } else {
-                                    $dispatch('nav-pin', { routeName: '{{ $item['route'] }}' });
-                                }
-                                setTimeout(() => pinLoading = false, 600);
-                            "
-                        x-on:pin-state-changed.window="
-                                if ($event.detail.routeName === '{{ $item['route'] }}') pinned = $event.detail.pinned;
-                            "
+                        @click.prevent="togglePin('{{ $item['route'] }}')"
+                        @pin-state-changed.window="handlePinStateChangedWindow($event, '{{ $item['route'] }}')"
                         class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg
                                    transition-all duration-200 hover:bg-amber-50
                                    opacity-0 group-hover/nav-item:!opacity-20"
+                        aria-label="Pin {{ $item['label'] }} to Quick Access"
                         title="Pin to Quick Access">
                         <svg class="h-3.5 w-3.5 transition-colors duration-200"
                             :class="pinned ? 'text-amber-500 fill-amber-400' : 'text-slate-400 hover:text-amber-500'"
@@ -213,42 +205,11 @@
                     $anyActive = collect($children)->contains(fn($c) => $c['active'] ?? false);
                     $defaultOpen = $item['defaultOpen'] ?? $anyActive;
                 @endphp
-                <div class="relative overflow-hidden" x-data="{
-                    hover: false,
-                    open: {{ $defaultOpen ? 'true' : 'false' }},
-                    flyoutOpen: false,
-                    flyoutTop: 0,
-                    flyoutTimer: null,
-                    myIdx: 'gr-{{ $loop->index }}'
-                }" x-init="if (open) $nextTick(() => $el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))"
+                <div class="relative overflow-hidden" x-data="navGroup({{ $isMobile ? 'true' : 'false' }}, 'gr-{{ $loop->index }}', {{ $defaultOpen ? 'true' : 'false' }})"
                     :class="sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }} ? 'flex flex-col items-center' : ''"
-                    @mouseenter="
-                        if (!{{ $isMobile ? 'true' : 'false' }}) {
-                            clearTimeout(flyoutTimer);
-                            flyoutTimer = setTimeout(() => {
-                                hover = true;
-                                flyoutOpen = true;
-                                flyoutTop = $el.getBoundingClientRect().top;
-                                $dispatch('sbflyout', { idx: myIdx });
-                                $nextTick(() => {
-                                    const el = document.getElementById('flyout-' + myIdx);
-                                    if (el) {
-                                        const rect = el.getBoundingClientRect();
-                                        if (rect.bottom > window.innerHeight - 20) {
-                                            flyoutTop = Math.max(20, window.innerHeight - rect.height - 20);
-                                        }
-                                    }
-                                });
-                            }, 125);
-                        }
-                    "
-                    @mouseleave="
-                        if (!{{ $isMobile ? 'true' : 'false' }}) {
-                            clearTimeout(flyoutTimer);
-                            flyoutTimer = setTimeout(() => { flyoutOpen = false; hover = false; }, 150);
-                        }
-                    "
-                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); flyoutOpen = false; hover = false; }"
+                    @mouseenter="handleMouseEnter"
+                    @mouseleave="handleMouseLeave"
+                    @sbflyout.window="handleFlyoutWindow"
                     role="none">
                     {{-- Group Header --}}
                     <button type="button" @click="open = !open"
@@ -297,7 +258,7 @@
                                         $childLabel = $child['label'];
                                         $childActive = $child['active'] ?? false;
                                     @endphp
-                                    <div role="none" class="relative group/child" x-data="{ pinned: false, pinLoading: false }">
+                                    <div role="none" class="relative group/child" x-data="navChild('{{ $child['route'] }}')">
                                         <a href="{{ route($child['route'], $child['params'] ?? []) }}"
                                             class="flex items-center w-full rounded-xl py-2 text-[13px] transition-all duration-300 relative
                                                   hover:bg-blue-50/50 hover:translate-x-1
@@ -315,18 +276,9 @@
                                         </a>
                                         {{-- ⭐ Pin Button --}}
                                         <button :class="{ '!opacity-100': pinned }" :disabled="pinLoading"
-                                            @click.prevent="
-                                                    pinLoading = true;
-                                                    if (pinned) {
-                                                        $dispatch('nav-unpin', { routeName: '{{ $child['route'] }}' });
-                                                    } else {
-                                                        $dispatch('nav-pin', { routeName: '{{ $child['route'] }}' });
-                                                    }
-                                                    setTimeout(() => pinLoading = false, 600);
-                                                "
-                                            x-on:pin-state-changed.window="
-                                                    if ($event.detail.routeName === '{{ $child['route'] }}') pinned = $event.detail.pinned;
-                                                "
+                                            @click.prevent="togglePin"
+                                            @pin-state-changed.window="handlePinStateChangedWindow"
+                                            aria-label="Pin {{ $child['label'] }} to Quick Access"
                                             class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg
                                                        transition-all duration-200 hover:bg-amber-50
                                                        opacity-0 group-hover/child:!opacity-20">
@@ -401,23 +353,6 @@
 </nav>
 
 <style>
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(203, 213, 225, 0.4);
-        border-radius: 20px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(148, 163, 184, 0.6);
-    }
-
     mark {
         background: transparent;
         color: inherit;

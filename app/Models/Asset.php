@@ -14,12 +14,14 @@ class Asset extends Model
 
     protected $fillable = [
         'name',
+        'brand',
         'asset_tag',
         'serial_number',
         'category_id',
         'status',
         'location_id',
         'assigned_to_user_id',
+        'assigned_to_nik',
         'purchase_date',
         'purchase_cost',
         'warranty_expiry',
@@ -47,5 +49,10 @@ class Asset extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\Employee::class, 'assigned_to_nik', 'nik');
     }
 }

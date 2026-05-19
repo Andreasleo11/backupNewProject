@@ -17,7 +17,7 @@ class AssetManager extends Component
     public $selectedCategory = '';
     public $selectedStatus = '';
 
-    public $name, $asset_tag, $category_id, $status, $location_id, $assigned_to_user_id, $purchase_date;
+    public $name, $brand, $asset_tag, $category_id, $status, $location_id, $assigned_to_user_id, $assigned_to_nik, $purchase_date;
     public $serial_number, $purchase_cost, $warranty_expiry, $notes;
     public $editingAssetId = null;
     public $showForm = false;
@@ -27,6 +27,7 @@ class AssetManager extends Component
     public function render()
     {
         $assets = Asset::query()
+            ->with(['category', 'location', 'employee', 'assignedTo'])
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('asset_tag', 'like', '%' . $this->search . '%')
@@ -44,19 +45,21 @@ class AssetManager extends Component
             'assets' => $assets,
             'categories' => AssetCategory::all(),
             'locations' => AssetLocation::all(),
-            'users' => User::all(),
+            'employees' => \App\Infrastructure\Persistence\Eloquent\Models\Employee::all(),
         ]);
     }
 
     public function resetFields()
     {
         $this->name = '';
+        $this->brand = '';
         $this->asset_tag = '';
         $this->serial_number = '';
         $this->category_id = '';
         $this->status = 'in_stock';
         $this->location_id = '';
         $this->assigned_to_user_id = '';
+        $this->assigned_to_nik = '';
         $this->purchase_date = '';
         $this->purchase_cost = '';
         $this->warranty_expiry = '';
@@ -73,6 +76,28 @@ class AssetManager extends Component
 
     public function store()
     {
+        if (!$this->editingAssetId && empty($this->asset_tag)) {
+            $category = AssetCategory::find($this->category_id);
+            if ($category) {
+                $prefix = strtoupper(substr($category->name, 0, 3));
+                $year = date('Y');
+                $baseTag = "IT-{$prefix}-{$year}-";
+                
+                $lastAsset = Asset::where('asset_tag', 'like', $baseTag . '%')
+                    ->orderBy('asset_tag', 'desc')
+                    ->first();
+                    
+                if ($lastAsset) {
+                    $lastSeq = (int) substr($lastAsset->asset_tag, -3);
+                    $seq = str_pad($lastSeq + 1, 3, '0', STR_PAD_LEFT);
+                } else {
+                    $seq = '001';
+                }
+                
+                $this->asset_tag = $baseTag . $seq;
+            }
+        }
+
         $this->validate([
             'name' => 'required',
             'asset_tag' => 'required|unique:assets,asset_tag,' . $this->editingAssetId,
@@ -84,12 +109,14 @@ class AssetManager extends Component
             ['id' => $this->editingAssetId],
             [
                 'name' => $this->name,
+                'brand' => $this->brand,
                 'asset_tag' => $this->asset_tag,
                 'serial_number' => $this->serial_number,
                 'category_id' => $this->category_id,
                 'status' => $this->status,
                 'location_id' => $this->location_id ?: null,
                 'assigned_to_user_id' => $this->assigned_to_user_id ?: null,
+                'assigned_to_nik' => $this->assigned_to_nik ?: null,
                 'purchase_date' => $this->purchase_date ?: null,
                 'purchase_cost' => $this->purchase_cost ?: null,
                 'warranty_expiry' => $this->warranty_expiry ?: null,
@@ -106,12 +133,14 @@ class AssetManager extends Component
         $asset = Asset::findOrFail($id);
         $this->editingAssetId = $id;
         $this->name = $asset->name;
+        $this->brand = $asset->brand;
         $this->asset_tag = $asset->asset_tag;
         $this->serial_number = $asset->serial_number;
         $this->category_id = $asset->category_id;
         $this->status = $asset->status;
         $this->location_id = $asset->location_id;
         $this->assigned_to_user_id = $asset->assigned_to_user_id;
+        $this->assigned_to_nik = $asset->assigned_to_nik;
         $this->purchase_date = $asset->purchase_date;
         $this->purchase_cost = $asset->purchase_cost;
         $this->warranty_expiry = $asset->warranty_expiry;

@@ -18,6 +18,7 @@ class StockTransaction extends Model
         'quantity',
         'user_id',
         'target_user_id',
+        'target_employee_nik',
         'notes',
         'reference',
     ];
@@ -43,5 +44,10 @@ class StockTransaction extends Model
     public function targetUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_user_id');
+    }
+
+    public function targetEmployee(): BelongsTo
+    {
+        return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\Employee::class, 'target_employee_nik', 'nik');
     }
 }

@@ -89,10 +89,10 @@
         <!-- Sidebar Section (Forms) -->
         @if($showForm || $selectedConsumableId)
         <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100 h-fit">
-            @if($selectedConsumableId)
+            @if($selectedConsumable)
                 <!-- Stock Transaction Form -->
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Stock Transaction</h2>
-                <form wire:submit.prevent="submitTransaction" class="space-y-4">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Stock Transaction — {{ $selectedConsumable->name }}</h2>
+                <form wire:submit.prevent="submitTransaction" class="space-y-4" x-data="{ type: @entangle('transactionType') }">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Type</label>
                         <select wire:model="transactionType" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
@@ -101,23 +101,27 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
-                        <input type="number" wire:model="transactionQuantity" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('transactionQuantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                            <input type="number" wire:model="transactionQuantity" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            @error('transactionQuantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="w-40">
+                            <label class="block text-sm font-medium text-gray-700">Available</label>
+                            <div class="mt-1 px-4 py-2 border rounded-lg bg-gray-50 font-bold">{{ $selectedConsumable->current_stock }} {{ $selectedConsumable->unit }}</div>
+                        </div>
                     </div>
 
-                    @if($transactionType === 'Out')
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Issue To</label>
-                            <select wire:model="targetUserId" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">Select User</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
+                    <div x-show="type === 'Out'">
+                        <label class="block text-sm font-medium text-gray-700">Issue To</label>
+                        <input list="target-employee-list" wire:model="targetEmployeeNik" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type NIK or Name...">
+                        <datalist id="target-employee-list">
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->nik }}">{{ $emp->nik }} - {{ $emp->name }}</option>
+                            @endforeach
+                        </datalist>
+                    </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Notes</label>
@@ -225,7 +229,7 @@
                             </td>
                             <td class="px-6 py-4 font-bold">{{ $tx->quantity }}</td>
                             <td class="px-6 py-4 text-sm">{{ $tx->user->name ?? 'System' }}</td>
-                            <td class="px-6 py-4 text-sm">{{ $tx->targetUser->name ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm">{{ $tx->targetEmployee->name ?? $tx->targetUser->name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->notes }}</td>
                             <td class="px-6 py-4 text-sm font-mono">{{ $tx->reference ?? '-' }}</td>
                         </tr>
