@@ -15,8 +15,8 @@
             <span
                 class="absolute -top-[5px] -right-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full
                          bg-gradient-to-r from-rose-500 to-pink-600 shadow-lg shadow-rose-500/40
-                         px-1 text-[9px] font-black text-white ring-[2.5px] ring-white animate-pulse">
-                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                         px-1 text-[9px] font-black text-white ring-[2.5px] ring-white">
+                {{ $unreadCount > 99 ? '99+' : $unreadCount }}
             </span>
         @endif
     </button>

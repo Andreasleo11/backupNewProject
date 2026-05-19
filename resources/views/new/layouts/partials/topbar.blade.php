@@ -100,7 +100,7 @@
                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
                     x-cloak
                     class="absolute right-0 mt-3 w-64 rounded-2xl bg-white shadow-2xl shadow-blue-900/10 border border-slate-200/60 p-2 z-[60]">
-                    <div class="px-4 py-4 mb-1 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="px-4 py-3 mb-1 rounded-xl bg-slate-50 border border-slate-100">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                             Signed in as</p>
                         <p class="text-sm font-bold text-slate-900 truncate">{{ $user?->name ?? 'User' }}
