@@ -39,10 +39,6 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'employee' => [
-            'driver' => 'session',
-            'provider' => 'employees',
-        ],
     ],
 
     /*
@@ -66,10 +62,6 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Infrastructure\Persistence\Eloquent\Models\User::class,
-        ],
-        'employees' => [
-            'driver' => 'eloquent',
-            'model' => App\Infrastructure\Persistence\Eloquent\Models\Employee::class,
         ],
     ],
 
@@ -95,12 +87,6 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => 'password_reset_tokens',
-            'expire' => 60,
-            'throttle' => 60,
-        ],
-        'employees' => [
-            'provider' => 'employees',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
