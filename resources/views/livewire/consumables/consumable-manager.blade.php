@@ -115,12 +115,12 @@
 
                     <div x-show="type === 'Out'">
                         <label class="block text-sm font-medium text-gray-700">Issue To</label>
-                        <select wire:model="targetUserId" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select User</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        <input list="target-employee-list" wire:model="targetEmployeeNik" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type NIK or Name...">
+                        <datalist id="target-employee-list">
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->nik }}">{{ $emp->nik }} - {{ $emp->name }}</option>
                             @endforeach
-                        </select>
+                        </datalist>
                     </div>
 
                     <div>
@@ -229,7 +229,7 @@
                             </td>
                             <td class="px-6 py-4 font-bold">{{ $tx->quantity }}</td>
                             <td class="px-6 py-4 text-sm">{{ $tx->user->name ?? 'System' }}</td>
-                            <td class="px-6 py-4 text-sm">{{ $tx->targetUser->name ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm">{{ $tx->targetEmployee->name ?? $tx->targetUser->name ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->notes }}</td>
                             <td class="px-6 py-4 text-sm font-mono">{{ $tx->reference ?? '-' }}</td>
                         </tr>

@@ -95,7 +95,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $asset->location->name ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $asset->assignedTo->name ?? '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $asset->employee->name ?? $asset->assignedTo->name ?? '-' }}</td>
                                 <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
                                     <a href="{{ route('assets.show', $asset->id) }}" class="text-green-600 hover:text-green-900 mr-3">View</a>
                                     <button wire:click="edit({{ $asset->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
@@ -182,12 +182,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Assign To</label>
-                        <select wire:model="assigned_to_user_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Unassigned</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        <input list="employee-list" wire:model="assigned_to_nik" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type NIK or Name...">
+                        <datalist id="employee-list">
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->nik }}">{{ $emp->name }}</option>
                             @endforeach
-                        </select>
+                        </datalist>
                     </div>
                 </div>
 

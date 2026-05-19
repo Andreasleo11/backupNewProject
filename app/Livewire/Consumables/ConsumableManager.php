@@ -26,6 +26,7 @@ class ConsumableManager extends Component
     public $transactionType = 'In'; // In, Out
     public $transactionQuantity = 1;
     public $targetUserId = null;
+    public $targetEmployeeNik = null;
     public $notes = '';
     public $reference = '';
     public $selectedConsumableId = null;
@@ -44,7 +45,7 @@ class ConsumableManager extends Component
             })
             ->paginate(10);
 
-        $transactions = StockTransaction::with(['consumable', 'user', 'targetUser'])
+        $transactions = StockTransaction::with(['consumable', 'user', 'targetUser', 'targetEmployee'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -56,7 +57,7 @@ class ConsumableManager extends Component
             'transactions' => $transactions,
             'categories' => ConsumableCategory::all(),
             'locations' => AssetLocation::all(),
-            'users' => User::all(),
+            'employees' => \App\Infrastructure\Persistence\Eloquent\Models\Employee::all(),
             'selectedConsumable' => $selectedConsumable,
         ]);
     }
@@ -106,7 +107,7 @@ class ConsumableManager extends Component
 
         $this->resetFields();
         session()->flash('message', $this->editingConsumableId ? 'Consumable updated.' : 'Consumable created.');
-        $this->emit('consumableUpdated', $consumable->id);
+        $this->dispatch('consumableUpdated', $consumable->id);
     }
 
     public function edit($id)
@@ -130,6 +131,7 @@ class ConsumableManager extends Component
         $this->transactionType = 'In';
         $this->transactionQuantity = 1;
         $this->targetUserId = null;
+        $this->targetEmployeeNik = null;
         $this->notes = '';
         $this->reference = '';
     }
@@ -139,6 +141,7 @@ class ConsumableManager extends Component
         $this->validate([
             'transactionQuantity' => 'required|integer|min:1',
             'transactionType' => 'required|in:In,Out',
+            'targetEmployeeNik' => 'required_if:transactionType,Out',
         ]);
 
         if (! $this->selectedConsumableId) {
@@ -162,6 +165,7 @@ class ConsumableManager extends Component
                     'quantity' => $this->transactionQuantity,
                     'user_id' => auth()->id() ?: 1, // Fallback for testing
                     'target_user_id' => $this->targetUserId ?: null,
+                    'target_employee_nik' => $this->targetEmployeeNik ?: null,
                     'notes' => $this->notes,
                     'reference' => $this->reference,
                 ]);
@@ -185,7 +189,9 @@ class ConsumableManager extends Component
         }
 
         session()->flash('message', 'Stock updated.');
-        $this->emit('consumableUpdated', $this->selectedConsumableId);
-        $this->emit('transactionCreated');
+        $id = $this->selectedConsumableId;
+        $this->selectedConsumableId = null;
+        $this->dispatch('consumableUpdated', $id);
+        $this->dispatch('transactionCreated');
     }
  }
