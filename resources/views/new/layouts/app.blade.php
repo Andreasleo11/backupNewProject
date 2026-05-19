@@ -94,7 +94,7 @@
             ->join('')
         : 'U';
     $searchableMenu = App\Services\NavigationService::getSearchableMenu() ?? [];
-    $currentBranch = $user?->branch ?? session('branch', 'JAKARTA');
+    $currentBranch = $user->employee?->branch;
     $appName = config('app.name');
     $words = preg_split('/\s+/', trim($appName));
     $appAcronym = '';
@@ -261,7 +261,7 @@
                         </svg>
                     </button>
 
-                    <div class="hidden sm:flex flex-col justify-center">
+                    <div class="hidden sm:flex flex-col justify-center space-y-1">
                         <nav
                             class="flex items-center text-xs space-x-2 text-slate-400 font-bold uppercase tracking-wider">
                             <span class="hover:text-blue-600 transition-colors cursor-pointer">Main System</span>
