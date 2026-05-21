@@ -34,7 +34,9 @@ return [
 
     'pdf' => [
         'enabled' => true,
-        'binary' => base_path('vendor\wemersonjanuario\wkhtmltopdf-windows\bin\64bit\wkhtmltopdf'),
+        'binary' => env('SNAPPY_PDF_BINARY', PHP_OS_FAMILY === 'Windows'
+            ? base_path('vendor\\wemersonjanuario\\wkhtmltopdf-windows\\bin\\64bit\\wkhtmltopdf')
+            : base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64')),
         'timeout' => false,
         'options' => [],
         'env' => [],
@@ -42,9 +44,9 @@ return [
 
     'image' => [
         'enabled' => true,
-        'binary' => base_path(
-            'vendor\wemersonjanuario\wkhtmltoimage-windows\bin\64bit\wkhtmltoimage',
-        ),
+        'binary' => env('SNAPPY_IMAGE_BINARY', PHP_OS_FAMILY === 'Windows'
+            ? base_path('vendor\\wemersonjanuario\\wkhtmltoimage-windows\\bin\\64bit\\wkhtmltoimage')
+            : base_path('vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64')),
         'timeout' => false,
         'options' => [
             'enable-local-file-access' => true,
