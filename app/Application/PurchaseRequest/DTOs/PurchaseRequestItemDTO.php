@@ -13,5 +13,7 @@ final class PurchaseRequestItemDTO
         public readonly float $price,
         public readonly string $uom,
         public readonly string $currency,
+        public readonly ?int $id = null,
+        public readonly ?string $tempId = null,
     ) {}
 }

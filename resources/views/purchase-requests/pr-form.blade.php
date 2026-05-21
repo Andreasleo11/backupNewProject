@@ -363,12 +363,16 @@
                         <div class="p-6 bg-white/40">
                             {{-- Items Grid --}}
                             <div class="space-y-4">
-                                <template x-for="(item, index) in items" :key="index">
+                                <template x-for="(item, index) in items" :key="item.id || item.temp_id">
                                     <div
                                         class="group relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-indigo-200">
                                         <div
                                             class="absolute -left-[1px] top-4 bottom-4 w-1 rounded-r-lg bg-slate-200 group-hover:bg-indigo-500 transition-colors">
                                         </div>
+
+                                        {{-- Hidden Fields for Syncing --}}
+                                        <input type="hidden" :name="'items[' + index + '][id]'" x-model="item.id">
+                                        <input type="hidden" :name="'items[' + index + '][temp_id]'" x-model="item.temp_id">
 
                                         {{-- Remove Button --}}
                                         <button type="button" @click="removeItem(index)" :disabled="items.length === 1"
@@ -552,6 +556,8 @@
 
                         if (Array.isArray(oldItems) && oldItems.length) {
                             this.items = oldItems.map(i => ({
+                                id: i.id || null,
+                                temp_id: i.temp_id || Math.random().toString(36).substring(2, 9),
                                 item_name: i.item_name || '',
                                 quantity: i.quantity || '',
                                 uom: i.uom || '',
@@ -675,6 +681,8 @@
 
                     addItem() {
                         this.items.push({
+                            id: null,
+                            temp_id: Math.random().toString(36).substring(2, 9),
                             item_name: '',
                             quantity: '',
                             uom: '',
