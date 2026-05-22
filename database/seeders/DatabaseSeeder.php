@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
          |--------------------------------------------------------------
          */
         $this->call([
-            RolesAndPermissionsSeeder::class, // Roles and granular PR permissions
+            RolesAndPermissionsSeeder::class, // Modern lowercase roles (source of truth from PermissionRegistry)
             AdminUserSeeder::class,           // Create super-admin role and admin user
         ]);
 

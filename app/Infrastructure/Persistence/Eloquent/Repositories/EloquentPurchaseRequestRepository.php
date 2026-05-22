@@ -17,24 +17,21 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
 
     public function addItems(PurchaseRequest $pr, array $items): void
     {
-        // Batch insert for better performance (instead of N individual inserts)
-        $records = array_map(function ($row) use ($pr) {
-            return [
-                'purchase_request_id' => $pr->id,
-                'item_name' => $row['item_name'],
-                'quantity' => $row['quantity'],
-                'purpose' => $row['purpose'],
-                'price' => $row['price'],
-                'uom' => $row['uom'],
-                'currency' => $row['currency'],
-                'is_approve_by_head' => $row['is_approve_by_head'] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }, $items);
-
-        // Single INSERT with multiple rows (10-100x faster than loop)
-        DetailPurchaseRequest::insert($records);
+        // Wrap in a transaction to maintain high execution speed
+        // while using Eloquent to trigger the Spatie Activitylog events
+        \Illuminate\Support\Facades\DB::transaction(function () use ($pr, $items) {
+            foreach ($items as $row) {
+                $pr->items()->create([
+                    'item_name' => $row['item_name'],
+                    'quantity' => $row['quantity'],
+                    'purpose' => $row['purpose'],
+                    'price' => $row['price'],
+                    'uom' => $row['uom'],
+                    'currency' => $row['currency'],
+                    'is_approve_by_head' => $row['is_approve_by_head'] ?? null,
+                ]);
+            }
+        });
     }
 
     public function loadForApprovalContext(PurchaseRequest $pr): PurchaseRequest
@@ -73,11 +70,13 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
      */
     public function delete(PurchaseRequest $pr): bool
     {
-        // Cascade soft delete to items first
-        $pr->items()->delete();
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($pr) {
+            // Load and iterate to trigger deleting events for each item
+            $pr->items->each->delete();
 
-        // Then soft delete the purchase request
-        return $pr->delete();
+            // Then soft delete the purchase request
+            return $pr->delete();
+        });
     }
 
     /**
@@ -85,15 +84,17 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
      */
     public function restore(PurchaseRequest $pr): bool
     {
-        // Restore the purchase request
-        $restored = $pr->restore();
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($pr) {
+            // Restore the purchase request
+            $restored = $pr->restore();
 
-        // Cascade restore to items
-        if ($restored) {
-            $pr->items()->withTrashed()->restore();
-        }
+            // Cascade restore to items, iterating to trigger events
+            if ($restored) {
+                $pr->items()->withTrashed()->get()->each->restore();
+            }
 
-        return $restored;
+            return $restored;
+        });
     }
 
     /**
@@ -101,11 +102,13 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
      */
     public function forceDelete(PurchaseRequest $pr): bool
     {
-        // Force delete items first (to avoid foreign key constraint)
-        $pr->items()->withTrashed()->forceDelete();
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($pr) {
+            // Force delete items first, iterating to trigger events
+            $pr->items()->withTrashed()->get()->each->forceDelete();
 
-        // Then force delete the purchase request
-        return $pr->forceDelete();
+            // Then force delete the purchase request
+            return $pr->forceDelete();
+        });
     }
 
     public function updatePoNumber(PurchaseRequest $pr, ?string $poNumber): bool

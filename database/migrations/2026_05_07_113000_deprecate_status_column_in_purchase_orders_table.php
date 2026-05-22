@@ -12,8 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Remove the check constraint if it exists (MySQL 8.0.16+)
-        DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_status_check');
+        // Safe way to drop check constraint on MySQL (IF EXISTS is not supported)
+        try {
+            DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT purchase_orders_status_check');
+        } catch (\Throwable $e) {
+            // Constraint does not exist or already dropped — safe to ignore
+        }
 
         Schema::table('purchase_orders', function (Blueprint $table) {
             // Drop the index if it exists

@@ -54,9 +54,14 @@ final class PurchaseRequestDetailService
     {
         $pr = PurchaseRequest::find($reportId);
 
-        DetailPurchaseRequest::where('report_id', $reportId)->update([
-            'received_quantity' => $pr->quantity,
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($reportId, $pr) {
+            $items = DetailPurchaseRequest::where('report_id', $reportId)->get();
+            foreach ($items as $item) {
+                $item->update([
+                    'received_quantity' => $pr->quantity,
+                ]);
+            }
+        });
     }
 
     /**

@@ -47,18 +47,46 @@ final class UpdatePurchaseRequest
             // Update PR header
             $pr->update($updateData);
 
-            // Store old items for approval state preservation
-            $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $pr->id)->get();
+            // Intelligently sync items to prevent delete/re-insert spam in Activity Log
+            $oldDetails = $pr->items()->get();
+            $itemsData = $this->buildItems($dto, $pr->from_department);
+            
+            $user = \App\Models\User::find($dto->updatedByUserId);
+            $isPurchaser = $user?->hasRole('PURCHASER');
 
-            // Delete old items
-            DetailPurchaseRequest::where('purchase_request_id', $pr->id)->delete();
+            foreach ($itemsData as $itemData) {
+                $matchIndex = false;
+                if (!empty($itemData['id'])) {
+                    $matchIndex = $oldDetails->search(fn($detail) => $detail->id === (int) $itemData['id']);
+                }
 
-            // Insert new items
-            $items = $this->buildItems($dto, $pr->from_department);
-            $this->repo->addItems($pr, $items);
+                $id = $itemData['id'] ?? null;
+                unset($itemData['id']);
+                
+                if ($matchIndex !== false) {
+                    // Update existing item. It naturally preserves approval states.
+                    $matchedDetail = $oldDetails->pull($matchIndex);
+                    
+                    // Don't overwrite existing approval state with the default from buildItems
+                    unset($itemData['is_approve_by_head']); 
+                    
+                    $matchedDetail->update($itemData);
+                } else {
+                    // New item
+                    if ($isPurchaser) {
+                        $itemData['is_approve_by_head'] = 1;
+                        if ($pr->type === 'factory') {
+                            $itemData['is_approve_by_gm'] = 1;
+                        }
+                    }
+                    $pr->items()->create($itemData);
+                }
+            }
 
-            // Preserve approval states for matching items
-            $this->preserveApprovalStates($pr, $oldDetails, $dto->updatedByUserId);
+            // Delete any items that were removed
+            foreach ($oldDetails as $oldDetail) {
+                $oldDetail->delete();
+            }
 
             // Dispatch event
             PurchaseRequestUpdated::dispatch($pr);
@@ -67,15 +95,13 @@ final class UpdatePurchaseRequest
         });
     }
 
-    // Note: Removed shouldResetApproval - signature system handles state via immutable records
-    // If approval workflow needs reset, it should be handled by approval system events
-
     private function buildItems(UpdatePurchaseRequestDTO $dto, string $fromDepartment): array
     {
         $autoHeadApprove = in_array($fromDepartment, ['PERSONALIA', 'PLASTIC INJECTION', 'MAINTENANCE MACHINE'], true);
 
         return array_map(function ($item) use ($autoHeadApprove) {
             return [
+                'id' => $item->id,
                 'item_name' => $item->itemName,
                 'quantity' => $item->quantity,
                 'purpose' => $item->purpose,
@@ -85,37 +111,5 @@ final class UpdatePurchaseRequest
                 'is_approve_by_head' => $autoHeadApprove ? 1 : null,
             ];
         }, $dto->items);
-    }
-
-    private function preserveApprovalStates(PurchaseRequest $pr, $oldDetails, int $userId): void
-    {
-        $user = \App\Models\User::find($userId);
-        $isPurchaser = $user?->hasRole('PURCHASER');
-
-        $newDetails = DetailPurchaseRequest::where('purchase_request_id', $pr->id)->get();
-
-        foreach ($newDetails as $newDetail) {
-            foreach ($oldDetails as $oldDetail) {
-                if ($newDetail->item_name === $oldDetail->item_name) {
-                    // Same item - preserve approval states
-                    $newDetail->update([
-                        'is_approve_by_head' => $oldDetail->is_approve_by_head,
-                        'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
-                        'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
-                    ]);
-                } else {
-                    // New/different item
-                    $updates = [
-                        'is_approve_by_head' => $isPurchaser ? 1 : $oldDetail->is_approve_by_head,
-                    ];
-
-                    if ($pr->type === 'factory') {
-                        $updates['is_approve_by_gm'] = $isPurchaser ? 1 : $oldDetail->is_approve_by_gm;
-                    }
-
-                    $newDetail->update($updates);
-                }
-            }
-        }
     }
 }

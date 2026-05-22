@@ -45,6 +45,8 @@ class UpdatePurchaseRequest extends FormRequest
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
             'items' => 'required|array',
+            'items.*.id' => 'nullable|integer',
+            'items.*.temp_id' => 'nullable|string|max:255',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => ['required', new SanitizedNumeric],
