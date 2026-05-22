@@ -1,0 +1,30 @@
+# .dockerignore - keep production image small and clean
+# (complements the production Dockerfile)
+
+# Version control
+.git
+.gitignore
+
+# Local environment
+.env
+.env.*
+
+# Development / testing
+vendor
+node_modules
+
+# Sail / Docker dev files (we only want the prod Dockerfile for production builds)
+compose.yaml
+docker-compose*.yml
+Dockerfile*
+
+# IDE / editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# Logs and caches
+storage/logs/*
+bootstrap/cache/*
+*.log
