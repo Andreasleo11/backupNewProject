@@ -215,7 +215,9 @@ class PurchaseRequestController extends Controller
                 uom: $item['uom'],
                 price: (float) $this->masterPrService->sanitizeCurrencyInput($item['price']),
                 currency: $item['currency'] ?? 'IDR',
-                purpose: $item['purpose'] ?? ''
+                purpose: $item['purpose'] ?? '',
+                id: isset($item['id']) ? (int) $item['id'] : null,
+                tempId: $item['temp_id'] ?? null,
             ), $validated['items']),
             isImport: $request->has('is_import') ? filter_var($request->is_import, FILTER_VALIDATE_BOOLEAN) : null,
         );

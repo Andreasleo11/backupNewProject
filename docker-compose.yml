@@ -1,0 +1,111 @@
+# =============================================================================
+# DOCKER COMPOSE - DEVELOPMENT (Laravel Sail)
+# =============================================================================
+# This file is ONLY for local development.
+# For production, use: docker-compose.prod.yml
+#
+# Run with: ./vendor/bin/sail up -d   (or ./sail up -d)
+# =============================================================================
+# Then: ./vendor/bin/sail npm install && ./vendor/bin/sail composer install
+#       ./vendor/bin/sail artisan key:generate
+#       ./vendor/bin/sail artisan migrate --seed
+# Access app: http://localhost (or APP_PORT)
+# Vite dev: http://localhost:5173
+# Mailpit UI: http://localhost:8025
+# DB: inside containers use host 'mysql', user 'sail', pass 'password' (see below), DB from your .env
+#
+# This setup does NOT modify your existing .env so host development (non-docker) continues to work with 127.0.0.1
+# All services run inside Docker for any OS (Windows/mac/Linux) with Docker installed.
+
+services:
+    laravel.test:
+        build:
+            context: ./docker/dev/8.2
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP:-1000}'
+        image: sail-8.2/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-80}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER:-1000}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            # Override DB, mail, redis for inside container (host .env stays unchanged for local non-docker dev)
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_USERNAME: sail
+            DB_PASSWORD: password
+            REDIS_HOST: redis
+            MAIL_HOST: mailpit
+            MAIL_PORT: 1025
+            # wkhtml binaries for PDF generation inside linux container
+            SNAPPY_PDF_BINARY: /var/www/html/vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64
+            SNAPPY_IMAGE_BINARY: /var/www/html/vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    mysql:
+        image: 'mysql:8.4'
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: 'password'
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: '${DB_DATABASE:-diss_dev}'
+            MYSQL_USER: sail
+            MYSQL_PASSWORD: password
+            MYSQL_ALLOW_EMPTY_PASSWORD: '0'
+            MYSQL_EXTRA_OPTIONS: '${MYSQL_EXTRA_OPTIONS:-}'
+        volumes:
+            - 'sail-mysql:/var/lib/mysql'
+            - './docker/dev/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-ppassword"]
+            retries: 3
+            timeout: 5s
+
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - 'sail-redis:/data'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
+
+    mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - sail
+
+networks:
+    sail:
+        driver: bridge
+
+volumes:
+    sail-mysql:
+        driver: local
+    sail-redis:
+        driver: local

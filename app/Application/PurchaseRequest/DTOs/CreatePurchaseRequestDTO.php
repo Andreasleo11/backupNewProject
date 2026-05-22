@@ -37,6 +37,8 @@ final class CreatePurchaseRequestDTO
                 price: $priceSanitizer->sanitize($item['price'] ?? 0),
                 uom: (string) $item['uom'],
                 currency: (string) ($item['currency'] ?? 'IDR'),
+                id: isset($item['id']) ? (int) $item['id'] : null,
+                tempId: $item['temp_id'] ?? null,
             );
         }, $request->input('items', []));
 

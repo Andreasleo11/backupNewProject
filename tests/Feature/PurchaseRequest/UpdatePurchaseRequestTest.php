@@ -174,3 +174,85 @@ test('user can only update their own purchase requests', function () {
 
     $response->assertForbidden();
 });
+
+test('it updates existing items, deletes omitted items, and creates new items using IDs', function () {
+    $this->actingAs($this->user);
+
+    // Create 2 initial items
+    $item1 = \App\Models\DetailPurchaseRequest::factory()->create([
+        'purchase_request_id' => $this->pr->id,
+        'item_name' => 'Initial Item 1',
+        'quantity' => 10,
+        'uom' => 'PCS',
+        'price' => 1000,
+        'currency' => 'IDR',
+        'purpose' => 'Initial Purpose 1',
+    ]);
+
+    $item2 = \App\Models\DetailPurchaseRequest::factory()->create([
+        'purchase_request_id' => $this->pr->id,
+        'item_name' => 'Initial Item 2',
+        'quantity' => 20,
+        'uom' => 'PCS',
+        'price' => 2000,
+        'currency' => 'IDR',
+        'purpose' => 'Initial Purpose 2',
+    ]);
+
+    // Update PR:
+    // - Keep and modify $item1 (change qty to 15)
+    // - Omit $item2 (should be deleted)
+    // - Add a new item with temp_id (should be created)
+    $response = $this->put(route('purchase-requests.update', $this->pr->id), [
+        'from_department' => 'Computer',
+        'to_department' => 'Purchasing',
+        'branch' => 'JAKARTA',
+        'date_of_pr' => now()->format('Y-m-d'),
+        'date_of_required' => now()->addDays(7)->format('Y-m-d'),
+        'supplier' => 'Supplier',
+        'pic' => 'PIC',
+        'is_draft' => '1',
+        'items' => [
+            [
+                'id' => $item1->id,
+                'item_name' => 'Initial Item 1',
+                'quantity' => 15, // changed
+                'uom' => 'PCS',
+                'price' => 'Rp 1,000.00',
+                'currency' => 'IDR',
+                'purpose' => 'Initial Purpose 1',
+            ],
+            [
+                'temp_id' => 'temp-12345',
+                'item_name' => 'Brand New Item',
+                'quantity' => 5,
+                'uom' => 'PCS',
+                'price' => 'Rp 500.00',
+                'currency' => 'IDR',
+                'purpose' => 'New item purpose',
+            ],
+        ],
+    ]);
+
+    $response->assertRedirect();
+
+    // Verify $item1 is updated and keeps its ID
+    $this->assertDatabaseHas('detail_purchase_requests', [
+        'id' => $item1->id,
+        'quantity' => 15,
+    ]);
+
+    // Verify $item2 is deleted
+    $this->assertSoftDeleted('detail_purchase_requests', [
+        'id' => $item2->id,
+    ]);
+
+    // Verify Brand New Item is created
+    $this->assertDatabaseHas('detail_purchase_requests', [
+        'purchase_request_id' => $this->pr->id,
+        'item_name' => 'Brand New Item',
+        'quantity' => 5,
+    ]);
+
+    expect($this->pr->fresh()->items->count())->toBe(2);
+});

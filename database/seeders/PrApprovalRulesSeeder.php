@@ -24,6 +24,7 @@ class PrApprovalRulesSeeder extends Seeder
             });
 
             // 2) Ambil role id yg dipakai di step
+            // Use case-insensitive lookup to support both old uppercase legacy roles and new lowercase roles
             $roleNames = [
                 'department-head',
                 'general-manager',
@@ -32,15 +33,17 @@ class PrApprovalRulesSeeder extends Seeder
                 'director',
             ];
 
-            $roles = Role::whereIn('name', $roleNames)
-                ->where('guard_name', config('auth.defaults.guard', 'web'))
+            $roles = Role::where('guard_name', config('auth.defaults.guard', 'web'))
                 ->get()
-                ->keyBy('name');
+                ->keyBy(fn($role) => strtolower($role->name));
 
             $getRoleId = function (string $name) use ($roles) {
-                $role = $roles->get($name);
+                $role = $roles->get(strtolower($name));
                 if (! $role) {
-                    throw new \RuntimeException("Role '{$name}' not found. Run RefactoredPrPermissionsSeeder first and/or check roles table.");
+                    throw new \RuntimeException(
+                        "Role '{$name}' (or its uppercase variant) not found. " .
+                        "Please run `RolesAndPermissionsSeeder` first, then try again."
+                    );
                 }
 
                 return $role->id;
