@@ -1,24 +1,30 @@
-# .dockerignore - Best practice for Laravel
+# .dockerignore - keep production image small and clean
+# (complements the production Dockerfile)
 
+# Version control
 .git
 .gitignore
-README.md
+
+# Local environment
 .env
 .env.*
-*.md
-storage/logs/*
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-bootstrap/cache/*
+
+# Development / testing
 vendor
 node_modules
-npm-debug.log
-yarn-error.log
-.DS_Store
+
+# Sail / Docker dev files (we only want the prod Dockerfile for production builds)
+compose.yaml
+docker-compose*.yml
+Dockerfile*
+
+# IDE / editor
 .idea
 .vscode
-docker/dev
-docker-compose.yml
-docker-compose.prod.yml
-tests
+*.swp
+*.swo
+
+# Logs and caches
+storage/logs/*
+bootstrap/cache/*
+*.log
