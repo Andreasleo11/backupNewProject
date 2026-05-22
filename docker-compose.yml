@@ -1,5 +1,11 @@
-# Docker Compose for consistent local development using Laravel Sail runtime
-# Run with: ./vendor/bin/sail up -d   (or ./sail up -d after making executable)
+# =============================================================================
+# DOCKER COMPOSE - DEVELOPMENT (Laravel Sail)
+# =============================================================================
+# This file is ONLY for local development.
+# For production, use: docker-compose.prod.yml
+#
+# Run with: ./vendor/bin/sail up -d   (or ./sail up -d)
+# =============================================================================
 # Then: ./vendor/bin/sail npm install && ./vendor/bin/sail composer install
 #       ./vendor/bin/sail artisan key:generate
 #       ./vendor/bin/sail artisan migrate --seed
@@ -14,7 +20,7 @@
 services:
     laravel.test:
         build:
-            context: ./docker/8.2
+            context: ./docker/dev/8.2
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP:-1000}'
@@ -65,7 +71,7 @@ services:
             MYSQL_EXTRA_OPTIONS: '${MYSQL_EXTRA_OPTIONS:-}'
         volumes:
             - 'sail-mysql:/var/lib/mysql'
-            - './docker/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+            - './docker/dev/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
         networks:
             - sail
         healthcheck:

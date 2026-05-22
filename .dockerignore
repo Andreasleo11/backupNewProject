@@ -1,0 +1,24 @@
+# .dockerignore - Best practice for Laravel
+
+.git
+.gitignore
+README.md
+.env
+.env.*
+*.md
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+vendor
+node_modules
+npm-debug.log
+yarn-error.log
+.DS_Store
+.idea
+.vscode
+docker/dev
+docker-compose.yml
+docker-compose.prod.yml
+tests
