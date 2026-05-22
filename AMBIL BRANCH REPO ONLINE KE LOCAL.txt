@@ -1,4 +1,0 @@
-git fetch origin
-git branch -r
-
-git checkout -b namabranch origin/namabranch
