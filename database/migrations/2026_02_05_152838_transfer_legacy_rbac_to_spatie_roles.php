@@ -13,12 +13,25 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Ensure all target roles exist
-        $roles = [
-            'super-admin', 'staff', 'user',
-            'INSPECTOR', 'LEADER', 'STAFF', 'DIRECTOR', 'ADMIN', 'HEAD', 'PURCHASER', 'VERIFICATOR', 'DESIGN', 'SUPERVISOR',
+        // We now create BOTH uppercase (for legacy code) and lowercase (new standard from PermissionRegistry)
+        // to prevent future seeding / lookup issues during transition.
+        $legacyUpper = [
+            'INSPECTOR', 'LEADER', 'STAFF', 'DIRECTOR', 'ADMIN', 'HEAD',
+            'PURCHASER', 'VERIFICATOR', 'DESIGN', 'SUPERVISOR',
         ];
 
-        foreach ($roles as $roleName) {
+        $lowercaseModern = [
+            'inspector', 'leader', 'staff', 'director', 'admin', 'head',
+            'purchaser', 'verificator', 'design', 'supervisor',
+        ];
+
+        $allRoles = array_unique(array_merge(
+            ['super-admin', 'staff', 'user'],
+            $legacyUpper,
+            $lowercaseModern
+        ));
+
+        foreach ($allRoles as $roleName) {
             Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
         }
 
