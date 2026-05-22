@@ -33,22 +33,22 @@ return [
 
     /*
      * PDF generator to be used when converting the table to pdf.
-     * Available generators: excel, snappy
-     * Snappy package: barryvdh/laravel-snappy
+     * Available generators: excel, dompdf
+     * Dompdf package: barryvdh/laravel-dompdf (pure PHP, Docker-friendly)
      * Excel package: maatwebsite/excel
+     *
+     * Deprecated & removed: snappy + wkhtmltopdf binaries (legacy, not Docker compatible).
      */
-    'pdf_generator' => 'snappy',
+    'pdf_generator' => 'dompdf',
 
     /*
-     * Snappy PDF options.
+     * Dompdf PDF options (replaces the old snappy/wkhtmltopdf configuration).
      */
-    'snappy' => [
+    'dompdf' => [
         'options' => [
-            'no-outline' => true,
-            'margin-left' => '0',
-            'margin-right' => '0',
-            'margin-top' => '10mm',
-            'margin-bottom' => '10mm',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'DejaVu Sans',
         ],
         'orientation' => 'landscape',
     ],

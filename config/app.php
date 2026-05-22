@@ -170,7 +170,6 @@ return [
             App\Providers\RouteServiceProvider::class,
             App\Providers\RepositoryServiceProvider::class,
             Yajra\DataTables\DataTablesServiceProvider::class,
-            Barryvdh\Snappy\ServiceProvider::class,
             App\Domain\Expenses\Providers\ExpensesServiceProvider::class,
         ])
         ->toArray(),
