@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Imports\EvaluationDataImport;
+use App\Imports\EvaluationWeeklyDataImport;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
-use App\Models\EvaluationData;
+use App\Models\EvaluationDataWeekly;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
-class EvaluationDataManagementController extends Controller
+class EvaluationDataWeeklyManagementController extends Controller
 {
     /**
-     * Display a listing of the Evaluation Data.
+     * Display a listing of the Weekly Evaluation Data.
      */
-    public function index(\App\DataTables\Admin\EvaluationDataManagementDataTable $dataTable)
+    public function index(\App\DataTables\Admin\EvaluationDataWeeklyManagementDataTable $dataTable)
     {
-        return $dataTable->render('administration.evaluation-data.index');
+        return $dataTable->render('administration.evaluation-data-weekly.index');
     }
 
     /**
@@ -31,11 +31,10 @@ class EvaluationDataManagementController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('temp_imports');
+        $path = $file->store('temp_imports_weekly');
 
         try {
-            // Read data as simple array/collection for scanning
-            $data = Excel::toCollection(new EvaluationDataImport, $file)->first();
+            $data = Excel::toCollection(new EvaluationWeeklyDataImport, $file)->first();
 
             $report = [
                 'new' => 0,
@@ -53,24 +52,22 @@ class EvaluationDataManagementController extends Controller
                     continue;
                 }
 
-                // Integrity Check: Employee Existence
                 $employee = Employee::where('nik', $nik)->first();
                 if (! $employee) {
                     $report['errors'][] = 'Row ' . ($index + 2) . ": NIK '$nik' not found in Employee database.";
                     continue;
                 }
 
-                // Integrity Check: Month Format
                 $month = null;
                 try {
                     if ($monthInput) {
                         if (is_numeric($monthInput)) {
-                            $month = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($monthInput)->format('Y-m-01');
+                            $month = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($monthInput)->format('Y-m-d');
                         } else {
                             try {
-                                $month = Carbon::createFromFormat('d/m/Y', $monthInput)->startOfMonth()->format('Y-m-d');
+                                $month = Carbon::createFromFormat('d/m/Y', $monthInput)->format('Y-m-d');
                             } catch (\Exception $e) {
-                                $month = Carbon::parse($monthInput)->startOfMonth()->format('Y-m-d');
+                                $month = Carbon::parse($monthInput)->format('Y-m-d');
                             }
                         }
                     }
@@ -78,12 +75,12 @@ class EvaluationDataManagementController extends Controller
                 }
 
                 if (! $month) {
-                    $report['errors'][] = 'Row ' . ($index + 2) . ": Invalid month format ($monthInput). Use YYYY-MM.";
+                    $report['errors'][] = 'Row ' . ($index + 2) . ': Invalid period format.';
                     continue;
                 }
 
                 // Rule: If NIK + Month combo is unique, it's a NEW record. If it exists, it's an UPDATE.
-                $exists = EvaluationData::where('NIK', $nik)->where('Month', $month)->exists();
+                $exists = EvaluationDataWeekly::where('NIK', $nik)->where('Month', $month)->exists();
                 if ($exists) {
                     $report['updates']++;
                 } else {
@@ -115,10 +112,10 @@ class EvaluationDataManagementController extends Controller
         }
 
         try {
-            Excel::import(new EvaluationDataImport, Storage::path($path));
+            Excel::import(new EvaluationWeeklyDataImport, Storage::path($path));
             Storage::delete($path);
 
-            return response()->json(['success' => true, 'message' => 'Data successfully imported to database.']);
+            return response()->json(['success' => true, 'message' => 'Weekly data successfully imported.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Import failed: ' . $e->getMessage()], 422);
         }
@@ -129,10 +126,10 @@ class EvaluationDataManagementController extends Controller
      */
     public function destroy($id)
     {
-        $evaluation = EvaluationData::findOrFail($id);
+        $evaluation = EvaluationDataWeekly::findOrFail($id);
         $evaluation->delete();
 
-        return response()->json(['success' => true, 'message' => 'Data evaluation berhasil dihapus.']);
+        return response()->json(['success' => true, 'message' => 'Data evaluation weekly berhasil dihapus.']);
     }
 
     /**
@@ -140,7 +137,7 @@ class EvaluationDataManagementController extends Controller
      */
     public function truncate()
     {
-        EvaluationData::truncate();
+        EvaluationDataWeekly::truncate();
 
         return response()->json(['success' => true, 'message' => 'Seluruh data berhasil dihapus.']);
     }
