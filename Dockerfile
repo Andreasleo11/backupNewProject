@@ -1,15 +1,19 @@
 # Production Dockerfile for Laravel (used only for prod builds)
-# This is separate from Sail's compose.yaml which is for local development only.
+#
+# IMPORTANT: Keep this in sync with dev environment (compose.yaml)
+# Current dev uses: PHP 8.3 (via vendor/laravel/sail/runtimes/8.3)
+# This file must target the SAME PHP major version to avoid "works on my machine" issues.
 
 # ============================================
 # Stage 1: Frontend assets (Vite + Tailwind)
 # ============================================
+# Node 20 matches the version used in Sail 8.3 runtime (as of May 2026)
 FROM node:20-alpine AS frontend
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 COPY . .
 RUN npm run build
@@ -18,7 +22,7 @@ RUN npm run build
 # ============================================
 # Stage 2: PHP + Composer dependencies
 # ============================================
-FROM php:8.2-fpm-alpine AS app
+FROM php:8.3-fpm-alpine AS app
 
 # Install system packages + PHP extensions required by this project
 RUN apk add --no-cache \
@@ -53,8 +57,24 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Create required Laravel cache directories early (needed for composer post-install scripts)
+RUN mkdir -p \
+    bootstrap/cache \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs
+
 # Copy only composer files first (better caching)
-COPY composer.json composer.lock ./
+COPY composer.json composer.lock artisan ./
+
+# Copy the minimum files needed for composer to run successfully
+COPY app/ app/
+COPY bootstrap/ bootstrap/
+COPY config/ config/
+COPY database/ database/
+COPY routes/ routes/
+COPY resources/ resources/
 
 # Install PHP dependencies (production only)
 RUN composer install \
