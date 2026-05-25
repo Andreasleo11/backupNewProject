@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
     // Employee Daily Reports
     Route::get('/store-data', [\App\Http\Controllers\PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
-    Route::get('/insert-material_prediction', [\App\Http\Controllers\materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
+    Route::get('/insert-material_prediction', [\App\Http\Controllers\MaterialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
 
     // Destinations
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');

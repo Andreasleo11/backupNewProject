@@ -8,7 +8,7 @@ use App\Models\ForecastMaterialPrediction;
 use App\Models\foremindFinal;
 use Carbon\Carbon;
 
-class materialPredictionController extends Controller
+class MaterialPredictionController extends Controller
 {
     public function processForemindFinalData()
     {

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\DetailPurchaseRequestController;
-use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\MaterialPredictionController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchasingController;
@@ -119,6 +119,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchasing/material/{vendor_code}', [PurchasingMaterialController::class, 'index'])->name('purchasing.material.index');
 
     // Material Prediction
-    Route::get('/materialPrediction', [materialPredictionController::class, 'index'])->name('material.prediction.index');
-    Route::get('/materialPrediction/detail/{code}', [materialPredictionController::class, 'detail'])->name('material.prediction.detail');
+    Route::get('/materialPrediction', [MaterialPredictionController::class, 'index'])->name('material.prediction.index');
+    Route::get('/materialPrediction/detail/{code}', [MaterialPredictionController::class, 'detail'])->name('material.prediction.detail');
 });

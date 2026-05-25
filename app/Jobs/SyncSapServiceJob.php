@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\MaterialPredictionController;
 use App\Http\Controllers\PurchasingMaterialController;
 use App\Services\FctForecastService;
 use Illuminate\Bus\Queueable;
@@ -68,9 +68,9 @@ class SyncSapServiceJob implements ShouldQueue
             Log::info('PurchasingMaterialController::storeDataInNewTable executed');
 
             // 3. Execute second controller method
-            $predictionController = app(materialPredictionController::class);
+            $predictionController = app(MaterialPredictionController::class);
             $predictionController->processForemindFinalData();
-            Log::info('materialPredictionController::processForemindFinalData executed');
+            Log::info('MaterialPredictionController::processForemindFinalData executed');
 
             Log::info('Forecast post-processing completed successfully');
         } catch (\Exception $e) {
