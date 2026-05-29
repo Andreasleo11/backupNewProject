@@ -53,6 +53,10 @@
                                         Document Number</h6>
                                     <div class="font-mono text-lg font-bold text-slate-900 tracking-tight">
                                         {{ $pr->doc_num }}</div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4 mb-1">
+                                        PR Number</p>
+                                    <div class="font-mono text-sm font-semibold text-slate-700 tracking-tight">
+                                        {{ $pr->pr_no ?: 'No PR Num' }}</div>
                                 </div>
                                 <div class="text-right">
                                     <h6 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">

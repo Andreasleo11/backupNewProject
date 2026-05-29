@@ -28,9 +28,14 @@
 
                 {{-- Title & Doc Num --}}
                 <div class="flex flex-wrap items-center gap-4">
-                    <h1 class="text-4xl font-black tracking-tight text-slate-800">
-                        {{ $purchaseRequest->doc_num }}
-                    </h1>
+                    <div>
+                        <h1 class="text-4xl font-black tracking-tight text-slate-800">
+                            {{ $purchaseRequest->doc_num }}
+                        </h1>
+                        <p class="text-sm text-slate-500 mt-1">
+                            PR No: <span class="font-semibold text-slate-700">{{ $purchaseRequest->pr_no ?: 'No PR Num' }}</span>
+                        </p>
+                    </div>
 
                     {{-- Status Badge --}}
                     @include('partials.workflow-status-badge', ['record' => $purchaseRequest])
