@@ -24,6 +24,9 @@ class GlobalSearchFilter implements PurchaseRequestFilter
                 ->orWhere('from_department', 'like', "%{$this->term}%")
                 ->orWhereHas('createdBy', function ($sub) {
                     $sub->where('name', 'like', "%{$this->term}%");
+                })
+                ->orWhereHas('items', function ($sub) {
+                    $sub->where('item_name', 'like', "%{$this->term}%");
                 });
         });
     }

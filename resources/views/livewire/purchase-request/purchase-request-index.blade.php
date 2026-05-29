@@ -73,7 +73,7 @@
             </div>
 
             <input type="text" wire:model.live.debounce.400ms="search"
-                placeholder="Find PRs, makers, or departments..."
+                placeholder="Find PRs, items, makers, or departments..."
                 class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-24 py-3 text-sm font-medium text-slate-800 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all shadow-sm placeholder-slate-400">
 
             <div class="absolute inset-y-0 right-2 flex items-center gap-1">
