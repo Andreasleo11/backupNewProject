@@ -69,6 +69,20 @@ class Kernel extends ConsoleKernel
             ->timezone('Asia/Jakarta')
             ->withoutOverlapping()
             ->onOneServer();
+
+        // SAP Sync + Forecast Post-Processing (jam 12:00 WIB)
+        $schedule->command('sap:sync --endpoint=all')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/sap-sync.log'));
+
+        // SAP Sync + Forecast Post-Processing (jam 18:00 WIB)
+        $schedule->command('sap:sync --endpoint=all')
+            ->dailyAt('18:00')
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/sap-sync.log'));
     }
 
     /**

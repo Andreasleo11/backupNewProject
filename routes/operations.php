@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/daily-reports', \App\Livewire\DailyReports\Index::class)->name('daily-reports.index');
     Route::get('/daily-reports/{employee_id}', \App\Livewire\DailyReports\Show::class)->name('daily-reports.show');
 
-    // Employee Daily Reports
+    // Update Forecast Data Purchasing 
     Route::get('/store-data', [\App\Http\Controllers\PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
     Route::get('/insert-material_prediction', [\App\Http\Controllers\MaterialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
 

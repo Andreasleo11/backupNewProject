@@ -35,4 +35,12 @@ return [
         'auth' => env('JPAYROLL_AUTH_HEADER'),
         'company_area' => env('JPAYROLL_COMPANY_AREA'),
     ],
+
+    'sap' => [
+        'base_url' => env('SAP_API_BASE'),
+        'auth_url' => env('SAP_API_AUTH'),
+        'company_db' => env('SAP_COMPANY_DB'),
+        'username' => env('SAP_USERNAME'),
+        'password' => env('SAP_PASSWORD'),
+    ],
 ];
