@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('purchase_requests', function (Blueprint $table) {
-            $table->dropColumn('is_import');
-        });
+        if (Schema::hasTable('purchase_requests') && Schema::hasColumn('purchase_requests', 'is_import')) {
+            Schema::table('purchase_requests', function (Blueprint $table) {
+                $table->dropColumn('is_import');
+            });
+        }
     }
 };

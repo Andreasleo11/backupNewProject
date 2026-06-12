@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('surat_perintah_kerja_komputer', function (Blueprint $table) {
-            $table->dropColumn('finished_by_autograph');
-        });
+        if (Schema::hasColumn('surat_perintah_kerja_komputer', 'finished_by_autograph')) {
+            Schema::table('surat_perintah_kerja_komputer', function (Blueprint $table) {
+                $table->dropColumn('finished_by_autograph');
+            });
+        }
     }
 };

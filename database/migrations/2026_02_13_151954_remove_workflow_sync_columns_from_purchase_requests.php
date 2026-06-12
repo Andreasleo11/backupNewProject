@@ -15,7 +15,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('purchase_requests', function (Blueprint $table) {
-            $table->dropColumn(['workflow_status', 'workflow_step']);
+            if (Schema::hasColumn('purchase_requests', 'workflow_status')) {
+                $table->dropColumn('workflow_status');
+            }
+            if (Schema::hasColumn('purchase_requests', 'workflow_step')) {
+                $table->dropColumn('workflow_step');
+            }
         });
     }
 
@@ -25,8 +30,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('purchase_requests', function (Blueprint $table) {
-            $table->string('workflow_status')->nullable();
-            $table->string('workflow_step')->nullable();
+            if (!Schema::hasColumn('purchase_requests', 'workflow_status')) {
+                $table->string('workflow_status')->nullable();
+            }
+            if (!Schema::hasColumn('purchase_requests', 'workflow_step')) {
+                $table->string('workflow_step')->nullable();
+            }
         });
     }
 };

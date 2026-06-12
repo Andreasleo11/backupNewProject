@@ -21,10 +21,18 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('purchase_requests', function (Blueprint $table) {
-            $table->dropIndex('idx_pr_status');
-            $table->dropIndex('idx_pr_created_at');
-            $table->dropIndex('idx_pr_status_date');
-        });
+        $indexes = [
+            'idx_pr_status',
+            'idx_pr_created_at',
+            'idx_pr_status_date'
+        ];
+
+        foreach ($indexes as $index) {
+            try {
+                Schema::table('purchase_requests', function (Blueprint $table) use ($index) {
+                    $table->dropIndex($index);
+                });
+            } catch (\Exception $e) {}
+        }
     }
 };

@@ -21,8 +21,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->dropUnique('NIK');
-        });
+        try {
+            Schema::table('employees', function (Blueprint $table) {
+                $table->dropUnique(['NIK']);
+            });
+        } catch (\Exception $e) {
+            // Ignore if the index does not exist
+        }
     }
 };

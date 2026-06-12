@@ -30,17 +30,28 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('header_form_overtime', function (Blueprint $table) {
-            $table->dropIndex(['user_id']);
-            $table->dropIndex(['dept_id']);
-            $table->dropIndex(['is_push']);
-            $table->dropIndex(['status']);
-        });
+        $headerIndexes = ['user_id', 'dept_id', 'is_push', 'status'];
+        foreach ($headerIndexes as $index) {
+            try {
+                Schema::table('header_form_overtime', function (Blueprint $table) use ($index) {
+                    $table->dropIndex([$index]);
+                });
+            } catch (\Exception $e) {}
+        }
 
-        Schema::table('detail_form_overtime', function (Blueprint $table) {
-            $table->dropIndex(['header_id']);
-            $table->dropIndex(['status', 'is_processed']);
-            $table->dropIndex(['start_date']);
-        });
+        $detailIndexes = ['header_id', 'start_date'];
+        foreach ($detailIndexes as $index) {
+            try {
+                Schema::table('detail_form_overtime', function (Blueprint $table) use ($index) {
+                    $table->dropIndex([$index]);
+                });
+            } catch (\Exception $e) {}
+        }
+
+        try {
+            Schema::table('detail_form_overtime', function (Blueprint $table) {
+                $table->dropIndex(['status', 'is_processed']);
+            });
+        } catch (\Exception $e) {}
     }
 };

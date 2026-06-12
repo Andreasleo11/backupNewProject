@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('second_inspections', function (Blueprint $table) {
-            $table->integer('lot_size_quantity')->chnage();
+            $table->integer('lot_size_quantity')->nullable(false)->change();
         });
     }
 };

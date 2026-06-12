@@ -21,8 +21,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mtc__line_downs', function (Blueprint $table) {
-            $table->integer('line_code')->change();
-        });
+        if (Schema::hasTable('mtc_line_downs')) {
+            try {
+                Schema::table('mtc_line_downs', function (Blueprint $table) {
+                    $table->integer('line_code')->change();
+                });
+            } catch (\Exception $e) {
+                // Ignore if values cannot be reverted to integer
+            }
+        }
     }
 };

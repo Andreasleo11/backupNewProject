@@ -50,25 +50,53 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Remove indexes first
-        Schema::table('approval_requests', function (Blueprint $table) {
-            $table->dropIndex('idx_approval_polymorphic_lookup');
-        });
+        // Remove index safely
+        try {
+            Schema::table('approval_requests', function (Blueprint $table) {
+                $table->dropIndex('idx_approval_polymorphic_lookup');
+            });
+        } catch (\Exception $e) {
+            Log::info('Index idx_approval_polymorphic_lookup might already be dropped: ' . $e->getMessage());
+        }
 
-        Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->dropIndex('idx_po_status_approval');
-            $table->dropIndex('idx_po_approval_request');
+        // Drop foreign key constraint first before any indexes
+        try {
+            Schema::table('purchase_orders', function (Blueprint $table) {
+                $table->dropForeign(['approval_request_id']);
+            });
+        } catch (\Exception $e) {
+            Log::info('Foreign key might already be dropped: ' . $e->getMessage());
+        }
 
-            // Drop foreign key constraint
-            $table->dropForeign(['approval_request_id']);
+        // Drop indexes
+        try {
+            Schema::table('purchase_orders', function (Blueprint $table) {
+                $table->dropIndex('idx_po_status_approval');
+            });
+        } catch (\Exception $e) {
+            Log::info('Index idx_po_status_approval might already be dropped: ' . $e->getMessage());
+        }
 
-            // Drop the column
-            $table->dropColumn('approval_request_id');
-        });
+        try {
+            Schema::table('purchase_orders', function (Blueprint $table) {
+                $table->dropIndex('idx_po_approval_request');
+            });
+        } catch (\Exception $e) {
+            Log::info('Index idx_po_approval_request might already be dropped: ' . $e->getMessage());
+        }
+
+        // Drop the column
+        try {
+            Schema::table('purchase_orders', function (Blueprint $table) {
+                $table->dropColumn('approval_request_id');
+            });
+        } catch (\Exception $e) {
+            Log::info('Column approval_request_id might already be dropped: ' . $e->getMessage());
+        }
 
         // Remove check constraint if it exists
         try {
-            DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS po_status_enum_check');
+            DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT po_status_enum_check');
         } catch (\Exception $e) {
             // Constraint might not exist, continue
         }

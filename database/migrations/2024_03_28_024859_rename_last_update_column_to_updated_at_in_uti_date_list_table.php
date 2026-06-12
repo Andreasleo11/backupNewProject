@@ -23,10 +23,22 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('uti_date_list', function (Blueprint $table) {
-            $table->timestamp('last_update')->nullable();
+        if (!Schema::hasColumn('uti_date_list', 'last_update')) {
+            Schema::table('uti_date_list', function (Blueprint $table) {
+                $table->timestamp('last_update')->nullable();
+            });
+        }
+
+        try {
             DB::statement('UPDATE `uti_date_list` SET `last_update` = `updated_at`');
-            $table->dropColumn('updated_at');
-        });
+        } catch (\Exception $e) {
+            // Ignore if columns are missing
+        }
+
+        if (Schema::hasColumn('uti_date_list', 'updated_at')) {
+            Schema::table('uti_date_list', function (Blueprint $table) {
+                $table->dropColumn('updated_at');
+            });
+        }
     }
 };

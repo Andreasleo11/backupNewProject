@@ -7,12 +7,6 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    /**
-     * Run the migrations.
-     */
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         // 1. Employee Daily Reports
@@ -54,31 +48,35 @@ return new class extends Migration
     public function down(): void
     {
         // Restore columns for employee_daily_reports
-        $columns = DB::select('SHOW COLUMNS FROM employee_daily_reports');
-        $existing = array_column($columns, 'Field');
+        if (Schema::hasTable('employee_daily_reports')) {
+            $columns = DB::select('SHOW COLUMNS FROM employee_daily_reports');
+            $existing = array_column($columns, 'Field');
 
-        if (! in_array('report_type', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN report_type VARCHAR(255) NULL AFTER submitted_at');
-        }
-        if (! in_array('departement_id', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN departement_id VARCHAR(255) NULL AFTER employee_id');
-        }
-        if (! in_array('employee_name', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN employee_name VARCHAR(255) NULL AFTER departement_id');
+            if (! in_array('report_type', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN report_type VARCHAR(255) NULL AFTER submitted_at');
+            }
+            if (! in_array('departement_id', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN departement_id VARCHAR(255) NULL AFTER employee_id');
+            }
+            if (! in_array('employee_name', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_reports ADD COLUMN employee_name VARCHAR(255) NULL AFTER departement_id');
+            }
         }
 
         // Restore columns for employee_daily_report_logs
-        $columns = DB::select('SHOW COLUMNS FROM employee_daily_report_logs');
-        $existing = array_column($columns, 'Field');
+        if (Schema::hasTable('employee_daily_report_logs')) {
+            $columns = DB::select('SHOW COLUMNS FROM employee_daily_report_logs');
+            $existing = array_column($columns, 'Field');
 
-        if (! in_array('report_type', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN report_type VARCHAR(255) NULL AFTER work_time');
-        }
-        if (! in_array('department_id', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN department_id VARCHAR(255) NULL AFTER employee_name');
-        }
-        if (! in_array('employee_name', $existing)) {
-            DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN employee_name VARCHAR(255) NULL AFTER employee_id');
+            if (! in_array('report_type', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN report_type VARCHAR(255) NULL AFTER work_time');
+            }
+            if (! in_array('department_id', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN department_id VARCHAR(255) NULL AFTER employee_name');
+            }
+            if (! in_array('employee_name', $existing)) {
+                DB::statement('ALTER TABLE employee_daily_report_logs ADD COLUMN employee_name VARCHAR(255) NULL AFTER employee_id');
+            }
         }
     }
 };

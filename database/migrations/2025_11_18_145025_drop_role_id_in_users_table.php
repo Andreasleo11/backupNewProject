@@ -36,8 +36,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id')->nullable()->after('remember_token');
-        });
+        if (!Schema::hasColumn('users', 'role_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('role_id')->nullable()->after('remember_token');
+            });
+        }
     }
 };

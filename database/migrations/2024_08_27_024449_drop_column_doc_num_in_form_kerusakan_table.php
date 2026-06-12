@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('form_kerusakan', function (Blueprint $table) {
-            $table->string('doc_num')->nullable();
-        });
+        if (!Schema::hasColumn('form_kerusakan', 'doc_num')) {
+            Schema::table('form_kerusakan', function (Blueprint $table) {
+                $table->string('doc_num')->nullable();
+            });
+        }
     }
 };

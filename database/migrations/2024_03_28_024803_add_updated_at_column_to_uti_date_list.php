@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('uti_date_list', function (Blueprint $table) {
-            $table->dropColumn('updated_at');
-        });
+        if (Schema::hasColumn('uti_date_list', 'updated_at')) {
+            Schema::table('uti_date_list', function (Blueprint $table) {
+                $table->dropColumn('updated_at');
+            });
+        }
     }
 };

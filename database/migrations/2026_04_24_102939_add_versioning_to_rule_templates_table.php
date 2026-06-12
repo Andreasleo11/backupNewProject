@@ -46,20 +46,55 @@ return new class extends Migration
     public function down(): void
     {
         // Remove from approval_requests first
-        Schema::table('approval_requests', function (Blueprint $table) {
-            if (Schema::hasColumn('approval_requests', 'rule_template_version_id')) {
-                $table->dropIndex(['rule_template_version_id']);
-                $table->dropForeign(['rule_template_version_id']);
-                $table->dropColumn('rule_template_version_id');
-            }
-        });
+        if (Schema::hasColumn('approval_requests', 'rule_template_version_id')) {
+            try {
+                Schema::table('approval_requests', function (Blueprint $table) {
+                    $table->dropForeign(['rule_template_version_id']);
+                });
+            } catch (\Exception $e) {}
+
+            try {
+                Schema::table('approval_requests', function (Blueprint $table) {
+                    $table->dropIndex(['rule_template_version_id']);
+                });
+            } catch (\Exception $e) {}
+
+            try {
+                Schema::table('approval_requests', function (Blueprint $table) {
+                    $table->dropColumn('rule_template_version_id');
+                });
+            } catch (\Exception $e) {}
+        }
 
         // Remove from rule_templates
-        Schema::table('approvals_rule_templates', function (Blueprint $table) {
-            $table->dropIndex(['version_uuid', 'is_current']);
-            $table->dropIndex(['version_uuid', 'version_number']);
-            $table->dropForeign(['parent_version_id']);
-            $table->dropColumn(['version_uuid', 'version_number', 'is_current', 'parent_version_id', 'version_notes', 'created_by']);
-        });
+        try {
+            Schema::table('approvals_rule_templates', function (Blueprint $table) {
+                $table->dropForeign(['parent_version_id']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('approvals_rule_templates', function (Blueprint $table) {
+                $table->dropForeign(['created_by']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('approvals_rule_templates', function (Blueprint $table) {
+                $table->dropIndex(['version_uuid', 'is_current']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('approvals_rule_templates', function (Blueprint $table) {
+                $table->dropIndex(['version_uuid', 'version_number']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('approvals_rule_templates', function (Blueprint $table) {
+                $table->dropColumn(['version_uuid', 'version_number', 'is_current', 'parent_version_id', 'version_notes', 'created_by']);
+            });
+        } catch (\Exception $e) {}
     }
 };

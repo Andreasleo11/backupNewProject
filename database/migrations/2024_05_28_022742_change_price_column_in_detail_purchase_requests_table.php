@@ -19,7 +19,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Optionally, revert the prices back to integers
-        DB::statement('ALTER TABLE detail_purchase_requests MODIFY price INTEGER');
+        try {
+            DB::statement('ALTER TABLE detail_purchase_requests MODIFY price INTEGER');
+        } catch (\Exception $e) {
+            // Ignore if data is out of range for INTEGER
+        }
     }
 };

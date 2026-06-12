@@ -22,9 +22,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('inv_line_list', function (Blueprint $table) {
-            $table->dropColumn('jakarta');
-            $table->dropColumn('karawang');
+        Schema::table('inv_line_lists', function (Blueprint $table) {
+            if (Schema::hasColumn('inv_line_lists', 'jakarta')) {
+                $table->dropColumn('jakarta');
+            }
+            if (Schema::hasColumn('inv_line_lists', 'karawang')) {
+                $table->dropColumn('karawang');
+            }
         });
     }
 };

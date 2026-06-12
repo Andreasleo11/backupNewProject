@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('monthly_budget_reports', function (Blueprint $table) {
-            $table->dropColumn('is_cancel');
-        });
+        if (Schema::hasColumn('monthly_budget_reports', 'cancel_reason')) {
+            Schema::table('monthly_budget_reports', function (Blueprint $table) {
+                $table->dropColumn('cancel_reason');
+            });
+        }
     }
 };

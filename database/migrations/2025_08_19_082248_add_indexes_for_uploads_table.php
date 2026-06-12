@@ -25,12 +25,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('uploads', function (Blueprint $table) {
-            $table->dropIndex('created_at');
-            $table->dropIndex('size');
-            $table->dropIndex('mime_type');
-            $table->dropIndex('uploaded_by');
-            $table->dropIndex('original_name');
-        });
+        try {
+            Schema::table('uploads', function (Blueprint $table) {
+                $table->dropIndex(['created_at']);
+                $table->dropIndex(['size']);
+                $table->dropIndex(['mime_type']);
+                $table->dropIndex(['uploaded_by']);
+                $table->dropIndex(['original_name']);
+            });
+        } catch (\Exception $e) {
+            // Ignore if the indexes do not exist
+        }
     }
 };

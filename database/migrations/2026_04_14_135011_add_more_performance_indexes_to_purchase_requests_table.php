@@ -26,12 +26,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('purchase_requests', function (Blueprint $table) {
-            $table->dropIndex('idx_pr_date_pr');
-            $table->dropIndex('idx_pr_from_department');
-            $table->dropIndex('idx_pr_to_department');
-            $table->dropIndex('idx_pr_branch');
-            $table->dropIndex('idx_pr_creator_date');
-        });
+        $indexes = [
+            'idx_pr_date_pr',
+            'idx_pr_from_department',
+            'idx_pr_to_department',
+            'idx_pr_branch',
+            'idx_pr_creator_date'
+        ];
+
+        foreach ($indexes as $index) {
+            try {
+                Schema::table('purchase_requests', function (Blueprint $table) use ($index) {
+                    $table->dropIndex($index);
+                });
+            } catch (\Exception $e) {}
+        }
     }
 };

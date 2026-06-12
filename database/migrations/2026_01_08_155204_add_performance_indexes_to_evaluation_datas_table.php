@@ -26,13 +26,21 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('evaluation_datas', function (Blueprint $table) {
-            $table->dropIndex('idx_eval_dept');
-            $table->dropIndex('idx_eval_nik');
-            $table->dropIndex('idx_eval_dept_month');
-            $table->dropIndex('idx_eval_depthead');
-            $table->dropIndex('idx_eval_gm');
-            $table->dropIndex('idx_eval_is_lock');
-        });
+        $indexes = [
+            'idx_eval_dept',
+            'idx_eval_nik',
+            'idx_eval_dept_month',
+            'idx_eval_depthead',
+            'idx_eval_gm',
+            'idx_eval_is_lock'
+        ];
+
+        foreach ($indexes as $index) {
+            try {
+                Schema::table('evaluation_datas', function (Blueprint $table) use ($index) {
+                    $table->dropIndex($index);
+                });
+            } catch (\Exception $e) {}
+        }
     }
 };

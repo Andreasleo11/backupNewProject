@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('approval_rule_templates');
+        Schema::dropIfExists('approvals_rule_templates');
     }
 };

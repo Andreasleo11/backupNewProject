@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('header_form_overtime', function (Blueprint $table) {
-            $table->dropColumn('is_design');
-        });
+        if (Schema::hasTable('header_form_overtime')) {
+            Schema::table('header_form_overtime', function (Blueprint $table) {
+                $table->dropColumn('is_design');
+            });
+        }
     }
 };
