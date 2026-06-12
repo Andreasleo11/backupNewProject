@@ -73,6 +73,11 @@ class ConsolidatedDetail extends Component
         $this->range = request('range');
         $this->groupByDate = request('group_date') == '1';
         $this->hideSigned = request('hide_signed') != '0';
+
+        if(auth()->user()->hasRole('director')){
+            $this->toggleViewMode();
+            $this->viewMode === 'grouped';
+        }
     }
 
     private function getFilterParams(): array

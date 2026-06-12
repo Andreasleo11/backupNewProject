@@ -226,6 +226,11 @@ class Index extends Component
                 }
             }
         }
+
+        if(auth()->user()->hasRole('director')){
+            $this->toggleGroupByDate();
+            $this->sortBy('first_overtime_date');
+        }
     }
 
     public function resetFilters(): void
