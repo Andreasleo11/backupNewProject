@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Presentation\Http\Requests;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class ChangeUserPasswordRequest extends FormRequest
