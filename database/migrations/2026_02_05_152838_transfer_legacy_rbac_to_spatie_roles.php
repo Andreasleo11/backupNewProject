@@ -13,21 +13,14 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Ensure all target roles exist
-        // We now create BOTH uppercase (for legacy code) and lowercase (new standard from PermissionRegistry)
-        // to prevent future seeding / lookup issues during transition.
-        $legacyUpper = [
-            'INSPECTOR', 'LEADER', 'STAFF', 'DIRECTOR', 'ADMIN', 'HEAD',
-            'PURCHASER', 'VERIFICATOR', 'DESIGN', 'SUPERVISOR',
-        ];
-
+        // We use lowercase (new standard from PermissionRegistry) for consistent naming.
         $lowercaseModern = [
-            'inspector', 'leader', 'staff', 'director', 'admin', 'head',
+            'inspector', 'leader', 'staff', 'director', 'admin', 'department-head',
             'purchaser', 'verificator', 'design', 'supervisor',
         ];
 
         $allRoles = array_unique(array_merge(
             ['super-admin', 'staff', 'user'],
-            $legacyUpper,
             $lowercaseModern
         ));
 
@@ -58,16 +51,16 @@ return new class extends Migration
             $usersWithSpec = User::whereNotNull('specification_id')->get();
             foreach ($usersWithSpec as $user) {
                 $specRole = match ((int) $user->specification_id) {
-                    2 => 'INSPECTOR',
-                    3 => 'LEADER',
-                    4 => 'STAFF',
-                    5 => 'DIRECTOR',
-                    6 => 'ADMIN',
-                    7 => 'HEAD',
-                    14 => 'PURCHASER',
-                    15 => 'VERIFICATOR',
-                    16 => 'DESIGN',
-                    17 => 'SUPERVISOR',
+                    2 => 'inspector',
+                    3 => 'leader',
+                    4 => 'staff',
+                    5 => 'director',
+                    6 => 'admin',
+                    7 => 'department-head',
+                    14 => 'purchaser',
+                    15 => 'verificator',
+                    16 => 'design',
+                    17 => 'supervisor',
                     default => null
                 };
 
