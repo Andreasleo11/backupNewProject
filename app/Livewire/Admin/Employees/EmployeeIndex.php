@@ -51,6 +51,16 @@ class EmployeeIndex extends Component
     ];
 
     // ── Filter handlers ───────────────────────────────────────────────────────
+    public function mount(\App\Services\Payroll\Sync\DateRangeResolver $resolver): void
+    {
+        $tz = config('payroll.timezone', 'Asia/Jakarta');
+        $range = $resolver->resolve(null, null, $tz);
+        
+        // Initialize UI with the resolved default date range
+        $this->syncFromDate = $range['from']->format('Y-m-d');
+        $this->syncToDate = $range['to']->format('Y-m-d');
+    }
+
     public function updatedSearch(): void          { $this->resetPage(); }
     public function updatedBranch(): void          { $this->resetPage(); }
     public function updatedDeptCode(): void        { $this->resetPage(); }

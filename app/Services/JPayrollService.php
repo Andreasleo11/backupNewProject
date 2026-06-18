@@ -67,7 +67,7 @@ final class JPayrollService
         $year ??= now($tz)->year;
 
         try {
-            $preview = ['phases' => $phases];
+            $preview = ['phases' => $phases, 'parameters' => []];
 
             // --- Employee phase preview ---
             if (in_array('employees', $phases, true)) {
@@ -86,6 +86,13 @@ final class JPayrollService
                 $range = $this->dateRangeResolver->resolve($fromDate, $toDate, $tz);
                 $attendances = $this->client->getAttendance($companyArea, $range['from'], $range['to']);
                 $preview['attendance'] = $this->attendanceSync->preview($attendances);
+                
+                $preview['parameters']['date_range'] = [
+                    'requested_from' => $fromDate,
+                    'requested_to'   => $toDate,
+                    'resolved_from'  => $range['from']->format('Y-m-d'),
+                    'resolved_to'    => $range['to']->format('Y-m-d'),
+                ];
             }
 
             return array_merge(['success' => true], $preview);

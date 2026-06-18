@@ -93,18 +93,18 @@
                                             class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
                                     </div>
                                 </div>
-                                <p class="text-[8px] text-slate-400">Leave blank to default: start of month → yesterday</p>
+                                <p class="text-[8px] text-slate-400">Defaults to start of month &rarr; yesterday.</p>
                             </div>
                         </div>
 
                         <div class="px-4 pb-4 flex items-center justify-between gap-3">
                             <span class="text-[9px] font-bold text-slate-400">
-                                {{ count($syncPhases) }} phase(s) selected
+                                <span x-text="phases.length"></span> phase(s) selected
                             </span>
                             <button wire:click="sync" @click="open = false"
                                 wire:loading.attr="disabled"
-                                :disabled="{{ count($syncPhases) === 0 ? 'true' : 'false' }}"
-                                class="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow hover:bg-slate-700 transition-all disabled:opacity-40">
+                                :disabled="phases.length === 0"
+                                class="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow hover:bg-slate-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                                 <i class='bx bx-search-alt text-sm' wire:loading.class="hidden" wire:target="sync"></i>
                                 <i class='bx bx-loader-alt animate-spin text-sm hidden' wire:loading.class.remove="hidden" wire:target="sync"></i>
                                 Preview

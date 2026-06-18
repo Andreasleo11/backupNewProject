@@ -60,6 +60,13 @@
                                         {{ $phaseLabels[$ph] ?? $ph }}
                                     </span>
                                 @endforeach
+                                @if(isset($modalData['parameters']['date_range']) && in_array('attendance', $phases))
+                                    @php $dr = $modalData['parameters']['date_range']; @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-slate-100 text-slate-500 ml-2">
+                                        <i class='bx bx-calendar mr-1'></i>
+                                        {{ \Carbon\Carbon::parse($dr['resolved_from'])->format('d M') }} &rarr; {{ \Carbon\Carbon::parse($dr['resolved_to'])->format('d M Y') }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>

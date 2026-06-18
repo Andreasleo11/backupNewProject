@@ -80,10 +80,24 @@ class PayrollSyncJob implements ShouldQueue
         );
 
         if ($importJob) {
+            $snapshot = $importJob->results_snapshot ?? [];
+            $snapshot['parameters'] = [
+                'company_area' => $this->companyArea,
+                'year'         => $this->year,
+                'phases'       => $selectedPhases,
+                'date_range'   => [
+                    'requested_from' => $this->fromDate,
+                    'requested_to'   => $this->toDate,
+                    'resolved_from'  => $range['from']->format('Y-m-d'),
+                    'resolved_to'    => $range['to']->format('Y-m-d'),
+                ],
+            ];
+
             $importJob->update([
-                'status'      => $result['success'] ? 'completed' : 'failed',
-                'error'       => $result['success'] ? null : $result['message'],
-                'finished_at' => now(),
+                'status'           => $result['success'] ? 'completed' : 'failed',
+                'error'            => $result['success'] ? null : $result['message'],
+                'finished_at'      => now(),
+                'results_snapshot' => $snapshot,
             ]);
         }
 
