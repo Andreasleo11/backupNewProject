@@ -110,7 +110,7 @@ class EmployeeIndex extends Component
     {
         $this->selectedNik      = $nik;
         $this->selectedEmployee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::where('nik', $nik)
-            ->with(['evaluationData', 'warningLogs', 'latestDailyReport', 'department'])
+            ->with(['evaluationData', 'warningLogs', 'attendanceRecords', 'department'])
             ->first();
     }
 

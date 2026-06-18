@@ -26,7 +26,7 @@
                                             class="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
                                             <i class='bx bx-fingerprint text-lg'></i>
                                         </div>
-                                        <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Employee
+                                        <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Employee 
                                             Audit Desk</h2>
                                     </div>
                                     <button @click="$wire.closeAudit()"
@@ -106,11 +106,11 @@
                                                 <div
                                                     class="flex items-center gap-1.5 p-1 bg-slate-50/80 rounded-xl border border-slate-100">
                                                     @foreach ([
-        'Alpha' => ['rose', 'Absent'],
-        'Telat' => ['amber', 'Late'],
-        'Izin' => ['blue', 'Permit'],
-        'Sakit' => ['slate', 'Sick'],
-    ] as $key => $meta)
+                                                        'Alpha' => ['rose', 'Absent'],
+                                                        'Telat' => ['amber', 'Late'],
+                                                        'Izin' => ['blue', 'Permit'],
+                                                        'Sakit' => ['slate', 'Sick'],
+                                                    ] as $key => $meta)
                                                         <div
                                                             class="flex-1 flex flex-col items-center py-1.5 border-r border-slate-200/50 last:border-none">
                                                             <span
@@ -223,40 +223,92 @@
                                 </section>
 
                                 {{-- Attendance Context --}}
-                                <section class="space-y-4">
-                                    <h4
-                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <i class='bx bx-map-pin text-amber-500'></i> Attendance Context
-                                    </h4>
-                                    @if ($selectedEmployee->latestDailyReport)
-                                        <div
-                                            class="bg-slate-900 rounded-[2rem] p-6 shadow-xl relative overflow-hidden group">
-                                            <div
-                                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                                                <i class='bx bx-current-location text-6xl text-white'></i>
-                                            </div>
-                                            <div class="relative z-10">
-                                                <div class="flex items-center justify-between mb-4">
-                                                    <span
-                                                        class="text-[10px] font-black text-white/40 uppercase tracking-widest">Master
-                                                        Daily Report</span>
-                                                    <span
-                                                        class="text-[10px] font-black text-blue-400 tabular-nums">{{ $selectedEmployee->latestDailyReport->sort_datetime->format('d M, H:i') }}</span>
+                                <section class="space-y-4" 
+                                    x-data="{
+                                        filter: '30d',
+                                        records: @js($selectedEmployee->attendanceRecords ?? []),
+                                        get filteredRecords() {
+                                            const now = new Date();
+                                            return this.records.filter(r => {
+                                                const shiftDate = new Date(r.shift_date);
+                                                if (this.filter === 'mtd') {
+                                                    return shiftDate.getMonth() === now.getMonth() && shiftDate.getFullYear() === now.getFullYear();
+                                                } else if (this.filter === '30d') {
+                                                    const diffDays = (now - shiftDate) / (1000 * 60 * 60 * 24);
+                                                    return diffDays <= 30 && diffDays >= 0;
+                                                }
+                                                return true;
+                                            });
+                                        },
+                                        get summary() {
+                                            let s = { alpha: 0, telat: 0, izin: 0, sakit: 0 };
+                                            this.filteredRecords.forEach(r => {
+                                                s.alpha += r.alpha || 0;
+                                                s.telat += r.telat || 0;
+                                                s.izin += r.izin || 0;
+                                                s.sakit += r.sakit || 0;
+                                            });
+                                            return s;
+                                        },
+                                        get infractions() {
+                                            return this.filteredRecords.filter(r => r.alpha > 0 || r.telat > 0 || r.izin > 0 || r.sakit > 0).slice(0, 5);
+                                        }
+                                    }">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <i class='bx bx-calendar-check text-emerald-500'></i> Attendance Context
+                                        </h4>
+                                        <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                                            <button @click="filter = 'mtd'" :class="filter === 'mtd' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all">MTD</button>
+                                            <button @click="filter = '30d'" :class="filter === '30d' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all">30 Days</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-slate-900 rounded-[2rem] p-6 shadow-xl">
+                                        {{-- Metric KPI Row --}}
+                                        <div class="grid grid-cols-4 gap-2 mb-6">
+                                            <template x-for="[key, label, color] in [['alpha', 'Absent', 'rose'], ['telat', 'Late', 'amber'], ['izin', 'Permit', 'blue'], ['sakit', 'Sick', 'slate']]">
+                                                <div class="flex flex-col items-center p-3 rounded-2xl bg-white/5 border border-white/10">
+                                                    <span class="text-xl font-black tabular-nums leading-none"
+                                                        :class="summary[key] > 0 ? 'text-' + color + '-400' : 'text-white/20'"
+                                                        x-text="summary[key]"></span>
+                                                    <span class="text-[8px] font-bold text-white/50 uppercase tracking-widest mt-1" x-text="label"></span>
                                                 </div>
-                                                <p
-                                                    class="text-xs font-medium text-slate-300 leading-relaxed italic border-l-2 border-blue-500/30 pl-4 py-1">
-                                                    "{{ Str::limit($selectedEmployee->latestDailyReport->report_content, 180) }}"
-                                                </p>
-                                            </div>
+                                            </template>
                                         </div>
-                                    @else
-                                        <div
-                                            class="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 rounded-[2rem] bg-slate-50/30">
-                                            <i class='bx bx-map-alt text-3xl text-slate-200 mb-2'></i>
-                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                No recent geospatial reports</p>
+
+                                        {{-- Timeline / Status --}}
+                                        <div class="relative">
+                                            <template x-if="infractions.length === 0">
+                                                <div class="flex items-center justify-center py-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                                                    <div class="flex items-center gap-2 text-emerald-400">
+                                                        <i class='bx bx-check-shield text-xl'></i>
+                                                        <span class="text-xs font-bold tracking-widest uppercase">Perfect Attendance</span>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <template x-if="infractions.length > 0">
+                                                <div class="space-y-3">
+                                                    <p class="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3">Recent Exceptions</p>
+                                                    <template x-for="r in infractions" :key="r.id">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></div>
+                                                            <div class="flex-1 flex justify-between items-center pb-2 border-b border-white/5">
+                                                                <span class="text-xs font-bold text-slate-300" x-text="new Date(r.shift_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })"></span>
+                                                                <div class="flex items-center gap-2">
+                                                                    <template x-if="r.alpha > 0"><span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-widest">Abs: <span x-text="r.alpha"></span></span></template>
+                                                                    <template x-if="r.telat > 0"><span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[9px] font-bold uppercase tracking-widest">Late: <span x-text="r.telat"></span></span></template>
+                                                                    <template x-if="r.izin > 0"><span class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 text-[9px] font-bold uppercase tracking-widest">Pmt: <span x-text="r.izin"></span></span></template>
+                                                                    <template x-if="r.sakit > 0"><span class="px-2 py-0.5 rounded-md bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest">Sck: <span x-text="r.sakit"></span></span></template>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </div>
-                                    @endif
+                                    </div>
                                 </section>
                             </div>
 

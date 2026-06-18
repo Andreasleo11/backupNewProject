@@ -64,6 +64,11 @@ class Employee extends Authenticatable
         return $this->hasOne(\App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport::class, 'employee_id', 'nik')->latestOfMany('sort_datetime');
     }
 
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(\App\Models\AttendanceRecord::class, 'nik', 'nik')->orderBy('shift_date', 'desc');
+    }
+
     public function latestEvaluation(): HasOne
     {
         return $this->hasOne(EvaluationData::class, 'NIK', 'nik')->ofMany('Month', 'max');
