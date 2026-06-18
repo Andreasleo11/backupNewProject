@@ -12,5 +12,6 @@ class EmployeeFilter
         public readonly ?string $branch = null,
         public readonly ?string $deptCode = null,
         public readonly ?string $employmentType = null,
+        public readonly bool $activeOnly = true,
     ) {}
 }

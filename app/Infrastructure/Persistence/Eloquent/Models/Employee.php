@@ -64,6 +64,11 @@ class Employee extends Authenticatable
         return $this->hasOne(\App\Infrastructure\Persistence\Eloquent\Models\EmployeeDailyReport::class, 'employee_id', 'nik')->latestOfMany('sort_datetime');
     }
 
+    public function latestEvaluation(): HasOne
+    {
+        return $this->hasOne(EvaluationData::class, 'NIK', 'nik')->ofMany('Month', 'max');
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_code', 'dept_no');

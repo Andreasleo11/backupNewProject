@@ -22,6 +22,7 @@ class ListEmployees
             branch: $filter->branch,
             deptCode: $filter->deptCode,
             employmentType: $filter->employmentType,
+            activeOnly: $filter->activeOnly,
         );
     }
 }

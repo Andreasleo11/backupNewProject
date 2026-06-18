@@ -167,20 +167,26 @@
                             'icon' => 'group',
                             'color' => 'blue',
                             'info' => 'Total active personnel',
+                            'action' => 'resetFilters()',
+                            'active' => $this->employmentType === '' && $this->branch === '' && $this->activeOnly,
                         ],
                         [
                             'label' => 'Perm',
                             'value' => $this->globalStats['permanent'],
                             'icon' => 'shield',
                             'color' => 'emerald',
-                            'info' => 'Inc. Tetap/Asing/Manajemen',
+                            'info' => 'Permanent employees (TETAP)',
+                            'action' => "filterByType('TETAP')",
+                            'active' => $this->employmentType === 'TETAP' && $this->activeOnly,
                         ],
                         [
                             'label' => 'Cntrt',
                             'value' => $this->globalStats['contract'],
                             'icon' => 'file',
                             'color' => 'amber',
-                            'info' => 'Inc. Kontrak/Magang',
+                            'info' => 'Contract employees (KONTRAK)',
+                            'action' => "filterByType('KONTRAK')",
+                            'active' => $this->employmentType === 'KONTRAK' && $this->activeOnly,
                         ],
                         [
                             'label' => 'KRWG',
@@ -188,20 +194,22 @@
                             'icon' => 'map-pin',
                             'color' => 'purple',
                             'info' => 'Personnel assigned to Karawang Hub',
+                            'action' => "filterByBranch('KARAWANG')",
+                            'active' => $this->branch === 'KARAWANG' && $this->activeOnly,
                         ],
                     ];
                 @endphp
                 @foreach ($stats as $stat)
-                    <div
-                        class="flex items-center gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all group relative">
+                    <button wire:click="{{ $stat['action'] }}"
+                        class="flex items-center gap-3 px-4 py-2.5 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all group relative text-left outline-none {{ $stat['active'] ? 'border-'.$stat['color'].'-500 ring-1 ring-'.$stat['color'].'-500 bg-'.$stat['color'].'-50/10' : 'border-slate-200 hover:border-'.$stat['color'].'-300' }}">
                         <div
-                            class="h-9 w-9 flex items-center justify-center rounded-xl bg-{{ $stat['color'] }}-50 text-{{ $stat['color'] }}-600 group-hover:bg-{{ $stat['color'] }}-600 group-hover:text-white transition-all duration-300">
+                            class="h-9 w-9 flex items-center justify-center rounded-xl bg-{{ $stat['color'] }}-50 text-{{ $stat['color'] }}-600 group-hover:bg-{{ $stat['color'] }}-600 group-hover:text-white transition-all duration-300 {{ $stat['active'] ? 'bg-'.$stat['color'].'-600 text-white shadow-lg shadow-'.$stat['color'].'-500/30' : '' }}">
                             <i class='bx bx-{{ $stat['icon'] }} text-xl'></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-1 cursor-help" x-data="{ open: false }"
                                 @mouseenter="open = true" @mouseleave="open = false">
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter leading-none">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter leading-none group-hover:text-{{ $stat['color'] }}-500 transition-colors {{ $stat['active'] ? 'text-'.$stat['color'].'-500' : '' }}">
                                     {{ $stat['label'] }}</p>
                                 <i
                                     class='bx bx-info-circle text-[8px] text-slate-300 group-hover:text-{{ $stat['color'] }}-400 transition-colors'></i>
@@ -222,10 +230,10 @@
                                 </div>
                             </div>
                             <p
-                                class="text-base font-black text-slate-900 tabular-nums leading-none mt-0.5 tracking-tight">
+                                class="text-base font-black tabular-nums leading-none mt-0.5 tracking-tight transition-colors {{ $stat['active'] ? 'text-'.$stat['color'].'-700' : 'text-slate-900 group-hover:text-'.$stat['color'].'-600' }}">
                                 {{ number_format($stat['value']) }}</p>
                         </div>
-                    </div>
+                    </button>
                 @endforeach
             </div>
         </div>
@@ -252,6 +260,14 @@
             {{-- Actions Pill --}}
             <div
                 class="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-xl shadow-sm self-stretch md:self-auto">
+                
+                {{-- Active Toggle --}}
+                <label class="flex items-center gap-2 h-9 px-3 bg-transparent cursor-pointer rounded-lg hover:bg-slate-50 transition-colors group">
+                    <input type="checkbox" wire:model.live="activeOnly" class="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500">
+                    <span class="text-[10px] font-black uppercase tracking-widest transition-colors {{ $activeOnly ? 'text-emerald-700' : 'text-slate-500' }}">Active Only</span>
+                </label>
+
+                <div class="w-px h-5 bg-slate-100 mx-1"></div>
                 {{-- Toggle Advanced --}}
                 <button @click="localOpen = !localOpen"
                     class="h-9 px-3 flex items-center gap-2 rounded-lg transition-all"

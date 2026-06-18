@@ -30,6 +30,7 @@ interface EmployeeRepository
         ?string $branch = null,
         ?string $deptCode = null,
         ?string $employmentType = null,
+        bool $activeOnly = true,
     ): LengthAwarePaginator;
 
     /**

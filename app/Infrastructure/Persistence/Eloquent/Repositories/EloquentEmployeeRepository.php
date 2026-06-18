@@ -67,9 +67,14 @@ class EloquentEmployeeRepository implements EmployeeRepository
         ?string $branch = null,
         ?string $deptCode = null,
         ?string $employmentType = null,
+        bool $activeOnly = true,
     ): LengthAwarePaginator {
         $query = EmployeeModel::query()
-            ->with(['evaluationData', 'warningLogs', 'latestDailyReport', 'department']);
+            ->with(['latestEvaluation', 'warningLogs', 'latestDailyReport', 'department']);
+
+        if ($activeOnly) {
+            $query->whereNull('end_date');
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -109,33 +114,16 @@ class EloquentEmployeeRepository implements EmployeeRepository
 
     public function getGlobalStats(): array
     {
-        $today = now()->format('Y-m-d');
-        $statusMap = config('payroll.status_map', []);
-
-        // Active Base Query: No end_date or end_date in future
-        $activeQuery = EmployeeModel::where(function ($q) use ($today) {
-            $q->whereNull('end_date')
-                ->orWhere('end_date', '>', $today);
-        })->where('employment_type', '!=', 'NOT ACTIVE');
+        // Active Base Query: No end_date
+        $activeQuery = EmployeeModel::whereNull('end_date');
 
         $totalActive = (clone $activeQuery)->count();
 
-        // Dynamic Grouping Based on config/payroll.php status_map
-        // Keys = values currently in DB, Values = internal categories (TETAP, KONTRAK, etc)
-        $counts = [];
-        foreach ($statusMap as $dbKey => $internalCategory) {
-            $counts[$internalCategory] = ($counts[$internalCategory] ?? 0) +
-                (clone $activeQuery)->where('employment_type', $dbKey)->count();
-        }
-
         return [
             'total' => $totalActive,
-            'permanent' => $counts['TETAP'] ?? 0,
-            'contract' => ($counts['KONTRAK'] ?? 0) + ($counts['MAGANG'] ?? 0),
+            'permanent' => (clone $activeQuery)->where('employment_type', 'TETAP')->count(),
+            'contract' => (clone $activeQuery)->where('employment_type', 'KONTRAK')->count(),
             'karawang' => (clone $activeQuery)->where('branch', 'KARAWANG')->count(),
-            'metadata' => [
-                'status_mapping' => $statusMap,
-            ],
         ];
     }
 

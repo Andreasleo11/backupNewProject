@@ -151,9 +151,7 @@
                         </td>
                         <td class="px-6 py-3 whitespace-nowrap">
                             @php
-                                $isActive =
-                                    is_null($employee->end_date) ||
-                                    \Carbon\Carbon::parse($employee->end_date)->isFuture();
+                                $isActive = is_null($employee->end_date);
                             @endphp
                             @if ($isActive)
                                 <span

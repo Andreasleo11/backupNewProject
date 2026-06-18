@@ -17,6 +17,7 @@ class EmployeeIndex extends Component
     public string $branch = '';
     public ?string $deptCode = '';
     public ?string $employmentType = '';
+    public bool $activeOnly = true;
     public int $perPage = 10;
     public bool $showAdvancedFilters = false;
     public string $sortBy = 'name';
@@ -46,6 +47,7 @@ class EmployeeIndex extends Component
         'branch'         => ['except' => ''],
         'deptCode'       => ['except' => ''],
         'employmentType' => ['except' => ''],
+        'activeOnly'     => ['except' => true],
     ];
 
     // ── Filter handlers ───────────────────────────────────────────────────────
@@ -53,10 +55,26 @@ class EmployeeIndex extends Component
     public function updatedBranch(): void          { $this->resetPage(); }
     public function updatedDeptCode(): void        { $this->resetPage(); }
     public function updatedEmploymentType(): void  { $this->resetPage(); }
+    public function updatedActiveOnly(): void      { $this->resetPage(); }
 
     public function resetFilters(): void
     {
         $this->reset(['search', 'branch', 'deptCode', 'employmentType']);
+        $this->activeOnly = true;
+        $this->resetPage();
+    }
+
+    public function filterByType(string $type): void
+    {
+        $this->employmentType = $type;
+        $this->activeOnly = true;
+        $this->resetPage();
+    }
+
+    public function filterByBranch(string $branch): void
+    {
+        $this->branch = $branch;
+        $this->activeOnly = true;
         $this->resetPage();
     }
 
@@ -185,6 +203,7 @@ class EmployeeIndex extends Component
             branch:          $this->branch ?: null,
             deptCode:        $this->deptCode ?: null,
             employmentType:  $this->employmentType ?: null,
+            activeOnly:      $this->activeOnly,
         );
 
         return app(ListEmployees::class)->execute($filter);
