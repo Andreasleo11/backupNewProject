@@ -20,50 +20,132 @@
                     </div>
                 </div>
 
-                {{-- Ultra-Minimal Sync Action --}}
-                <div
-                    class="flex items-center gap-1.5 p-1.5 bg-white border border-slate-200 rounded-2xl shadow-sm self-start sm:self-auto">
-                    <button wire:click="sync" wire:loading.attr="disabled"
-                        class="h-8 w-8 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-all disabled:opacity-50 group"
+                {{-- Sync Panel (Phase Picker) --}}
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" wire:loading.attr="disabled"
+                        class="h-9 px-4 flex items-center gap-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50"
                         title="Sync from JPayroll">
-                        <i class='bx bx-refresh text-xl group-hover:rotate-180 transition-all duration-700'
-                            wire:loading.class="animate-spin"></i>
+                        <i class='bx bx-refresh text-base' wire:loading.class="animate-spin"
+                            wire:target="sync"></i>
+                        <span>Sync</span>
                     </button>
 
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
-                            title="View Audit History">
+                    {{-- Phase picker dropdown --}}
+                    <div x-show="open" @click.away="open = false" x-transition
+                        class="absolute left-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-[100] overflow-hidden"
+                        style="display:none;">
+                        <div class="px-5 py-4 border-b border-slate-100">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Sync Phases</p>
+                        </div>
+
+                        <div class="p-4 space-y-2">
+                            {{-- Employees --}}
+                            <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
+                                <input type="checkbox" wire:model="syncPhases" value="employees"
+                                    class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <i class='bx bx-user text-slate-600 text-base'></i>
+                                        <span class="text-xs font-black text-slate-900">Employee Master</span>
+                                    </div>
+                                    <p class="text-[9px] text-slate-400 mt-0.5 ml-6">Upsert employee records from JPayroll</p>
+                                </div>
+                            </label>
+
+                            {{-- Annual Leave --}}
+                            <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
+                                <input type="checkbox" wire:model="syncPhases" value="annual_leave"
+                                    class="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <i class='bx bx-calendar-check text-slate-600 text-base'></i>
+                                        <span class="text-xs font-black text-slate-900">Annual Leave</span>
+                                    </div>
+                                    <p class="text-[9px] text-slate-400 mt-0.5 ml-6">Refresh leave balance quotas</p>
+                                </div>
+                            </label>
+
+                            {{-- Attendance --}}
+                            <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
+                                <input type="checkbox" wire:model="syncPhases" value="attendance"
+                                    class="w-4 h-4 rounded text-purple-600 border-slate-300 focus:ring-purple-500">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <i class='bx bx-time text-slate-600 text-base'></i>
+                                        <span class="text-xs font-black text-slate-900">Attendance Records</span>
+                                    </div>
+                                    <p class="text-[9px] text-slate-400 mt-0.5 ml-6">Import raw daily attendance data</p>
+                                </div>
+                            </label>
+
+                            {{-- Date range (shown only when attendance is ticked) --}}
+                            @if(in_array('attendance', $syncPhases))
+                                <div class="ml-7 mt-1 p-3 bg-purple-50 rounded-xl border border-purple-100 space-y-2">
+                                    <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Attendance Date Range</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[8px] font-bold text-slate-500 uppercase">From</label>
+                                            <input type="date" wire:model="syncFromDate"
+                                                class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="text-[8px] font-bold text-slate-500 uppercase">To</label>
+                                            <input type="date" wire:model="syncToDate"
+                                                class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
+                                        </div>
+                                    </div>
+                                    <p class="text-[8px] text-slate-400">Leave blank to default: start of month → yesterday</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="px-4 pb-4 flex items-center justify-between gap-3">
+                            <span class="text-[9px] font-bold text-slate-400">
+                                {{ count($syncPhases) }} phase(s) selected
+                            </span>
+                            <button wire:click="sync" @click="open = false"
+                                wire:loading.attr="disabled"
+                                :disabled="{{ count($syncPhases) === 0 ? 'true' : 'false' }}"
+                                class="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow hover:bg-slate-700 transition-all disabled:opacity-40">
+                                <i class='bx bx-search-alt text-sm' wire:loading.class="hidden" wire:target="sync"></i>
+                                <i class='bx bx-loader-alt animate-spin text-sm hidden' wire:loading.class.remove="hidden" wire:target="sync"></i>
+                                Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- History button --}}
+                    <div x-data="{ histOpen: false }" class="absolute left-full ml-2 top-0">
+                        <button @click="histOpen = !histOpen"
+                            class="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 rounded-xl transition-all bg-white shadow-sm"
+                            title="View Sync History">
                             <i class='bx bx-history text-lg'></i>
                         </button>
 
-                        {{-- Dropdown for recent syncs --}}
-                        <div x-show="open" @click.away="open = false" x-transition
+                        <div x-show="histOpen" @click.away="histOpen = false" x-transition
                             class="absolute left-0 sm:left-auto sm:right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 py-4 z-[100] overflow-hidden"
                             style="display: none;">
                             <div class="px-6 pb-2 border-b border-slate-50">
-                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recent Syncs
-                                </h4>
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Recent Syncs</h4>
                             </div>
                             <div class="max-h-64 overflow-y-auto custom-scrollbar">
                                 @forelse($this->recentSyncs as $log)
-                                    <button wire:click="viewLog({{ $log->id }})" @click="open = false"
+                                    <button wire:click="viewLog({{ $log->id }})" @click="histOpen = false"
                                         class="w-full px-6 py-2 flex items-center justify-between hover:bg-slate-50 transition-colors group/row">
                                         <div class="flex items-center gap-3">
-                                            <div
-                                                class="h-1.5 w-1.5 rounded-full {{ $log->status === 'completed' ? 'bg-emerald-500' : 'bg-blue-500 animate-pulse' }}">
-                                            </div>
+                                            <div class="h-1.5 w-1.5 rounded-full {{ $log->status === 'completed' ? 'bg-emerald-500' : 'bg-blue-500 animate-pulse' }}"></div>
                                             <div class="text-left">
-                                                <span
-                                                    class="text-[10px] font-bold text-slate-900">{{ $log->started_at?->format('d M, H:i') }}</span>
-                                                <span class="mx-1 text-slate-300">·</span>
-                                                <span
-                                                    class="text-[9px] font-medium text-slate-400 uppercase tracking-tighter">{{ $log->total_rows }}
-                                                    Rows</span>
+                                                <span class="text-[10px] font-bold text-slate-900">{{ $log->started_at?->format('d M, H:i') }}</span>
+                                                @php
+                                                    $snapshotPhases = $log->results_snapshot['phases'] ?? [];
+                                                @endphp
+                                                @if(count($snapshotPhases))
+                                                    <span class="mx-1 text-slate-300">·</span>
+                                                    <span class="text-[9px] font-medium text-purple-500 uppercase tracking-tighter">{{ implode(', ', $snapshotPhases) }}</span>
+                                                @endif
                                             </div>
                                         </div>
-                                        <i
-                                            class='bx bx-right-arrow-alt text-slate-300 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-1 transition-all'></i>
+                                        <i class='bx bx-right-arrow-alt text-slate-300 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-1 transition-all'></i>
                                     </button>
                                 @empty
                                     <div class="px-6 py-4">
@@ -74,6 +156,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
             {{-- High-Density Metric Grid --}}
