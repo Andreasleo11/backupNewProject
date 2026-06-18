@@ -23,6 +23,17 @@ class AppServiceProvider extends ServiceProvider
             fn () => \App\Services\Payroll\JPayrollClient::fromConfig(),
         );
 
+        // Bind the ordered list of sync phases for PayrollSyncOrchestrator.
+        // To add a new phase, append it here — no other files need changing.
+        $this->app->bind(
+            \App\Services\Payroll\PayrollSyncOrchestrator::class,
+            fn ($app) => new \App\Services\Payroll\PayrollSyncOrchestrator([
+                $app->make(\App\Services\Payroll\Sync\Phases\EmployeeSyncPhase::class),
+                $app->make(\App\Services\Payroll\Sync\Phases\AnnualLeaveSyncPhase::class),
+                $app->make(\App\Services\Payroll\Sync\Phases\AttendanceSyncPhase::class),
+            ]),
+        );
+
         $this->app->bind(
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class

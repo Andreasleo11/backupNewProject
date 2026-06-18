@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SyncProgressController;
@@ -27,9 +26,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     // User Home Routes
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
-
-    // Employee Dashboard
-    Route::get('/employees-dashboard', [EmployeeDashboardController::class, 'index'])->name('employees.dashboard');
 
     // Super Admin (legacy)
     Route::get('/change-password', [SuperAdminHomeController::class, 'index'])->name('changeemail.page');
