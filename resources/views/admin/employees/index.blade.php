@@ -21,7 +21,7 @@
                 </div>
 
                 {{-- Sync Panel (Phase Picker) --}}
-                <div x-data="{ open: false }" class="relative">
+                <div x-data="{ open: false, phases: @entangle('syncPhases') }" class="relative">
                     <button @click="open = !open" wire:loading.attr="disabled"
                         class="h-9 px-4 flex items-center gap-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all disabled:opacity-50"
                         title="Sync from JPayroll">
@@ -41,7 +41,7 @@
                         <div class="p-4 space-y-2">
                             {{-- Employees --}}
                             <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
-                                <input type="checkbox" wire:model="syncPhases" value="employees"
+                                <input type="checkbox" x-model="phases" value="employees"
                                     class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
@@ -54,7 +54,7 @@
 
                             {{-- Annual Leave --}}
                             <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
-                                <input type="checkbox" wire:model="syncPhases" value="annual_leave"
+                                <input type="checkbox" x-model="phases" value="annual_leave"
                                     class="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
@@ -67,7 +67,7 @@
 
                             {{-- Attendance --}}
                             <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group">
-                                <input type="checkbox" wire:model="syncPhases" value="attendance"
+                                <input type="checkbox" x-model="phases" value="attendance"
                                     class="w-4 h-4 rounded text-purple-600 border-slate-300 focus:ring-purple-500">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
@@ -79,24 +79,22 @@
                             </label>
 
                             {{-- Date range (shown only when attendance is ticked) --}}
-                            @if(in_array('attendance', $syncPhases))
-                                <div class="ml-7 mt-1 p-3 bg-purple-50 rounded-xl border border-purple-100 space-y-2">
-                                    <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Attendance Date Range</p>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-[8px] font-bold text-slate-500 uppercase">From</label>
-                                            <input type="date" wire:model="syncFromDate"
-                                                class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
-                                        </div>
-                                        <div>
-                                            <label class="text-[8px] font-bold text-slate-500 uppercase">To</label>
-                                            <input type="date" wire:model="syncToDate"
-                                                class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
-                                        </div>
+                            <div x-show="phases.includes('attendance')" x-transition style="display: none;" class="ml-7 mt-1 p-3 bg-purple-50 rounded-xl border border-purple-100 space-y-2">
+                                <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Attendance Date Range</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[8px] font-bold text-slate-500 uppercase">From</label>
+                                        <input type="date" wire:model="syncFromDate"
+                                            class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
                                     </div>
-                                    <p class="text-[8px] text-slate-400">Leave blank to default: start of month → yesterday</p>
+                                    <div>
+                                        <label class="text-[8px] font-bold text-slate-500 uppercase">To</label>
+                                        <input type="date" wire:model="syncToDate"
+                                            class="w-full mt-1 px-2 py-1.5 text-[10px] font-medium bg-white border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 outline-none">
+                                    </div>
                                 </div>
-                            @endif
+                                <p class="text-[8px] text-slate-400">Leave blank to default: start of month → yesterday</p>
+                            </div>
                         </div>
 
                         <div class="px-4 pb-4 flex items-center justify-between gap-3">
@@ -330,7 +328,7 @@
     <x-employee.table :employees="$this->employees" />
 
     {{-- 4. Overlays & Modals (Teleport to Body) --}}
-    <x-employee.modals :preview-data="$previewData" :active-log="$activeLog" :preview-tab="$previewTab" :preview-search="$previewSearch" />
+    <x-employee.modals :preview-data="$previewData" :active-log="$activeLog" :preview-phase="$previewPhase" :preview-tab="$previewTab" :preview-search="$previewSearch" />
 
     {{-- 5. Persistent Drawer (Teleport to Body) --}}
     <x-employee.audit-drawer :selected-employee="$selectedEmployee" />

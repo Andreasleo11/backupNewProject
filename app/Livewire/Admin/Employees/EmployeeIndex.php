@@ -33,6 +33,7 @@ class EmployeeIndex extends Component
     // ── Preview / log modal state ──────────────────────────────────────────────
     public ?array $previewData = null;
     public ?array $activeLog = null;
+    public string $previewPhase = 'employees';
     public string $previewTab = 'summary';
     public string $previewSearch = '';
 
@@ -114,6 +115,7 @@ class EmployeeIndex extends Component
 
         if ($result['success']) {
             $this->previewData = $result;
+            $this->previewPhase = $this->syncPhases[0] ?? 'employees';
             $this->previewTab  = 'summary';
             $this->previewSearch = '';
         } else {
@@ -159,6 +161,8 @@ class EmployeeIndex extends Component
         $log = \App\Models\ImportJob::find($id);
         if ($log && $log->results_snapshot) {
             $this->activeLog   = $log->results_snapshot;
+            $phases = $this->activeLog['phases'] ?? ['employees'];
+            $this->previewPhase = $phases[0] ?? 'employees';
             $this->previewTab  = 'summary';
             $this->previewSearch = '';
         }

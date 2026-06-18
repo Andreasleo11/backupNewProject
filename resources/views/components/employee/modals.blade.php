@@ -1,4 +1,4 @@
-@props(['previewData', 'activeLog', 'previewTab', 'previewSearch'])
+@props(['previewData', 'activeLog', 'previewPhase', 'previewTab', 'previewSearch'])
 
 @php
     $modalData    = $activeLog ?? $previewData;
@@ -7,6 +7,15 @@
     $hasEmployees = in_array('employees', $phases);
     $hasLeave     = in_array('annual_leave', $phases);
     $hasAttend    = in_array('attendance', $phases);
+
+    // Configuration for tabs per phase
+    $phaseTabs = [
+        'employees'    => ['summary' => 'Analysis', 'new' => 'Additions', 'updated' => 'Modifications', 'inactive' => 'Inactivations'],
+        'annual_leave' => ['summary' => 'Analysis', 'updated' => 'Modifications', 'unknown' => 'Unmatched Records'],
+        'attendance'   => ['summary' => 'Analysis', 'new' => 'Additions', 'updated' => 'Modifications'],
+    ];
+
+    $activeTabs = $phaseTabs[$previewPhase] ?? ['summary' => 'Analysis'];
 @endphp
 
 @if ($previewData || $activeLog)
@@ -18,13 +27,13 @@
                 x-transition:enter-end="opacity-100"
                 @click="{{ $isHistorical ? '$wire.closeLog()' : '$wire.cancelSync()' }}"></div>
 
-            <div class="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 transform"
+            <div class="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 transform flex flex-col max-h-[90vh]"
                 x-show="show" x-transition:enter="ease-out duration-500"
                 x-transition:enter-start="opacity-0 scale-95 translate-y-8"
                 x-transition:enter-end="opacity-100 scale-100 translate-y-0">
 
                 {{-- Header --}}
-                <div class="px-8 py-6 bg-white border-b border-slate-100 flex items-center justify-between">
+                <div class="px-8 py-6 bg-white border-b border-slate-100 flex items-center justify-between shrink-0">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 flex items-center justify-center rounded-2xl {{ $isHistorical ? 'bg-slate-900' : 'bg-blue-600' }} text-white shadow-lg">
                             <i class='bx {{ $isHistorical ? 'bx-history font-light' : 'bx-sync animate-spin-slow' }} text-2xl'></i>
@@ -60,13 +69,14 @@
                     </button>
                 </div>
 
-                {{-- Phase-level summary pills (always visible) --}}
-                <div class="px-8 py-4 bg-slate-50 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {{-- Phase-level summary pills (Clickable to change phase) --}}
+                <div class="px-8 py-4 bg-slate-50 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
 
                     {{-- Employee pill --}}
                     @if ($hasEmployees && isset($modalData['employees']))
                         @php $emp = $modalData['employees']['summary'] ?? []; @endphp
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-blue-100 shadow-sm">
+                        <button wire:click="$set('previewPhase', 'employees')" 
+                            class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'employees' ? 'bg-white border-blue-500 ring-1 ring-blue-500' : 'bg-white border-blue-100 hover:border-blue-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 shrink-0">
                                 <i class='bx bx-user text-lg'></i>
                             </div>
@@ -80,56 +90,62 @@
                                     <span class="text-slate-500">{{ $emp['unchanged'] ?? 0 }} same</span>
                                 </p>
                             </div>
-                        </div>
+                        </button>
                     @endif
 
                     {{-- Annual leave pill --}}
                     @if ($hasLeave && isset($modalData['annual_leave']))
-                        @php $lv = $modalData['annual_leave']; @endphp
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-emerald-100 shadow-sm">
+                        @php $lv = $modalData['annual_leave']['summary'] ?? []; @endphp
+                        <button wire:click="$set('previewPhase', 'annual_leave')" 
+                            class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'annual_leave' ? 'bg-white border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border-emerald-100 hover:border-emerald-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
                                 <i class='bx bx-calendar-check text-lg'></i>
                             </div>
                             <div>
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Annual Leave {{ $lv['year'] ?? '' }}</p>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Annual Leave</p>
                                 <p class="text-xs font-black text-slate-900 mt-0.5">
-                                    {{ $lv['will_update'] ?? 0 }} balances will refresh
-                                    <span class="text-slate-400">({{ $lv['total_fetched'] ?? 0 }} fetched)</span>
+                                    <span class="text-emerald-600">~{{ $lv['updated'] ?? 0 }} edits</span>
+                                    <span class="text-slate-400 mx-1">·</span>
+                                    <span class="text-slate-500">{{ $lv['unchanged'] ?? 0 }} same</span>
                                 </p>
                             </div>
-                        </div>
+                        </button>
                     @endif
 
                     {{-- Attendance pill --}}
                     @if ($hasAttend && isset($modalData['attendance']))
-                        @php $att = $modalData['attendance']; @endphp
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-purple-100 shadow-sm">
+                        @php $att = $modalData['attendance']['summary'] ?? []; @endphp
+                        <button wire:click="$set('previewPhase', 'attendance')" 
+                            class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'attendance' ? 'bg-white border-purple-500 ring-1 ring-purple-500' : 'bg-white border-purple-100 hover:border-purple-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-purple-100 text-purple-600 shrink-0">
                                 <i class='bx bx-time text-lg'></i>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Attendance</p>
                                 <p class="text-xs font-black text-slate-900 mt-0.5">
-                                    {{ $att['from'] ?? '?' }} → {{ $att['to'] ?? '?' }}
-                                    <span class="text-purple-600">({{ $att['week_batches'] ?? 0 }} weeks)</span>
+                                    <span class="text-emerald-600">+{{ $att['new'] ?? 0 }}</span>
+                                    <span class="text-slate-400 mx-1">·</span>
+                                    <span class="text-purple-600">~{{ $att['updated'] ?? 0 }}</span>
+                                    <span class="text-slate-400 mx-1">·</span>
+                                    <span class="text-slate-500">{{ $att['unchanged'] ?? 0 }} same</span>
                                 </p>
                             </div>
-                        </div>
+                        </button>
                     @endif
 
                 </div>
 
-                {{-- Tabs (only shown when employee phase included — that's the only detailed preview) --}}
-                @if ($hasEmployees && isset($modalData['employees']))
-                    <div class="px-8 bg-white border-b border-slate-100 flex items-center gap-8">
-                        @foreach (['summary' => 'Analysis', 'new' => 'Additions', 'updated' => 'Modifications', 'inactive' => 'Inactivations'] as $tab => $label)
+                {{-- Tabs for the active phase --}}
+                @if (isset($modalData[$previewPhase]))
+                    <div class="px-8 bg-white border-b border-slate-100 flex items-center gap-8 shrink-0">
+                        @foreach ($activeTabs as $tab => $label)
                             <button wire:click="$set('previewTab', '{{ $tab }}')"
                                 class="relative py-4 text-[11px] font-black uppercase tracking-widest transition-all {{ $previewTab === $tab ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600' }}">
                                 <span class="flex items-center gap-2">
                                     {{ $label }}
                                     @if ($tab !== 'summary')
                                         <span class="px-2 py-0.5 rounded-full text-[9px] {{ $previewTab === $tab ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' }}">
-                                            {{ count($modalData['employees']['details'][$tab] ?? []) }}
+                                            {{ count($modalData[$previewPhase]['details'][$tab] ?? []) }}
                                         </span>
                                     @endif
                                 </span>
@@ -140,19 +156,29 @@
                         @endforeach
                     </div>
 
-                    <div class="bg-white min-h-[300px]">
+                    <div class="bg-white flex-1 overflow-y-auto custom-scrollbar relative">
                         @if ($previewTab === 'summary')
-                            <div class="p-8 grid grid-cols-3 gap-6">
-                                @foreach (['new' => ['emerald', 'plus-circle'], 'updated' => ['blue', 'edit-alt'], 'inactive' => ['rose', 'minus-circle']] as $key => $meta)
+                            <div class="p-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+                                @foreach ($activeTabs as $key => $lbl)
+                                    @if($key === 'summary') @continue @endif
+                                    
+                                    @php
+                                        $meta = ['slate', 'file'];
+                                        if ($key === 'new') $meta = ['emerald', 'plus-circle'];
+                                        if ($key === 'updated') $meta = ['blue', 'edit-alt'];
+                                        if ($key === 'inactive') $meta = ['rose', 'minus-circle'];
+                                        if ($key === 'unknown') $meta = ['amber', 'help-circle'];
+                                    @endphp
+
                                     <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-{{ $meta[0] }}-200 transition-all">
                                         <div class="flex items-center justify-between mb-4">
                                             <div class="h-12 w-12 flex items-center justify-center rounded-2xl bg-{{ $meta[0] }}-100 text-{{ $meta[0] }}-600">
                                                 <i class='bx bx-{{ $meta[1] }} text-2xl'></i>
                                             </div>
-                                            <span class="text-4xl font-black text-slate-900">{{ count($modalData['employees']['details'][$key] ?? []) }}</span>
+                                            <span class="text-4xl font-black text-slate-900">{{ count($modalData[$previewPhase]['details'][$key] ?? []) }}</span>
                                         </div>
                                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            {{ $key === 'new' ? 'New Records' : ($key === 'updated' ? 'Modified Records' : 'Potential Inactivations') }}
+                                            {{ $lbl }}
                                         </p>
                                         <button wire:click="$set('previewTab', '{{ $key }}')"
                                             class="mt-4 flex items-center gap-2 text-[11px] font-black text-{{ $meta[0] }}-600 uppercase tracking-widest group-hover:translate-x-1 transition-transform">
@@ -161,7 +187,7 @@
                                     </div>
                                 @endforeach
 
-                                <div class="col-span-3 mt-4 p-6 bg-slate-900 rounded-3xl flex items-center justify-between shadow-xl">
+                                <div class="col-span-full mt-4 p-6 bg-slate-900 rounded-3xl flex items-center justify-between shadow-xl">
                                     <div class="flex items-center gap-6">
                                         <div class="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/10 text-white shrink-0">
                                             <i class='bx bx-shield-quarter text-lg'></i>
@@ -183,7 +209,7 @@
                                 </div>
                             </div>
                         @else
-                            <div class="p-0 max-h-[50vh] overflow-y-auto custom-scrollbar border-t border-slate-200">
+                            <div class="p-0 border-t border-slate-200">
                                 <table class="w-full text-left border-collapse border-separate border-spacing-0">
                                     <thead class="sticky top-0 z-20 bg-slate-50 shadow-sm">
                                         <tr>
@@ -192,6 +218,12 @@
                                             @if ($previewTab === 'updated')
                                                 <th class="px-6 py-4 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                                                     MODIFICATION DETAILS</th>
+                                            @elseif ($previewPhase === 'annual_leave' && $previewTab === 'unknown')
+                                                <th class="px-6 py-4 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                                                    API LEAVE BALANCE</th>
+                                            @elseif ($previewPhase === 'attendance')
+                                                <th class="px-6 py-4 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
+                                                    ATTENDANCE VALUES</th>
                                             @else
                                                 <th class="px-6 py-4 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">ASSIGNMENT</th>
                                                 <th class="px-6 py-4 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">DIVISION</th>
@@ -200,7 +232,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-slate-200">
                                         @php
-                                            $filtered = collect($modalData['employees']['details'][$previewTab] ?? [])->filter(
+                                            $filtered = collect($modalData[$previewPhase]['details'][$previewTab] ?? [])->filter(
                                                 fn($r) => empty($previewSearch) ||
                                                     str_contains(strtolower((string) ($r['nik'] ?? '')), strtolower($previewSearch)) ||
                                                     str_contains(strtolower((string) ($r['name'] ?? '')), strtolower($previewSearch)),
@@ -217,8 +249,10 @@
                                                             <p class="text-sm font-bold text-slate-900 leading-tight">{{ $row['name'] ?? 'Unknown' }}</p>
                                                             <div class="flex items-center gap-2 mt-1">
                                                                 <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest tabular-nums">{{ $row['nik'] }}</span>
-                                                                <span class="inline-block w-1 h-1 rounded-full bg-slate-300"></span>
-                                                                <span class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">{{ $row['branch'] ?? 'JAKARTA' }}</span>
+                                                                @if(isset($row['branch']))
+                                                                    <span class="inline-block w-1 h-1 rounded-full bg-slate-300"></span>
+                                                                    <span class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">{{ $row['branch'] ?? 'JAKARTA' }}</span>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     </div>
@@ -226,17 +260,25 @@
                                                 @if ($previewTab === 'updated')
                                                     <td class="px-6 py-5">
                                                         <div class="flex flex-col gap-2">
-                                                            @foreach ($row['diffs'] as $field => $val)
+                                                            @foreach ($row['diffs'] ?? [] as $field => $val)
                                                                 <div class="flex items-center gap-3">
-                                                                    <span class="w-24 text-[9px] font-bold text-slate-400 uppercase truncate">{{ str_replace('_', ' ', $field) }}</span>
+                                                                    <span class="w-24 text-[9px] font-bold text-slate-400 uppercase truncate" title="{{ str_replace('_', ' ', $field) }}">{{ str_replace('_', ' ', $field) }}</span>
                                                                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200">
-                                                                        <span class="text-[10px] font-medium text-slate-500 line-through decoration-slate-400">{{ $val['old'] ?: '---' }}</span>
+                                                                        <span class="text-[10px] font-medium text-slate-500 line-through decoration-slate-400">{{ $val['old'] ?? '---' }}</span>
                                                                         <i class='bx bx-right-arrow-alt text-blue-500'></i>
-                                                                        <span class="text-[10px] font-bold text-slate-900">{{ $val['new'] ?: '---' }}</span>
+                                                                        <span class="text-[10px] font-bold text-slate-900">{{ $val['new'] ?? '---' }}</span>
                                                                     </div>
                                                                 </div>
                                                             @endforeach
                                                         </div>
+                                                    </td>
+                                                @elseif ($previewPhase === 'annual_leave' && $previewTab === 'unknown')
+                                                    <td class="px-6 py-5">
+                                                        <span class="inline-flex px-3 py-1 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">{{ $row['remain'] ?? 'Unknown' }} Days</span>
+                                                    </td>
+                                                @elseif ($previewPhase === 'attendance')
+                                                    <td class="px-6 py-5">
+                                                        <p class="text-xs text-slate-500">Date: <span class="font-bold text-slate-900">{{ $row['dept_code'] ?? 'N/A' }}</span></p>
                                                     </td>
                                                 @else
                                                     <td class="px-6 py-5">
@@ -257,17 +299,10 @@
                             </div>
                         @endif
                     </div>
-                @else
-                    {{-- Non-employee phases only: just show the summary pills (already rendered above) + a brief message --}}
-                    <div class="px-8 py-10 text-center">
-                        <i class='bx bx-check-circle text-4xl text-emerald-500'></i>
-                        <p class="mt-3 text-sm font-bold text-slate-700">Ready to commit the selected phases.</p>
-                        <p class="text-xs text-slate-400 mt-1">No employee-level diff is available for non-employee phases. Confirm to proceed.</p>
-                    </div>
                 @endif
 
                 {{-- Footer --}}
-                <div class="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+                <div class="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
                     <div class="text-xs font-bold text-slate-500 italic">
                         {{ $isHistorical
                             ? 'Audit trail captured at ' . ($activeLog['timestamp'] ?? 'Sync Time')
@@ -284,7 +319,7 @@
                                 <span>Sync to Database</span>
                                 <i class='bx bx-right-arrow-alt text-xl group-hover:translate-x-1 transition-transform'></i>
                             </button>
-                        @elseif($previewTab !== 'summary' && $hasEmployees)
+                        @elseif($previewTab !== 'summary')
                             <button wire:click="$set('previewTab', 'summary')"
                                 class="px-8 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-black text-slate-900 shadow-sm transition-all uppercase tracking-widest">
                                 Return to Summary

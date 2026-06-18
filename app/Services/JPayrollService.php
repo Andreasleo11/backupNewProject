@@ -19,6 +19,8 @@ final class JPayrollService
         private readonly PayrollSyncOrchestrator $orchestrator,
         private readonly DateRangeResolver       $dateRangeResolver,
         private readonly EmployeeSync            $employeeSync,
+        private readonly \App\Services\Payroll\Sync\AnnualLeaveSync $annualLeaveSync,
+        private readonly \App\Services\Payroll\Sync\AttendanceSync $attendanceSync,
     ) {}
 
     public function syncEmployeesLeaveAndAttendanceFromApi(
@@ -76,35 +78,14 @@ final class JPayrollService
             // --- Annual leave phase preview ---
             if (in_array('annual_leave', $phases, true)) {
                 $leaves = $this->client->getAnnualLeave($companyArea, $year);
-
-                $withBalance = array_filter(
-                    $leaves,
-                    fn ($l) => $l->remain !== null,
-                );
-
-                $preview['annual_leave'] = [
-                    'total_fetched'    => count($leaves),
-                    'will_update'      => count($withBalance),
-                    'year'             => $year,
-                ];
+                $preview['annual_leave'] = $this->annualLeaveSync->preview($leaves);
             }
 
             // --- Attendance phase preview ---
             if (in_array('attendance', $phases, true)) {
                 $range = $this->dateRangeResolver->resolve($fromDate, $toDate, $tz);
-
-                $weeks = 0;
-                $cursor = $range['from']->startOfWeek(\Carbon\CarbonInterface::MONDAY);
-                while ($cursor->lte($range['to'])) {
-                    $weeks++;
-                    $cursor = $cursor->addWeek();
-                }
-
-                $preview['attendance'] = [
-                    'from'       => $range['from']->toDateString(),
-                    'to'         => $range['to']->toDateString(),
-                    'week_batches' => $weeks,
-                ];
+                $attendances = $this->client->getAttendance($companyArea, $range['from'], $range['to']);
+                $preview['attendance'] = $this->attendanceSync->preview($attendances);
             }
 
             return array_merge(['success' => true], $preview);

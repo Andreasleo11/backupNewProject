@@ -50,4 +50,24 @@ final class AttendanceWriteRepository
             );
         });
     }
+
+    /**
+     * Get all records for a date range indexed by a unique key (nik_shiftdate) for diffing.
+     *
+     * @return array<string, object>
+     */
+    public function getForDiff(string $fromDate, string $toDate): array
+    {
+        $records = DB::table('attendance_records')
+            ->whereBetween('shift_date', [$fromDate, $toDate])
+            ->get();
+
+        $result = [];
+        foreach ($records as $r) {
+            $key = $r->nik . '_' . $r->shift_date;
+            $result[$key] = $r;
+        }
+
+        return $result;
+    }
 }
