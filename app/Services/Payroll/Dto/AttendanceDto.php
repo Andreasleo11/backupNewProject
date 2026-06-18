@@ -27,7 +27,7 @@ final class AttendanceDto
             (int) ($r['HOSWA'] ?? 0);
 
         return new self(
-            nik: (string) ($r['nik'] ?? ''),
+            nik: (string) ($r['NIK'] ?? ''),
             shiftDate: $date->startOfDay(),
             alpha: (int) ($r['ABS'] ?? 0),
             telat: (int) ($r['LT'] ?? 0),

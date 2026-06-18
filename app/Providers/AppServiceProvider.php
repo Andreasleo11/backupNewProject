@@ -35,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Domain\Attendance\Repositories\AttendanceRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentAttendanceRepository::class,
+        );
+
+        $this->app->bind(
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class
         );

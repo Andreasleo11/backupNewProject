@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services\Payroll\Sync;
 
-use App\Repositories\EmployeeRepository;
+use App\Services\Payroll\Sync\EmployeeWriteRepository;
 use App\Services\Payroll\Dto\EmployeeDto;
 
 final class EmployeeSync
 {
-    public function __construct(private readonly EmployeeRepository $repo) {}
+    public function __construct(private readonly EmployeeWriteRepository $repo) {}
 
     /** @param EmployeeDto[] $items */
     public function sync(array $items): int

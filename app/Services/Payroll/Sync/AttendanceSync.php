@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Payroll\Sync;
 
-use App\Repositories\AttendanceRepository;
+use App\Services\Payroll\Sync\AttendanceWriteRepository;
 use App\Services\Payroll\Dto\AttendanceDto;
 
 /**
@@ -14,7 +14,7 @@ use App\Services\Payroll\Dto\AttendanceDto;
 final class AttendanceSync
 {
     public function __construct(
-        private readonly AttendanceRepository $repo,
+        private readonly AttendanceWriteRepository $repo,
     ) {}
 
     /** @param AttendanceDto[] $items */
