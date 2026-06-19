@@ -6,5 +6,5 @@
 @section('page-subtitle', 'Manage system-wide workflow approval rules.')
 
 @section('settings-content')
-    <livewire:admin.approvals.rule-manager />
+    <livewire:admin.approvals.rule-index />
 @endsection

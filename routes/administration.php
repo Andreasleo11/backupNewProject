@@ -46,6 +46,14 @@ Route::middleware('auth')->group(function () {
                 ->name('approval-rules.index')
                 ->middleware('can:approval.manage-rules');
 
+            Route::view('/approval-rules/create', 'admin.approval-rules.create')
+                ->name('approval-rules.create')
+                ->middleware('can:approval.manage-rules');
+
+            Route::get('/approval-rules/{id}/edit', fn($id) => view('admin.approval-rules.edit', ['id' => $id]))
+                ->name('approval-rules.edit')
+                ->middleware('can:approval.manage-rules');
+
             Route::view('/departments', 'admin.departments.index')
                 ->name('departments.index')
                 ->middleware('can:department.view-any');
