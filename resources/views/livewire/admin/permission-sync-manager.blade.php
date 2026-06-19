@@ -68,7 +68,7 @@
                                 <div class="overflow-hidden border border-slate-200 rounded-md bg-white">
                                     <div class="px-4 py-2 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                                         <span class="text-sm font-semibold text-slate-900">Role: {{ $role }}</span>
-                                        <span class="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-md">Managed</span>
+                                        <span class="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-md">Managed</span>
                                     </div>
                                     <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>

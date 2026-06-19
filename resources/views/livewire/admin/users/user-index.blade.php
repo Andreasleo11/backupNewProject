@@ -58,7 +58,7 @@
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
                             <div
-                                class="h-10 w-10 flex-shrink-0 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-lg">
+                                class="h-10 w-10 flex-shrink-0 rounded-md bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-lg">
                                 {{ substr($user->name, 0, 1) }}
                             </div>
                             <div>
@@ -141,7 +141,7 @@
                                 </svg>
                             </button>
                             <button wire:click="openEditModal({{ $user->id }})"
-                                class="p-1.5 rounded text-slate-400 hover:bg-white hover:text-blue-600 transition-colors"
+                                class="p-1.5 rounded text-slate-400 hover:bg-white hover:text-slate-700 transition-colors"
                                 title="Edit User">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -221,7 +221,7 @@
                     @endif
                     @if (!empty($employeeOptions))
                         <div
-                            class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-100 bg-white shadow-xl">
+                            class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-lg">
                             @foreach ($employeeOptions as $emp)
                                 <button type="button"
                                     class="w-full px-4 py-3 text-left transition-colors hover:bg-slate-50 border-b border-slate-50 last:border-0"
@@ -245,10 +245,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="relative">
                         <input type="text" wire:model.defer="name" id="name"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            class="peer block w-full rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
                             placeholder=" ">
                         <label for="name"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-slate-900">
                             Full Name <span class="text-red-500">*</span>
                         </label>
                         @error('name')
@@ -257,10 +257,10 @@
                     </div>
                     <div class="relative">
                         <input type="email" wire:model.defer="email" id="email"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            class="peer block w-full rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
                             placeholder=" ">
                         <label for="email"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-slate-900">
                             Email Address <span class="text-red-500">*</span>
                         </label>
                         @error('email')
@@ -274,10 +274,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="relative">
                             <input type="password" wire:model.defer="password" id="password"
-                                class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                                class="peer block w-full rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
                                 placeholder=" ">
                             <label for="password"
-                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-slate-900">
                                 Password <span class="text-red-500">*</span>
                             </label>
                             @error('password')
@@ -287,10 +287,10 @@
                         <div class="relative">
                             <input type="password" wire:model.defer="password_confirmation"
                                 id="password_confirmation"
-                                class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                                class="peer block w-full rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
                                 placeholder=" ">
                             <label for="password_confirmation"
-                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-slate-900">
                                 Confirm Password <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -298,13 +298,13 @@
                 @endif
 
                 {{-- ── Roles & Direct Permissions (tabbed when editing, roles-only when creating) ── --}}
-                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                <div class="rounded-md border border-slate-200 overflow-hidden">
                     {{-- Tab bar --}}
                     <div class="flex border-b border-slate-200 bg-slate-50">
                         <button type="button" wire:click="$set('modalTab', 'roles')"
                             class="flex-1 py-2.5 text-sm font-semibold transition-colors
                                 {{ $modalTab === 'roles'
-                                    ? 'bg-white text-blue-700 border-b-2 border-blue-600 -mb-px'
+                                    ? 'bg-white text-slate-900 border-b-2 border-slate-900 -mb-px'
                                     : 'text-slate-500 hover:text-slate-800' }}">
                             Roles
                         </button>
@@ -312,12 +312,12 @@
                             <button type="button" wire:click="$set('modalTab', 'permissions')"
                                 class="flex-1 py-2.5 text-sm font-semibold transition-colors
                                     {{ $modalTab === 'permissions'
-                                        ? 'bg-white text-blue-700 border-b-2 border-blue-600 -mb-px'
+                                        ? 'bg-white text-slate-900 border-b-2 border-slate-900 -mb-px'
                                         : 'text-slate-500 hover:text-slate-800' }}">
                                 Direct Permissions
                                 @if (count($selectedDirectPermissions) > 0)
                                     <span
-                                        class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">
+                                        class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[10px] font-bold text-white">
                                         {{ count($selectedDirectPermissions) }}
                                     </span>
                                 @endif
@@ -340,8 +340,8 @@
                                                     wire:model.defer="selectedRoles" class="peer sr-only">
                                                 <span
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 transition-all
-                                                    hover:border-blue-300 hover:bg-blue-50
-                                                    peer-checked:!border-blue-600 peer-checked:!bg-blue-600 peer-checked:text-white peer-checked:shadow-md select-none">
+                                                    hover:border-slate-400 hover:bg-slate-50
+                                                    peer-checked:!border-slate-900 peer-checked:!bg-slate-900 peer-checked:text-white peer-checked:shadow-md select-none">
                                                     <svg class="h-3 w-3 opacity-0 peer-checked/role:opacity-100 transition-opacity hidden peer-checked:block"
                                                         fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd"
@@ -381,7 +381,7 @@
                                             @foreach ($groupPerms as $perm)
                                                 <label class="flex items-start gap-2 cursor-pointer p-2 rounded hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
                                                     <input type="checkbox" value="{{ $perm->name }}" wire:model.defer="selectedDirectPermissions"
-                                                        class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
+                                                        class="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
                                                     <div>
                                                         @php $action = explode('.', $perm->name, 2)[1] ?? $perm->name; @endphp
                                                         <div class="text-xs font-medium text-slate-700">{{ $action }}</div>

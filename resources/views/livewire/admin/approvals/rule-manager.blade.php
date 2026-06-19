@@ -10,7 +10,7 @@
             <div class="hidden lg:flex items-center gap-4 px-4 py-2.5 bg-white border border-slate-200 rounded-md">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <div class="h-8 w-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -121,7 +121,7 @@
 
             {{-- Bulk Actions (when items selected) --}}
             @if(count($selectedRules) > 0)
-                <div class="p-4 bg-amber-50/50 backdrop-blur-sm border border-amber-200/50 rounded-xl mb-6">
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-md mb-6">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-sm font-semibold text-amber-800">{{ count($selectedRules) }} selected</span>
                         <button wire:click="clearSelection" class="text-amber-600 hover:text-amber-800">
@@ -241,7 +241,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-xs font-mono bg-slate-200 px-2 py-1 rounded">{{ $key }}</span>
                                                 <span class="text-xs text-slate-600">→</span>
-                                                <span class="text-xs font-mono bg-blue-50 px-2 py-1 rounded text-blue-700">{{ is_string($value) ? $value : json_encode($value) }}</span>
+                                                <span class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-700">{{ is_string($value) ? $value : json_encode($value) }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -356,26 +356,27 @@
                     <div class="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                         <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     </div>
                     <h3 class="text-sm font-medium text-slate-900 mb-1">Select a Rule</h3>
                     <p class="text-sm text-slate-500 mb-8 max-w-xs">Choose a rule from the list to view its approval workflow and steps.</p>
                     <div class="space-y-3 text-sm text-slate-600">
                         <div class="flex items-center gap-3 text-left">
-                            <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <span class="text-xs font-bold text-blue-600">1</span>
+                            <div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <span class="text-xs font-semibold text-slate-600">1</span>
                             </div>
-                            <span>Select any rule from the list on the left</span>
+                            <span>Select a rule from the list</span>
                         </div>
                         <div class="flex items-center gap-3 text-left">
-                            <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <span class="text-xs font-bold text-blue-600">2</span>
+                            <div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <span class="text-xs font-semibold text-slate-600">2</span>
                             </div>
                             <span>View the approval workflow</span>
                         </div>
                         <div class="flex items-center gap-3 text-left">
-                            <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <span class="text-xs font-bold text-blue-600">3</span>
+                            <div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <span class="text-xs font-semibold text-slate-600">3</span>
                             </div>
                             <span>Edit rules or add approval steps as needed</span>
                         </div>
@@ -395,10 +396,10 @@
                 {{-- Model Type --}}
                 <div class="relative">
                     <input type="text" wire:model.defer="rule_model_type" id="rule_model_type"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                        placeholder="Target Model Class">
                     <label for="rule_model_type"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         Target Model Class <span class="text-red-500">*</span>
                     </label>
                     @error('rule_model_type')
@@ -410,10 +411,10 @@
                     {{-- Code --}}
                     <div class="relative">
                         <input type="text" wire:model.defer="rule_code" id="rule_code"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                            placeholder=" ">
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                            placeholder="Unique Code">
                         <label for="rule_code"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Unique Code <span class="text-red-500">*</span>
                         </label>
                         @error('rule_code')
@@ -424,10 +425,10 @@
                     {{-- Priority --}}
                     <div class="relative">
                         <input type="number" wire:model.defer="rule_priority" id="rule_priority"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                            placeholder=" ">
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                            placeholder="Priority">
                         <label for="rule_priority"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Priority <span class="text-red-500">*</span>
                         </label>
                         @error('rule_priority')
@@ -439,10 +440,10 @@
                 {{-- Name --}}
                 <div class="relative">
                     <input type="text" wire:model.defer="rule_name" id="rule_name"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                        placeholder="Rule Name">
                     <label for="rule_name"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         Rule Name <span class="text-red-500">*</span>
                     </label>
                     @error('rule_name')
@@ -456,7 +457,7 @@
                         Match Expression (JSON)
                     </label>
                     <textarea wire:model.defer="rule_match_expr_raw" rows="5"
-                        class="block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm font-mono focus:border-blue-500 focus:bg-white focus:ring-0"></textarea>
+                        class="flex w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"></textarea>
                     <p class="text-[10px] text-slate-400">Structure: {"field": "value", "field_op": "value"}</p>
                     @error('rule_match_expr_raw')
                         <span class="text-xs text-red-500">{{ $message }}</span>
@@ -467,10 +468,10 @@
                 @if($editingRuleId)
                     <div class="relative">
                         <textarea wire:model.defer="version_notes" rows="2"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                            placeholder=" "></textarea>
+                            class="flex w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                            placeholder="Version Notes"></textarea>
                         <label for="version_notes"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Version Notes (describe what changed)
                         </label>
                     </div>
@@ -479,7 +480,7 @@
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" wire:model.defer="rule_active" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
                         <span class="ml-3 text-sm font-medium text-slate-700">Rule Active</span>
                     </label>
 
@@ -515,10 +516,10 @@
                     {{-- Sequence --}}
                     <div class="relative">
                         <input type="number" wire:model.defer="step_sequence" id="step_sequence"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                            placeholder=" ">
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                            placeholder="Sequence">
                         <label for="step_sequence"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Sequence <span class="text-red-500">*</span>
                         </label>
                         @error('step_sequence')
@@ -529,12 +530,12 @@
                     {{-- Type --}}
                     <div class="relative">
                         <select wire:model.defer="step_approver_type" id="step_approver_type"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0 appearance-none">
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 appearance-none">
                             <option value="user">Specific User</option>
                             <option value="role">System Role</option>
                         </select>
                         <label for="step_approver_type"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Approver Type
                         </label>
                     </div>
@@ -543,10 +544,10 @@
                 {{-- Approver ID --}}
                 <div class="relative">
                     <input type="number" wire:model.defer="step_approver_id" id="step_approver_id"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 placeholder-transparent peer"
+                        placeholder="Target ID">
                     <label for="step_approver_id"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         Target ID (User/Role ID) <span class="text-red-500">*</span>
                     </label>
                     <p class="mt-1 text-[10px] text-slate-400">Enter the ID of the User or Role table.</p>

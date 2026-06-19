@@ -67,7 +67,7 @@
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div class="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -106,7 +106,7 @@
                                 @foreach ($moduleCounts as $mod => $count)
                                     <span class="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">
                                         {{ $mod }}
-                                        <span class="text-[9px] font-bold text-blue-600">{{ $count }}</span>
+                                        <span class="text-[9px] font-bold text-slate-500">{{ $count }}</span>
                                     </span>
                                 @endforeach
                             </div>
@@ -201,14 +201,14 @@
                             <span class="text-slate-200">|</span>
                             <button type="button"
                                 wire:click="$set('selectedPermissions', {{ $permissions->pluck('name') }})"
-                                class="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                                class="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
                                 Select All
                             </button>
                         </div>
                     </div>
 
                     <div
-                        class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4 max-h-[480px] overflow-y-auto custom-scrollbar">
+                        class="space-y-3 rounded-md border border-slate-200 bg-white p-4 max-h-[480px] overflow-y-auto custom-scrollbar">
                         @foreach ($groupedPermissions as $groupLabel => $groupPerms)
                             @php
                                 $groupNames = collect($groupPerms)->pluck('name')->toArray();
@@ -225,7 +225,7 @@
                                         {{-- Tri-state indicator --}}
                                         <span
                                             class="h-4 w-4 rounded flex items-center justify-center flex-shrink-0 text-white text-[10px]
-                                            {{ $allInGroup ? 'bg-blue-600' : ($someInGroup ? 'bg-blue-200' : 'border border-slate-300 bg-white') }}">
+                                            {{ $allInGroup ? 'bg-slate-900' : ($someInGroup ? 'bg-slate-300' : 'border border-slate-300 bg-white') }}">
                                             @if ($allInGroup)
                                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor" stroke-width="3">
@@ -233,17 +233,17 @@
                                                         d="M5 13l4 4L19 7" />
                                                 </svg>
                                             @elseif($someInGroup)
-                                                <span class="h-1.5 w-1.5 rounded-full bg-blue-600 block"></span>
+                                                <span class="h-1.5 w-1.5 rounded-full bg-slate-600 block"></span>
                                             @endif
                                         </span>
                                         <span
-                                            class="text-sm font-semibold text-slate-700 group-hover/hdr:text-blue-700 transition-colors">{{ $groupLabel }}</span>
+                                            class="text-sm font-semibold text-slate-700 group-hover/hdr:text-slate-900 transition-colors">{{ $groupLabel }}</span>
                                         <span class="text-[11px] text-slate-400 font-medium">
                                             ({{ collect($groupNames)->intersect($selectedPermissions)->count() }}/{{ count($groupNames) }})
                                         </span>
                                     </div>
                                     <span
-                                        class="text-[11px] font-medium text-blue-600 opacity-0 group-hover/hdr:opacity-100 transition-opacity">
+                                        class="text-[11px] font-medium text-slate-500 opacity-0 group-hover/hdr:opacity-100 transition-opacity">
                                         {{ $allInGroup ? 'Deselect all' : 'Select all' }}
                                     </span>
                                 </button>
@@ -253,11 +253,11 @@
                                     class="grid grid-cols-1 sm:grid-cols-2 gap-px border-t border-slate-100 bg-slate-100">
                                     @foreach ($groupPerms as $perm)
                                         <label
-                                            class="relative flex items-start p-3 bg-white hover:bg-blue-50/60 transition-colors cursor-pointer group/perm">
+                                            class="relative flex items-start p-3 bg-white hover:bg-slate-50 transition-colors cursor-pointer group/perm">
                                             <div class="flex h-5 items-center">
                                                 <input type="checkbox" value="{{ $perm->name }}"
                                                     wire:model.defer="selectedPermissions"
-                                                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
+                                                    class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
                                             </div>
                                             <div class="ml-3 text-sm">
                                                 @php
@@ -265,7 +265,7 @@
                                                     $action = $parts[1] ?? $perm->name;
                                                 @endphp
                                                 <span
-                                                    class="font-medium text-slate-700 group-hover/perm:text-blue-700 transition-colors">{{ $action }}</span>
+                                                    class="font-medium text-slate-700 group-hover/perm:text-slate-900 transition-colors">{{ $action }}</span>
                                                 <p class="text-[10px] text-slate-400 font-mono mt-0.5">
                                                     {{ $perm->name }}</p>
                                             </div>

@@ -82,8 +82,7 @@
                             class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200">Branch
                         </th>
                         <th scope="col"
-                            class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200">Dept
-                            No</th>
+                            class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">Dept No</th>
                         <th scope="col"
                             class="px-6 py-4 text-center text-sm font-medium text-slate-500 border-b border-slate-200">
                             Status</th>
@@ -96,10 +95,10 @@
                             <td class="whitespace-nowrap px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold ring-1 ring-inset ring-blue-600/10">
+                                        class="h-8 w-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-700 text-xs font-bold ring-1 ring-inset ring-slate-500/10">
                                         {{ substr($dept->code, 0, 2) }}
                                     </div>
-                                    <span class="font-bold text-slate-900">{{ $dept->code }}</span>
+                                    <span class="font-semibold text-slate-900">{{ $dept->code }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -142,16 +141,35 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                 @can('department.update')
                                 <div class="flex items-center justify-end gap-2">
-                                        <button wire:click="toggleStatus({{ $dept->id }})"
-                                            class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
-                                            title="{{ $dept->is_active ? 'Deactivate' : 'Activate' }}">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </button>
+                                        <div x-data="{ open: false }">
+                                            <button @click="open = true"
+                                                class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                                                title="{{ $dept->is_active ? 'Deactivate' : 'Activate' }}">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                            <template x-teleport="body">
+                                                <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition.opacity>
+                                                    <div @click.away="open = false" class="bg-white rounded-md shadow-lg w-full max-w-sm p-6 space-y-4">
+                                                        <div class="space-y-1">
+                                                            <h3 class="text-base font-semibold text-slate-900">{{ $dept->is_active ? 'Deactivate Department?' : 'Activate Department?' }}</h3>
+                                                            <p class="text-sm text-slate-500">{{ $dept->is_active ? 'This will prevent this department from being used in new records.' : 'This will allow this department to be used again.' }}</p>
+                                                        </div>
+                                                        <div class="flex items-center justify-end gap-2 pt-2">
+                                                            <button @click="open = false" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors">Cancel</button>
+                                                            <button @click="open = false; $wire.toggleStatus({{ $dept->id }})"
+                                                                class="px-4 py-2 text-sm font-medium text-white {{ $dept->is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-900 hover:bg-slate-900/90' }} rounded-md transition-colors">
+                                                                {{ $dept->is_active ? 'Yes, Deactivate' : 'Yes, Activate' }}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
                                         <button wire:click="openEditModal({{ $dept->id }})"
-                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                            class="p-1.5 text-slate-500 hover:bg-slate-100 rounded transition-colors"
                                             title="Edit Department">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
