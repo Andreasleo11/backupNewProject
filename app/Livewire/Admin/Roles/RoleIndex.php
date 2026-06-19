@@ -2,165 +2,51 @@
 
 namespace App\Livewire\Admin\Roles;
 
-use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Spatie\Permission\Models\Permission;
+use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
 
 class RoleIndex extends Component
 {
+    use WithPagination;
+
     #[Url(history: true)]
     public string $search = '';
 
-    public bool $showModal = false;
-
-    public string $modalMode = 'create'; // 'create' | 'edit'
-
-    public ?int $editingRoleId = null;
-
-    public string $name = '';
-
-    public array $selectedPermissions = [];
+    public int $perPage = 10;
 
     // Delete Guardrail
     public ?int $roleToDeleteId = null;
     public bool $showDeleteModal = false;
 
-    // ── Computed Properties ────────────────────────────────────────────────────
+    // Bulk selection
+    public array $selectedRows = [];
+    public bool $selectAll = false;
+    public bool $showBulkDeleteModal = false;
 
-    public function getRolesProperty()
+    public function updatedSearch(): void
     {
-        return Role::query()
-            ->with('permissions')
-            ->when($this->search, function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%');
-            })
-            ->orderBy('name')
-            ->get();
+        $this->resetPage();
+        $this->clearSelection();
     }
 
-    public function getPermissionsProperty()
+    public function updatedPerPage(): void
     {
-        return Permission::orderBy('name')->get();
+        $this->resetPage();
+        $this->clearSelection();
     }
 
-    /**
-     * Returns permissions grouped by module for the UI matrix.
-     * Each group key maps to an array of Permission objects.
-     */
-    public function getGroupedPermissionsProperty(): array
+    public function updatedPage(): void
     {
-        $all = Permission::orderBy('name')->get();
-        $groups = [];
-        $used = [];
-
-        foreach (config('permission_groups.groups', []) as $label => $prefixes) {
-            $prefixes = (array) $prefixes;
-            $matched = $all->filter(
-                fn ($p) => collect($prefixes)->contains(fn ($px) => str_starts_with($p->name, $px))
-            );
-            if ($matched->isNotEmpty()) {
-                $groups[$label] = $matched->values();
-                $used = array_merge($used, $matched->pluck('name')->toArray());
-            }
-        }
-
-        // Catch-all: any permissions not matched by any group
-        $other = $all->whereNotIn('name', $used);
-        if ($other->isNotEmpty()) {
-            $groups['Other'] = $other->values();
-        }
-
-        return $groups;
+        $this->clearSelection();
     }
 
-    /**
-     * Toggle all permissions within a named group.
-     * If all are already selected → deselect. Otherwise → select all.
-     */
-    public function toggleGroup(string $label): void
+    private function clearSelection(): void
     {
-        $group = $this->groupedPermissions[$label] ?? collect();
-        $names = collect($group)->pluck('name')->toArray();
-        $allChosen = collect($names)->every(fn ($n) => in_array($n, $this->selectedPermissions));
-
-        if ($allChosen) {
-            $this->selectedPermissions = array_values(
-                array_diff($this->selectedPermissions, $names)
-            );
-        } else {
-            $this->selectedPermissions = array_values(
-                array_unique(array_merge($this->selectedPermissions, $names))
-            );
-        }
-    }
-
-    public function openCreateModal(): void
-    {
-        $this->authorize('role.create');
-
-        $this->reset(['editingRoleId', 'name', 'selectedPermissions']);
-        $this->modalMode = 'create';
-        $this->showModal = true;
-    }
-
-    public function openEditModal(int $roleId): void
-    {
-        $this->authorize('role.update');
-
-        $role = Role::with('permissions')->findOrFail($roleId);
-
-        $this->editingRoleId = $role->id;
-        $this->name = $role->name;
-        $this->selectedPermissions = $role->permissions->pluck('name')->toArray();
-
-        $this->modalMode = 'edit';
-        $this->showModal = true;
-    }
-
-    public function updatedShowModal($value)
-    {
-        if (! $value) {
-            $this->reset('name', 'selectedPermissions', 'editingRoleId', 'modalMode');
-            $this->resetValidation();
-        }
-    }
-
-    public function save(): void
-    {
-        if ($this->modalMode === 'create') {
-            $this->authorize('role.create');
-        } else {
-            $this->authorize('role.update');
-        }
-
-        $this->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('roles', 'name')->ignore($this->editingRoleId),
-            ],
-            'selectedPermissions' => 'array',
-        ]);
-
-        if ($this->modalMode === 'create') {
-            $role = Role::create(['name' => $this->name]);
-        } else {
-            $role = Role::findOrFail($this->editingRoleId);
-            $role->update(['name' => $this->name]);
-        }
-
-        // sync permissions
-        $role->syncPermissions($this->selectedPermissions);
-
-        $this->showModal = false;
-
-        $this->dispatch('toast', type: 'success', message: $this->modalMode === 'create' ? 'Role created successfully.' : 'Role updated successfully.');
-
-        $this->reset(['editingRoleId', 'name', 'selectedPermissions', 'modalMode']);
-        $this->modalMode = 'create';
+        $this->selectedRows = [];
+        $this->selectAll = false;
     }
 
     public function confirmDelete(int $roleId): void
@@ -171,7 +57,6 @@ class RoleIndex extends Component
 
         if ($role->name === 'super-admin') {
             $this->dispatch('toast', type: 'error', message: 'Super admin role cannot be deleted.');
-
             return;
         }
 
@@ -198,12 +83,62 @@ class RoleIndex extends Component
         $this->roleToDeleteId = null;
     }
 
+    #[Computed]
+    public function roles()
+    {
+        return Role::query()
+            ->withCount('users', 'permissions')
+            ->when($this->search, function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+            })
+            ->orderBy('name')
+            ->paginate($this->perPage);
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedRows = collect($this->roles->items())->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedRows = [];
+        }
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        $this->authorize('role.delete');
+        if (empty($this->selectedRows)) return;
+        
+        $this->showBulkDeleteModal = true;
+    }
+
+    public function executeBulkDelete(): void
+    {
+        $this->authorize('role.delete');
+        if (empty($this->selectedRows)) return;
+
+        $roles = Role::whereIn('id', $this->selectedRows)->get();
+        
+        $deletedCount = 0;
+        foreach ($roles as $role) {
+            if ($role->name !== 'super-admin') {
+                $role->delete();
+                $deletedCount++;
+            }
+        }
+
+        $this->showBulkDeleteModal = false;
+        $this->selectedRows = [];
+        $this->selectAll = false;
+
+        $this->dispatch('toast', type: 'success', message: "{$deletedCount} roles deleted successfully.");
+    }
+
     public function render()
     {
         return view('livewire.admin.roles.role-index', [
             'roles' => $this->roles,
-            'permissions' => $this->permissions,
-            'groupedPermissions' => $this->groupedPermissions,
         ]);
     }
 }

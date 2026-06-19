@@ -10,298 +10,170 @@
             </p>
         </div>
         @can('role.create')
-            <button wire:click="openCreateModal" wire:loading.attr="disabled"
-                class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="openCreateModal"></i>
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" wire:loading.remove wire:target="openCreateModal">
+            <a href="{{ route('admin.roles.create') }}"
+                class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New Role
-            </button>
+            </a>
         @endcan
     </div>
 
-    {{-- Search --}}
+    {{-- Filters --}}
     <div class="rounded-md border border-slate-200 bg-white p-4">
-        <div class="relative max-w-md">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div class="relative w-full sm:w-96">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" wire:model.live.debounce.500ms="search"
+                    class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
+                    placeholder="Search roles by name or description...">
             </div>
-            <input type="text" wire:model.live.debounce.400ms="search"
-                class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
-                placeholder="Search roles...">
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <select wire:model.live="perPage"
+                    class="flex h-9 w-32 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    {{-- Roles Grid --}}
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        @forelse ($roles as $role)
-            @php
-                // Build module summary dynamically from config
-                $moduleCounts = [];
-                foreach (config('permission_groups.groups', []) as $label => $prefixes) {
-                    $prefixes = (array) $prefixes;
-                    $count = $role->permissions
-                        ->filter(
-                            fn($p) => collect($prefixes)->contains(fn($px) => str_starts_with($p->name, (string) $px)),
-                        )
-                        ->count();
-
-                    if ($count > 0) {
-                        // Use a shorter label for the summary chip if possible
-                        $shortLabel = match ($label) {
-                            'Evaluation & Discipline' => 'Evaluation',
-                            'Purchase Request' => 'PR',
-                            'Roles & Permissions' => 'Roles',
-                            default => $label,
-                        };
-                        $moduleCounts[$shortLabel] = $count;
-                    }
-                }
-            @endphp
-            <div class="group flex flex-col justify-between rounded-md border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
-                <div class="p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-sm">{{ $role->name }}</h3>
-                                @if (in_array($role->name, ['super-admin', 'admin']))
-                                    <span class="inline-flex items-center rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 border border-indigo-100">
-                                        System Role
+    {{-- Data Table --}}
+    <div class="rounded-md border border-slate-200 bg-white overflow-hidden shadow-sm">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 font-medium">
+                    <tr>
+                        <th class="px-4 py-3 w-10 text-center">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-slate-300 text-slate-900 focus:ring-slate-950">
+                        </th>
+                        <th class="px-4 py-3">Role Name</th>
+                        <th class="px-4 py-3">Description</th>
+                        <th class="px-4 py-3 text-center">Users Assigned</th>
+                        <th class="px-4 py-3 text-center">Permissions</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($roles as $role)
+                        <tr class="hover:bg-slate-50/50 transition-colors" wire:key="role-row-{{ $role->id }}">
+                            <td class="px-4 py-3 text-center">
+                                @if($role->name !== 'super-admin')
+                                    <input type="checkbox" wire:model.live="selectedRows" value="{{ $role->id }}" class="rounded border-slate-300 text-slate-900 focus:ring-slate-950">
+                                @else
+                                    <input type="checkbox" disabled class="rounded border-slate-300 text-slate-300" title="System roles cannot be bulk modified">
+                                @endif
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="font-semibold text-slate-900">{{ $role->name }}</div>
+                                    @if (in_array($role->name, ['super-admin', 'admin']))
+                                        <span class="inline-flex items-center rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 border border-indigo-100">
+                                            System
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="max-w-[300px] truncate text-xs text-slate-500" title="{{ $role->description }}">
+                                    {{ $role->description ?? 'No description provided.' }}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-flex items-center justify-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                                    {{ $role->users_count }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                @if($role->name === 'super-admin')
+                                    <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-100">
+                                        <i class="bx bx-infinite"></i> All
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center justify-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                                        {{ $role->permissions_count }}
                                     </span>
                                 @endif
-                            </div>
-                        </div>
-                        {{-- Permission count badge --}}
-                        <div class="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-xs font-bold text-slate-600 border border-slate-200"
-                            title="{{ $role->permissions->count() }} permissions">
-                            {{ $role->permissions->count() }}
-                        </div>
-                    </div>
+                            </td>
+                            <td class="px-4 py-3 text-right space-x-1">
+                                @can('role.update')
+                                    <a href="{{ route('admin.roles.edit', $role->id) }}" class="p-1.5 rounded text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors inline-block" title="Edit Role">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                @endcan
+                                @if (!in_array($role->name, ['super-admin', 'admin']))
+                                    @can('role.delete')
+                                        <button wire:click="confirmDelete({{ $role->id }})" class="p-1.5 rounded text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Delete Role">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    @endcan
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-12 text-center text-slate-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <i class="bx bx-shield-x text-4xl mb-2 text-slate-300"></i>
+                                    <p>No roles found matching your criteria.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-                    {{-- Module summary chips --}}
-                    <div class="mt-3">
-                        @if ($role->name === 'super-admin')
-                            <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 border border-indigo-100">
-                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                All Permissions
-                            </span>
-                        @elseif(empty($moduleCounts))
-                            <span class="text-xs text-slate-400 italic">No permissions assigned</span>
-                        @else
-                            <div class="flex flex-wrap gap-1.5">
-                                @foreach ($moduleCounts as $mod => $count)
-                                    <span class="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">
-                                        {{ $mod }}
-                                        <span class="text-[9px] font-bold text-slate-500">{{ $count }}</span>
-                                    </span>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Card Actions --}}
-                <div class="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-end gap-3">
-                    @if (!in_array($role->name, ['super-admin', 'admin']))
-                        @can('role.delete')
-                            <button wire:click="confirmDelete({{ $role->id }})"
-                                class="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors">
-                                Delete
-                            </button>
-                        @endcan
-                    @endif
-                    @can('role.update')
-                        <button wire:click="openEditModal({{ $role->id }})"
-                            class="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-slate-900 border border-slate-200 hover:bg-slate-100 transition-colors">
-                            <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                            </svg>
-                            Configure
-                        </button>
-                    @endcan
-                </div>
-            </div>
-        @empty
-            <div class="col-span-full py-12 text-center rounded-md border border-slate-200 bg-white">
-                <div class="mx-auto h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
-                    <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-                <h3 class="text-sm font-semibold text-slate-900">No roles found</h3>
-                <p class="mt-1 text-sm text-slate-500 mb-4">There are no roles matching your criteria.</p>
-                @can('role.create')
-                    <button wire:click="openCreateModal"
-                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors">
-                        Add First Role
+        {{-- Bulk Actions Footer --}}
+        @if(count($selectedRows) > 0)
+            <div class="bg-rose-50 border-t border-rose-100 px-4 py-3 flex items-center justify-between">
+                <span class="text-sm font-medium text-rose-800">{{ count($selectedRows) }} roles selected</span>
+                <div class="flex gap-2">
+                    <button wire:click="confirmBulkDelete" class="text-xs font-medium text-rose-600 bg-white border border-rose-200 rounded px-3 py-1 hover:bg-rose-50 transition-colors shadow-sm">
+                        Bulk Delete
                     </button>
-                @endcan
+                </div>
             </div>
-        @endforelse
+        @endif
     </div>
 
-    {{-- Role Modal --}}
-    <x-modal wire:model="showModal" maxWidth="3xl">
-        <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-slate-900">
-                    {{ $modalMode === 'create' ? 'Create Role' : 'Configure Role' }}
-                </h2>
-                <button wire:click="$set('showModal', false)"
-                    class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form wire:submit.prevent="save" class="space-y-6">
-                {{-- Role Name --}}
-                <div class="relative">
-                    <input type="text" wire:model.defer="name" id="roleName" autofocus
-                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent peer"
-                        placeholder="Role Name">
-                    <label for="roleName"
-                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
-                        Role Name <span class="text-red-500">*</span>
-                    </label>
-                    @error('name')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Grouped Permission Matrix --}}
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            Assign Permissions
-                        </label>
-                        <div class="flex gap-3">
-                            <button type="button" wire:click="$set('selectedPermissions', [])"
-                                class="text-xs font-medium text-slate-500 hover:text-rose-600 transition-colors">
-                                Clear All
-                            </button>
-                            <span class="text-slate-200">|</span>
-                            <button type="button"
-                                wire:click="$set('selectedPermissions', {{ $permissions->pluck('name') }})"
-                                class="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                                Select All
-                            </button>
-                        </div>
-                    </div>
-
-                    <div
-                        class="space-y-3 rounded-md border border-slate-200 bg-white p-4 max-h-[480px] overflow-y-auto custom-scrollbar">
-                        @foreach ($groupedPermissions as $groupLabel => $groupPerms)
-                            @php
-                                $groupNames = collect($groupPerms)->pluck('name')->toArray();
-                                $allInGroup = collect($groupNames)->every(fn($n) => in_array($n, $selectedPermissions));
-                                $someInGroup = collect($groupNames)->contains(
-                                    fn($n) => in_array($n, $selectedPermissions),
-                                );
-                            @endphp
-                            <div class="rounded-lg border border-slate-200 bg-white overflow-hidden">
-                                {{-- Group Header --}}
-                                <button type="button" wire:click="toggleGroup('{{ $groupLabel }}')"
-                                    class="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-slate-50 transition-colors group/hdr">
-                                    <div class="flex items-center gap-2">
-                                        {{-- Tri-state indicator --}}
-                                        <span
-                                            class="h-4 w-4 rounded flex items-center justify-center flex-shrink-0 text-white text-[10px]
-                                            {{ $allInGroup ? 'bg-slate-900' : ($someInGroup ? 'bg-slate-300' : 'border border-slate-300 bg-white') }}">
-                                            @if ($allInGroup)
-                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor" stroke-width="3">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            @elseif($someInGroup)
-                                                <span class="h-1.5 w-1.5 rounded-full bg-slate-600 block"></span>
-                                            @endif
-                                        </span>
-                                        <span
-                                            class="text-sm font-semibold text-slate-700 group-hover/hdr:text-slate-900 transition-colors">{{ $groupLabel }}</span>
-                                        <span class="text-[11px] text-slate-400 font-medium">
-                                            ({{ collect($groupNames)->intersect($selectedPermissions)->count() }}/{{ count($groupNames) }})
-                                        </span>
-                                    </div>
-                                    <span
-                                        class="text-[11px] font-medium text-slate-500 opacity-0 group-hover/hdr:opacity-100 transition-opacity">
-                                        {{ $allInGroup ? 'Deselect all' : 'Select all' }}
-                                    </span>
-                                </button>
-
-                                {{-- Permission checkboxes --}}
-                                <div
-                                    class="grid grid-cols-1 sm:grid-cols-2 gap-px border-t border-slate-100 bg-slate-100">
-                                    @foreach ($groupPerms as $perm)
-                                        <label
-                                            class="relative flex items-start p-3 bg-white hover:bg-slate-50 transition-colors cursor-pointer group/perm">
-                                            <div class="flex h-5 items-center">
-                                                <input type="checkbox" value="{{ $perm->name }}"
-                                                    wire:model.defer="selectedPermissions"
-                                                    class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                @php
-                                                    $parts = explode('.', $perm->name, 2);
-                                                    $action = $parts[1] ?? $perm->name;
-                                                @endphp
-                                                <span
-                                                    class="font-medium text-slate-700 group-hover/perm:text-slate-900 transition-colors">{{ $action }}</span>
-                                                <p class="text-[10px] text-slate-400 font-mono mt-0.5">
-                                                    {{ $perm->name }}</p>
-                                            </div>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    @error('selectedPermissions')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" wire:click="$set('showModal', false)"
-                        class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit" wire:loading.attr="disabled" wire:target="save"
-                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
-                        <span wire:loading.remove
-                            wire:target="save">{{ $modalMode === 'create' ? 'Create Role' : 'Save Changes' }}</span>
-                        <span wire:loading wire:target="save">Saving...</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </x-modal>
+    {{-- Pagination --}}
+    @if ($roles->hasPages())
+        <div class="mt-4">{{ $roles->links() }}</div>
+    @endif
 
     {{-- Delete Confirmation Modal --}}
     <x-modal wire:model="showDeleteModal" maxWidth="sm">
         <div class="p-6">
             <h2 class="text-lg font-bold text-slate-900 mb-2">Delete Role</h2>
-            <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete this role? Any users with this role will lose its permissions. This action cannot be undone.</p>
+            @php
+                $roleToDelete = \Spatie\Permission\Models\Role::withCount('users')->find($this->roleToDeleteId);
+            @endphp
+            @if($roleToDelete && $roleToDelete->users_count > 0)
+                <div class="mb-4 rounded-md bg-amber-50 p-3 border border-amber-200">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="bx bx-error text-amber-400 text-lg mt-0.5"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-amber-800">Warning: Active Assignments</h3>
+                            <div class="mt-1 text-xs text-amber-700">
+                                This role is currently assigned to <strong>{{ $roleToDelete->users_count }} active user(s)</strong>. If you delete it, they will lose these permissions immediately.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete this role? This action cannot be undone.</p>
             <div class="flex justify-end gap-3">
                 <button type="button" wire:click="$set('showDeleteModal', false)"
                     class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
@@ -317,22 +189,49 @@
         </div>
     </x-modal>
 
+    {{-- Bulk Delete Confirmation Modal --}}
+    <x-modal wire:model="showBulkDeleteModal" maxWidth="sm">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-2">Bulk Delete Roles</h2>
+            @php
+                $rolesToDelete = \Spatie\Permission\Models\Role::withCount('users')->whereIn('id', $this->selectedRows)->get();
+                $totalUsersAffected = $rolesToDelete->sum('users_count');
+            @endphp
+            @if($totalUsersAffected > 0)
+                <div class="mb-4 rounded-md bg-amber-50 p-3 border border-amber-200">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="bx bx-error text-amber-400 text-lg mt-0.5"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-amber-800">Warning: Active Assignments</h3>
+                            <div class="mt-1 text-xs text-amber-700">
+                                The selected roles are currently assigned to a total of <strong>{{ $totalUsersAffected }} active user(s)</strong>. They will lose these permissions immediately.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete the {{ count($selectedRows) }} selected role(s)? This action cannot be undone.</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" wire:click="$set('showBulkDeleteModal', false)"
+                    class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
+                    Cancel
+                </button>
+                <button wire:click="executeBulkDelete" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeBulkDelete"></i>
+                    <span wire:loading.remove wire:target="executeBulkDelete">Yes, Delete All</span>
+                    <span wire:loading wire:target="executeBulkDelete">Deleting...</span>
+                </button>
+            </div>
+        </div>
+    </x-modal>
+    
     <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </div>

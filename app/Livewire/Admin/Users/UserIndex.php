@@ -6,6 +6,7 @@ use App\Application\User\DTOs\UserFilter;
 use App\Application\User\UseCases\ChangeUserPassword;
 use App\Application\User\UseCases\ListUsersWithEmployees;
 use App\Application\User\UseCases\ToggleUserStatus;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -38,19 +39,37 @@ class UserIndex extends Component
     public array $selectedRows = [];
     public bool $selectAll = false;
 
+    // Bulk Role Assignment
+    public bool $showBulkRoleModal = false;
+    public string $bulkRoleToAssign = '';
+
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->clearSelection();
     }
 
     public function updatedOnlyActive(): void
     {
         $this->resetPage();
+        $this->clearSelection();
     }
 
     public function updatedPerPage(): void
     {
         $this->resetPage();
+        $this->clearSelection();
+    }
+
+    public function updatedPage(): void
+    {
+        $this->clearSelection();
+    }
+
+    private function clearSelection(): void
+    {
+        $this->selectedRows = [];
+        $this->selectAll = false;
     }
 
     public function toggleStatus(int $userId, ToggleUserStatus $toggleUserStatus): void
@@ -107,22 +126,8 @@ class UserIndex extends Component
         $this->dispatch('toast', message: 'User password updated successfully.', type: 'success');
     }
 
-    public function updatedSelectAll($value)
-    {
-        if ($value) {
-            $filter = new UserFilter(
-                search: $this->search !== '' ? $this->search : null, 
-                onlyActive: $this->onlyActive ? true : null, 
-                perPage: $this->perPage
-            );
-            $users = app(ListUsersWithEmployees::class)->execute($filter);
-            $this->selectedRows = $users->pluck('id')->map(fn($id) => (string) $id)->toArray();
-        } else {
-            $this->selectedRows = [];
-        }
-    }
-
-    public function render(ListUsersWithEmployees $listUsers)
+    #[Computed]
+    public function users()
     {
         $filter = new UserFilter(
             search: $this->search !== '' ? $this->search : null, 
@@ -130,10 +135,67 @@ class UserIndex extends Component
             perPage: $this->perPage
         );
 
-        $users = $listUsers->execute($filter);
+        return app(ListUsersWithEmployees::class)->execute($filter);
+    }
 
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedRows = collect($this->users->items())->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedRows = [];
+        }
+    }
+
+    public function bulkSuspend(ToggleUserStatus $toggleUserStatus): void
+    {
+        $this->authorize('user.update');
+        
+        if (empty($this->selectedRows)) return;
+
+        foreach ($this->selectedRows as $userId) {
+            $toggleUserStatus->execute((int) $userId);
+        }
+
+        $this->selectedRows = [];
+        $this->selectAll = false;
+        
+        $this->dispatch('toast', message: 'Selected users have been toggled.', type: 'success');
+    }
+
+    public function openBulkRoleModal(): void
+    {
+        $this->authorize('user.update');
+        if (empty($this->selectedRows)) return;
+        
+        $this->bulkRoleToAssign = '';
+        $this->showBulkRoleModal = true;
+    }
+
+    public function executeBulkRole(): void
+    {
+        $this->authorize('user.update');
+        $this->validate(['bulkRoleToAssign' => 'required|string|exists:roles,name']);
+
+        if (empty($this->selectedRows)) return;
+
+        $users = \App\Infrastructure\Persistence\Eloquent\Models\User::whereIn('id', $this->selectedRows)->get();
+        foreach ($users as $user) {
+            $user->assignRole($this->bulkRoleToAssign);
+        }
+
+        $this->showBulkRoleModal = false;
+        $this->selectedRows = [];
+        $this->selectAll = false;
+        $this->bulkRoleToAssign = '';
+
+        $this->dispatch('toast', message: 'Role assigned to selected users.', type: 'success');
+    }
+
+    public function render()
+    {
         return view('livewire.admin.users.user-index', [
-            'users' => $users,
+            'users' => $this->users,
         ]);
     }
 }

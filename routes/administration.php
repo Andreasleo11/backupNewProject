@@ -22,14 +22,21 @@ Route::middleware('auth')->group(function () {
                 ->name('users.create')
                 ->middleware('can:user.create');
 
-            Route::get('/users/{id}/edit', function ($id) {
-                return view('admin.users.edit', ['id' => $id]);
-            })->name('users.edit')
+            Route::get('/users/{id}/edit', fn($id) => view('admin.users.edit', ['id' => $id]))
+                ->name('users.edit')
                 ->middleware('can:user.update');
 
             Route::view('/roles', 'admin.roles.index')
                 ->name('roles.index')
                 ->middleware('can:role.view-any');
+
+            Route::view('/roles/create', 'admin.roles.create')
+                ->name('roles.create')
+                ->middleware('can:role.create');
+
+            Route::get('/roles/{id}/edit', fn($id) => view('admin.roles.edit', ['id' => $id]))
+                ->name('roles.edit')
+                ->middleware('can:role.update');
 
             Route::view('/permission-sync', 'admin.permission-sync.index')
                 ->name('permission-sync.index')

@@ -30,9 +30,9 @@
                     </svg>
                 </div>
                 {{-- Debounce increased or use blur for better scalability --}}
-                <input type="text" wire:model.blur="search"
+                <input type="text" wire:model.live.debounce.500ms="search"
                     class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
-                    placeholder="Search users by name, email, or role... (Press Enter)">
+                    placeholder="Search users by name, email, or role...">
             </div>
             <div class="flex items-center gap-4 w-full sm:w-auto">
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -150,8 +150,13 @@
             <div class="bg-blue-50 border-t border-blue-100 px-4 py-3 flex items-center justify-between">
                 <span class="text-sm font-medium text-blue-800">{{ count($selectedRows) }} users selected</span>
                 <div class="flex gap-2">
-                    <button class="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded px-3 py-1 hover:bg-slate-50">Bulk Suspend</button>
-                    <button class="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded px-3 py-1 hover:bg-slate-50">Bulk Assign Role</button>
+                    <button wire:click="bulkSuspend" wire:loading.attr="disabled" class="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded px-3 py-1 hover:bg-slate-50 transition-colors">
+                        <span wire:loading.remove wire:target="bulkSuspend">Toggle Status</span>
+                        <span wire:loading wire:target="bulkSuspend">Processing...</span>
+                    </button>
+                    <button wire:click="openBulkRoleModal" wire:loading.attr="disabled" class="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded px-3 py-1 hover:bg-slate-50 transition-colors">
+                        Bulk Assign Role
+                    </button>
                 </div>
             </div>
         @endif
@@ -214,6 +219,41 @@
                     <span wire:loading wire:target="executeSuspend">Suspending...</span>
                 </button>
             </div>
+        </div>
+    </x-modal>
+
+    {{-- Bulk Assign Role Modal --}}
+    <x-modal wire:model="showBulkRoleModal" maxWidth="md">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-slate-900 mb-2">Bulk Assign Role</h2>
+            <p class="text-sm text-slate-500 mb-6">Select a role to assign to the {{ count($selectedRows) }} selected user(s). This will <strong>add</strong> the role to their existing roles.</p>
+            
+            <form wire:submit.prevent="executeBulkRole" class="space-y-5">
+                <div class="relative">
+                    <select wire:model.defer="bulkRoleToAssign" id="bulkRoleToAssign"
+                        class="flex h-10 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 peer">
+                        <option value="">Select a role...</option>
+                        @foreach(\Spatie\Permission\Models\Role::orderBy('name')->pluck('name') as $roleName)
+                            <option value="{{ $roleName }}">{{ $roleName }}</option>
+                        @endforeach
+                    </select>
+                    <label for="bulkRoleToAssign" class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
+                        Role to Assign <span class="text-red-500">*</span>
+                    </label>
+                    @error('bulkRoleToAssign')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" wire:click="$set('showBulkRoleModal', false)" class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" wire:loading.attr="disabled" wire:target="executeBulkRole" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeBulkRole"></i>
+                        <span wire:loading.remove wire:target="executeBulkRole">Assign Role</span>
+                        <span wire:loading wire:target="executeBulkRole">Assigning...</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </x-modal>
 
