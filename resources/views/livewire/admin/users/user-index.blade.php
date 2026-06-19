@@ -1,24 +1,17 @@
-@section('title', 'Users')
-@section('page-title', 'Users')
-@section('page-subtitle', 'Manage application users, roles, and status.')
-
-<div class="max-w-7xl mx-auto space-y-6 py-6">
+<div class="w-full space-y-6">
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1
-                class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
                 User Management
             </h1>
             <p class="mt-1 text-sm text-slate-500">Manage system access, roles, and employee linkages.</p>
         </div>
         @can('user.create')
             <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clip-rule="evenodd" />
+                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New User
             </button>
@@ -26,7 +19,7 @@
     </div>
 
     {{-- Filters --}}
-    <div class="rounded-2xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-xl">
+    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div class="relative w-full sm:w-96">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -64,53 +57,48 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         @forelse ($users as $user)
             <div wire:key="user-card-{{ $user->id }}"
-                class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
-                <div class="p-6">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-4">
+                class="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="p-5">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
                             <div
-                                class="h-12 w-12 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+                                class="h-10 w-10 flex-shrink-0 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-lg">
                                 {{ substr($user->name, 0, 1) }}
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-900 line-clamp-1" title="{{ $user->name }}">
+                                <h3 class="font-bold text-slate-900 text-sm truncate" title="{{ $user->name }}">
                                     {{ $user->name }}</h3>
-                                <p class="text-xs text-slate-500 line-clamp-1" title="{{ $user->email }}">
+                                <p class="text-xs text-slate-500 truncate" title="{{ $user->email }}">
                                     {{ $user->email }}</p>
                             </div>
                         </div>
                         <div class="flex-shrink-0">
                             @if ($user->active)
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600 ring-1 ring-inset ring-emerald-600/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse"></span>Active
+                                <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
+                                    Active
                                 </span>
                             @else
-                                <span
-                                    class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-600/20">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>Inactive
+                                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 border border-slate-200">
+                                    Inactive
                                 </span>
                             @endif
                         </div>
                     </div>
 
-                    <div class="mt-5 space-y-3">
+                    <div class="space-y-3">
                         {{-- Employee Info --}}
-                        <div
-                            class="flex items-center gap-3 text-sm text-slate-600 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <svg class="h-5 w-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                        <div class="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <svg class="h-4 w-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                             @if ($user->employeeNik)
-                                <div class="truncate">
+                                <div class="truncate text-xs">
                                     <span class="font-medium text-slate-900">{{ $user->employeeNik }}</span>
                                     <span class="text-slate-400 mx-1">•</span>
-                                    <span class="text-xs">{{ $user->employeeDeptCode ?? 'No Dept' }}</span>
+                                    <span>{{ $user->employeeDeptCode ?? 'No Dept' }}</span>
                                     @if ($user->employeeBranch)
-                                        <span
-                                            class="ml-1 inline-flex items-center rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+                                        <span class="ml-1 text-[10px] uppercase text-slate-500 border border-slate-200 px-1 rounded bg-white">
                                             {{ $user->employeeBranch }}
                                         </span>
                                     @endif
@@ -121,10 +109,9 @@
                         </div>
 
                         {{-- Roles --}}
-                        <div class="flex flex-wrap gap-1.5 min-h-[28px]">
+                        <div class="flex flex-wrap gap-1.5">
                             @forelse ($user->roles as $role)
-                                <span
-                                    class="inline-flex items-center rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                <span class="inline-flex items-center rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">
                                     {{ $role }}
                                 </span>
                             @empty
@@ -136,30 +123,28 @@
 
                 {{-- Card Actions --}}
                 @can('user.update')
-                    <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
-                        <div class="flex items-center justify-between gap-2">
-                            <button wire:click="toggleStatus({{ $user->id }})"
-                                class="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                                {{ $user->active ? 'Suspend' : 'Restore' }}
+                    <div class="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-between">
+                        <button wire:click="toggleStatus({{ $user->id }})"
+                            class="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
+                            {{ $user->active ? 'Suspend Access' : 'Restore Access' }}
+                        </button>
+                        <div class="flex items-center gap-1">
+                            <button wire:click="openPasswordModal({{ $user->id }})"
+                                class="p-1.5 rounded text-slate-400 hover:bg-white hover:text-slate-600 transition-colors"
+                                title="Change Password">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
                             </button>
-                            <div class="flex items-center gap-2">
-                                <button wire:click="openPasswordModal({{ $user->id }})"
-                                    class="rounded-lg p-2 text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-all"
-                                    title="Change Password">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
-                                </button>
-                                <button wire:click="openEditModal({{ $user->id }})"
-                                    class="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
-                                    title="Edit User">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                            </div>
+                            <button wire:click="openEditModal({{ $user->id }})"
+                                class="p-1.5 rounded text-slate-400 hover:bg-white hover:text-blue-600 transition-colors"
+                                title="Edit User">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 @endcan
@@ -374,83 +359,23 @@
                     {{-- Direct Permissions Tab (edit mode only) --}}
                     @if ($editingId)
                         <div class="{{ $modalTab === 'permissions' ? 'block' : 'hidden' }} p-4">
-                            <div
-                                class="flex items-start gap-2 mb-4 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2.5">
-                                <svg class="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p class="text-xs text-amber-700">
-                                    Direct permissions are <strong>user-specific overrides</strong> that stack on top of
-                                    role permissions.
-                                    Use these to fine-tune access — e.g. restrict evaluation tabs for a specific dept
-                                    head.
-                                </p>
+                            <div class="mb-4 text-xs text-slate-500 bg-slate-50 border border-slate-200 p-3 rounded-lg">
+                                Direct permissions are <strong>user-specific overrides</strong> that stack on top of role permissions. Use these to fine-tune access.
                             </div>
 
-                            <div class="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar">
+                            <div class="space-y-4 max-h-[320px] overflow-y-auto custom-scrollbar">
                                 @foreach ($groupedPermissions as $groupLabel => $groupPerms)
-                                    @php
-                                        $groupNames = collect($groupPerms)->pluck('name')->toArray();
-                                        $allChosen = collect($groupNames)->every(
-                                            fn($n) => in_array($n, $selectedDirectPermissions),
-                                        );
-                                        $someChosen = collect($groupNames)->contains(
-                                            fn($n) => in_array($n, $selectedDirectPermissions),
-                                        );
-                                    @endphp
-                                    <div x-data="{ open: {{ $someChosen ? 'true' : 'false' }} }"
-                                        class="rounded-lg border border-slate-200 overflow-hidden">
-                                        <button type="button" @click="open = !open"
-                                            class="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    class="h-4 w-4 rounded flex items-center justify-center flex-shrink-0
-                                                    {{ $allChosen ? 'bg-blue-600 text-white' : ($someChosen ? 'bg-blue-100' : 'border border-slate-300 bg-white') }}">
-                                                    @if ($allChosen)
-                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor" stroke-width="3">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    @elseif($someChosen)
-                                                        <span
-                                                            class="h-1.5 w-1.5 rounded-full bg-blue-600 block"></span>
-                                                    @endif
-                                                </span>
-                                                <span
-                                                    class="text-sm font-semibold text-slate-700">{{ $groupLabel }}</span>
-                                                @if ($someChosen)
-                                                    <span class="text-[10px] font-bold text-blue-600">
-                                                        {{ collect($groupNames)->intersect($selectedDirectPermissions)->count() }}
-                                                        / {{ count($groupNames) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <svg class="h-4 w-4 text-slate-400 transition-transform"
-                                                :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-                                        <div x-show="open" x-transition
-                                            class="grid grid-cols-1 sm:grid-cols-2 gap-px border-t border-slate-100 bg-slate-100">
+                                    <div>
+                                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{{ $groupLabel }}</h4>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             @foreach ($groupPerms as $perm)
-                                                <label
-                                                    class="flex items-start p-3 bg-white hover:bg-blue-50/60 cursor-pointer transition-colors group/p">
-                                                    <div class="flex h-5 items-center">
-                                                        <input type="checkbox" value="{{ $perm->name }}"
-                                                            wire:model.defer="selectedDirectPermissions"
-                                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
-                                                    </div>
-                                                    <div class="ml-3">
+                                                <label class="flex items-start gap-2 cursor-pointer p-2 rounded hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
+                                                    <input type="checkbox" value="{{ $perm->name }}" wire:model.defer="selectedDirectPermissions"
+                                                        class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
+                                                    <div>
                                                         @php $action = explode('.', $perm->name, 2)[1] ?? $perm->name; @endphp
-                                                        <span
-                                                            class="text-xs font-semibold text-slate-700 group-hover/p:text-blue-700 transition-colors">{{ $action }}</span>
-                                                        <p class="text-[10px] text-slate-400 font-mono">
-                                                            {{ $perm->name }}</p>
+                                                        <div class="text-xs font-medium text-slate-700">{{ $action }}</div>
+                                                        <div class="text-[10px] text-slate-400 font-mono">{{ $perm->name }}</div>
                                                     </div>
                                                 </label>
                                             @endforeach
@@ -464,26 +389,18 @@
 
                 {{-- Status + Actions --}}
                 <div class="flex items-center justify-between border-t border-slate-100 pt-5">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.defer="active" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer
-                                peer-checked:bg-emerald-500
-                                after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[2px] after:bg-white
-                                after:border after:border-slate-300 after:rounded-full after:h-5 after:w-5 after:transition-all
-                                peer-checked:after:translate-x-[18px] peer-checked:after:border-white">
-                        </div>
-                        <span class="ml-3 text-sm font-medium text-slate-700">Active Status</span>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" wire:model.defer="active" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600">
+                        <span class="text-sm font-medium text-slate-700">Active Status</span>
                     </label>
                     <div class="flex gap-3">
                         <button type="button" wire:click="$set('showModal', false)"
-                            class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                            class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
                             Cancel
                         </button>
                         <button type="submit" wire:loading.attr="disabled" wire:target="save"
-                            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100">
-                            <span wire:loading.remove
-                                wire:target="save">{{ $editingId ? 'Save Changes' : 'Create User' }}</span>
+                            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
+                            <span wire:loading.remove wire:target="save">{{ $editingId ? 'Save Changes' : 'Create User' }}</span>
                             <span wire:loading wire:target="save">Saving...</span>
                         </button>
                     </div>
@@ -518,13 +435,13 @@
                         Confirm New Password <span class="text-red-500">*</span>
                     </label>
                 </div>
-                <div class="flex justify-end gap-3 pt-4">
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" wire:click="$set('showPasswordModal', false)"
-                        class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="savePassword"
-                        class="px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold shadow-lg shadow-amber-500/30 hover:bg-amber-400 transition-all hover:scale-105 active:scale-95">
+                        class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
                         <span wire:loading.remove wire:target="savePassword">Update Password</span>
                         <span wire:loading wire:target="savePassword">Updating...</span>
                     </button>

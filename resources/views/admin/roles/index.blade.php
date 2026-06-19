@@ -1,12 +1,10 @@
-@extends('new.layouts.app')
+@extends('new.layouts.admin-settings')
 
 @section('title', 'Roles')
 
-@section('page-title', 'Roles')
-@section('page-subtitle', 'Define and manage role-based access.')
+@section('page-title', 'Roles & Permissions')
+@section('page-subtitle', 'Define system roles and their associated permission matrices.')
 
-@section('content')
-    <div class="max-w-6xl mx-auto">
-        <livewire:admin.roles.role-index />
-    </div>
+@section('settings-content')
+    <livewire:admin.roles.role-index />
 @endsection

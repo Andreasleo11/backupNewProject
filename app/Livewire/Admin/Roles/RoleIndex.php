@@ -180,6 +180,6 @@ class RoleIndex extends Component
             'roles' => $this->roles,
             'permissions' => $this->permissions,
             'groupedPermissions' => $this->groupedPermissions,
-        ])->layout('new.layouts.app');
+        ]);
     }
 }

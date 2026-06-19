@@ -14,19 +14,19 @@ Route::middleware('auth')->group(function () {
             // Dashboard can be viewable by anyone who has access to role feature
             Route::get('/access-overview', \App\Livewire\Admin\AccessOverviewDashboard::class)->name('access-overview.index');
 
-            Route::get('/users', \App\Livewire\Admin\Users\UserIndex::class)
+            Route::view('/users', 'admin.users.index')
                 ->name('users.index')
                 ->middleware('can:user.view-any');
 
-            Route::get('/roles', \App\Livewire\Admin\Roles\RoleIndex::class)
+            Route::view('/roles', 'admin.roles.index')
                 ->name('roles.index')
                 ->middleware('can:role.view-any');
 
-            Route::get('/permission-sync', \App\Livewire\Admin\PermissionSyncManager::class)
+            Route::view('/permission-sync', 'admin.permission-sync.index')
                 ->name('permission-sync.index')
                 ->middleware('can:system.admin');
 
-            Route::get('/approval-rules', RuleManager::class)
+            Route::view('/approval-rules', 'admin.approval-rules.index')
                 ->name('approval-rules.index')
                 ->middleware('can:approval.manage-rules');
 
@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
                 ->name('departments.index')
                 ->middleware('can:department.view-any');
 
-            Route::get('/employees', \App\Livewire\Admin\Employees\EmployeeIndex::class)
+            Route::view('/employees', 'admin.employees.index')
                 ->name('employees.index')
                 ->middleware('can:employee.view-any');
 

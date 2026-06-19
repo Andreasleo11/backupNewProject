@@ -1,13 +1,8 @@
-@section('title', 'Roles & Permissions')
-@section('page-title', 'Roles & Permissions')
-@section('page-subtitle', 'Define system roles and their associated permission matrices.')
-
-<div class="max-w-7xl mx-auto space-y-6 py-6">
+<div class="w-full space-y-6">
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1
-                class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
                 Role Management
             </h1>
             <p class="mt-1 text-sm text-slate-500">
@@ -16,11 +11,9 @@
         </div>
         @can('role.create')
             <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clip-rule="evenodd" />
+                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New Role
             </button>
@@ -28,7 +21,7 @@
     </div>
 
     {{-- Search --}}
-    <div class="rounded-2xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-xl">
+    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="relative max-w-md">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                 <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -69,23 +62,20 @@
                     }
                 }
             @endphp
-            <div
-                class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
-                <div class="p-6">
+            <div class="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="p-5">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div
-                                class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600">
+                            <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-900">{{ $role->name }}</h3>
+                                <h3 class="font-bold text-slate-900 text-sm">{{ $role->name }}</h3>
                                 @if (in_array($role->name, ['super-admin', 'admin']))
-                                    <span
-                                        class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                                    <span class="inline-flex items-center rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 border border-indigo-100">
                                         System Role
                                     </span>
                                 @endif
@@ -101,10 +91,9 @@
                     {{-- Module summary chips --}}
                     <div class="mt-3">
                         @if ($role->name === 'super-admin')
-                            <span
-                                class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 border border-indigo-100">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                                 All Permissions
@@ -114,11 +103,9 @@
                         @else
                             <div class="flex flex-wrap gap-1.5">
                                 @foreach ($moduleCounts as $mod => $count)
-                                    <span
-                                        class="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">
+                                    <span class="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">
                                         {{ $mod }}
-                                        <span
-                                            class="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-100 text-[9px] font-bold text-blue-700">{{ $count }}</span>
+                                        <span class="text-[9px] font-bold text-blue-600">{{ $count }}</span>
                                     </span>
                                 @endforeach
                             </div>
@@ -127,21 +114,20 @@
                 </div>
 
                 {{-- Card Actions --}}
-                <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-end gap-3">
+                <div class="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-end gap-3">
                     @if (!in_array($role->name, ['super-admin', 'admin']))
                         @can('role.delete')
                             <button wire:click="confirmDelete({{ $role->id }})"
                                 wire:confirm="Delete role '{{ $role->name }}'? Users with this role will lose its permissions."
-                                class="text-sm font-medium text-rose-500 hover:text-rose-700 transition-colors">
+                                class="text-xs font-medium text-rose-500 hover:text-rose-700 transition-colors">
                                 Delete
                             </button>
                         @endcan
                     @endif
                     @can('role.update')
                         <button wire:click="openEditModal({{ $role->id }})"
-                            class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
-                            <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors">
+                            <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                             </svg>
@@ -290,11 +276,11 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" wire:click="$set('showModal', false)"
-                        class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="save"
-                        class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100">
+                        class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
                         <span wire:loading.remove
                             wire:target="save">{{ $modalMode === 'create' ? 'Create Role' : 'Save Changes' }}</span>
                         <span wire:loading wire:target="save">Saving...</span>

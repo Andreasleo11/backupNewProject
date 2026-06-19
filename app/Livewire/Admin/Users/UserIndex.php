@@ -404,6 +404,6 @@ class UserIndex extends Component
         return view('livewire.admin.users.user-index', [
             'users' => $users,
             'groupedPermissions' => $this->groupedPermissions,
-        ])->layout('new.layouts.app');
+        ]);
     }
 }

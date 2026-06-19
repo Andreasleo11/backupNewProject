@@ -1,43 +1,43 @@
-<div class="space-y-6">
+<div class="w-full space-y-6">
     {{-- Header Section --}}
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Approval Rules</h1>
-            <p class="mt-2 text-sm text-slate-600 max-w-2xl">Configure approval workflows for different document types. Rules determine who can approve what and in what order.</p>
+            <p class="mt-1 text-sm text-slate-500">Configure approval workflows for different document types.</p>
         </div>
         <div class="flex items-center gap-3">
             {{-- Quick Stats --}}
-            <div class="hidden lg:flex items-center gap-4 px-4 py-3 glass-card">
+            <div class="hidden lg:flex items-center gap-4 px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                            <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
                         <div>
-                            <div class="text-lg font-bold text-slate-900">{{ $stats['total_rules'] }}</div>
-                            <div class="text-xs text-slate-500 font-medium">Total Rules</div>
+                            <div class="text-sm font-bold text-slate-900 leading-none">{{ $stats['total_rules'] }}</div>
+                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Total</div>
                         </div>
                     </div>
-                    <div class="w-px h-8 bg-slate-200"></div>
+                    <div class="w-px h-6 bg-slate-200"></div>
                     <div class="flex items-center gap-2">
-                        <div class="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                            <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                         <div>
-                            <div class="text-lg font-bold text-slate-900">{{ $stats['active_rules'] }}</div>
-                            <div class="text-xs text-slate-500 font-medium">Active</div>
+                            <div class="text-sm font-bold text-slate-900 leading-none">{{ $stats['active_rules'] }}</div>
+                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Active</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <button wire:click="openCreateRule"
-                class="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 hover:scale-105">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New Rule
@@ -196,172 +196,32 @@
         {{-- Main Detail Area --}}
         <div class="lg:col-span-6">
             @if ($selectedRule)
-                {{-- Rule Header --}}
-                <div class="glass-card p-6 mb-6">
-                    <div class="flex items-start justify-between mb-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-sm">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900 mb-2">{{ $selectedRule->name }}</h2>
+                            <h2 class="text-xl font-bold text-slate-900 mb-1">{{ $selectedRule->name }}</h2>
+                            <p class="text-sm text-slate-500">Configure approval steps for this rule.</p>
                         </div>
-                       <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3">
                             <button wire:click="openEditRule({{ $selectedRule->id }})"
-                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-50 transition-colors">
-                                <svg class="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
+                                <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 Edit Rule
                             </button>
                             <button wire:click="openCreateStep"
-                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all shadow-sm">
-                                <svg class="h-2 w-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 Add Step
-                            </button>
-
-                        </div>
-                    </div>
-
-                    {{-- View Toggle --}}
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-medium text-slate-600">Display:</span>
-                        <div class="flex bg-slate-100 rounded-lg p-1">
-                            <button wire:click="toggleViewMode"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all {{ $viewMode === 'visual' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800' }}">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                                Visual Flow
-                            </button>
-                            <button wire:click="toggleViewMode"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all {{ $viewMode === 'compact' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800' }}">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                                </svg>
-                                List View
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {{-- Content Area --}}
-                @if ($viewMode === 'visual')
-                    {{-- Flow Canvas --}}
-                    <div class="flex-1 overflow-auto p-4 custom-scrollbar bg-grid-slate-100">
-
-                        {{-- Match Logic Card --}}
-                        <div class="max-w-3xl mx-auto mb-6 relative group">
-                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl opacity-10 blur-xl group-hover:opacity-20 transition-opacity"></div>
-                            <div class="relative bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
-                                <div class="flex items-start gap-4">
-                                    <div class="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
-                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trigger Conditions</h3>
-                                        <div class="mt-2 font-mono text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 overflow-x-auto whitespace-pre-wrap">{{ json_encode($selectedRule->match_expr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            {{-- Downward Connector --}}
-                            <div class="absolute left-1/2 -bottom-12 h-12 w-0.5 bg-slate-300 transform -translate-x-1/2"></div>
-                            <div class="absolute left-1/2 -bottom-2 h-2 w-2 rounded-full bg-slate-300 transform -translate-x-1/2"></div>
-                        </div>
-
-                        {{-- Steps Flow --}}
-                        <div class="max-w-3xl mx-auto space-y-6">
-                            @forelse ($steps as $index => $step)
-                                <div class="relative group">
-                                    {{-- Connector line from previous step --}}
-                                    @if ($index > 0)
-                                        <div class="absolute left-1/2 -top-6 h-6 w-0.5 bg-slate-300 transform -translate-x-1/2 z-0"></div>
-                                    @endif
-
-                                    <div class="relative z-10 bg-white border border-slate-200 rounded-xl p-1 shadow-sm transition-all hover:shadow-lg hover:border-indigo-200 hover:-translate-y-0.5">
-                                        <div class="flex items-stretch rounded-xl overflow-hidden">
-                                            {{-- Step Number --}}
-                                            <div class="bg-indigo-50 w-16 flex flex-col items-center justify-center border-r border-indigo-100">
-                                                <span class="text-xs font-semibold text-indigo-400 uppercase">Step</span>
-                                                <span class="text-2xl font-black text-indigo-600">{{ $step->sequence }}</span>
-                                            </div>
-
-                                            {{-- Content --}}
-                                            <div class="flex-1 p-3">
-                                                <div class="flex items-start justify-between">
-                                                    <div>
-                                                        <div class="flex items-center gap-2 mb-1">
-                                                            <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 uppercase tracking-widest">
-                                                                {{ $step->approver_type }}
-                                                            </span>
-                                                            @if ($step->parallel_group)
-                                                                <span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
-                                                                    Parallel
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                        <div class="text-lg font-bold text-slate-900">
-                                                            @if ($step->approver_type === 'role')
-                                                                {{ $step->role?->name ?? 'Role ID: ' . $step->approver_id }}
-                                                            @else
-                                                                {{ $step->user?->name ?? 'User ID: ' . $step->approver_id }}
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Actions --}}
-                                                    <div class="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button wire:click="openEditStep({{ $step->id }})"
-                                                            class="p-2 rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all">
-                                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                        <button wire:click="deleteStep({{ $step->id }})"
-                                                            class="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all"
-                                                            onclick="return confirm('Delete this step?')">
-                                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- Connector to next step --}}
-                                    @if (!$loop->last)
-                                        <div class="absolute left-1/2 -bottom-6 h-6 w-0.5 bg-slate-300 transform -translate-x-1/2"></div>
-                                    @endif
-                                    @if ($step->final)
-                                        <div class="absolute left-1/2 -bottom-6 h-6 w-0.5 bg-emerald-400 transform -translate-x-1/2"></div>
-                                        <div class="absolute left-1/2 -bottom-12 transform -translate-x-1/2">
-                                            <span class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
-                                                APPROVED
-                                            </span>
-                                        </div>
-                                    @endif
-                                </div>
-                            @empty
-                                <div class="text-center py-12 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50">
-                                    <svg class="h-10 w-10 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
-                                    <p class="text-sm text-slate-500 font-medium">No steps defined for this rule yet.</p>
-                                    <button wire:click="openCreateStep"
-                                        class="mt-4 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
-                                        + Add First Approver Step
-                                    </button>
-                                </div>
-                            @endforelse
-                        </div>
-
-                        {{-- Padding for scrolling --}}
-                        <div class="h-32"></div>
-                    </div>
-
-                @else
                     {{-- Compact List View --}}
                     <div class="flex-1 overflow-auto custom-scrollbar bg-slate-50">
                         {{-- Match Conditions Summary --}}
@@ -471,16 +331,15 @@
                                     </div>
                                 @endforelse
                             </div>
-                        </div>
                     </div>
-                @endif
+                </div>
 
             @else
                 {{-- Empty State: No Rule Selected --}}
-                <div class="glass-card p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
-                    <div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-6">
-                        <svg class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <div class="p-12 flex flex-col items-center justify-center text-center bg-slate-50 border border-slate-200 rounded-xl h-full min-h-[400px]">
+                    <div class="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 border border-blue-100">
+                        <svg class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 mb-2">Select a Rule</h3>
@@ -496,7 +355,7 @@
                             <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                                 <span class="text-xs font-bold text-blue-600">2</span>
                             </div>
-                            <span>View the visual workflow or switch to list view</span>
+                            <span>View the approval workflow</span>
                         </div>
                         <div class="flex items-center gap-3 text-left">
                             <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">

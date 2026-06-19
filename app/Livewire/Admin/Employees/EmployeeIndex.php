@@ -260,6 +260,6 @@ class EmployeeIndex extends Component
 
     public function render()
     {
-        return view('admin.employees.index')->layout('new.layouts.app');
+        return view('livewire.admin.employees.employee-index');
     }
 }

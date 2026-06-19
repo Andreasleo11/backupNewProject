@@ -1,9 +1,8 @@
-<div class="max-w-7xl mx-auto space-y-6 py-6">
+<div class="w-full space-y-6">
     {{-- Header Section --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1
-                class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
                 Department Master
             </h1>
             <p class="mt-1 text-sm text-slate-500">
@@ -13,11 +12,9 @@
         <div>
             @can('department.create')
                 <button wire:click="openCreateModal"
-                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                            clip-rule="evenodd" />
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     New Department
                 </button>
@@ -26,7 +23,7 @@
     </div>
 
     {{-- Filters & Search --}}
-    <div class="rounded-2xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-xl">
+    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-col lg:flex-row gap-4 justify-between items-center">
 
             {{-- Search --}}
@@ -53,14 +50,9 @@
                 </select>
 
                 {{-- Status Toggle --}}
-                <label class="relative inline-flex items-center cursor-pointer group">
-                    <input type="checkbox" wire:model.live="onlyActive" class="sr-only peer">
-                    <div
-                        class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                    </div>
-                    <span
-                        class="ml-3 text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Active
-                        Only</span>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" wire:model.live="onlyActive" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
+                    <span class="text-sm font-medium text-slate-600">Active Only</span>
                 </label>
 
                 <select wire:model.live="perPage"
@@ -148,10 +140,9 @@
 
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                 @can('department.update')
-                                    <div
-                                        class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex items-center justify-end gap-2">
                                         <button wire:click="toggleStatus({{ $dept->id }})"
-                                            class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                            class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
                                             title="{{ $dept->is_active ? 'Deactivate' : 'Activate' }}">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -159,7 +150,7 @@
                                             </svg>
                                         </button>
                                         <button wire:click="openEditModal({{ $dept->id }})"
-                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                             title="Edit Department">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
@@ -283,21 +274,18 @@
 
                 {{-- Status --}}
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.defer="is_active" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                        </div>
-                        <span class="ml-3 text-sm font-medium text-slate-700">Active Status</span>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" wire:model.defer="is_active" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600">
+                        <span class="text-sm font-medium text-slate-700">Active Status</span>
                     </label>
 
                     <div class="flex gap-3">
                         <button type="button" wire:click="$set('showModal', false)"
-                            class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                            class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
                             Cancel
                         </button>
                         <button type="submit"
-                            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95">
+                            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
                             {{ $editingId ? 'Save Changes' : 'Create' }}
                         </button>
                     </div>
