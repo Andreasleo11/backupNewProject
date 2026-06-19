@@ -5,7 +5,7 @@
 @section('page-subtitle', $pageSubtitle ?? 'Manage your system configurations.')
 
 @section('content')
-<div class="flex flex-col md:flex-row gap-6 items-start">
+<div x-init="sidebarCollapsed = true" class="flex flex-col md:flex-row gap-6 items-start">
     <!-- Inner Sidebar (Tabs) -->
     <div class="w-full md:w-[260px] flex-shrink-0 bg-white rounded-md border border-slate-200 p-3 flex flex-col gap-1 md:sticky md:top-6 relative z-10">
         

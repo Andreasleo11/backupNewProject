@@ -18,6 +18,15 @@ Route::middleware('auth')->group(function () {
                 ->name('users.index')
                 ->middleware('can:user.view-any');
 
+            Route::view('/users/create', 'admin.users.create')
+                ->name('users.create')
+                ->middleware('can:user.create');
+
+            Route::get('/users/{id}/edit', function ($id) {
+                return view('admin.users.edit', ['id' => $id]);
+            })->name('users.edit')
+                ->middleware('can:user.update');
+
             Route::view('/roles', 'admin.roles.index')
                 ->name('roles.index')
                 ->middleware('can:role.view-any');
