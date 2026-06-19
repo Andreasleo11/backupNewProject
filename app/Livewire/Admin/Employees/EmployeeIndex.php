@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Employees;
 use App\Application\Employee\DTOs\EmployeeFilter;
 use App\Application\Employee\UseCases\ListEmployees;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,15 +13,30 @@ class EmployeeIndex extends Component
 {
     use WithPagination;
 
-    // ── Filters ──────────────────────────────────────────────────────────────
+    #[Url(history: true)]
     public string $search = '';
+
+    #[Url(history: true)]
     public string $branch = '';
+
+    #[Url(history: true)]
     public ?string $deptCode = '';
+
+    #[Url(history: true)]
     public ?string $employmentType = '';
+
+    #[Url(history: true)]
     public bool $activeOnly = true;
+
+    #[Url(history: true)]
     public int $perPage = 10;
+
     public bool $showAdvancedFilters = false;
+
+    #[Url(history: true)]
     public string $sortBy = 'name';
+
+    #[Url(history: true)]
     public string $sortDirection = 'asc';
 
     // ── Sync picker state ─────────────────────────────────────────────────────
@@ -41,14 +57,6 @@ class EmployeeIndex extends Component
     // ── Employee audit drawer ─────────────────────────────────────────────────
     public ?string $selectedNik = null;
     public ?\App\Infrastructure\Persistence\Eloquent\Models\Employee $selectedEmployee = null;
-
-    protected $queryString = [
-        'search'         => ['except' => ''],
-        'branch'         => ['except' => ''],
-        'deptCode'       => ['except' => ''],
-        'employmentType' => ['except' => ''],
-        'activeOnly'     => ['except' => true],
-    ];
 
     // ── Filter handlers ───────────────────────────────────────────────────────
     public function mount(\App\Services\Payroll\Sync\DateRangeResolver $resolver): void
@@ -129,7 +137,7 @@ class EmployeeIndex extends Component
     public function sync(\App\Services\JPayrollService $service): void
     {
         if (empty($this->syncPhases)) {
-            session()->flash('error', 'Please select at least one phase to sync.');
+            $this->dispatch('toast', message: 'Please select at least one phase to sync.', type: 'error');
             return;
         }
 
@@ -147,7 +155,7 @@ class EmployeeIndex extends Component
             $this->previewTab  = 'summary';
             $this->previewSearch = '';
         } else {
-            session()->flash('error', 'Preview failed: ' . $result['message']);
+            $this->dispatch('toast', message: 'Preview failed: ' . $result['message'], type: 'error');
         }
     }
 
@@ -175,7 +183,7 @@ class EmployeeIndex extends Component
         );
 
         $this->previewData = null;
-        session()->flash('success', 'Sync job dispatched for: ' . implode(', ', $this->syncPhases));
+        $this->dispatch('toast', message: 'Sync job dispatched for: ' . implode(', ', $this->syncPhases), type: 'success');
     }
 
     public function cancelSync(): void

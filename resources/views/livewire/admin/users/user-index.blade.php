@@ -8,9 +8,10 @@
             <p class="mt-1 text-sm text-slate-500">Manage system access, roles, and employee linkages.</p>
         </div>
         @can('user.create')
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button wire:click="openCreateModal" wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="openCreateModal"></i>
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" wire:loading.remove wire:target="openCreateModal">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New User
@@ -19,32 +20,27 @@
     </div>
 
     {{-- Filters --}}
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="rounded-md border border-slate-200 bg-white p-4">
         <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div class="relative w-full sm:w-96">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
                 <input type="text" wire:model.live.debounce.400ms="search"
-                    class="block w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
+                    class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
                     placeholder="Search users by name, email, or role...">
             </div>
             <div class="flex items-center gap-4 w-full sm:w-auto">
-                <label class="relative inline-flex items-center cursor-pointer group">
-                    <input type="checkbox" wire:model.live="onlyActive" class="sr-only peer">
-                    <div
-                        class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
-                    </div>
-                    <span
-                        class="ml-3 text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Active
-                        Only</span>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" wire:model.live="onlyActive" class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
+                    <span class="text-sm font-medium text-slate-700">Active Only</span>
                 </label>
                 <select wire:model.live="perPage"
-                    class="rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                    class="flex h-9 w-32 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>
@@ -57,7 +53,7 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         @forelse ($users as $user)
             <div wire:key="user-card-{{ $user->id }}"
-                class="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                class="group flex flex-col justify-between rounded-md border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
                 <div class="p-5">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -124,10 +120,17 @@
                 {{-- Card Actions --}}
                 @can('user.update')
                     <div class="border-t border-slate-100 bg-slate-50 px-5 py-3 flex items-center justify-between">
-                        <button wire:click="toggleStatus({{ $user->id }})"
-                            class="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">
-                            {{ $user->active ? 'Suspend Access' : 'Restore Access' }}
-                        </button>
+                        @if($user->active)
+                            <button wire:click="confirmSuspend({{ $user->id }})"
+                                class="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors">
+                                Suspend Access
+                            </button>
+                        @else
+                            <button wire:click="toggleStatus({{ $user->id }})"
+                                class="text-xs font-medium text-slate-500 hover:text-emerald-600 transition-colors">
+                                Restore Access
+                            </button>
+                        @endif
                         <div class="flex items-center gap-1">
                             <button wire:click="openPasswordModal({{ $user->id }})"
                                 class="p-1.5 rounded text-slate-400 hover:bg-white hover:text-slate-600 transition-colors"
@@ -150,15 +153,21 @@
                 @endcan
             </div>
         @empty
-            <div class="col-span-full py-12 text-center">
-                <div class="mx-auto h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                    <svg class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="col-span-full py-12 text-center rounded-md border border-slate-200 bg-white">
+                <div class="mx-auto h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+                    <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 </div>
-                <h3 class="text-lg font-medium text-slate-900">No users found</h3>
-                <p class="mt-1 text-slate-500">Try adjusting your search or filter.</p>
+                <h3 class="text-sm font-semibold text-slate-900">No users found</h3>
+                <p class="mt-1 text-sm text-slate-500 mb-4">There are no users matching your criteria.</p>
+                @can('user.create')
+                    <button wire:click="openCreateModal"
+                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors">
+                        Add First User
+                    </button>
+                @endcan
             </div>
         @endforelse
     </div>
@@ -191,10 +200,11 @@
                 <div class="relative group">
                     <div class="relative">
                         <input type="text" wire:model.live.debounce.300ms="employeeSearch" id="employeeSearch"
-                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                            placeholder=" " autocomplete="off">
+                            autofocus
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent peer"
+                            placeholder="Search Employee (NIK or Name)" autocomplete="off">
                         <label for="employeeSearch"
-                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                             Search Employee (NIK or Name) <span class="text-red-500">*</span>
                         </label>
                     </div>
@@ -390,16 +400,17 @@
                 {{-- Status + Actions --}}
                 <div class="flex items-center justify-between border-t border-slate-100 pt-5">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model.defer="active" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600">
+                        <input type="checkbox" wire:model.defer="active" class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
                         <span class="text-sm font-medium text-slate-700">Active Status</span>
                     </label>
                     <div class="flex gap-3">
                         <button type="button" wire:click="$set('showModal', false)"
-                            class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                            class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
                             Cancel
                         </button>
                         <button type="submit" wire:loading.attr="disabled" wire:target="save"
-                            class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
+                            class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                            <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
                             <span wire:loading.remove wire:target="save">{{ $editingId ? 'Save Changes' : 'Create User' }}</span>
                             <span wire:loading wire:target="save">Saving...</span>
                         </button>
@@ -416,10 +427,11 @@
             <form wire:submit.prevent="savePassword" class="space-y-5">
                 <div class="relative">
                     <input type="password" wire:model.defer="newPassword" id="newPassword"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                        autofocus
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent peer"
+                        placeholder="New Password">
                     <label for="newPassword"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         New Password <span class="text-red-500">*</span>
                     </label>
                     @error('newPassword')
@@ -428,25 +440,46 @@
                 </div>
                 <div class="relative">
                     <input type="password" wire:model.defer="newPassword_confirmation" id="newPassword_confirmation"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent peer"
+                        placeholder="Confirm New Password">
                     <label for="newPassword_confirmation"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         Confirm New Password <span class="text-red-500">*</span>
                     </label>
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" wire:click="$set('showPasswordModal', false)"
-                        class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="savePassword"
-                        class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
+                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="savePassword"></i>
                         <span wire:loading.remove wire:target="savePassword">Update Password</span>
                         <span wire:loading wire:target="savePassword">Updating...</span>
                     </button>
                 </div>
             </form>
+        </div>
+    </x-modal>
+
+    {{-- Suspend Confirmation Modal --}}
+    <x-modal wire:model="showSuspendModal" maxWidth="sm">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-2">Suspend Access</h2>
+            <p class="text-sm text-slate-500 mb-6">Are you sure you want to suspend this user? They will immediately lose access to the system.</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" wire:click="$set('showSuspendModal', false)"
+                    class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
+                    Cancel
+                </button>
+                <button wire:click="executeSuspend" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeSuspend"></i>
+                    <span wire:loading.remove wire:target="executeSuspend">Yes, Suspend User</span>
+                    <span wire:loading wire:target="executeSuspend">Suspending...</span>
+                </button>
+            </div>
         </div>
     </x-modal>
 

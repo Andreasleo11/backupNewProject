@@ -6,6 +6,7 @@ use App\Domain\Admin\Services\PermissionAuditService;
 use App\Models\PermissionSyncLog;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class PermissionSyncManager extends Component
@@ -16,6 +17,7 @@ class PermissionSyncManager extends Component
 
     public $logs = [];
 
+    #[Url(history: true)]
     public $activeTab = 'compare';
 
     public function mount(PermissionAuditService $auditService)
@@ -54,7 +56,7 @@ class PermissionSyncManager extends Component
         }
 
         $this->loadData($auditService);
-        session()->flash('success', 'Permissions synchronized successfully!');
+        $this->dispatch('toast', message: 'Permissions synchronized successfully!', type: 'success');
     }
 
     public function revert(PermissionSyncLog $log, PermissionAuditService $auditService)
@@ -71,14 +73,14 @@ class PermissionSyncManager extends Component
         ]);
 
         $this->loadData($auditService);
-        session()->flash('success', 'Permissions reverted successfully!');
+        $this->dispatch('toast', message: 'Permissions reverted successfully!', type: 'success');
     }
 
     public function deleteLog($logId)
     {
         PermissionSyncLog::destroy($logId);
         $this->logs = PermissionSyncLog::with('user')->latest()->get();
-        session()->flash('success', 'Log deleted successfully.');
+        $this->dispatch('toast', message: 'Log deleted successfully.', type: 'success');
     }
 
     public function render()

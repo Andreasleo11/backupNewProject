@@ -1,6 +1,6 @@
 @props(['employees'])
 
-<div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200">
+<div class="relative overflow-hidden rounded-md border border-slate-200 bg-white">
     {{-- High-Performance Loading Bar --}}
     <div wire:loading
         wire:target="search, branch, deptCode, employmentType, perPage, sort_by, gotoPage, nextPage, previousPage, resetFilters"
@@ -13,78 +13,78 @@
         wire:loading.class="opacity-40 grayscale-[50%] pointer-events-none"
         wire:target="search, branch, deptCode, employmentType, perPage, sort_by, gotoPage, nextPage, previousPage, resetFilters">
         <table class="min-w-full divide-y divide-slate-200 border-separate border-spacing-0">
-            <thead class="bg-slate-50">
+            <thead class="bg-white">
                 <tr>
                     <th
-                        class="sticky left-0 z-30 bg-slate-50 px-8 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600 border-b border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                        class="sticky left-0 z-30 bg-white px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-r border-slate-200">
                         <button wire:click="sort_by('name')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Employee Info
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('name') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('name') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('nik')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             NIK
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('nik') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('nik') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('dept_code')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Department
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('dept_code') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('dept_code') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('position')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Position
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('position') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('position') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('branch')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Branch
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('branch') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('branch') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('employment_type')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Status
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('employment_type') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('employment_type') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('start_date')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Join Date
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('start_date') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('start_date') }}</span>
                         </button>
                     </th>
                     <th
-                        class="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 whitespace-nowrap">
+                        class="px-6 py-4 text-left text-sm font-medium text-slate-500 border-b border-slate-200 whitespace-nowrap">
                         <button wire:click="sort_by('grade_level')"
-                            class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                            class="flex items-center gap-1 group hover:text-slate-900 transition-colors">
                             Grade
                             <span
-                                class="text-xs transition-colors group-hover:text-blue-600">{{ $this->sort_icon('grade_level') }}</span>
+                                class="text-xs transition-colors group-hover:text-slate-900">{{ $this->sort_icon('grade_level') }}</span>
                         </button>
                     </th>
                 </tr>
@@ -94,7 +94,7 @@
                     <tr class="hover:bg-slate-50/50 transition-colors group">
                         {{-- Sticky first column --}}
                         <td
-                            class="sticky left-0 z-10 bg-white group-hover:bg-slate-50/50 px-8 py-3 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-slate-100">
+                            class="sticky left-0 z-10 bg-white group-hover:bg-slate-50/50 px-6 py-4 border-r border-slate-200">
                             <div class="flex items-center gap-4">
                                 <div
                                     class="h-9 w-9 flex items-center justify-center rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 text-white text-[10px] font-bold shadow-lg shadow-slate-200/50">
@@ -184,9 +184,9 @@
                                 class="mx-auto h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mb-4">
                                 <i class='bx bx-group text-4xl text-slate-300'></i>
                             </div>
-                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-widest">No employees found
+                            <h3 class="text-sm font-semibold text-slate-900">No employees found
                             </h3>
-                            <p class="mt-1 text-xs text-slate-500">Try adjusting your search.</p>
+                            <p class="mt-1 text-sm text-slate-500">Try adjusting your search.</p>
                         </td>
                     </tr>
                 @endforelse

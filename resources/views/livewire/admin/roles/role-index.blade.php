@@ -10,9 +10,10 @@
             </p>
         </div>
         @can('role.create')
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button wire:click="openCreateModal" wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="openCreateModal"></i>
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" wire:loading.remove wire:target="openCreateModal">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 New Role
@@ -21,17 +22,17 @@
     </div>
 
     {{-- Search --}}
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div class="rounded-md border border-slate-200 bg-white p-4">
         <div class="relative max-w-md">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
             <input type="text" wire:model.live.debounce.400ms="search"
-                class="block w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
+                class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
                 placeholder="Search roles...">
         </div>
     </div>
@@ -62,7 +63,7 @@
                     }
                 }
             @endphp
-            <div class="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <div class="group flex flex-col justify-between rounded-md border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
@@ -118,15 +119,14 @@
                     @if (!in_array($role->name, ['super-admin', 'admin']))
                         @can('role.delete')
                             <button wire:click="confirmDelete({{ $role->id }})"
-                                wire:confirm="Delete role '{{ $role->name }}'? Users with this role will lose its permissions."
-                                class="text-xs font-medium text-rose-500 hover:text-rose-700 transition-colors">
+                                class="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors">
                                 Delete
                             </button>
                         @endcan
                     @endif
                     @can('role.update')
                         <button wire:click="openEditModal({{ $role->id }})"
-                            class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors">
+                            class="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-slate-900 border border-slate-200 hover:bg-slate-100 transition-colors">
                             <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -137,15 +137,21 @@
                 </div>
             </div>
         @empty
-            <div class="col-span-full py-12 text-center">
-                <div class="mx-auto h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                    <svg class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="col-span-full py-12 text-center rounded-md border border-slate-200 bg-white">
+                <div class="mx-auto h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+                    <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
-                <h3 class="text-lg font-medium text-slate-900">No roles found</h3>
-                <p class="mt-1 text-slate-500">Try adjusting your search.</p>
+                <h3 class="text-sm font-semibold text-slate-900">No roles found</h3>
+                <p class="mt-1 text-sm text-slate-500 mb-4">There are no roles matching your criteria.</p>
+                @can('role.create')
+                    <button wire:click="openCreateModal"
+                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors">
+                        Add First Role
+                    </button>
+                @endcan
             </div>
         @endforelse
     </div>
@@ -169,11 +175,11 @@
             <form wire:submit.prevent="save" class="space-y-6">
                 {{-- Role Name --}}
                 <div class="relative">
-                    <input type="text" wire:model.defer="name" id="roleName"
-                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
-                        placeholder=" ">
+                    <input type="text" wire:model.defer="name" id="roleName" autofocus
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent peer"
+                        placeholder="Role Name">
                     <label for="roleName"
-                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
                         Role Name <span class="text-red-500">*</span>
                     </label>
                     @error('name')
@@ -276,17 +282,38 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" wire:click="$set('showModal', false)"
-                        class="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="save"
-                        class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-60">
+                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
+                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
                         <span wire:loading.remove
                             wire:target="save">{{ $modalMode === 'create' ? 'Create Role' : 'Save Changes' }}</span>
                         <span wire:loading wire:target="save">Saving...</span>
                     </button>
                 </div>
             </form>
+        </div>
+    </x-modal>
+
+    {{-- Delete Confirmation Modal --}}
+    <x-modal wire:model="showDeleteModal" maxWidth="sm">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-2">Delete Role</h2>
+            <p class="text-sm text-slate-500 mb-6">Are you sure you want to delete this role? Any users with this role will lose its permissions. This action cannot be undone.</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" wire:click="$set('showDeleteModal', false)"
+                    class="px-4 py-2 rounded-md border border-slate-200 bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">
+                    Cancel
+                </button>
+                <button wire:click="executeDelete" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeDelete"></i>
+                    <span wire:loading.remove wire:target="executeDelete">Yes, Delete Role</span>
+                    <span wire:loading wire:target="executeDelete">Deleting...</span>
+                </button>
+            </div>
         </div>
     </x-modal>
 

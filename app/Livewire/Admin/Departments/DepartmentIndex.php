@@ -10,6 +10,7 @@ use App\Application\Department\UseCases\ToggleDepartmentStatus;
 use App\Application\Department\UseCases\UpdateDepartment;
 use App\Domain\Department\Repositories\DepartmentRepository;
 use App\Presentation\Http\Requests\DepartmentRequest;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,12 +18,16 @@ class DepartmentIndex extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public ?string $branchFilter = null;
 
+    #[Url(history: true)]
     public bool $onlyActive = false;
 
+    #[Url(history: true)]
     public int $perPage = 10;
 
     public bool $showModal = false;
@@ -91,7 +96,7 @@ class DepartmentIndex extends Component
         $department = $departments->findById($id);
 
         if (! $department) {
-            session()->flash('error', 'Department not found');
+            $this->dispatch('toast', message: 'Department not found.', type: 'error');
 
             return;
         }
@@ -129,10 +134,10 @@ class DepartmentIndex extends Component
 
         if (is_null($this->editingId)) {
             $createDepartment->execute($dto);
-            session()->flash('success', 'Department created successfully!');
+            $this->dispatch('toast', message: 'Department created successfully!', type: 'success');
         } else {
             $updateDepartment->execute($this->editingId, $dto);
-            session()->flash('success', 'Department updated successfully!');
+            $this->dispatch('toast', message: 'Department updated successfully!', type: 'success');
         }
 
         $this->showModal = false;
@@ -145,7 +150,7 @@ class DepartmentIndex extends Component
         $this->authorize('department.update');
 
         $toggleDepartmentStatus->execute($id);
-        session()->flash('success', 'Department status updated.');
+        $this->dispatch('toast', message: 'Department status updated.', type: 'success');
         $this->resetPage();
     }
 

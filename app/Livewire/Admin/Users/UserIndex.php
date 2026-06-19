@@ -15,6 +15,7 @@ use App\Domain\User\Repositories\UserRepository;
 use App\Infrastructure\Common\PermissionRegistry;
 use App\Infrastructure\Persistence\Eloquent\Models\User as EloquentUser;
 use App\Presentation\Http\Requests\UserRequest;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Permission;
@@ -25,18 +26,14 @@ class UserIndex extends Component
     use WithPagination;
 
     // Filters
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public bool $onlyActive = false;
 
+    #[Url(history: true)]
     public int $perPage = 10;
-
-    protected $queryString = [
-        'page' => ['except' => 1],
-        'search' => ['except' => ''],
-        'onlyActive' => ['except' => false],
-        'perPage' => ['except' => 10],
-    ];
 
     // Modal state
     public bool $showModal = false;
@@ -67,6 +64,10 @@ class UserIndex extends Component
     public string $newPassword = '';
 
     public string $newPassword_confirmation = '';
+
+    // Suspend Guardrail
+    public ?int $userToSuspendId = null;
+    public bool $showSuspendModal = false;
 
     // selectedEmployeeId
     public ?int $employeeId = null;
@@ -198,7 +199,22 @@ class UserIndex extends Component
 
         $toggleUserStatus->execute($userId);
 
-        $this->dispatch('toast', message: 'User status updated.', type: 'success');
+        $this->dispatch('toast', message: 'User status updated successfully.', type: 'success');
+    }
+
+    public function confirmSuspend(int $userId): void
+    {
+        $this->userToSuspendId = $userId;
+        $this->showSuspendModal = true;
+    }
+
+    public function executeSuspend(ToggleUserStatus $toggleUserStatus): void
+    {
+        if ($this->userToSuspendId) {
+            $this->toggleStatus($this->userToSuspendId, $toggleUserStatus);
+            $this->showSuspendModal = false;
+            $this->userToSuspendId = null;
+        }
     }
 
     private function resetForm(): void

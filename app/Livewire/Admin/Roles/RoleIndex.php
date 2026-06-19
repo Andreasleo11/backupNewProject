@@ -3,12 +3,14 @@
 namespace App\Livewire\Admin\Roles;
 
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleIndex extends Component
 {
+    #[Url(history: true)]
     public string $search = '';
 
     public bool $showModal = false;
@@ -20,6 +22,10 @@ class RoleIndex extends Component
     public string $name = '';
 
     public array $selectedPermissions = [];
+
+    // Delete Guardrail
+    public ?int $roleToDeleteId = null;
+    public bool $showDeleteModal = false;
 
     // ── Computed Properties ────────────────────────────────────────────────────
 
@@ -169,9 +175,27 @@ class RoleIndex extends Component
             return;
         }
 
-        $role->delete();
+        $this->roleToDeleteId = $roleId;
+        $this->showDeleteModal = true;
+    }
 
-        $this->dispatch('toast', type: 'success', message: 'Role deleted successfully.');
+    public function executeDelete(): void
+    {
+        if (! $this->roleToDeleteId) {
+            return;
+        }
+
+        $this->authorize('role.delete');
+
+        $role = Role::find($this->roleToDeleteId);
+
+        if ($role) {
+            $role->delete();
+            $this->dispatch('toast', type: 'success', message: 'Role deleted successfully.');
+        }
+
+        $this->showDeleteModal = false;
+        $this->roleToDeleteId = null;
     }
 
     public function render()

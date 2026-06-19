@@ -15,7 +15,7 @@
                 {{-- Sync Panel (Phase Picker) --}}
                 <div x-data="{ open: false, phases: @entangle('syncPhases') }" class="relative">
                     <button @click="open = !open" wire:loading.attr="disabled"
-                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50"
                         title="Sync from JPayroll">
                         <i class='bx bx-refresh text-lg' wire:loading.class="animate-spin"
                             wire:target="sync"></i>
@@ -151,7 +151,7 @@
     </div>
 
     {{-- 2. Search & Filtering System (Alpine + TALL) --}}
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" x-data="{
+    <div class="rounded-md border border-slate-200 bg-white p-4" x-data="{
         localOpen: @js($showAdvancedFilters),
         init() {
             this.$watch('localOpen', value => $wire.set('showAdvancedFilters', value, false))
@@ -160,29 +160,29 @@
         <div class="flex flex-col lg:flex-row gap-4 justify-between items-center">
             {{-- Search --}}
             <div class="relative w-full lg:w-96">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <input type="text" wire:model.live.debounce.300ms="search"
-                    class="block w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
+                <input type="text" wire:model.live.debounce.300ms="search" autofocus
+                    class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent py-1 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors placeholder:text-slate-500"
                     placeholder="Search name or NIK...">
             </div>
 
             <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-end">
                 {{-- Active Toggle --}}
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" wire:model.live="activeOnly" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600">
-                    <span class="text-sm font-medium text-slate-600">Active Only</span>
+                    <input type="checkbox" wire:model.live="activeOnly" class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-950">
+                    <span class="text-sm font-medium text-slate-700">Active Only</span>
                 </label>
 
                 {{-- Toggle Advanced --}}
                 <button @click="localOpen = !localOpen"
-                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm ring-1 ring-inset transition-colors"
-                    :class="localOpen ? 'bg-blue-50 text-blue-700 ring-blue-600/20' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'"
+                    class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium border transition-colors"
+                    :class="localOpen ? 'bg-slate-100 text-slate-900 border-slate-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
                     title="Advanced Filters">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -192,7 +192,7 @@
 
                 {{-- Row Density Selector --}}
                 <select wire:model.live="perPage"
-                    class="rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                    class="flex h-9 w-32 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                     @foreach ([10, 25, 50, 100] as $option)
                         <option value="{{ $option }}">{{ $option }} / page</option>
                     @endforeach
@@ -216,7 +216,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Branch</label>
                     <select wire:model.live="branch"
-                        class="w-full rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                         <option value="">All Branches</option>
                         @foreach ($this->availableBranches as $b)
                             <option value="{{ $b }}">{{ $b }}</option>
@@ -228,7 +228,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Department</label>
                     <select wire:model.live="deptCode"
-                        class="w-full rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                         <option value="">All Departments</option>
                         @foreach ($this->availableDepartments as $d)
                             <option value="{{ $d->dept_no }}">{{ $d->name }}</option>
@@ -240,7 +240,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Employment Status</label>
                     <select wire:model.live="employmentType"
-                        class="w-full rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                        class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                         <option value="">All Statuses</option>
                         @foreach ($this->availableEmploymentTypes as $type)
                             <option value="{{ $type }}">{{ $type }}</option>

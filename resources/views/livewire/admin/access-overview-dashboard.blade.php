@@ -11,11 +11,11 @@
         </div>
         <div class="flex gap-3">
             <a href="{{ route('admin.users.index') }}"
-                class="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors">
+                class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-900 border border-slate-200 hover:bg-slate-100 transition-colors">
                 Manage Users
             </a>
             <a href="{{ route('admin.roles.index') }}"
-                class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors">
                 Manage Roles
             </a>
         </div>
@@ -24,9 +24,9 @@
     {{-- Stats Grid --}}
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
         {{-- Total Users --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-slate-100 text-slate-900">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -44,9 +44,9 @@
         </div>
 
         {{-- Roles --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-slate-100 text-slate-900">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -63,9 +63,9 @@
         </div>
 
         {{-- Permissions --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-md bg-slate-100 text-slate-900">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.040L3 6.247a11.955 11.955 0 011.088 18.107L12 21.503l7.912-2.149c4.243-1.076 5.331-11.861 1.088-15.338l-1.382-.232z" />
@@ -84,7 +84,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {{-- Role Distribution --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             <div class="mb-6">
                 <h2 class="text-lg font-bold text-slate-900 tracking-tight">Role Distribution</h2>
                 <p class="text-sm text-slate-500">Breakdown of system assignments by role.</p>
@@ -107,7 +107,7 @@
                                     $stats['total_users'] > 0 ? ($role->count / $stats['total_users']) * 100 : 0;
                             @endphp
                             <div style="width:{{ $percentage }}%"
-                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500">
+                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-slate-900">
                             </div>
                         </div>
                     </div>
@@ -116,7 +116,7 @@
         </div>
 
         {{-- Quick Check Tool --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-md border border-slate-200 bg-white p-6">
             <div class="mb-6">
                 <h2 class="text-lg font-bold text-slate-900 tracking-tight">Access Quick-Check</h2>
                 <p class="text-sm text-slate-500">Instantly audit any user's effective access.</p>
@@ -131,7 +131,7 @@
                 </div>
                 <input type="text" wire:model.live.debounce.300ms="userSearch"
                     placeholder="Search user by name or email..."
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-3 pl-11 pr-10 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                    class="flex h-10 w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 pl-11 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950">
                 @if ($userSearch)
                     <button wire:click="clearSearch"
                         class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
@@ -144,16 +144,16 @@
             </div>
 
             @if ($selectedUser)
-                <div class="rounded-xl bg-slate-50 p-5 border border-slate-200">
+                <div class="rounded-md bg-slate-50 p-5 border border-slate-200">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                        <div class="h-10 w-10 rounded-md bg-slate-100 flex items-center justify-center text-slate-900 font-bold">
                             {{ substr($selectedUser['name'], 0, 1) }}
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-900">{{ $selectedUser['name'] }}</h3>
                             <p class="text-xs text-slate-500">{{ $selectedUser['email'] }}</p>
                         </div>
-                        <span class="ml-auto px-2 py-1 rounded-md text-[10px] font-bold uppercase {{ $selectedUser['active'] ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' }}">
+                        <span class="ml-auto px-2 py-1 rounded-sm text-[10px] font-bold uppercase {{ $selectedUser['active'] ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
                             {{ $selectedUser['active'] ? 'Active' : 'Inactive' }}
                         </span>
                     </div>

@@ -7,13 +7,13 @@
     @endif
 
     <div wire:click="selectRule({{ $rule->id }})"
-        class="group w-full text-left rounded-lg transition-all border
+        class="group w-full text-left rounded-md transition-all border
             {{ ($groupByModel || count($selectedRules) > 0) ? 'pl-9' : 'pl-3' }}
             pr-3 pt-3 pb-3
             {{ $selectedRuleId === $rule->id
-                ? 'bg-indigo-50 border-indigo-300 shadow-sm ring-1 ring-indigo-200'
+                ? 'bg-slate-100 border-slate-300 shadow-sm ring-1 ring-slate-200'
                 : (in_array($rule->id, $selectedRules)
-                    ? 'bg-blue-50 border-blue-200'
+                    ? 'bg-slate-50 border-slate-200'
                     : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm') }}">
 
         {{-- Header row --}}
@@ -30,7 +30,7 @@
                         P{{ $rule->priority }}
                     </span>
                     {{-- Version badge --}}
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $rule->is_current ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $rule->is_current ? 'bg-slate-900 text-slate-50' : 'bg-slate-100 text-slate-500' }}">
                         v{{ $rule->version_number }}
                         @if($rule->is_current)
                             <span class="ml-1 text-[10px]">(Current)</span>
@@ -42,7 +42,7 @@
             {{-- Action buttons: always visible when selected, hover-visible otherwise --}}
             <div class="flex gap-1 transition-opacity {{ $selectedRuleId === $rule->id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100' }}">
                 <button wire:click.stop="openEditRule({{ $rule->id }})"
-                    class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                    class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
                     title="Edit rule">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
