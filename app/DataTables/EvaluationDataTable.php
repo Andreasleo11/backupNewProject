@@ -171,6 +171,10 @@ class EvaluationDataTable extends DataTable
                 $izin  = (int) ($row->att_izin  ?? 0);
                 $sakit = (int) ($row->att_sakit ?? 0);
 
+                if (!$row->has_attendance) {
+                    return '<span class="text-slate-400 font-semibold text-xs italic"><i class="bx bx-info-circle"></i> Data belum ada</span>';
+                }
+
                 if ($alpha === 0 && $telat === 0 && $izin === 0 && $sakit === 0) {
                     return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
                 }
@@ -358,7 +362,11 @@ class EvaluationDataTable extends DataTable
         ->withSum(['attendanceRecords as att_sakit' => function ($q) {
             $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
               ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
-        }], 'sakit');
+        }], 'sakit')
+        ->withExists(['attendanceRecords as has_attendance' => function ($q) {
+            $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
+              ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
+        }]);
 
         // Optional status filter from stats card clicks.
         if ($statusFilter = $this->request()->get('status')) {

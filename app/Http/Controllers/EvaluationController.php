@@ -77,7 +77,7 @@ class EvaluationController extends Controller
 
         $exportStatus = [];
         foreach ($allowedTabs as $t) {
-            $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t);
+            $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t, $user);
         }
 
         return view('evaluation.index', compact(

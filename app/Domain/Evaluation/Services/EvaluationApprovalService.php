@@ -124,21 +124,40 @@ class EvaluationApprovalService
      * Whether all records for a dept+month are fully approved
      * (i.e., export is allowed).
      */
-    public function canExport(int $month, int $year, ?string $deptNo = null, ?string $type = null): bool
+    public function canExport(int $month, int $year, ?string $deptNo = null, ?string $type = null, ?User $user = null): bool
     {
+        if ($user) {
+            $resolver = app(\App\Domain\Evaluation\Services\DepartmentEmployeeResolver::class);
+            try {
+                $employees = match ($type) {
+                    'yayasan' => $resolver->resolveYayasanForUser($user),
+                    'magang'  => $resolver->resolveMagangForUser($user),
+                    default   => $resolver->resolveForUser($user),
+                };
+            } catch (\Throwable) {
+                $employees = collect();
+            }
+
+            $niks = $employees->pluck('nik')->filter()->values();
+
+            if ($niks->isEmpty()) {
+                return false;
+            }
+
+            return \App\Models\AttendanceRecord::whereMonth('shift_date', $month)
+                ->whereYear('shift_date', $year)
+                ->whereIn('nik', $niks)
+                ->exists();
+        }
+
+        // Fallback for cases without user
         $query = $this->baseQuery($deptNo, $month, $year);
 
         if ($type) {
             $query->where('evaluation_type', $type);
         }
 
-        $total = $query->count();
-
-        // if($type === 'yayasan') dd($total, $query->get());
-        // $approved = (clone $query)->where('approval_status', 'fully_approved')->count();
-
-        // return $total > 0 && $total === $approved;
-        return $total > 0;
+        return $query->exists();
     }
 
     /**
