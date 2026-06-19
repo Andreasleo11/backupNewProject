@@ -7,6 +7,7 @@ use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
 use App\Domain\Evaluation\Services\EvaluationApprovalService;
 use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\AttendanceRecord;
 use App\Models\EvaluationData;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Auth;
  * Unified entry point for the /evaluation page.
  * Handles all three employee types (regular, yayasan, magang) on one page,
  * identified by tabs, with a period selector (month + year).
+ *
+ * Data source pivot (2025-06):
+ *   Attendance figures (Alpha/Telat/Izin/Sakit) are now read directly from
+ *   the live `attendance_records` table. The legacy P&E Monthly Excel-upload
+ *   pipeline has been removed.
  *
  * Access control:
  *   - Grader (pengawas):  can grade records for their assigned employees
@@ -42,59 +48,37 @@ class EvaluationController extends Controller
      */
     public function index(Request $request, ?int $month = null, ?int $year = null)
     {
-        $user = Auth::user();
+        $user      = Auth::user();
         $prevMonth = now()->subMonth();
 
         // Default: previous month (so grading in current month evaluates prior period).
-        // subMonth() handles Jan→Dec cross-year automatically.
         $month ??= (int) $prevMonth->format('m');
-        $year ??= (int) $prevMonth->format('Y');
+        $year  ??= (int) $prevMonth->format('Y');
 
         $isElevated = $user->canAny(['evaluation.view-any', 'evaluation.approve-final']);
 
-        // YTD restriction for non-elevated users:
-        // Allowed window = Jan 1 of prevMonth.year  →  prevMonth (handles Dec/Jan edge).
-        if (! $isElevated) {
-            $allowedStart = $prevMonth->copy()->startOfYear();
-            $selected = \Carbon\Carbon::createFromDate($year, $month, 1);
-
-            if ($selected->lt($allowedStart) || $selected->gt($prevMonth->copy()->endOfMonth())) {
-                return redirect()->route('evaluation.index');
-            }
+        // Non-elevated users are restricted to the YTD window of the previous month's year.
+        if (! $isElevated && ! $this->isPeriodAllowed($month, $year, $prevMonth)) {
+            return redirect()->route('evaluation.index');
         }
 
-        $deptNo = $isElevated ? null : $user->department?->dept_no;
-
-        // Status summary for the header chips
+        $deptNo  = $isElevated ? null : $user->department?->dept_no;
         $summary = $this->approvalService->statusSummary($month, $year, $deptNo);
-
-        // Check if any evaluation records exist for this period
-        $hasData = EvaluationData::whereMonth('Month', $month)
-            ->whereYear('Month', $year)
-            ->exists();
-
-        // Can export? Check per type for the interactive UI.
-        $exportStatus = [];
-
-        $canApproveDept = $user->can('evaluation.approve-department');
-        $canApproveFinal = $user->can('evaluation.approve-final');
-
-        // Which tabs is this user allowed to see?
-        $allowedTabs = array_values(array_filter([
-            $user->can('evaluation.view-regular') ? 'regular' : null,
-            $user->can('evaluation.view-yayasan') ? 'yayasan' : null,
-            $user->can('evaluation.view-magang') ? 'magang' : null,
-        ]));
-
-        foreach ($allowedTabs as $t) {
-            $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t);
-        }
+       
+        $allowedTabs = $this->resolveAllowedTabs($user);
 
         if (empty($allowedTabs)) {
             abort(403, 'No evaluation tabs accessible for your account.');
         }
 
-        $canGrade = $user->can('evaluation.grade');
+        $canApproveDept  = $user->can('evaluation.approve-department');
+        $canApproveFinal = $user->can('evaluation.approve-final');
+        $canGrade        = $user->can('evaluation.grade');
+
+        $exportStatus = [];
+        foreach ($allowedTabs as $t) {
+            $exportStatus[$t] = $this->approvalService->canExport($month, $year, $deptNo, $t);
+        }
 
         return view('evaluation.index', compact(
             'month',
@@ -105,7 +89,6 @@ class EvaluationController extends Controller
             'canApproveDept',
             'canApproveFinal',
             'allowedTabs',
-            'hasData',
             'isElevated',
             'canGrade'
         ));
@@ -122,7 +105,7 @@ class EvaluationController extends Controller
     public function dataRegular(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year = $request->integer('year', now()->year);
+        $year  = $request->integer('year', now()->year);
 
         return $dataTable->forType('regular')->forPeriod($month, $year)->ajax();
     }
@@ -134,7 +117,7 @@ class EvaluationController extends Controller
     public function dataYayasan(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year = $request->integer('year', now()->year);
+        $year  = $request->integer('year', now()->year);
 
         return $dataTable->forType('yayasan')->forPeriod($month, $year)->ajax();
     }
@@ -146,7 +129,7 @@ class EvaluationController extends Controller
     public function dataMagang(EvaluationDataTable $dataTable, Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year = $request->integer('year', now()->year);
+        $year  = $request->integer('year', now()->year);
 
         return $dataTable->forType('magang')->forPeriod($month, $year)->ajax();
     }
@@ -156,7 +139,7 @@ class EvaluationController extends Controller
     // ──────────────────────────────────────────────────────
 
     /**
-     * Save grades for a single employee record.
+     * Save grades for a single employee record (by EvaluationData ID).
      * Route: PUT /evaluation/{id}/grade
      */
     public function grade(Request $request, int $id)
@@ -167,8 +150,10 @@ class EvaluationController extends Controller
     }
 
     /**
-     * Save/Create grades using NIK instead of ID.
-     * This supports "grading" employees who do not have an existing evaluation_datas row yet.
+     * Save/create grades using NIK instead of ID.
+     * Supports grading employees who do not yet have an evaluation_datas row.
+     * Attendance figures are sourced live from attendance_records and stored
+     * as a snapshot so the score calculator has the correct penalty values.
      * Route: PUT /evaluation/grade-by-nik/{nik}/{month}/{year}
      */
     public function gradeByNik(Request $request, string $nik, int $month, int $year)
@@ -176,26 +161,39 @@ class EvaluationController extends Controller
         $employee = Employee::where('nik', $nik)->firstOrFail();
 
         $record = EvaluationData::firstOrNew([
-            'NIK' => $nik,
+            'NIK'   => $nik,
             'Month' => Carbon::create($year, $month, 1)->format('Y-m-d'),
         ]);
 
         if (! $record->exists) {
-            // Need to populate relations and base values for a new record to pass validation
-            $record->pe_id = null;
-            $record->department_id = $employee->department->id ?? null;
-            $record->level = $employee->level ?? 5;
-            $record->evaluation_type = $record->evaluationType(); // Resolves from karyawan relation
+            // Aggregate live attendance for the period — stored as a snapshot on
+            // the evaluation record so the penalty calculator uses correct values.
+            $attendance = $this->aggregateAttendance($nik, $month, $year);
+
+            $record->pe_id          = null;
+            $record->department_id  = $employee->department->id ?? null;
+            $record->level          = $employee->level ?? 5;
+            $record->evaluation_type = $record->evaluationType();
+            $record->Alpha          = $attendance['alpha'];
+            $record->Telat          = $attendance['telat'];
+            $record->Izin           = $attendance['izin'];
+            $record->Sakit          = $attendance['sakit'];
             $record->setRelation('karyawan', $employee);
         } else {
-
             $record->load('karyawan');
+
+            // Refresh attendance snapshot from live data on every re-grade.
+            $attendance = $this->aggregateAttendance($nik, $month, $year);
+            $record->Alpha = $attendance['alpha'];
+            $record->Telat = $attendance['telat'];
+            $record->Izin  = $attendance['izin'];
+            $record->Sakit = $attendance['sakit'];
         }
 
         return $this->processGrading($request, $record);
     }
 
-    private function processGrading(Request $request, EvaluationData $record)
+    private function processGrading(Request $request, EvaluationData $record): \Illuminate\Http\JsonResponse
     {
         $this->authorize('evaluation.grade');
 
@@ -208,7 +206,8 @@ class EvaluationController extends Controller
 
         $scores = $request->only($fields);
 
-        // Recalculate total
+        // Calculate the total — the calculator reads Alpha/Telat/Izin/Sakit from $record
+        // which are now populated from attendance_records before this point.
         $calculator = app(EvaluationScoreCalculatorService::class);
         $total = $record->useNewScoringSystem()
             ? $calculator->calculateTotal($scores, $record)
@@ -216,7 +215,12 @@ class EvaluationController extends Controller
 
         $scores['total'] = $total;
 
-        // If previously rejected, use regrade (clears rejection state)
+        // Include the attendance snapshot so it is persisted alongside the grades.
+        $scores['Alpha'] = $record->Alpha ?? 0;
+        $scores['Telat'] = $record->Telat ?? 0;
+        $scores['Izin']  = $record->Izin  ?? 0;
+        $scores['Sakit'] = $record->Sakit ?? 0;
+
         if ($record->isRejected()) {
             $this->approvalService->regrade($record, $scores, $user);
         } else {
@@ -238,11 +242,11 @@ class EvaluationController extends Controller
     {
         $this->authorize('evaluation.approve-department');
 
-        $user = Auth::user();
+        $user   = Auth::user();
         $deptNo = $user->department->dept_no;
-        $month = $request->integer('month');
-        $year = $request->integer('year');
-        $type = $request->input('type'); // regular|yayasan|magang|null (all)
+        $month  = $request->integer('month');
+        $year   = $request->integer('year');
+        $type   = $request->input('type'); // regular|yayasan|magang|null (all)
 
         $count = $this->approvalService->approveDept($month, $year, $deptNo, $user, $type);
 
@@ -261,10 +265,10 @@ class EvaluationController extends Controller
     {
         $this->authorize('evaluation.approve-final');
 
-        $user = Auth::user();
+        $user  = Auth::user();
         $month = $request->integer('month');
-        $year = $request->integer('year');
-        $type = $request->input('type');
+        $year  = $request->integer('year');
+        $type  = $request->input('type');
 
         $count = $this->approvalService->approveHrd($month, $year, $user, $type);
 
@@ -311,8 +315,9 @@ class EvaluationController extends Controller
     }
 
     /**
-     * Fetch EvaluationData by NIK, or return a new unpersisted instance with default values.
-     * This makes the Frontend Modal "Employee-Centric" — it always succeeds and opens.
+     * Fetch EvaluationData by NIK, or return a new unpersisted instance pre-filled with
+     * live attendance aggregates from attendance_records.
+     * This makes the Grade Modal "Employee-Centric" — it always succeeds and opens.
      * Route: GET /evaluation/data-by-nik/{nik}/{month}/{year}
      */
     public function showByNik(string $nik, int $month, int $year)
@@ -320,45 +325,50 @@ class EvaluationController extends Controller
         $this->authorize('evaluation.grade');
 
         $employee = Employee::where('nik', $nik)->firstOrFail();
+
         $record = EvaluationData::with('karyawan')
             ->where('NIK', $nik)
             ->whereMonth('Month', $month)
             ->whereYear('Month', $year)
             ->first();
 
-        // If not found, return an empty template structure attached to the employee.
+        // If not found, build an empty template pre-filled with live attendance aggregates
+        // from attendance_records — no longer depends on the legacy P&E Monthly upload.
         if (! $record) {
+            $attendance = $this->aggregateAttendance($nik, $month, $year);
+
             $record = new EvaluationData([
-                'NIK' => $nik,
+                'NIK'   => $nik,
                 'Month' => Carbon::create($year, $month, 1)->format('Y-m-d'),
-                'Alpha' => 0,
-                'Telat' => 0,
-                'Izin' => 0,
-                'Sakit' => 0,
+                'Alpha' => $attendance['alpha'],
+                'Telat' => $attendance['telat'],
+                'Izin'  => $attendance['izin'],
+                'Sakit' => $attendance['sakit'],
             ]);
-            $record->setRelation('karyawan', $employee); // Attach employee so JS can read employment_scheme/name
+            $record->setRelation('karyawan', $employee);
         }
 
-        // YTD (Year-to-Date) attendance totals — sum from Jan up to the selected month
-        $ytd = EvaluationData::where('NIK', $nik)
-            ->whereYear('Month', $year)
-            ->where('Month', '<=', Carbon::create($year, $month, 1)->endOfMonth())
+        // YTD (Year-to-Date) attendance totals — summed directly from attendance_records
+        // for the full year up to the selected month. No longer uses evaluation_datas.
+        $ytd = AttendanceRecord::where('nik', $nik)
+            ->whereYear('shift_date', $year)
+            ->whereMonth('shift_date', '<=', $month)
             ->selectRaw('
-                COALESCE(SUM(Alpha), 0) AS ytd_alpha,
-                COALESCE(SUM(Telat), 0) AS ytd_telat,
-                COALESCE(SUM(Izin),  0) AS ytd_izin,
-                COALESCE(SUM(Sakit), 0) AS ytd_sakit,
-                COUNT(*)               AS ytd_months
+                COALESCE(SUM(alpha), 0) AS ytd_alpha,
+                COALESCE(SUM(telat), 0) AS ytd_telat,
+                COALESCE(SUM(izin),  0) AS ytd_izin,
+                COALESCE(SUM(sakit), 0) AS ytd_sakit,
+                COUNT(DISTINCT DATE_FORMAT(shift_date, "%Y-%m")) AS ytd_months
             ')
             ->first();
 
         return response()->json(array_merge(
             $record->toArray(),
             [
-                'ytd_alpha' => (int) ($ytd->ytd_alpha ?? 0),
-                'ytd_telat' => (int) ($ytd->ytd_telat ?? 0),
-                'ytd_izin' => (int) ($ytd->ytd_izin ?? 0),
-                'ytd_sakit' => (int) ($ytd->ytd_sakit ?? 0),
+                'ytd_alpha'  => (int) ($ytd->ytd_alpha  ?? 0),
+                'ytd_telat'  => (int) ($ytd->ytd_telat  ?? 0),
+                'ytd_izin'   => (int) ($ytd->ytd_izin   ?? 0),
+                'ytd_sakit'  => (int) ($ytd->ytd_sakit  ?? 0),
                 'ytd_months' => (int) ($ytd->ytd_months ?? 0),
             ]
         ));
@@ -375,8 +385,8 @@ class EvaluationController extends Controller
     public function summary(Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year = $request->integer('year', now()->year);
-        $type = $request->input('type');
+        $year  = $request->integer('year', now()->year);
+        $type  = $request->input('type');
 
         $deptNo = Auth::user()->canAny(['evaluation.view-any', 'evaluation.approve-final'])
             ? null
@@ -403,7 +413,6 @@ class EvaluationController extends Controller
             ->where('log_name', 'evaluation')
             ->latest();
 
-        // Optional search (subject_id / NIK / causer name / description)
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
@@ -412,38 +421,36 @@ class EvaluationController extends Controller
             });
         }
 
-        $perPage = (int) $request->get('per_page', 50);
-        $page = (int) $request->get('page', 1);
-
+        $perPage   = (int) $request->get('per_page', 50);
+        $page      = (int) $request->get('page', 1);
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
         $data = $paginated->getCollection()->map(function ($activity) {
-            $props = $activity->properties ?? collect();
-            $old = $props->get('old', []);
-            $new = $props->get('attributes', []);
-
-            // Build a readable diff string
+            $props   = $activity->properties ?? collect();
+            $old     = $props->get('old', []);
+            $new     = $props->get('attributes', []);
             $changes = [];
+
             foreach ($new as $field => $val) {
-                $prev = $old[$field] ?? '—';
+                $prev      = $old[$field] ?? '—';
                 $changes[] = "{$field}: {$prev} → {$val}";
             }
 
             return [
-                'id' => $activity->id,
-                'date' => $activity->created_at->format('d M Y H:i'),
-                'causer' => $activity->causer?->name ?? 'System',
+                'id'          => $activity->id,
+                'date'        => $activity->created_at->format('d M Y H:i'),
+                'causer'      => $activity->causer?->name ?? 'System',
                 'description' => $activity->description,
-                'subject_id' => $activity->subject_id,
-                'changes' => implode("\n", $changes) ?: '—',
+                'subject_id'  => $activity->subject_id,
+                'changes'     => implode("\n", $changes) ?: '—',
             ];
         });
 
         return response()->json([
-            'data' => $data,
+            'data'         => $data,
             'current_page' => $paginated->currentPage(),
-            'last_page' => $paginated->lastPage(),
-            'total' => $paginated->total(),
+            'last_page'    => $paginated->lastPage(),
+            'total'        => $paginated->total(),
         ]);
     }
 
@@ -457,12 +464,70 @@ class EvaluationController extends Controller
      */
     public function export(Request $request, EvaluationDataTable $dataTable)
     {
-        // $this->authorize('evaluation.approve-final');
-
         $month = $request->integer('month', now()->month);
-        $year = $request->integer('year', now()->year);
-        $type = $request->query('type', 'regular');
+        $year  = $request->integer('year', now()->year);
+        $type  = $request->query('type', 'regular');
 
         return $dataTable->forType($type)->forPeriod($month, $year)->excel();
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Private helpers
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Aggregate attendance figures for a single employee for a given month/year
+     * directly from the live `attendance_records` table.
+     *
+     * @return array{alpha: int, telat: int, izin: int, sakit: int}
+     */
+    private function aggregateAttendance(string $nik, int $month, int $year): array
+    {
+        $row = AttendanceRecord::where('nik', $nik)
+            ->whereYear('shift_date', $year)
+            ->whereMonth('shift_date', $month)
+            ->selectRaw('
+                COALESCE(SUM(alpha), 0) AS agg_alpha,
+                COALESCE(SUM(telat), 0) AS agg_telat,
+                COALESCE(SUM(izin),  0) AS agg_izin,
+                COALESCE(SUM(sakit), 0) AS agg_sakit
+            ')
+            ->first();
+
+        return [
+            'alpha' => (int) ($row->agg_alpha ?? 0),
+            'telat' => (int) ($row->agg_telat ?? 0),
+            'izin'  => (int) ($row->agg_izin  ?? 0),
+            'sakit' => (int) ($row->agg_sakit ?? 0),
+        ];
+    }
+
+    /**
+     * Determine whether the requested period falls within the allowed YTD window
+     * for non-elevated users.
+     *
+     * Allowed window: Jan 1 of prevMonth.year → end of prevMonth.
+     * This correctly handles Dec→Jan cross-year transitions.
+     */
+    private function isPeriodAllowed(int $month, int $year, Carbon $prevMonth): bool
+    {
+        $allowedStart = $prevMonth->copy()->startOfYear();
+        $selected     = Carbon::createFromDate($year, $month, 1);
+
+        return $selected->gte($allowedStart) && $selected->lte($prevMonth->copy()->endOfMonth());
+    }
+
+    /**
+     * Resolve which evaluation tabs the current user may see.
+     *
+     * @return list<'regular'|'yayasan'|'magang'>
+     */
+    private function resolveAllowedTabs($user): array
+    {
+        return array_values(array_filter([
+            $user->can('evaluation.view-regular') ? 'regular'  : null,
+            $user->can('evaluation.view-yayasan') ? 'yayasan'  : null,
+            $user->can('evaluation.view-magang')  ? 'magang'   : null,
+        ]));
     }
 }

@@ -80,13 +80,6 @@ class NavigationService
                         'permission' => ['role.view-any', 'user.view-any', 'system.admin', 'approval.manage-rules', 'department.view-any', 'employee.view-any'],
                     ],
                     [
-                        'label' => 'P&E Data (Monthly)',
-                        'route' => 'admin.evaluation-data.index',
-                        'icon' => 'table-cells',
-                        'active' => request()->routeIs('admin.evaluation-data.*'),
-                        'permission' => 'evaluation.view-any',
-                    ],
-                    [
                         'label' => 'P&E Data (Weekly)',
                         'route' => 'admin.evaluation-data-weekly.index',
                         'icon' => 'table-cells',

@@ -6,9 +6,11 @@ use App\Domain\Evaluation\Services\DepartmentEmployeeResolver;
 use App\Domain\Evaluation\Services\EvaluationScoreCalculatorService;
 use App\Exports\EvaluationExport;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\AttendanceRecord;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -21,9 +23,14 @@ use Yajra\DataTables\Services\DataTable;
  * A single, configurable DataTable for all three discipline evaluation types:
  * 'regular', 'yayasan', and 'magang'.
  *
+ * Data source pivot (2025-06):
+ *   Attendance figures (Alpha/Telat/Izin/Sakit) for the absence_summary and
+ *   totalkehadiran columns are now sourced live from attendance_records via a
+ *   LEFT JOIN subquery — not from evaluation_datas.Alpha/Telat/Izin/Sakit.
+ *
  * Usage:
  *   $dataTable = app(EvaluationDataTable::class)->forType('yayasan');
- *   return $dataTable->render('setting.disciplineyayasanindex', compact(...));
+ *   return $dataTable->render('evaluation.index', compact(...));
  *
  * What changes per type:
  *   - query()      → which employees are visible (via DepartmentEmployeeResolver)
@@ -63,19 +70,23 @@ class EvaluationDataTable extends DataTable
     public function forPeriod(int $month, int $year): static
     {
         $this->filterMonth = $month;
-        $this->filterYear = $year;
+        $this->filterYear  = $year;
 
         return $this;
     }
 
     /**
      * Build the DataTable with computed columns.
+     *
+     * Attendance figures (att_alpha, att_telat, att_izin, att_sakit) are injected
+     * via the LEFT JOIN subquery in query() and accessed directly on the Employee row,
+     * so absence_summary and totalkehadiran never read from evaluation_datas.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         $calculator = app(EvaluationScoreCalculatorService::class);
-        $canGrade = Auth::user()?->can('evaluation.grade') ?? false;
-        $type = $this->type;
+        $canGrade   = Auth::user()?->can('evaluation.grade') ?? false;
+        $type       = $this->type;
 
         $dt = (new EloquentDataTable($query))
             ->addColumn('grade', function (Employee $row) {
@@ -88,7 +99,7 @@ class EvaluationDataTable extends DataTable
                     $evalData->total >= 91 => 'A',
                     $evalData->total >= 71 => 'B',
                     $evalData->total >= 61 => 'C',
-                    default => 'D',
+                    default               => 'D',
                 };
 
                 $color = match ($grade) {
@@ -106,7 +117,7 @@ class EvaluationDataTable extends DataTable
                 }
 
                 $evalData = $row->evaluationData->first();
-                $status = $evalData?->approval_status;
+                $status   = $evalData?->approval_status;
 
                 // Derive lock from approval_status — no is_lock column needed
                 $isLocked = in_array($status, ['dept_approved', 'fully_approved']);
@@ -118,15 +129,15 @@ class EvaluationDataTable extends DataTable
                 }
 
                 $updateUrl = route('evaluation.grade.nik', [
-                    'nik' => $row->nik,
+                    'nik'   => $row->nik,
                     'month' => $this->filterMonth ?: date('n'),
-                    'year' => $this->filterYear ?: date('Y'),
+                    'year'  => $this->filterYear  ?: date('Y'),
                 ]);
 
                 $fetchUrl = route('evaluation.show.nik', [
-                    'nik' => $row->nik,
+                    'nik'   => $row->nik,
                     'month' => $this->filterMonth ?: date('n'),
-                    'year' => $this->filterYear ?: date('Y'),
+                    'year'  => $this->filterYear  ?: date('Y'),
                 ]);
 
                 [$icon, $label, $style] = $evalData
@@ -141,40 +152,41 @@ class EvaluationDataTable extends DataTable
             })
             ->addColumn('approval_status', function (Employee $row) {
                 $evalData = $row->evaluationData->first();
-                $status = $evalData?->approval_status ?? 'pending';
+                $status   = $evalData?->approval_status ?? 'pending';
 
                 [$label, $classes] = match ($status) {
-                    'graded' => ['Graded',       'bg-amber-100 text-amber-800 border-amber-200'],
+                    'graded'        => ['Graded',       'bg-amber-100 text-amber-800 border-amber-200'],
                     'dept_approved' => ['Dept Approved', 'bg-sky-100 text-sky-800 border-sky-200'],
-                    'fully_approved' => ['Final',        'bg-emerald-100 text-emerald-800 border-emerald-200'],
-                    'rejected' => ['Rejected',     'bg-rose-100 text-rose-800 border-rose-200'],
-                    default => ['Pending',      'bg-slate-100 text-slate-500 border-slate-200'],
+                    'fully_approved'=> ['Final',         'bg-emerald-100 text-emerald-800 border-emerald-200'],
+                    'rejected'      => ['Rejected',      'bg-rose-100 text-rose-800 border-rose-200'],
+                    default         => ['Pending',       'bg-slate-100 text-slate-500 border-slate-200'],
                 };
 
                 return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ' . $classes . '">' . $label . '</span>';
             })
             ->addColumn('absence_summary', function (Employee $row) {
-                $evalData = $row->evaluationData->first();
-                if (! $evalData) {
-                    return '<span class="text-slate-400 italic text-xs">Belum dinilai</span>';
+                // Read live attendance aggregates injected by the JOIN subquery.
+                $alpha = (int) ($row->att_alpha ?? 0);
+                $telat = (int) ($row->att_telat ?? 0);
+                $izin  = (int) ($row->att_izin  ?? 0);
+                $sakit = (int) ($row->att_sakit ?? 0);
+
+                if ($alpha === 0 && $telat === 0 && $izin === 0 && $sakit === 0) {
+                    return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
                 }
 
                 $badges = [];
-                if ($evalData->Alpha > 0) {
-                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $evalData->Alpha . '</span>';
+                if ($alpha > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $alpha . '</span>';
                 }
-                if ($evalData->Telat > 0) {
-                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $evalData->Telat . '</span>';
+                if ($telat > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $telat . '</span>';
                 }
-                if ($evalData->Izin > 0) {
-                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $evalData->Izin . '</span>';
+                if ($izin > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $izin . '</span>';
                 }
-                if ($evalData->Sakit > 0) {
-                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $evalData->Sakit . '</span>';
-                }
-
-                if (empty($badges)) {
-                    return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
+                if ($sakit > 0) {
+                    $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $sakit . '</span>';
                 }
 
                 return '<div class="flex flex-wrap gap-1 items-center justify-center text-xs">' . implode('', $badges) . '</div>';
@@ -189,12 +201,12 @@ class EvaluationDataTable extends DataTable
             ->orderColumn('total', function ($query, $order) {
                 // Server-side sort for the computed 'total' column via a correlated sub-query.
                 $month = $this->filterMonth;
-                $year = $this->filterYear;
+                $year  = $this->filterYear;
 
                 $sub = EvaluationData::select('total')
                     ->whereColumn('nik', 'employees.nik')
                     ->when($month, fn ($q) => $q->whereMonth('Month', $month))
-                    ->when($year, fn ($q) => $q->whereYear('Month', $year))
+                    ->when($year,  fn ($q) => $q->whereYear('Month', $year))
                     ->limit(1);
 
                 $query->orderBy($sub, $order);
@@ -202,24 +214,25 @@ class EvaluationDataTable extends DataTable
             ->filterColumn('total', function ($query, $keyword) {
                 // Allow filtering/searching by numeric total value.
                 $month = $this->filterMonth;
-                $year = $this->filterYear;
+                $year  = $this->filterYear;
 
                 $query->whereHas('evaluationData', function ($q) use ($keyword, $month, $year) {
                     $q->when($month, fn ($q) => $q->whereMonth('Month', $month))
-                        ->when($year, fn ($q) => $q->whereYear('Month', $year))
+                        ->when($year,  fn ($q) => $q->whereYear('Month', $year))
                         ->where('total', 'like', "%{$keyword}%");
                 });
             });
 
-        // Regular: add old-system computed columns (split attendance + criteria)
+        // Regular: old-system attendance penalty split + discipline score.
+        // totalkehadiran uses live attendance from the JOIN subquery.
         if ($type === 'regular') {
             $dt->addColumn('totalkehadiran', function (Employee $row) {
-                $evalData = $row->evaluationData->first();
-                if (! $evalData) {
-                    return 0;
-                }
+                $alpha = (int) ($row->att_alpha ?? 0);
+                $izin  = (int) ($row->att_izin  ?? 0);
+                $sakit = (int) ($row->att_sakit ?? 0);
+                $telat = (int) ($row->att_telat ?? 0);
 
-                $deduction = ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5);
+                $deduction = ($alpha * 10) + ($izin * 2) + $sakit + ($telat * 0.5);
 
                 return max(0, 40 - $deduction);
             })
@@ -231,19 +244,22 @@ class EvaluationDataTable extends DataTable
 
                     $scores = [
                         'kerajinan_kerja' => $evalData->kerajinan_kerja,
-                        'kerapian_kerja' => $evalData->kerapian_kerja,
-                        'prestasi' => $evalData->prestasi,
-                        'loyalitas' => $evalData->loyalitas,
-                        'perilaku_kerja' => $evalData->perilaku_kerja,
+                        'kerapian_kerja'  => $evalData->kerapian_kerja,
+                        'prestasi'        => $evalData->prestasi,
+                        'loyalitas'       => $evalData->loyalitas,
+                        'perilaku_kerja'  => $evalData->perilaku_kerja,
                     ];
 
                     return $calculator->calculateTotalOld($scores, $evalData) - 40 + (
-                        ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5)
+                        ((int) ($row->att_alpha ?? 0) * 10) +
+                        ((int) ($row->att_izin  ?? 0) * 2)  +
+                        (int) ($row->att_sakit ?? 0) +
+                        ((int) ($row->att_telat ?? 0) * 0.5)
                     );
                 });
         }
 
-        // Yayasan / Magang: new 9-field system + approval row colouring
+        // Yayasan / Magang: new 9-field system + approval row colouring.
         if (in_array($type, ['yayasan', 'magang'], true)) {
             $dt->addColumn('totaldiscipline', function (Employee $row) use ($calculator) {
                 $evalData = $row->evaluationData->first();
@@ -252,15 +268,15 @@ class EvaluationDataTable extends DataTable
                 }
 
                 $scores = [
-                    'kemampuan_kerja' => $evalData->kemampuan_kerja,
+                    'kemampuan_kerja'  => $evalData->kemampuan_kerja,
                     'kecerdasan_kerja' => $evalData->kecerdasan_kerja,
-                    'qualitas_kerja' => $evalData->qualitas_kerja,
-                    'disiplin_kerja' => $evalData->disiplin_kerja,
-                    'kepatuhan_kerja' => $evalData->kepatuhan_kerja,
-                    'lembur' => $evalData->lembur,
-                    'efektifitas_kerja' => $evalData->efektifitas_kerja,
-                    'relawan' => $evalData->relawan,
-                    'integritas' => $evalData->integritas,
+                    'qualitas_kerja'   => $evalData->qualitas_kerja,
+                    'disiplin_kerja'   => $evalData->disiplin_kerja,
+                    'kepatuhan_kerja'  => $evalData->kepatuhan_kerja,
+                    'lembur'           => $evalData->lembur,
+                    'efektifitas_kerja'=> $evalData->efektifitas_kerja,
+                    'relawan'          => $evalData->relawan,
+                    'integritas'       => $evalData->integritas,
                 ];
 
                 return $calculator->calculateTotal($scores, $evalData);
@@ -278,10 +294,10 @@ class EvaluationDataTable extends DataTable
                         }
 
                         return match ($evalData->approval_status) {
-                            'rejected' => 'table-danger',
+                            'rejected'       => 'table-danger',
                             'fully_approved' => 'table-primary',
-                            'dept_approved' => 'table-success',
-                            default => '',
+                            'dept_approved'  => 'table-success',
+                            default          => '',
                         };
                     },
                 ]);
@@ -291,33 +307,31 @@ class EvaluationDataTable extends DataTable
     }
 
     /**
-     * Get query source — scopes to Employee master record, then correctly scopes
-     * the EvaluationData eager-load relationship so it only retrieves data FOR
-     * the selected month/year.
+     * Get query source — scopes to Employee master record, eager-loads the period-scoped
+     * EvaluationData relation, and LEFT JOINs a per-employee attendance aggregate subquery
+     * so that att_alpha/att_telat/att_izin/att_sakit are available on every Employee row.
      */
     public function query(Employee $model): QueryBuilder
     {
-        $user = Auth::user();
+        $user     = Auth::user();
         $resolver = app(DepartmentEmployeeResolver::class);
 
         try {
             $employees = match ($this->type) {
                 'yayasan' => $resolver->resolveYayasanForUser($user),
-                'magang' => $resolver->resolveMagangForUser($user),
-                default => $resolver->resolveForUser($user),
+                'magang'  => $resolver->resolveMagangForUser($user),
+                default   => $resolver->resolveForUser($user),
             };
         } catch (\Throwable) {
             $employees = collect();
         }
 
-        // We filter out deleted/invalid employees and grab only the NIKs
         $niks = $employees->pluck('nik')->filter()->values();
 
-        // 1. Base query from Employee Model
         /** @var \Illuminate\Database\Eloquent\Builder $query */
         $query = $model->newQuery()->whereIn('nik', $niks);
 
-        // 2. Eager load the nested EvaluationData constraint for this EXACT month/year
+        // Eager-load EvaluationData scoped to the exact month/year.
         $query->with(['evaluationData' => function ($q) {
             if ($this->filterMonth) {
                 $q->whereMonth('Month', $this->filterMonth);
@@ -327,7 +341,26 @@ class EvaluationDataTable extends DataTable
             }
         }]);
 
-        // 3. Apply optional status filter from stats cards click
+        // Aggregate per-employee attendance via Eloquent's withSum to avoid N+1 queries
+        // and pagination count query issues (which leftJoinSub can cause).
+        $query->withSum(['attendanceRecords as att_alpha' => function ($q) {
+            $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
+              ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
+        }], 'alpha')
+        ->withSum(['attendanceRecords as att_telat' => function ($q) {
+            $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
+              ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
+        }], 'telat')
+        ->withSum(['attendanceRecords as att_izin' => function ($q) {
+            $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
+              ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
+        }], 'izin')
+        ->withSum(['attendanceRecords as att_sakit' => function ($q) {
+            $q->when($this->filterYear,  fn ($q) => $q->whereYear('shift_date', $this->filterYear))
+              ->when($this->filterMonth, fn ($q) => $q->whereMonth('shift_date', $this->filterMonth));
+        }], 'sakit');
+
+        // Optional status filter from stats card clicks.
         if ($statusFilter = $this->request()->get('status')) {
             if ($statusFilter === 'pending') {
                 $query->where(function ($q) {
@@ -415,13 +448,13 @@ class EvaluationDataTable extends DataTable
 
         return array_map(function (Column $col) {
             return [
-                'data' => $col->data,
-                'name' => $col->name,
-                'title' => $col->title,
-                'orderable' => $col->orderable ?? true,
+                'data'       => $col->data,
+                'name'       => $col->name,
+                'title'      => $col->title,
+                'orderable'  => $col->orderable  ?? true,
                 'searchable' => $col->searchable ?? true,
-                'visible' => $col->visible ?? true,
-                'className' => $col->className ?? '',
+                'visible'    => $col->visible    ?? true,
+                'className'  => $col->className  ?? '',
             ];
         }, $instance->getColumns());
     }
@@ -437,18 +470,9 @@ class EvaluationDataTable extends DataTable
     {
         return match ($this->type) {
             'yayasan' => 'disciplineyayasantable-table',
-            'magang' => 'disciplinemagang-table',
-            default => 'disciplinetable-table',
+            'magang'  => 'disciplinemagang-table',
+            default   => 'disciplinetable-table',
         };
-    }
-
-    /**
-     * The update route name for this type.
-     * Used to build the data-update-url on the action button.
-     */
-    private function updateRoute(): string
-    {
-        return 'evaluation.grade';
     }
 
     /**

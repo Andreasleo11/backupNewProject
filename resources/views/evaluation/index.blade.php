@@ -340,42 +340,7 @@
             </div>
         </div>
 
-        {{-- ═══════════════════════════════════════════════════════════════
-                NO-DATA GUARD
-            ═══════════════════════════════════════════════════════════════ --}}
-        @if (!$hasData)
-            <div class="glass-card border border-amber-200 bg-amber-50/60 px-8 py-10 text-center space-y-4">
-                <div
-                    class="mx-auto h-16 w-16 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-500 shadow">
-                    <i class="bx bx-data text-4xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800">Data Belum Tersedia</h2>
-                    <p class="mt-1 text-sm text-slate-600 max-w-lg mx-auto">
-                        Data evaluasi untuk periode
-                        <strong>{{ \Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y') }}</strong>
-                        belum diupload. Penilaian tidak dapat dilakukan sampai data absensi tersedia.
-                    </p>
-                </div>
-                <div
-                    class="text-sm text-slate-500 bg-white/70 border border-amber-100 rounded-xl px-5 py-3 inline-block text-left">
-                    <p class="font-semibold text-slate-700 mb-2">Cara mendapatkan data:</p>
-                    <ul class="space-y-1 list-disc list-inside text-slate-600">
-                        <li>Hubungi <strong>Admin</strong> untuk upload data absensi via Excel</li>
-                        <li>Gunakan fitur <strong>P&amp;E Monthly</strong> untuk import data bulanan</li>
-                    </ul>
-                </div>
-                <div class="flex items-center justify-center gap-3 pt-2">
-                    @php
-                        $prevPeriod = \Carbon\Carbon::createFromDate($year, $month, 1)->subMonth();
-                    @endphp
-                    <a href="{{ route('evaluation.period', ['month' => $prevPeriod->month, 'year' => $prevPeriod->year]) }}"
-                        class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-                        <i class="bx bx-chevron-left"></i> Periode Sebelumnya
-                    </a>
-                </div>
-            </div>
-        @else
+        
             {{-- ═══════════════════════════════════════════════════════════════
                 TABS & ACTION BAR
             ═══════════════════════════════════════════════════════════════ --}}
@@ -514,7 +479,7 @@
                     </div>
                 </div>
             </div>
-        @endif
+        
 
         {{-- Grade / Edit Modal --}}
         @if($canGrade)
