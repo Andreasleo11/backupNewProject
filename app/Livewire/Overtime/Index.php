@@ -59,6 +59,7 @@ class Index extends Component
     public array $departments = [];
 
     public ?int $pendingDeleteId = null;
+    public ?int $pendingCancelId = null;
 
     // Selection & Bulk Action State
     public array $selectedIds = [];
@@ -94,6 +95,32 @@ class Index extends Component
         $this->pendingDeleteId = null;
         $this->dispatch('hide-delete-modal');
         $this->dispatch('flash', type: 'success', message: "Form Overtime #{$id} deleted.");
+        $this->resetPage();
+    }
+
+    #[On('confirm-cancel')]
+    public function confirmCancel(int $id): void
+    {
+        $this->pendingCancelId = $id;
+        $this->dispatch('show-cancel-modal');
+    }
+
+    public function cancelConfirmed(): void
+    {
+        $id = $this->pendingCancelId;
+        if (! $id) {
+            return;
+        }
+
+        $fot = OvertimeForm::findOrFail($id);
+        $this->authorize('cancel', $fot);
+
+        $approvalService = app(Approvals::class);
+        $approvalService->cancel($fot, Auth::id(), 'Cancelled by user from Dashboard');
+
+        $this->pendingCancelId = null;
+        $this->dispatch('hide-cancel-modal');
+        $this->dispatch('flash', type: 'success', message: "Form Overtime #{$id} cancelled.");
         $this->resetPage();
     }
 

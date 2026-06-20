@@ -84,6 +84,18 @@ class OvertimePolicy
     }
 
     /**
+     * Determine whether the user can cancel the specific form.
+     */
+    public function cancel(User $user, OvertimeForm $form): bool
+    {
+        if (! in_array(strtoupper($form->workflow_status), ['DRAFT', 'IN_REVIEW', 'RETURNED'], true)) {
+            return false;
+        }
+
+        return $user->id === $form->user_id || $user->hasRole('admin');
+    }
+
+    /**
      * Determine whether the user can approve (sign) the current pending step.
      */
     public function approve(User $user, OvertimeForm $form): bool

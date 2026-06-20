@@ -4,6 +4,7 @@
 
 <div class="space-y-4" x-data="{
     deleteOpen: false,
+    cancelOpen: false,
     filtersOpen: false,
     selectedIds: @entangle('selectedIds'),
     get isAllSelected() {
@@ -19,7 +20,9 @@
         }
     }
 }" x-on:show-delete-modal.window="deleteOpen = true"
-   x-on:hide-delete-modal.window="deleteOpen = false">
+   x-on:hide-delete-modal.window="deleteOpen = false"
+   x-on:show-cancel-modal.window="cancelOpen = true"
+   x-on:hide-cancel-modal.window="cancelOpen = false">
 
     {{-- Zone 1: Slim Header --}}
     @include('livewire.overtime.partials._header')

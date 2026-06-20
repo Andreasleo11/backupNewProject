@@ -258,9 +258,15 @@
                                             class="inline-flex items-center gap-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all">
                                             Manage <i class='bx bx-right-arrow-alt'></i>
                                         </a>
+                                        @can('cancel', $fot)
+                                            <button wire:click="$dispatch('confirm-cancel', { id: {{ $fot->id }} })"
+                                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 hover:bg-orange-50 hover:text-orange-500 transition-all" title="Cancel Form">
+                                                <i class='bx bx-x-circle text-sm'></i>
+                                            </button>
+                                        @endcan
                                         @can('delete', $fot)
                                             <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
-                                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all">
+                                                class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all" title="Delete Form">
                                                 <i class='bx bx-trash text-sm'></i>
                                             </button>
                                         @endcan

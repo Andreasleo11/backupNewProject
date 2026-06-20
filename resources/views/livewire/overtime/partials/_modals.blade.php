@@ -185,3 +185,40 @@
         </div>
     </div>
 </template>
+
+{{-- ── 3. Cancel Confirmation Modal ── --}}
+<template x-teleport="body">
+    <div x-cloak x-show="cancelOpen" class="relative z-[60]">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            x-show="cancelOpen" x-transition.opacity
+            @click="cancelOpen = false">
+        </div>
+        <div class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+            x-show="cancelOpen" x-transition role="dialog" aria-modal="true">
+            <div class="w-full max-w-sm rounded-3xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/80 p-6 text-center relative overflow-hidden"
+                @click.stop>
+                <div class="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-orange-50 blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-orange-50 blur-2xl pointer-events-none"></div>
+                <div class="relative z-10">
+                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+                        <i class='bx bx-x-circle text-3xl'></i>
+                    </div>
+                    <h3 class="text-base font-black text-slate-800">Cancel OT-{{ $pendingCancelId }}?</h3>
+                    <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
+                        This will cancel the overtime form and stop any further approval process.
+                    </p>
+                    <div class="flex gap-2">
+                        <button @click="cancelOpen = false"
+                            class="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-black text-slate-600 hover:bg-slate-50 transition-all">
+                            Back
+                        </button>
+                        <button wire:click="cancelConfirmed" wire:loading.attr="disabled"
+                            class="flex-1 rounded-xl bg-orange-600 py-2.5 text-xs font-black text-white shadow-md shadow-orange-500/20 hover:bg-orange-700 disabled:opacity-50 transition-all">
+                            <i class='bx bx-x-circle'></i> Cancel Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
