@@ -92,7 +92,7 @@ class OvertimePolicy
             return false;
         }
 
-        return $user->id === $form->user_id || $user->hasRole('admin');
+        return $user->id === $form->user_id || $user->hasRole('super-admin');
     }
 
     /**
