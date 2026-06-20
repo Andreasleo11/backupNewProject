@@ -199,7 +199,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {{-- Absence abbreviations --}}
                     <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Kolom Kehadiran</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Kolom Kehadiran</p>
+                        <p class="text-[10px] text-slate-500 mb-2 italic">
+                            * Data ditarik live (Tgl 1 s/d akhir bulan periode yang dipilih)
+                        </p>
                         <div class="space-y-1.5">
                             @foreach ($absenceLabels as $key => $info)
                                 <div class="flex items-center gap-3">
