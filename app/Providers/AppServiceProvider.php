@@ -81,6 +81,11 @@ class AppServiceProvider extends ServiceProvider
         OvertimeForm::observe(OvertimeFormObserver::class);
         Detail::observe(DetailObserver::class);
 
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'pr' => \App\Models\PurchaseRequest::class,
+            'overtime' => \App\Domain\Overtime\Models\OvertimeForm::class,
+        ]);
+
         Blade::directive('currency', function ($expression) {
             return "<?php echo $expression !== null ? 'Rp ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });

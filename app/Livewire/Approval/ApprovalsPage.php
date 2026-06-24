@@ -43,7 +43,7 @@ class ApprovalsPage extends Component
 
     public function render(DashboardService $dashboardService)
     {
-        $query = $dashboardService->getPendingApprovalsQuery();
+        $query = $dashboardService->getPendingApprovalsQuery(auth()->user());
 
         // Eager load total steps count to show "Level X of Y"
         $query->with(['request' => function ($q) {

@@ -3,8 +3,9 @@
 namespace App\Application\Dashboard;
 
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 
 class DashboardService
@@ -12,9 +13,9 @@ class DashboardService
     /**
      * Get pending approvals for the current user.
      */
-    public function getPendingApprovals(?int $limit = 5): Collection
+    public function getPendingApprovals(User $user, ?int $limit = 5): Collection
     {
-        $query = $this->getPendingApprovalsQuery();
+        $query = $this->getPendingApprovalsQuery($user);
 
         if ($limit) {
             $query->take($limit);
@@ -26,9 +27,8 @@ class DashboardService
     /**
      * Data source for the paginated approvals page.
      */
-    public function getPendingApprovalsQuery()
+    public function getPendingApprovalsQuery(User $user)
     {
-        $user = Auth::user();
         if (! $user) {
             return ApprovalStep::query()->whereRaw('1=0');
         }
@@ -76,13 +76,20 @@ class DashboardService
     /**
      * Get recent activity logs relevant to the user's department.
      */
-    public function getRecentActivities(): Collection
+    public function getRecentActivities(User $user): Collection
     {
-        $user = Auth::user();
-        $query = Activity::with('causer')->latest()->take(10);
+        $query = Activity::with(['causer', 'subject'])->latest()->take(10);
 
-        // Optional: Filter by department if needed
-        // if ($user && $user->department_id) { ... }
+        // Filter by user's employee department
+        if ($user->employee && $user->employee->department) {
+            $department = $user->employee->department;
+            
+            $query->whereHasMorph('causer', [$user->getMorphClass()], function ($q) use ($department) {
+                $q->whereHas('employee', function ($q2) use ($department) {
+                    $q2->where('department', $department);
+                });
+            });
+        }
 
         return $query->get();
     }
@@ -90,14 +97,22 @@ class DashboardService
     /**
      * Get a summary of counts for different modules.
      */
-    public function getKpiSummary(): array
+    public function getKpiSummary(User $user): array
     {
-        $user = Auth::user();
+        $cacheKey = "dashboard_kpi_summary_user_{$user->id}";
+        
+        $kpis = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($user) {
+            return [
+                'pending_approvals' => $this->getPendingApprovalsQuery($user)->count(),
+                'last_fetched_at' => now()->format('Y-m-d H:i:s'),
+            ];
+        });
 
-        // Ensure we count the total available pending tasks, not just the limited list.
-        return [
-            'pending_approvals' => $this->getPendingApprovalsQuery()->count(),
-            'unread_notifications' => $user?->unreadNotifications()->count() ?? 0,
-        ];
+        // Ensure last_fetched_at exists for legacy cache entries
+        if (!isset($kpis['last_fetched_at'])) {
+            $kpis['last_fetched_at'] = now()->format('Y-m-d H:i:s');
+        }
+
+        return $kpis;
     }
 }

@@ -22,10 +22,15 @@
             </div>
 
             <div class="flex items-center gap-4">
-                {{-- Quick contextual hint without fake data --}}
-                <div class="px-5 py-3 rounded-2xl bg-white/50 border border-slate-100/50 shadow-sm">
+                <div class="flex flex-col items-end gap-1 px-5 py-3 rounded-2xl bg-white/50 border border-slate-100/50 shadow-sm">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        {{ \Carbon\Carbon::now()->format('l, j F Y') }}</p>
+                        {{ \Carbon\Carbon::now()->format('l, j F Y') }}
+                    </p>
+                    @if(isset($kpis['last_fetched_at']))
+                    <p class="text-[9px] font-medium text-slate-400">
+                        Data refreshed: {{ \Carbon\Carbon::parse($kpis['last_fetched_at'])->diffForHumans() }}
+                    </p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -55,6 +60,7 @@
                     </div>
 
                     <div class="space-y-4 flex-1">
+                        @can('pr.create')
                         <a href="{{ route('purchase-requests.create') }}"
                             class="flex items-center justify-between p-4 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all group/btn">
                             <div class="flex text-left items-center gap-4">
@@ -70,7 +76,9 @@
                             <i
                                 class="bi bi-arrow-right text-xl opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
                         </a>
+                        @endcan
 
+                        @can('overtime.create')
                         <a href="{{ route('overtime.create') }}"
                             class="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm hover:border-amber-200 hover:bg-amber-50 hover:-translate-y-1 transition-all group/btn">
                             <div class="flex text-left items-center gap-4">
@@ -87,6 +95,7 @@
                             <i
                                 class="bi bi-arrow-right text-xl text-slate-400 group-hover/btn:text-amber-600 group-hover/btn:translate-x-1 transition-all"></i>
                         </a>
+                        @endcan
                     </div>
                 </div>
             </div>

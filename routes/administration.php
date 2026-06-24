@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
                 ->name('permission-sync.index')
                 ->middleware('can:system.admin');
 
+            Route::get('/audit-logs', \App\Livewire\Admin\AuditLogPage::class)
+                ->name('audit-logs.index')
+                ->middleware('can:system.admin');
+
             Route::view('/approval-rules', 'admin.approval-rules.index')
                 ->name('approval-rules.index')
                 ->middleware('can:approval.manage-rules');

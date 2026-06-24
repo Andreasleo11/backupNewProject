@@ -3,6 +3,7 @@
 namespace App\Livewire\Dashboard\Widgets;
 
 use App\Application\Dashboard\DashboardService;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class ApprovalQueue extends Component
@@ -24,10 +25,14 @@ class ApprovalQueue extends Component
         $this->selectedType = null;
     }
 
-    public function render(DashboardService $dashboardService)
+    #[Computed]
+    public function approvals()
     {
-        return view('livewire.dashboard.widgets.approval-queue', [
-            'approvals' => $dashboardService->getPendingApprovals(),
-        ]);
+        return app(DashboardService::class)->getPendingApprovals(auth()->user());
+    }
+
+    public function render()
+    {
+        return view('livewire.dashboard.widgets.approval-queue');
     }
 }

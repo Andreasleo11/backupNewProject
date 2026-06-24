@@ -12,25 +12,30 @@
         </div>
         <span
             class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest">
-            {{ $approvals->count() }} Items
+            {{ $this->approvals->count() }} Items
         </span>
     </div>
 
     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-        @forelse ($approvals as $step)
+        @forelse ($this->approvals as $step)
             @php
                 $request = $step->request;
                 $approvable = $request->approvable;
-                $type = class_basename($request->approvable_type);
+                $type = $approvable ? $approvable->getMorphClass() : null;
                 $bgGradient = match ($type) {
-                    'PurchaseRequest' => 'from-blue-500/10 to-transparent',
-                    'OvertimeForm' => 'from-amber-500/10 to-transparent',
+                    'pr' => 'from-blue-500/10 to-transparent',
+                    'overtime' => 'from-amber-500/10 to-transparent',
                     default => 'from-slate-500/10 to-transparent',
                 };
                 $accentColor = match ($type) {
-                    'PurchaseRequest' => 'text-blue-600 bg-blue-50',
-                    'OvertimeForm' => 'text-amber-600 bg-amber-50',
+                    'pr' => 'text-blue-600 bg-blue-50',
+                    'overtime' => 'text-amber-600 bg-amber-50',
                     default => 'text-slate-600 bg-slate-50',
+                };
+                $typeLabel = match ($type) {
+                    'pr' => 'Purchase Request',
+                    'overtime' => 'Overtime',
+                    default => 'Approval',
                 };
             @endphp
 
@@ -45,7 +50,7 @@
                         <div class="flex flex-col">
                             <span
                                 class="text-[9px] font-black uppercase tracking-[0.2em] {{ $accentColor }} px-1.5 py-0.5 rounded-md inline-block mb-1 w-fit">
-                                {{ preg_replace('/(?<!^)[A-Z]/', ' $0', $type) }}
+                                {{ $typeLabel }}
                             </span>
                             <span class="font-bold text-slate-900 text-sm">
                                 @if ($approvable)
@@ -74,7 +79,7 @@
                                 </svg>
                             </a>
                             <button
-                                wire:click="openQuickView({{ $approvable->id }}, '{{ addslashes(get_class($approvable)) }}')"
+                                wire:click="openQuickView({{ $approvable->id }}, '{{ $type }}')"
                                 class="h-10 px-4 rounded-xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all">
                                 Review
                             </button>
@@ -147,11 +152,14 @@
                         </button>
                     </div>
 
-                    <div class="p-4 bg-slate-50 min-h-[500px] max-h-[70vh] overflow-y-auto custom-scrollbar-thin">
+                    <div class="relative p-4 bg-slate-50 min-h-[500px] max-h-[70vh] overflow-y-auto custom-scrollbar-thin">
+                        <div wire:loading wire:target="openQuickView" class="absolute inset-0 z-10 bg-slate-50/80 backdrop-blur-sm flex items-center justify-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                        </div>
                         @if ($selectedId && $selectedType)
-                            @if ($selectedType === 'App\Models\PurchaseRequest')
+                            @if ($selectedType === 'pr')
                                 @livewire('purchase-request.quick-view', ['prId' => $selectedId], key('pr-' . $selectedId))
-                            @elseif($selectedType === 'App\Domain\Overtime\Models\OvertimeForm')
+                            @elseif($selectedType === 'overtime')
                                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                                     @livewire('overtime.detail', ['id' => $selectedId], key('ot-' . $selectedId))
                                 </div>

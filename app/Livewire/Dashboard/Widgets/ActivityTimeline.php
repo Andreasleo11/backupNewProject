@@ -3,14 +3,19 @@
 namespace App\Livewire\Dashboard\Widgets;
 
 use App\Application\Dashboard\DashboardService;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class ActivityTimeline extends Component
 {
-    public function render(DashboardService $dashboardService)
+    #[Computed]
+    public function activities()
     {
-        return view('livewire.dashboard.widgets.activity-timeline', [
-            'activities' => $dashboardService->getRecentActivities(),
-        ]);
+        return app(DashboardService::class)->getRecentActivities(auth()->user());
+    }
+
+    public function render()
+    {
+        return view('livewire.dashboard.widgets.activity-timeline');
     }
 }

@@ -24,7 +24,7 @@
             <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-100 rounded-full"></div>
 
             <div class="space-y-8">
-                @forelse ($activities as $activity)
+                @forelse ($this->activities as $activity)
                     @php
                         $icon = match ($activity->event) {
                             'created' => 'plus',
@@ -76,8 +76,9 @@
         </div>
     </div>
 
+    @if(auth()->user()?->hasRole('super-admin'))
     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 mt-auto">
-        <a href="#"
+        <a href="{{ route('admin.audit-logs.index') }}"
             class="text-[11px] font-black uppercase tracking-widest text-violet-600 hover:text-violet-800 transition-colors flex items-center gap-2 group/all">
             Full Audit Log
             <svg class="h-3 w-3 group-hover/all:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24"
@@ -86,4 +87,5 @@
             </svg>
         </a>
     </div>
+    @endif
 </div>

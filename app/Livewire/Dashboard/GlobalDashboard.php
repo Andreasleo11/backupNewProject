@@ -11,7 +11,7 @@ class GlobalDashboard extends Component
 
     public function mount(DashboardService $dashboardService)
     {
-        $this->kpis = $dashboardService->getKpiSummary();
+        $this->kpis = $dashboardService->getKpiSummary(auth()->user());
     }
 
     public function render()
