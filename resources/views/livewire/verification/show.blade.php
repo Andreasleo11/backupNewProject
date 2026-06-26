@@ -154,6 +154,7 @@
             <table class="w-full text-left border-collapse align-middle">
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="px-5 py-3 font-semibold text-center w-12">#</th>
                         <th class="px-5 py-3 font-semibold">Part Name</th>
                         <th class="px-4 py-3 text-end font-semibold">Rec Qty</th>
                         <th class="px-4 py-3 text-end font-semibold">Verify Qty</th>
@@ -177,6 +178,7 @@
                             @endif 
                             class="hover:bg-slate-50/10 text-xs text-slate-700 transition">
                             
+                            <td class="px-5 py-3.5 text-center font-mono text-slate-400 font-bold w-12">{{ $loop->iteration }}</td>
                             <td class="px-5 py-3.5 font-medium text-slate-900">{{ $i->part_name }}</td>
                             <td class="px-4 py-3.5 text-end font-mono">
                                 {{ rtrim(rtrim(number_format($i->rec_quantity, 4, '.', ''), '0'), '.') }}
@@ -230,30 +232,75 @@
                             </td>
                         </tr>
                         
-                        {{-- Defects Row --}}
+                        {{-- Defects Row — Compact Vertical Sub-List --}}
                         @if ($i->defects->count())
                             <tr class="bg-slate-50/20 border-b border-slate-100">
-                                <td colspan="9" class="px-5 py-2.5">
-                                    <div class="flex flex-wrap gap-2 items-center">
-                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-2">Defects</span>
-                                        @foreach ($i->defects as $d)
-                                            <span class="inline-flex flex-wrap items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white text-slate-700 border border-slate-100 shadow-xs">
-                                                @if($d->code)
-                                                    <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-slate-100 rounded text-slate-500 uppercase">{{ $d->code }}</span>
-                                                @endif
-                                                <strong class="text-slate-900 font-semibold">{{ $d->name }}</strong>
-                                                <span class="text-slate-300">|</span>
-                                                <span class="text-slate-500">{{ $d->severity }}</span>
-                                                <span class="text-slate-300">|</span>
-                                                <span class="text-slate-500">{{ $d->source }}</span>
-                                                <span class="text-slate-300">|</span>
-                                                <span class="font-bold text-indigo-600 font-mono">{{ rtrim(rtrim(number_format($d->quantity, 4, '.', ''), '0'), '.') }}</span>
+                                <td colspan="10" class="px-5 py-3">
+                                    <div class="space-y-2">
+                                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                            Defect Log
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            @foreach ($i->defects as $d)
+                                                @php
+                                                    $severityVal = $d->severity;
+                                                    if ($severityVal instanceof \BackedEnum) {
+                                                        $severityVal = $severityVal->value;
+                                                    } elseif (is_object($severityVal) && method_exists($severityVal, 'value')) {
+                                                        $severityVal = $severityVal->value();
+                                                    } else {
+                                                        $severityVal = (string) $severityVal;
+                                                    }
+                                                    $severityClean = strtoupper(trim($severityVal));
+                                                    $severityColor = match ($severityClean) {
+                                                        'CRITICAL' => 'bg-rose-50 text-rose-700 border-rose-200/60',
+                                                        'MAJOR' => 'bg-amber-50 text-amber-800 border-amber-200/60',
+                                                        'MINOR' => 'bg-blue-50 text-blue-700 border-blue-200/60',
+                                                        default => 'bg-slate-50 text-slate-600 border-slate-200/60'
+                                                    };
+                                                @endphp
+                                                <!-- Defect item row -->
+                                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-white rounded-lg border border-slate-100 shadow-xs">
+                                                    <!-- Left: Badge + Code + Name -->
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border {{ $severityColor }}">
+                                                            {{ $severityVal }}
+                                                        </span>
+                                                        @if($d->code)
+                                                            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-slate-50 rounded text-slate-500 uppercase border border-slate-100">
+                                                                {{ $d->code }}
+                                                            </span>
+                                                        @endif
+                                                        <span class="text-xs font-semibold text-slate-900">
+                                                            {{ $d->name }}
+                                                        </span>
+                                                        @if($d->notes)
+                                                            <span class="text-slate-300 hidden sm:inline">|</span>
+                                                            <span class="text-[11px] text-slate-500 italic max-w-md truncate" title="{{ $d->notes }}">
+                                                                "{{ $d->notes }}"
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <!-- Right: Source + Qty -->
+                                                    <div class="flex items-center gap-4 text-xs font-medium self-end sm:self-auto">
+                                                        <span class="text-slate-400 text-[10px] uppercase tracking-wider">
+                                                            {{ $d->source }}
+                                                        </span>
+                                                        <span class="text-slate-300">|</span>
+                                                        <span class="font-bold text-slate-900 font-mono w-16 text-end">
+                                                            {{ rtrim(rtrim(number_format($d->quantity, 4, '.', ''), '0'), '.') }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <!-- Mobile notes fallback (if long and wrapped) -->
                                                 @if($d->notes)
-                                                    <span class="text-slate-300">|</span>
-                                                    <span class="text-slate-400 italic">"{{ $d->notes }}"</span>
+                                                    <div class="block sm:hidden pl-2 text-[10px] text-slate-500 italic">
+                                                        Note: "{{ $d->notes }}"
+                                                    </div>
                                                 @endif
-                                            </span>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -270,7 +317,7 @@
                 @if ($report->items->count())
                     <tfoot>
                         <tr class="bg-slate-50/20 text-xs font-bold text-slate-700 border-t border-slate-100">
-                            <td colspan="8" class="px-5 py-3.5 text-end uppercase tracking-wider text-[10px] text-slate-400">Grand Total</td>
+                            <td colspan="9" class="px-5 py-3.5 text-end uppercase tracking-wider text-[10px] text-slate-400">Grand Total</td>
                             <td class="px-5 py-3.5 text-end font-mono text-sm text-slate-900">{{ number_format($monetary, 2) }}</td>
                         </tr>
                     </tfoot>

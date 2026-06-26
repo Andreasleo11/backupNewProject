@@ -9,7 +9,10 @@ class VerificationReportPolicy
 {
     public function view(User $u, VerificationReport $r): bool
     {
-        return $u->id === $r->creator_id || $u->hasRole('DIRECTOR') || $u->can('verify-reports');
+        return $u->id === $r->creator_id
+            || $u->hasRole('DIRECTOR')
+            || $u->can('verify-reports')
+            || $this->isActiveApprover($u, $r);
     }
 
     public function update(User $u, VerificationReport $r): bool
@@ -23,14 +26,28 @@ class VerificationReportPolicy
             return false;
         }
 
+        return $this->isActiveApprover($u, $r);
+    }
+
+    public function reject(User $u, VerificationReport $r): bool
+    {
+        return $this->approve($u, $r);
+    }
+
+    /**
+     * Determine if the user is the active approver for the current pending step.
+     */
+    private function isActiveApprover(User $u, VerificationReport $r): bool
+    {
         $request = $r->approvalRequest;
         if (! $request) {
             return false;
         }
 
-        $activeStep = $request->steps()
+        // Use relation property instead of method to utilize eager-loaded collection cache
+        $activeStep = $request->steps
             ->where('status', 'PENDING')
-            ->orderBy('sequence')
+            ->sortBy('sequence')
             ->first();
 
         if (! $activeStep) {
@@ -42,14 +59,11 @@ class VerificationReportPolicy
         }
 
         if ($activeStep->approver_type === 'role') {
-            return $u->hasRole((int) $activeStep->approver_id);
+            $slug = $activeStep->approver_snapshot_role_slug
+                ?? \Spatie\Permission\Models\Role::find($activeStep->approver_id)?->name;
+            return $slug && $u->hasRole($slug);
         }
 
         return false;
-    }
-
-    public function reject(User $u, VerificationReport $r): bool
-    {
-        return $this->approve($u, $r);
     }
 }
