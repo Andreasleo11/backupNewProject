@@ -71,8 +71,7 @@ class MigrateHistoricalReports extends Command
                 if ($refresh) {
                     $this->comment('Wiping existing verification reports and approval records...');
                     // Delete all new records
-                    // Since it is inside the transaction, it is completely safe and will roll back in dry-run!
-                    VerificationReport::query()->each(function (VerificationReport $report) {
+                    VerificationReport::query()->get()->each(function (VerificationReport $report) {
                         // Delete related approval requests/steps
                         $report->approvalRequest()->each(function ($req) {
                             $req->steps()->delete();
@@ -89,11 +88,19 @@ class MigrateHistoricalReports extends Command
                 foreach ($legacyReports as $legacyReport) {
                     if (!$refresh) {
                         // Check if already migrated
-                        $exists = VerificationReport::where('document_number', $legacyReport->doc_num)->exists();
+                        $exists = VerificationReport::where('meta->legacy_id', $legacyReport->id)->exists();
                         if ($exists) {
                             $skipped++;
                             continue;
                         }
+                    }
+
+                    $docNum = $legacyReport->doc_num;
+                    $originalDocNum = $docNum;
+                    $counter = 1;
+                    while (VerificationReport::where('document_number', $docNum)->exists()) {
+                        $docNum = $originalDocNum . '-' . $counter;
+                        $counter++;
                     }
 
                     // Map status
@@ -121,7 +128,7 @@ class MigrateHistoricalReports extends Command
 
                     if (!$dryRun) {
                         $newReport = VerificationReport::create([
-                            'document_number' => $legacyReport->doc_num,
+                            'document_number' => $docNum,
                             'creator_id' => $creatorId ?? 1, // Default to 1 if null
                             'status' => $status,
                             'meta' => $meta,
