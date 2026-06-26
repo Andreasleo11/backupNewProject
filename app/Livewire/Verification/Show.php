@@ -22,12 +22,12 @@ class Show extends Component
 
     public function mount(VerificationReport $report): void
     {
-        $this->report = $report->load(['items', 'items.defects']);
+        $this->report = $report->load(['items', 'items.defects', 'files']);
     }
 
     private function refreshReport(): void
     {
-        $this->report->refresh()->load(['items', 'items.defects']);
+        $this->report->refresh()->load(['items', 'items.defects', 'files']);
         $this->remarks = '';
     }
 
