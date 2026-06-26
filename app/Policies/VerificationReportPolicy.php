@@ -19,7 +19,33 @@ class VerificationReportPolicy
 
     public function approve(User $u, VerificationReport $r): bool
     {
-        return $r->status === 'IN_REVIEW';
+        if ($r->status !== 'IN_REVIEW') {
+            return false;
+        }
+
+        $request = $r->approvalRequest;
+        if (! $request) {
+            return false;
+        }
+
+        $activeStep = $request->steps()
+            ->where('status', 'PENDING')
+            ->orderBy('sequence')
+            ->first();
+
+        if (! $activeStep) {
+            return false;
+        }
+
+        if ($activeStep->approver_type === 'user') {
+            return (int) $u->id === (int) $activeStep->approver_id;
+        }
+
+        if ($activeStep->approver_type === 'role') {
+            return $u->hasRole((int) $activeStep->approver_id);
+        }
+
+        return false;
     }
 
     public function reject(User $u, VerificationReport $r): bool

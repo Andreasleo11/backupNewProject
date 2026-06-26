@@ -26,7 +26,7 @@
                 </span>
             </div>
             <div class="mt-1.5 flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-                <span>Doc#: <strong class="text-slate-850">{{ $report->document_number }}</strong></span>
+                <span>Doc#: <strong class="text-slate-800">{{ $report->document_number }}</strong></span>
                 <span>•</span>
                 <span>Created {{ $report->created_at->format('d M Y H:i') }}</span>
             </div>
@@ -50,26 +50,33 @@
                 @endif
             @endif
 
-            <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
-                <i class="bi bi-cloud-upload text-sky-600"></i> Upload
-            </button>
+            <!-- Policy-controlled file uploads -->
+            @can('update', $report)
+                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
+                    <i class="bi bi-cloud-upload text-sky-600"></i> Upload
+                </button>
+            @elsecan('approve', $report)
+                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
+                    <i class="bi bi-cloud-upload text-sky-600"></i> Upload
+                </button>
+            @endcan
 
             @if ($this->legacyId)
                 <a href="{{ route('qaqc.report.savePdf', $this->legacyId) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition">
                     <i class="bi bi-file-earmark-pdf text-rose-600"></i> Export PDF
                 </a>
-                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-mail-modal')">
-                    <i class="bi bi-envelope"></i> Send Mail
-                </button>
+                @if ($report->status !== 'DRAFT')
+                    <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-mail-modal')">
+                        <i class="bi bi-envelope"></i> Send Mail
+                    </button>
+                @endif
             @endif
 
             <!-- Primary Edit Action (if draft) -->
             @can('update', $report)
-                @if ($report->status === 'DRAFT')
-                    <a href="{{ route('verification.edit', $report->id) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </a>
-                @endif
+                <a href="{{ route('verification.edit', $report->id) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
             @endcan
         </div>
     </div>
@@ -138,7 +145,7 @@
                 <i class="bi bi-list-task text-slate-500"></i> Report Items
             </h3>
             <div class="text-xs text-slate-500 font-medium">
-                Total Value: <span class="text-sm font-bold text-slate-850 ml-1 font-mono">{{ number_format($monetary, 2) }} {{ $report->items->first()?->currency ?? 'IDR' }}</span>
+                Total Value: <span class="text-sm font-bold text-slate-800 ml-1 font-mono">{{ number_format($monetary, 2) }} {{ $report->items->first()?->currency ?? 'IDR' }}</span>
             </div>
         </div>
 
@@ -161,7 +168,15 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse($report->items as $i)
                         @php $line = (float)$i->verify_quantity * (float)$i->price; @endphp
-                        <tr wire:loading.class="opacity-50" wire:target="startEditDoNumber, cancelEditDoNumber, saveDoNumber" class="hover:bg-slate-50/10 text-xs text-slate-700 transition">
+                        
+                        {{-- Row with scoped loading target --}}
+                        <tr @if($editDoItemId === $i->id) 
+                                wire:loading.class="opacity-50" wire:target="saveDoNumber, cancelEditDoNumber" 
+                            @else 
+                                wire:loading.class="opacity-50" wire:target="startEditDoNumber({{ $i->id }})" 
+                            @endif 
+                            class="hover:bg-slate-50/10 text-xs text-slate-700 transition">
+                            
                             <td class="px-5 py-3.5 font-medium text-slate-900">{{ $i->part_name }}</td>
                             <td class="px-4 py-3.5 text-end font-mono">
                                 {{ rtrim(rtrim(number_format($i->rec_quantity, 4, '.', ''), '0'), '.') }}
@@ -201,13 +216,11 @@
                                             {{ $i->do_number ?: '—' }}
                                         </span>
                                         @can('update', $report)
-                                            @if ($report->status !== 'APPROVED')
-                                                <button class="text-indigo-650 hover:text-indigo-855 transition p-0.5" 
-                                                        wire:click="startEditDoNumber({{ $i->id }})"
-                                                        title="Edit DO Number">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                            @endif
+                                            <button class="text-indigo-600 hover:text-indigo-800 transition p-0.5" 
+                                                    wire:click="startEditDoNumber({{ $i->id }})"
+                                                    title="Edit DO Number">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
                                         @endcan
                                     </div>
                                 @endif
@@ -247,7 +260,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-5 py-8 text-center text-slate-450">
+                            <td colspan="9" class="px-5 py-8 text-center text-slate-400">
                                 <i class="bi bi-exclamation-circle text-lg block mb-1 text-slate-300"></i>
                                 No items found in this verification report.
                             </td>
@@ -267,19 +280,20 @@
     </div>
 
     {{-- Contextual Workflow Actions Section --}}
-    @if (($report->status === 'DRAFT' && auth()->user()?->can('update', $report)) || $report->status === 'IN_REVIEW')
+    @if ($report->status === 'IN_REVIEW' || auth()->user()?->can('update', $report))
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <h3 class="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-1.5">
                 <i class="bi bi-shield-check text-indigo-500"></i> Workflow Actions
             </h3>
             
-            @if ($report->status === 'DRAFT')
+            @can('update', $report)
+                {{-- DRAFT Submission workflow --}}
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Remarks (optional)</label>
                         <textarea rows="2" 
-                                  class="block w-full text-sm bg-white rounded-lg border border-slate-250 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-405" 
-                                  wire:model.live.defer="remarks" 
+                                  class="block w-full text-sm bg-white rounded-lg border border-slate-200 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-400" 
+                                  wire:model="remarks" 
                                   placeholder="Add notes for the approvers..."></textarea>
                     </div>
                     <button class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-sm transition" 
@@ -287,13 +301,14 @@
                         <i class="bi bi-send"></i> Submit for Approval
                     </button>
                 </div>
-            @elseif ($report->status === 'IN_REVIEW')
+            @elsecan('approve', $report)
+                {{-- Active step approver workflow --}}
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Remarks (optional)</label>
                         <textarea rows="2" 
-                                  class="block w-full text-sm bg-white rounded-lg border border-slate-250 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-405" 
-                                  wire:model.live.defer="remarks" 
+                                  class="block w-full text-sm bg-white rounded-lg border border-slate-200 py-2 px-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-400" 
+                                  wire:model="remarks" 
                                   placeholder="Reason or note for approval/rejection..."></textarea>
                     </div>
                     <div class="flex items-center justify-between gap-4">
@@ -311,7 +326,14 @@
                         Only the assigned approver for the current step can act; others will be blocked by the engine.
                     </p>
                 </div>
-            @endif
+            @else
+                {{-- Read-only message for non-approvers during IN_REVIEW --}}
+                <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-center">
+                    <p class="text-xs text-slate-500">
+                        <i class="bi bi-info-circle text-slate-400 mr-1"></i> This report is currently under review by the assigned approver.
+                    </p>
+                </div>
+            @endcan
         </div>
     @endif
 
@@ -327,7 +349,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 h-full">
             @include('partials.file-attachments', [
                 'files' => $report->files,
-                'showDelete' => true,
+                'showDelete' => auth()->user()?->can('update', $report) && $report->status === 'DRAFT',
                 'title' => 'Related Documents',
             ])
         </div>
