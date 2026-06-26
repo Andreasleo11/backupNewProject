@@ -26,7 +26,9 @@ final class SubmitReport
         if ($report->creator_id !== $actorId) {
             throw new \DomainException('Only the creator can submit this report.');
         }
-
+        if ($report->items()->count() === 0) {
+            throw new \DomainException('Cannot submit a report with no items.');
+        }
         $monetary = (float) $report->items()
             ->selectRaw('SUM(verify_quantity * price) as total')
             ->value('total');

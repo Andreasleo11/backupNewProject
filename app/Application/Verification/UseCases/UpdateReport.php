@@ -48,7 +48,7 @@ final class UpdateReport
                     'currency' => $item->currency,
                 ]);
 
-                $itemModel->defects()->delete();
+                // Defects will be populated below
 
                 foreach ($item->defects as $defect) {
                     $itemModel->defects()->create([

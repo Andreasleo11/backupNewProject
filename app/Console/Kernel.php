@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
 
         // Schedule the command to run daily at midnight
         // $schedule->command('logs:delete-old')->daily();
+        $schedule->command('verification:cleanup-drafts --days=7')->daily();
 
         $schedule
             ->call(function () {

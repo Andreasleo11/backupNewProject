@@ -48,7 +48,6 @@ final class ReportData
     public function toArray(): array
     {
         return [
-            'id' => $this->id,
             'rec_date' => $this->rec_date,
             'verify_date' => $this->verify_date,
             'customer' => $this->customer,

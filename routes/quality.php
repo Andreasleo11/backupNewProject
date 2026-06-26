@@ -38,10 +38,29 @@ Route::middleware('auth')->group(function () {
     // QA/QC Reports
     Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
 
-    Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
-    Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
-    Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit');
-    Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create');
+    Route::get('/qaqc/reports', function () {
+        return redirect()->route('verification.index');
+    })->name('qaqc.report.index');
+
+    Route::get('/qaqc/report/{id}', function ($id) {
+        $newReport = \App\Infrastructure\Persistence\Eloquent\Models\VerificationReport::whereJsonContains('meta->legacy_id', (int) $id)->first();
+        if ($newReport) {
+            return redirect()->route('verification.show', $newReport->id);
+        }
+        return redirect()->route('verification.index');
+    })->name('qaqc.report.detail');
+
+    Route::get('/qaqc/report/{reportId}/edit', function ($reportId) {
+        $newReport = \App\Infrastructure\Persistence\Eloquent\Models\VerificationReport::whereJsonContains('meta->legacy_id', (int) $reportId)->first();
+        if ($newReport) {
+            return redirect()->route('verification.edit', $newReport->id);
+        }
+        return redirect()->route('verification.index');
+    })->name('qaqc.report.edit');
+
+    Route::get('/qaqc/reports/create', function () {
+        return redirect()->route('verification.create');
+    })->name('qaqc.report.create');
     Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
     Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
     Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
@@ -53,7 +72,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/price-log/import', PartPriceLogImport::class)->name('price-log.import');
 
-    Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
+    Route::get('/qaqc/reports/redirectToIndex', function () {
+        return redirect()->route('verification.index');
+    })->name('qaqc.report.redirect.to.index');
 
     Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
     Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');

@@ -91,8 +91,8 @@ class Defects extends Component
             'quantity' => null,
             'notes' => null,
         ];
-        $idx = array_key_last($this->items);
-        $this->dispatch('focus-field', key: "items.$idx.name");
+        $defectIdx = array_key_last($this->items[$itemIndex]['defects']);
+        $this->dispatch('focus-field', key: "items.{$itemIndex}.defects.{$defectIdx}.name");
     }
 
     public function removeDefect(int $itemIndex, int $defectIndex): void

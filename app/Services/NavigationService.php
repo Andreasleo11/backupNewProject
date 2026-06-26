@@ -179,9 +179,9 @@ class NavigationService
                 'children' => [
                     [
                         'label' => 'Verification Reports',
-                        'route' => 'qaqc.report.index',
+                        'route' => 'verification.index',
                         'icon' => 'clipboard-document-check',
-                        'active' => request()->routeIs('qaqc.report.*'),
+                        'active' => request()->routeIs('verification.*'),
                         'permission' => 'qc.view',
                     ],
                     [

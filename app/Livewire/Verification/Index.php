@@ -23,6 +23,8 @@ class Index extends Component
     public function render()
     {
         $q = VerificationReport::query()
+            ->select('verification_reports.*')
+            ->selectRaw('(SELECT SUM(verify_quantity * price) FROM verification_items WHERE verification_items.verification_report_id = verification_reports.id) as total_value')
             ->when(
                 $this->status !== 'all',
                 fn (Builder $query) => $query->where('status', $this->status)
@@ -35,7 +37,6 @@ class Index extends Component
                         ->orWhere('invoice_number', 'like', $s);
                 });
             })
-            ->withSum('items as total_value', DB::raw('verify_quantity * price')) // 👈 compute monetary
             ->latest();
 
         return view('livewire.verification.index', [

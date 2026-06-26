@@ -17,7 +17,7 @@ class Preview extends Component
     {
         $subtotal = 0.0;
         foreach ($this->items as $row) {
-            $qty = (float) ($row['rec_quantity'] ?? 0.0);
+            $qty = (float) ($row['verify_quantity'] ?? 0.0);
             $price = (float) ($row['price'] ?? 0.0);
             $subtotal += $qty * $price;
         }

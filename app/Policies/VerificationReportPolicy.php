@@ -21,4 +21,9 @@ class VerificationReportPolicy
     {
         return $r->status === 'IN_REVIEW';
     }
+
+    public function reject(User $u, VerificationReport $r): bool
+    {
+        return $this->approve($u, $r);
+    }
 }

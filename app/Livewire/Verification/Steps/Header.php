@@ -24,9 +24,9 @@ class Header extends Component
         return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
     }
 
-    public function updated()
+    public function updated($propertyName)
     {
-        $this->validate($this->rulesHeader());
+        $this->validateOnly($propertyName);
     }
 
     #[On('request-validate')]

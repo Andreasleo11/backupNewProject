@@ -160,10 +160,56 @@ class Wizard extends Component
         $this->dispatch('draft-cleared', message: 'Draft cleared!');
     }
 
+    public function updated($propertyName): void
+    {
+        $this->isDirty = true;
+    }
+
+    #[On('active-item-updated')]
+    public function updateActiveItem(?int $index): void
+    {
+        $this->activeItem = $index;
+    }
+
+    public function goToItem(int $i): void
+    {
+        if (! array_key_exists($i, $this->items)) {
+            return;
+        }
+        $this->activeItem = $i;
+        $this->step = 3;
+        $this->autosaveDraft();
+    }
+
     #[On('go-to-step')]
     public function goToStep(int $step): void
     {
+        // Guard transitions forward with validation
+        if ($step > $this->step) {
+            if ($this->step === 1) {
+                $this->validate($this->rulesHeader());
+            }
+            if ($this->step === 2) {
+                $this->validate($this->rulesItems());
+            }
+            if ($this->step === 3) {
+                $this->validate($this->rulesDefects());
+            }
+        }
         $this->step = max(1, min(4, $step));
+
+        // When entering Step 3, ensure an active item exists
+        if ($this->step === 3) {
+            if (count($this->items) === 0) {
+                $this->step = 2;
+
+                return;
+            }
+            if ($this->activeItem === null || ! array_key_exists($this->activeItem, $this->items)) {
+                $this->activeItem = 0;
+            }
+        }
+
         $this->autosaveDraft();
     }
 
@@ -188,10 +234,6 @@ class Wizard extends Component
         $this->resetErrorBag();
 
         $this->step = min(4, $this->step + 1);
-
-        if ($this->step === 3 && ! count($this->items)) {
-            $this->step = 2;
-        }
 
         if ($this->step === 4) {
             $this->previewVersion++;

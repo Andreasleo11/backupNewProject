@@ -39,7 +39,7 @@ trait VerificationRules
         return [
             'items.*.defects' => ['array'],
             'items.*.defects.*.code' => ['nullable', 'string', 'max:64'],
-            'items.*.defects.*.name' => ['required', 'required_with:items.*.defects.*.quantity', 'string', 'max:191'],
+            'items.*.defects.*.name' => ['required', 'string', 'max:191'],
             'items.*.defects.*.severity' => ['nullable', 'in:LOW,MEDIUM,HIGH'],
             'items.*.defects.*.source' => ['required', 'in:DAIJO,CUSTOMER,SUPPLIER'],
             'items.*.defects.*.quantity' => ['required', 'numeric', 'min:1'],

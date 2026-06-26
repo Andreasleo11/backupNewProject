@@ -63,7 +63,7 @@ class Show extends Component
 
     public function reject(RejectReport $useCase): void
     {
-        $this->authorize('approve', $this->report);
+        $this->authorize('reject', $this->report);
 
         $useCase->handle(
             reportId: $this->report->id,

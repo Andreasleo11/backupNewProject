@@ -72,6 +72,7 @@ class Items extends Component
         ];
         if ($this->activeItem === null) {
             $this->activeItem = 0;
+            $this->dispatch('active-item-updated', index: 0);
         }
     }
 
@@ -82,6 +83,7 @@ class Items extends Component
         if ($this->activeItem !== null) {
             if (! array_key_exists($this->activeItem, $this->items)) {
                 $this->activeItem = count($this->items) ? 0 : null;
+                $this->dispatch('active-item-updated', index: $this->activeItem);
             }
         }
     }
@@ -147,26 +149,69 @@ class Items extends Component
     public function applyPastedItems(): void
     {
         $rows = preg_split('/\r\n|\r|\n/', trim($this->pasteBuffer));
+        $addedCount = 0;
+        $duplicateCount = 0;
+
         foreach ($rows as $line) {
-            if ($line === '') {
+            if (trim($line) === '') {
                 continue;
             }
             $cols = str_getcsv($line, (str_contains($line, "\t") ? "\t" : ','));
+            
+            $partName = mb_substr(trim($cols[0] ?? ''), 0, 255);
+            if ($partName === '') {
+                continue;
+            }
+
+            $recQty = max(0.0, (float) ($cols[1] ?? 0));
+            $verifyQty = max(0.0, (float) ($cols[2] ?? 0));
+            $canUse = max(0.0, (float) ($cols[3] ?? 0));
+            $cantUse = max(0.0, (float) ($cols[4] ?? 0));
+            $price = max(0.0, (float) ($cols[5] ?? 0));
+            $currency = mb_substr(trim($cols[6] ?? ($this->defaultCurrency ?: 'IDR')), 0, 10);
+
+            // Check if this exact item already exists in the list to prevent double pasting
+            $isDuplicate = false;
+            foreach ($this->items as $existing) {
+                if (strcasecmp($existing['part_name'], $partName) === 0 &&
+                    (float)$existing['rec_quantity'] === $recQty &&
+                    (float)$existing['verify_quantity'] === $verifyQty &&
+                    (float)$existing['price'] === $price) {
+                    $isDuplicate = true;
+                    break;
+                }
+            }
+
+            if ($isDuplicate) {
+                $duplicateCount++;
+                continue;
+            }
+
             $this->items[] = [
-                'part_name' => (string) ($cols[0] ?? ''),
-                'rec_quantity' => (float) ($cols[1] ?? 0),
-                'verify_quantity' => (float) ($cols[2] ?? 0),
-                'can_use' => (float) ($cols[3] ?? 0),
-                'cant_use' => (float) ($cols[4] ?? 0),
-                'price' => (float) ($cols[5] ?? 0),
-                'currency' => (string) ($cols[6] ?? ($this->defaultCurrency ?: 'IDR')),
+                'part_name' => $partName,
+                'rec_quantity' => $recQty,
+                'verify_quantity' => $verifyQty,
+                'can_use' => $canUse,
+                'cant_use' => $cantUse,
+                'price' => $price,
+                'currency' => $currency,
                 'defects' => [],
             ];
+            $addedCount++;
         }
+
         $this->pasteBuffer = '';
         $this->pasteDialog = false;
+
         if ($this->activeItem === null && count($this->items)) {
             $this->activeItem = 0;
+            $this->dispatch('active-item-updated', index: 0);
+        }
+
+        if ($duplicateCount > 0) {
+            session()->flash('warning', "Imported {$addedCount} items. Ignored {$duplicateCount} duplicate rows.");
+        } else {
+            session()->flash('ok', "Imported {$addedCount} items successfully.");
         }
     }
 
