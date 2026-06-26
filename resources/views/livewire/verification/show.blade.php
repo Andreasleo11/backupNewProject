@@ -22,7 +22,7 @@
                     ][$report->status] ?? 'bg-slate-100 text-slate-800 border-slate-200';
                 @endphp
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border {{ $statusColor }}">
-                    {{ $report->status }}
+                    {{ str_replace('_', ' ', ucwords(strtolower($report->status), '_')) }}
                 </span>
             </div>
             <div class="mt-1.5 flex items-center gap-2 text-xs text-slate-500 flex-wrap">
@@ -51,15 +51,11 @@
             @endif
 
             <!-- Policy-controlled file uploads -->
-            @can('update', $report)
+            @canany(['update', 'approve'], $report)
                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
                     <i class="bi bi-cloud-upload text-sky-600"></i> Upload
                 </button>
-            @elsecan('approve', $report)
-                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
-                    <i class="bi bi-cloud-upload text-sky-600"></i> Upload
-                </button>
-            @endcan
+            @endcanany
 
             @if ($this->legacyId)
                 <a href="{{ route('qaqc.report.savePdf', $this->legacyId) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition">
@@ -124,7 +120,7 @@
                         @if ($key !== 'department')
                             <div class="text-xs">
                                 <span class="text-slate-400 font-medium capitalize">{{ str_replace('_', ' ', $key) }}:</span>
-                                <span class="text-slate-700 font-semibold ml-1">{{ is_array($val) ? json_encode($val) : $val }}</span>
+                                <span class="text-slate-700 font-semibold ml-1">{{ is_array($val) ? implode(', ', $val) : $val }}</span>
                             </div>
                         @endif
                     @endforeach
@@ -307,7 +303,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-5 py-8 text-center text-slate-400">
+                            <td colspan="10" class="px-5 py-8 text-center text-slate-400">
                                 <i class="bi bi-exclamation-circle text-lg block mb-1 text-slate-300"></i>
                                 No items found in this verification report.
                             </td>
@@ -343,9 +339,15 @@
                                   wire:model="remarks" 
                                   placeholder="Add notes for the approvers..."></textarea>
                     </div>
-                    <button class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-sm transition" 
-                            wire:click="submit">
-                        <i class="bi bi-send"></i> Submit for Approval
+                    <button class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-sm transition disabled:opacity-50" 
+                            wire:click="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="submit">
+                        <span wire:loading.remove wire:target="submit" class="flex items-center gap-2"><i class="bi bi-send"></i> Submit for Approval</span>
+                        <span wire:loading wire:target="submit" class="flex items-center gap-2">
+                            <span class="animate-spin inline-block w-3 h-3 border-2 border-current border-t-transparent text-white rounded-full"></span>
+                            Submitting...
+                        </span>
                     </button>
                 </div>
             @elsecan('approve', $report)
@@ -358,15 +360,27 @@
                                   wire:model="remarks" 
                                   placeholder="Reason or note for approval/rejection..."></textarea>
                     </div>
-                    <div class="flex items-center justify-between gap-4">
-                        <button class="inline-flex justify-center items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-xl shadow-sm transition min-w-[140px]" 
-                                wire:click="approve">
-                            <i class="bi bi-check2-circle"></i> Approve
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <button class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-xl shadow-sm transition min-w-[140px] disabled:opacity-50" 
+                                wire:click="approve"
+                                wire:loading.attr="disabled"
+                                wire:target="approve">
+                            <span wire:loading.remove wire:target="approve" class="flex items-center gap-2"><i class="bi bi-check2-circle"></i> Approve</span>
+                            <span wire:loading wire:target="approve" class="flex items-center gap-2">
+                                <span class="animate-spin inline-block w-3 h-3 border-2 border-current border-t-transparent text-white rounded-full"></span>
+                                Approving...
+                            </span>
                         </button>
                         
-                        <button class="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline transition" 
-                                wire:click="reject">
-                            Reject Report
+                        <button class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-600 active:bg-rose-100 text-rose-600 text-xs font-semibold rounded-xl shadow-sm transition disabled:opacity-50 sm:ml-auto" 
+                                wire:click="reject"
+                                wire:loading.attr="disabled"
+                                wire:target="reject">
+                            <span wire:loading.remove wire:target="reject" class="flex items-center gap-2"><i class="bi bi-x-circle"></i> Reject Report</span>
+                            <span wire:loading wire:target="reject" class="flex items-center gap-2">
+                                <span class="animate-spin inline-block w-3 h-3 border-2 border-current border-t-transparent text-rose-600 rounded-full"></span>
+                                Rejecting...
+                            </span>
                         </button>
                     </div>
                     <p class="text-[10px] text-slate-400">

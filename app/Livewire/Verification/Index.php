@@ -14,6 +14,8 @@ class Index extends Component
 {
     use WithPagination;
 
+    protected string $paginationTheme = 'tailwind';
+
     public string $status = 'all';
 
     public string $search = '';

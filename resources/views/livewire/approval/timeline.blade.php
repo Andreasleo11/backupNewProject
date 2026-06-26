@@ -68,11 +68,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-xs font-semibold text-slate-800">
-                                    @if ($s->approver_type === 'user')
-                                        User #{{ $s->approver_id }}
-                                    @else
-                                        Role #{{ $s->approver_id }}
-                                    @endif
+                                    {{ $s->approver_snapshot_label ?: $s->approver_name }}
                                 </span>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider {{
                                     $isApproved ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : (
@@ -84,7 +80,11 @@
                                     {{ $s->status }}
                                 </span>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Sequence {{ $s->sequence }}</p>
+                            @if ($s->acted_at)
+                                <p class="text-[10px] text-slate-400 mt-0.5">{{ $s->acted_at->format('d M Y H:i') }}</p>
+                            @else
+                                <p class="text-[10px] text-slate-400 mt-0.5">Sequence {{ $s->sequence }}</p>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -100,9 +100,11 @@
                         <div class="text-xs">
                             <div class="flex items-center justify-between gap-4 text-slate-500 mb-1">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="font-bold text-slate-700">{{ $a->from_status ?? 'DRAFT' }}</span>
+                                    <span class="font-semibold text-slate-700">{{ $a->causer ? $a->causer->name : 'System' }}</span>
+                                    <span class="text-slate-400">changed status from</span>
+                                    <span class="font-bold text-slate-600">{{ $a->from_status ?? 'DRAFT' }}</span>
                                     <i class="bi bi-arrow-right text-slate-300"></i>
-                                    <span class="font-bold text-slate-700">{{ $a->to_status }}</span>
+                                    <span class="font-bold text-slate-800">{{ $a->to_status }}</span>
                                 </div>
                                 <span class="text-[9px] font-medium text-slate-400 whitespace-nowrap">{{ $a->created_at->format('d M Y H:i') }}</span>
                             </div>

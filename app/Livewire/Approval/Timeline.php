@@ -18,9 +18,7 @@ class Timeline extends Component
         $this->approvableType = $approvableType;
         $this->approvableId = $approvableId;
 
-        // dd($approvableId, $approvableType);
-
-        $this->request = ApprovalRequest::with(['steps', 'actions'])
+        $this->request = ApprovalRequest::with(['steps', 'actions.causer'])
             ->where('approvable_type', $this->approvableType)
             ->where('approvable_id', $this->approvableId)
             ->first();
