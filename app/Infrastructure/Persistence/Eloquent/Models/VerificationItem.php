@@ -12,7 +12,7 @@ class VerificationItem extends Model
     protected $fillable = [
         'verification_report_id', 'part_name',
         'rec_quantity', 'verify_quantity', 'can_use', 'cant_use',
-        'price', 'currency',
+        'price', 'currency', 'do_number',
     ];
 
     protected $casts = [

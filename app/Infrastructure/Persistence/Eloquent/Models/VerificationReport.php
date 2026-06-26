@@ -29,6 +29,11 @@ class VerificationReport extends Model implements Approvable
         return $this->hasMany(VerificationItem::class, 'verification_report_id');
     }
 
+    public function files(): HasMany
+    {
+        return $this->hasMany(\App\Models\File::class, 'doc_id', 'document_number');
+    }
+
     public function getApprovalStatusAttribute(): string
     {
         return $this->approvalStatus(); // DRAFT | IN_REVIEW | APPROVED | REJECTED

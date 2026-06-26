@@ -25,6 +25,34 @@
                 <i class="bi bi-arrow-left"></i> Back
             </a>
 
+            @if ($this->legacyId && $this->areAllDoNumbersFilled)
+                @if ($this->hasAdjustForm)
+                    <form action="{{ route('adjustview') }}" method="get" class="m-0">
+                        <input type="hidden" name="report_id" value="{{ $this->legacyId }}">
+                        <button type="submit" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> View Adjust Form
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('adjust.index', ['reports' => $this->legacyId]) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-sliders"></i> Adjust Form
+                    </a>
+                @endif
+            @endif
+
+            <button type="button" class="btn btn-outline-info" x-data @click="$dispatch('open-upload-modal')">
+                <i class="bi bi-cloud-upload"></i> Upload
+            </button>
+
+            @if ($this->legacyId)
+                <a href="{{ route('qaqc.report.savePdf', $this->legacyId) }}" class="btn btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </a>
+                <button type="button" class="btn btn-primary" x-data @click="$dispatch('open-mail-modal')">
+                    <i class="bi bi-envelope"></i> Send Mail
+                </button>
+            @endif
+
             @can('update', $report)
                 @if ($report->status === 'DRAFT')
                     <a href="{{ route('verification.edit', $report->id) }}" class="btn btn-primary">
@@ -144,6 +172,7 @@
                             <th class="text-end">Can't Use</th>
                             <th class="text-end">Price</th>
                             <th>Cur</th>
+                            <th>DO Number</th>
                             <th class="text-end">Line Total</th>
                         </tr>
                     </thead>
@@ -164,12 +193,32 @@
                                 </td>
                                 <td class="text-end">{{ number_format($i->price, 2) }}</td>
                                 <td>{{ $i->currency }}</td>
+                                <td>
+                                    @if ($editDoItemId === $i->id)
+                                        <div class="d-flex align-items-center gap-1">
+                                            <input type="text" class="form-control form-control-sm" wire:model.defer="editDoNumber" style="min-width: 120px;">
+                                            <button class="btn btn-sm btn-success" wire:click="saveDoNumber"><i class="bi bi-check2"></i></button>
+                                            <button class="btn btn-sm btn-light border" wire:click="cancelEditDoNumber"><i class="bi bi-x"></i></button>
+                                        </div>
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <span>{{ $i->do_number ?: '—' }}</span>
+                                            @can('update', $report)
+                                                @if ($report->status !== 'APPROVED')
+                                                    <button class="btn btn-sm btn-link text-primary p-0" wire:click="startEditDoNumber({{ $i->id }})">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                @endif
+                                            @endcan
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="text-end">{{ number_format($line, 2) }}</td>
                             </tr>
                             {{-- Defects row --}}
                             @if ($i->defects->count())
                                 <tr class="bg-light">
-                                    <td colspan="8" class="py-2">
+                                    <td colspan="9" class="py-2">
                                         <div class="small text-muted mb-1">Defects</div>
                                         <div class="table-responsive">
                                             <table class="table table-sm align-middle mb-0">
@@ -204,14 +253,14 @@
                             @endif
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">No items.</td>
+                                <td colspan="9" class="text-center text-muted py-4">No items.</td>
                             </tr>
                         @endforelse
                     </tbody>
                     @if ($report->items->count())
                         <tfoot>
                             <tr>
-                                <th colspan="7" class="text-end">Grand Total</th>
+                                <th colspan="8" class="text-end">Grand Total</th>
                                 <th class="text-end">{{ number_format($monetary, 2) }}</th>
                             </tr>
                         </tfoot>
@@ -226,4 +275,21 @@
         'approvableType' => \App\Infrastructure\Persistence\Eloquent\Models\VerificationReport::class,
         'approvableId' => $report->id,
     ])
+
+    {{-- Related Documents Section --}}
+    <div class="mt-4 bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+        @include('partials.file-attachments', [
+            'files' => $report->files,
+            'showDelete' => true,
+            'title' => 'Related Documents',
+        ])
+    </div>
+
+    {{-- Upload Files Modal --}}
+    @include('partials.upload-files-modal', ['doc_id' => $report->document_number])
+
+    {{-- Send Mail Modal (Legacy) --}}
+    @if ($this->legacyId)
+        @include('partials.mail-modal', ['report' => (object)['id' => $this->legacyId, 'customer' => $report->customer, 'files' => $report->files]])
+    @endif
 </div>

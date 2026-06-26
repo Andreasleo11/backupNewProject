@@ -150,6 +150,7 @@ class MigrateHistoricalReports extends Command
                                 'cant_use' => $detail->cant_use,
                                 'price' => $detail->price,
                                 'currency' => $detail->currency ?: 'IDR',
+                                'do_number' => $detail->do_num,
                                 'created_at' => $detail->created_at,
                                 'updated_at' => $detail->updated_at,
                             ]);
