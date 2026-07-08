@@ -13,19 +13,27 @@
         <!-- QR Code & Quick Info -->
         <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-center border border-gray-100">
             <div class="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <!-- Using milon/barcode which is in composer.json -->
+                <!-- Using endroid/qr-code which is in composer.json -->
                 @php
                     try {
-                        $qrCode = DNS2D::getBarcodeSVG($asset->asset_tag, 'QRCODE', 6, 6);
+                        $qrCodeObj = new \Endroid\QrCode\QrCode(
+                            data: $asset->asset_tag,
+                            errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
+                            size: 150,
+                            margin: 5
+                        );
+                        $writer = new \Endroid\QrCode\Writer\PngWriter();
+                        $qrCodeResult = $writer->write($qrCodeObj);
+                        $qrCodeBase64 = base64_encode($qrCodeResult->getString());
                     } catch (\Exception $e) {
-                        $qrCode = 'QR Code Error';
+                        $qrCodeBase64 = null;
                     }
                 @endphp
                 
-                @if($qrCode === 'QR Code Error')
+                @if(!$qrCodeBase64)
                     <div class="text-red-500 text-sm">Error generating QR Code.</div>
                 @else
-                    {!! $qrCode !!}
+                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" alt="QR Code" class="w-36 h-36">
                 @endif
             </div>
             <div class="text-center">
