@@ -259,7 +259,7 @@ class MigrateHistoricalReports extends Command
 
                         // Create the ApprovalRequest
                         $approvalRequest = ApprovalRequest::create([
-                            'approvable_type' => VerificationReport::class,
+                            'approvable_type' => (new VerificationReport)->getMorphClass(),
                             'approvable_id' => $newReport->id,
                             'status' => $status,
                             'rule_template_id' => $ruleTemplate->id,

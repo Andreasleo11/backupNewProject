@@ -2,7 +2,7 @@
 
 namespace App\Application\Verification\UseCases;
 
-use App\Domain\Approval\Contracts\Approvals;
+use App\Application\Approval\Contracts\Approvals;
 use App\Domain\Verification\Repositories\VerificationReportRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 

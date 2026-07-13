@@ -16,14 +16,27 @@
 
     $title = $title ?? 'Related Documents';
     $showDelete = $showDelete ?? false;
+    $showUpload = $showUpload ?? false;
     $gridCols = $gridCols ?? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 @endphp
 
 <div class="space-y-4">
-    @if ($title)
-        <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800">
-            <i class="bi bi-paperclip text-indigo-500"></i> {{ $title }}
-        </h3>
+    @if ($title || $showUpload)
+        <div class="flex items-center justify-between">
+            @if ($title)
+                <h3 class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-800">
+                    <i class="bi bi-paperclip text-indigo-500"></i> {{ $title }}
+                </h3>
+            @endif
+            @if ($showUpload)
+                <button type="button" 
+                    x-data
+                    @click="$dispatch('open-upload-modal')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 hover:border-indigo-150 hover:bg-indigo-50/30 text-indigo-600 text-xs font-semibold rounded-lg shadow-xs transition duration-200">
+                    <i class="bi bi-plus-lg"></i> Add File
+                </button>
+            @endif
+        </div>
     @endif
 
     @if ($files->isEmpty())

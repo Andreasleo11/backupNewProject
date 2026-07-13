@@ -258,7 +258,10 @@ class ApprovalScopingManager
                 if (in_array('APPROVED', $targetStatuses)) {
                     $q->orWhere(function ($sub) {
                         $sub->where('status', 'APPROVED')
-                            ->where('approvable_type', \App\Domain\Overtime\Models\OvertimeForm::class);
+                            ->whereIn('approvable_type', [
+                                'overtime',
+                                \App\Domain\Overtime\Models\OvertimeForm::class
+                            ]);
                     });
                 }
             }

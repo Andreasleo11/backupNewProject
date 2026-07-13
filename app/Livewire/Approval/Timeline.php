@@ -15,11 +15,23 @@ class Timeline extends Component
 
     public function mount(string $approvableType, int $approvableId)
     {
+        // Normalize class name to morph alias if registered in relation morph map
+        if (class_exists($approvableType)) {
+            $approvableType = (new $approvableType)->getMorphClass();
+        }
+
         $this->approvableType = $approvableType;
         $this->approvableId = $approvableId;
 
+        // Support both morph alias and full class name in case of mixed database values
+        $types = [$approvableType];
+        $morphedClass = \Illuminate\Database\Eloquent\Relations\Relation::getMorphedModel($approvableType);
+        if ($morphedClass) {
+            $types[] = $morphedClass;
+        }
+
         $this->request = ApprovalRequest::with(['steps', 'actions.causer'])
-            ->where('approvable_type', $this->approvableType)
+            ->whereIn('approvable_type', $types)
             ->where('approvable_id', $this->approvableId)
             ->first();
     }

@@ -49,14 +49,7 @@
                     </a>
                 @endif
             @endif
-
-            <!-- Policy-controlled file uploads -->
-            @canany(['update', 'approve'], $report)
-                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-upload-modal')">
-                    <i class="bi bi-cloud-upload text-sky-600"></i> Upload
-                </button>
-            @endcanany
-
+            
             {{-- PDF download: always available once report exists --}}
             <a href="{{ route('verification.download', $report->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition">
                 <i class="bi bi-file-earmark-pdf text-rose-600"></i> Export PDF
@@ -67,7 +60,6 @@
                 </button>
             @endif
 
-            <!-- Primary Edit Action (if draft) -->
             @can('update', $report)
                 <a href="{{ route('verification.edit', $report->id) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
                     <i class="bi bi-pencil-square"></i> Edit
@@ -76,38 +68,70 @@
         </div>
     </div>
 
+    <x-approval-status-banner :model="$report" />
+
     {{-- Metadata Card --}}
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
-            <div>
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Receive Date</span>
-                <span class="block text-sm font-semibold text-slate-800 mt-1">
-                    {{ optional($report->rec_date)?->format('d M Y') ?? '—' }}
-                </span>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {{-- Receive Date --}}
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-calendar2-check"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Receive Date</div>
+                    <div class="text-xs font-bold text-slate-800 truncate">{{ optional($report->rec_date)?->format('d M Y') ?? '—' }}</div>
+                </div>
             </div>
-            <div>
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verify Date</span>
-                <span class="block text-sm font-semibold text-slate-800 mt-1">
-                    {{ optional($report->verify_date)?->format('d M Y') ?? '—' }}
-                </span>
+
+            {{-- Verify Date --}}
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-calendar2-event"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Verify Date</div>
+                    <div class="text-xs font-bold text-slate-800 truncate">{{ optional($report->verify_date)?->format('d M Y') ?? '—' }}</div>
+                </div>
             </div>
-            <div>
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer</span>
-                <span class="block text-sm font-semibold text-slate-800 mt-1 truncate" title="{{ $report->customer }}">
-                    {{ $report->customer ?: '—' }}
-                </span>
+
+            {{-- Customer --}}
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Customer</div>
+                    <div class="text-xs font-bold text-slate-800 truncate" title="{{ $report->customer }}">
+                        {{ $report->customer ?: '—' }}
+                    </div>
+                </div>
             </div>
-            <div>
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Invoice #</span>
-                <span class="block text-sm font-semibold text-slate-800 mt-1">
-                    {{ $report->invoice_number ?: '—' }}
-                </span>
+
+            {{-- Invoice Number --}}
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Invoice #</div>
+                    <div class="text-xs font-bold text-slate-850 truncate" title="{{ $report->invoice_number }}">
+                        {{ $report->invoice_number ?: '—' }}
+                    </div>
+                </div>
             </div>
-            <div class="col-span-2 md:col-span-1">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
-                <span class="block text-sm font-semibold text-slate-800 mt-1">
-                    {{ data_get($report->meta, 'department', '—') }}
-                </span>
+
+            {{-- Department --}}
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-xs flex items-center gap-3 col-span-2 md:col-span-1">
+                <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-shield-shaded"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Department</div>
+                    <div class="text-xs font-bold text-slate-800 truncate">
+                        {{ data_get($report->meta, 'department', '—') }}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -130,17 +154,43 @@
 
     {{-- Items Table --}}
     @php
-        $monetary = (float) $report->items->sum(fn($i) => (float) $i->verify_quantity * (float) $i->price);
+        $byCurr = $report->items->groupBy(fn($i) => trim($i->currency ?? 'IDR') ?: 'IDR');
+        $grandTotals = $byCurr
+            ->map(function ($rows, $cur) {
+                return [
+                    'currency' => $cur,
+                    'sum' => $rows->sum(fn($i) => (float) ($i->verify_quantity ?? 0) * (float) ($i->price ?? 0)),
+                ];
+            })
+            ->values();
     @endphp
 
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <!-- Table Header Summary -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/40">
-            <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                <i class="bi bi-list-task text-slate-500"></i> Report Items
-            </h3>
-            <div class="text-xs text-slate-500 font-medium">
-                Total Value: <span class="text-sm font-bold text-slate-800 ml-1 font-mono">{{ number_format($monetary, 2) }} {{ $report->items->first()?->currency ?? 'IDR' }}</span>
+        <div x-data class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/40 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+                    <i class="bi bi-list-task text-slate-500"></i> Report Items
+                </h3>
+                <div class="text-xs text-slate-500 font-semibold flex items-center gap-2">
+                    <span>Total Value:</span>
+                    @foreach ($grandTotals as $gr)
+                        <span class="bg-white border border-slate-200 text-slate-800 px-2.5 py-1 rounded font-mono text-xs font-bold shadow-xs">
+                            {{ $gr['currency'] }} {{ number_format($gr['sum'], 2) }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 ml-auto">
+                <button type="button" class="inline-flex items-center justify-center font-semibold rounded border border-slate-200 text-slate-650 bg-white hover:bg-slate-50 text-[10px] px-2.5 py-1 transition-colors shadow-xs"
+                    @click="$dispatch('toggle-defects', { open: true })">
+                    <i class="bi bi-arrows-expand mr-1"></i>Expand all
+                </button>
+                <button type="button" class="inline-flex items-center justify-center font-semibold rounded border border-slate-200 text-slate-650 bg-white hover:bg-slate-50 text-[10px] px-2.5 py-1 transition-colors shadow-xs"
+                    @click="$dispatch('toggle-defects', { open: false })">
+                    <i class="bi bi-arrows-collapse mr-1"></i>Collapse all
+                </button>
             </div>
         </div>
 
@@ -161,9 +211,12 @@
                         <th class="px-5 py-3 text-end font-semibold">Line Total</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse($report->items as $i)
-                        @php $line = (float)$i->verify_quantity * (float)$i->price; @endphp
+                @forelse($report->items as $idx => $i)
+                    @php $line = (float)$i->verify_quantity * (float)$i->price; @endphp
+                    
+                    <tbody x-data="{ showDefects: false }"
+                           @toggle-defects.window="showDefects = $event.detail.open"
+                           class="divide-y divide-slate-100 border-b border-slate-100 last:border-0">
                         
                         {{-- Row with scoped loading target --}}
                         <tr @if($editDoItemId === $i->id) 
@@ -173,8 +226,33 @@
                             @endif 
                             class="hover:bg-slate-50/10 text-xs text-slate-700 transition">
                             
-                            <td class="px-5 py-3.5 text-center font-mono text-slate-400 font-bold w-12">{{ $loop->iteration }}</td>
-                            <td class="px-5 py-3.5 font-medium text-slate-900">{{ $i->part_name }}</td>
+                            <td class="px-5 py-3.5 text-center font-mono text-slate-400 font-bold w-12">{{ $idx + 1 }}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-semibold text-slate-900 text-sm">{{ $i->part_name }}</span>
+                                    
+                                    @if ($i->defects->count())
+                                        <div class="flex items-center justify-between gap-2 mt-1">
+                                            <button type="button" class="text-slate-500 hover:text-slate-850 cursor-pointer font-bold text-[9px] uppercase tracking-wider inline-flex items-center gap-1.5 select-none focus:outline-none"
+                                                @click="showDefects = !showDefects">
+                                                <i class="bi text-[9px] transition-transform duration-200" :class="showDefects ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+                                                <span>Defect Details ({{ $i->defects->count() }})</span>
+                                            </button>
+                                            
+                                            {{-- Inline Source Summary (shown only when collapsed) --}}
+                                            <div x-show="!showDefects" class="flex gap-1 text-[8px] font-semibold text-slate-450">
+                                                @php
+                                                    $srcCounts = $i->defects->groupBy('source')->map->count();
+                                                @endphp
+                                                @foreach ($srcCounts as $sKey => $cnt)
+                                                    <span>{{ ucfirst(strtolower($sKey)) }}: {{ $cnt }}</span>
+                                                    @if(!$loop->last) <span class="text-slate-200">|</span> @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="px-4 py-3.5 text-end font-mono">
                                 {{ number_format((int) $i->rec_quantity) }}
                             </td>
@@ -223,102 +301,86 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3.5 text-end font-mono font-semibold text-slate-900">
-                                {{ number_format($line, 2) }}
+                                {{ $i->currency }} {{ number_format($line, 2) }}
                             </td>
                         </tr>
                         
-                        {{-- Defects Row — Compact Vertical Sub-List --}}
+                        {{-- Collapsible Defects Row --}}
                         @if ($i->defects->count())
-                            <tr class="bg-slate-50/20 border-b border-slate-100">
-                                <td colspan="10" class="px-5 py-3">
-                                    <div class="space-y-2">
-                                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                            Defect Log
+                            <tr x-show="showDefects" class="bg-slate-50/20">
+                                <td colspan="10" class="px-5 py-0 border-none">
+                                    <div x-show="showDefects" x-collapse class="py-3 space-y-2">
+                                        <div class="text-[9px] font-bold text-slate-450 uppercase tracking-widest mb-1.5">
+                                            Logged Defects
                                         </div>
-                                        <div class="space-y-1.5">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                             @foreach ($i->defects as $d)
-                                                @php
-                                                    $severityVal = $d->severity;
-                                                    if ($severityVal instanceof \BackedEnum) {
-                                                        $severityVal = $severityVal->value;
-                                                    } elseif (is_object($severityVal) && method_exists($severityVal, 'value')) {
-                                                        $severityVal = $severityVal->value();
-                                                    } else {
-                                                        $severityVal = (string) $severityVal;
-                                                    }
-                                                    $severityClean = strtoupper(trim($severityVal));
-                                                    $severityColor = match ($severityClean) {
-                                                        'CRITICAL' => 'bg-rose-50 text-rose-700 border-rose-200/60',
-                                                        'MAJOR' => 'bg-amber-50 text-amber-800 border-amber-200/60',
-                                                        'MINOR' => 'bg-blue-50 text-blue-700 border-blue-200/60',
-                                                        default => 'bg-slate-50 text-slate-600 border-slate-200/60'
-                                                    };
-                                                @endphp
-                                                <!-- Defect item row -->
-                                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-white rounded-lg border border-slate-100 shadow-xs">
-                                                    <!-- Left: Badge + Code + Name -->
-                                                    <div class="flex items-center gap-2 flex-wrap">
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border {{ $severityColor }}">
-                                                            {{ $severityVal }}
-                                                        </span>
-                                                        @if($d->code)
-                                                            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-slate-50 rounded text-slate-500 uppercase border border-slate-100">
-                                                                {{ $d->code }}
+                                                <div class="flex items-start justify-between gap-3 p-2.5 rounded-lg border border-slate-100 bg-white hover:bg-slate-50 transition-colors shadow-xs">
+                                                    <div class="flex flex-col gap-0.5">
+                                                        <div class="flex items-center gap-2">
+                                                            {{-- Source Badge --}}
+                                                            @php
+                                                                $srcColors = match($d->source) {
+                                                                    'CUSTOMER' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                                                    'SUPPLIER' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                                                    default => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                                };
+                                                                $srcIcons = match($d->source) {
+                                                                    'CUSTOMER' => 'bi-person-badge',
+                                                                    'SUPPLIER' => 'bi-box-seam',
+                                                                    default => 'bi-building',
+                                                                };
+                                                            @endphp
+                                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold border {{ $srcColors }}">
+                                                                <i class="bi {{ $srcIcons }} text-[8px]"></i>
+                                                                {{ $d->source }}
                                                             </span>
-                                                        @endif
-                                                        <span class="text-xs font-semibold text-slate-900">
-                                                            {{ $d->name }}
-                                                        </span>
-                                                        @if($d->notes)
-                                                            <span class="text-slate-300 hidden sm:inline">|</span>
-                                                            <span class="text-[11px] text-slate-500 italic max-w-md truncate" title="{{ $d->notes }}">
-                                                                "{{ $d->notes }}"
-                                                            </span>
+                                                            <span class="font-semibold text-slate-800 text-[11px]">{{ $d->name }}</span>
+                                                        </div>
+                                                        @if(!empty($d->notes))
+                                                            <div class="text-[10px] text-slate-450 italic pl-1 mt-0.5">
+                                                                <i class="bi bi-chat-left-text text-[9px] mr-1"></i>"{{ $d->notes }}"
+                                                            </div>
                                                         @endif
                                                     </div>
-                                                    
-                                                    <!-- Right: Source + Qty -->
-                                                    <div class="flex items-center gap-4 text-xs font-medium self-end sm:self-auto">
-                                                        <span class="text-slate-400 text-[10px] uppercase tracking-wider">
-                                                            {{ $d->source }}
-                                                        </span>
-                                                        <span class="text-slate-300">|</span>
-                                                        <span class="font-bold text-slate-900 font-mono w-16 text-end">
-                                                            {{ number_format((int) $d->quantity) }}
-                                                        </span>
+                                                    <div class="text-right flex items-center gap-1 font-mono text-[10px] font-bold text-slate-900 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm self-center">
+                                                        <span class="text-slate-400 text-[9px] font-medium">Qty:</span>
+                                                        <span>{{ number_format((int) ($d->quantity ?? 0)) }}</span>
                                                     </div>
                                                 </div>
-                                                <!-- Mobile notes fallback (if long and wrapped) -->
-                                                @if($d->notes)
-                                                    <div class="block sm:hidden pl-2 text-[10px] text-slate-500 italic">
-                                                        Note: "{{ $d->notes }}"
-                                                    </div>
-                                                @endif
                                             @endforeach
                                         </div>
                                     </div>
                                 </td>
                             </tr>
                         @endif
-                    @empty
+                    </tbody>
+                @empty
+                    <tbody>
                         <tr>
                             <td colspan="10" class="px-5 py-8 text-center text-slate-400">
                                 <i class="bi bi-exclamation-circle text-lg block mb-1 text-slate-300"></i>
                                 No items found in this verification report.
                             </td>
                         </tr>
-                    @endforelse
-                </tbody>
+                    </tbody>
+                @endforelse
                 @if ($report->items->count())
                     <tfoot>
-                        <tr class="bg-slate-50/20 text-xs font-bold text-slate-700 border-t border-slate-100">
-                            <td colspan="9" class="px-5 py-3.5 text-end uppercase tracking-wider text-[10px] text-slate-400">Grand Total</td>
-                            <td class="px-5 py-3.5 text-end font-mono text-sm text-slate-900">{{ number_format($monetary, 2) }}</td>
-                        </tr>
+                        @foreach ($grandTotals as $gr)
+                            <tr class="bg-slate-50/20 text-xs font-bold text-slate-700 border-t border-slate-100">
+                                <td colspan="9" class="px-5 py-3.5 text-end uppercase tracking-wider text-[10px] text-slate-400">Grand Total ({{ $gr['currency'] }})</td>
+                                <td class="px-5 py-3.5 text-end font-mono text-sm text-slate-900">{{ $gr['currency'] }} {{ number_format($gr['sum'], 2) }}</td>
+                            </tr>
+                        @endforeach
                     </tfoot>
                 @endif
             </table>
         </div>
+
+        @if ($report->status !== 'DRAFT')
+            @include('partials.workflow-digital-signatures', ['record' => $report])
+        @endif
     </div>
 
     {{-- Contextual Workflow Actions Section --}}
@@ -410,6 +472,7 @@
             @include('partials.file-attachments', [
                 'files' => $report->files,
                 'showDelete' => auth()->user()?->can('update', $report) && $report->status === 'DRAFT',
+                'showUpload' => auth()->user()?->can('update', $report) || auth()->user()?->can('approve', $report),
                 'title' => 'Related Documents',
             ])
         </div>
