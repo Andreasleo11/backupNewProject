@@ -24,13 +24,84 @@ trait VerificationRules
         return [
             'items' => ['array', 'min:1'],
             'items.*.part_name' => ['required', 'string', 'max:255'],
-            'items.*.rec_quantity' => ['required', 'numeric', 'min:0'],
-            'items.*.verify_quantity' => ['required', 'numeric', 'min:0'],
-            'items.*.can_use' => ['required', 'numeric', 'min:0'],
-            'items.*.cant_use' => ['required', 'numeric', 'min:0'],
+            'items.*.rec_quantity' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $parts = explode('.', $attribute);
+                    $index = $parts[1];
+                    $row = $this->items[$index] ?? null;
+                    if ($row) {
+                        $recQuantity = (int)$value;
+                        $verifyQuantity = (int)($row['verify_quantity'] ?? 0);
+                        if ($verifyQuantity > $recQuantity) {
+                            $fail("Received Qty ({$recQuantity}) cannot be less than Verified Qty ({$verifyQuantity}).");
+                        }
+                    }
+                }
+            ],
+            'items.*.verify_quantity' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $parts = explode('.', $attribute);
+                    $index = $parts[1];
+                    $row = $this->items[$index] ?? null;
+                    if ($row) {
+                        $recQuantity = (int)($row['rec_quantity'] ?? 0);
+                        $verifyQuantity = (int)$value;
+                        if ($verifyQuantity > $recQuantity) {
+                            $fail("Verified Qty ({$verifyQuantity}) cannot exceed Received Qty ({$recQuantity}).");
+                        }
+
+                        $canUse = (int)($row['can_use'] ?? 0);
+                        $cantUse = (int)($row['cant_use'] ?? 0);
+                        if (($canUse + $cantUse) > $verifyQuantity) {
+                            $fail("Verified Qty ({$verifyQuantity}) cannot be less than the sum of Can Use ({$canUse}) and Can't Use ({$cantUse}).");
+                        }
+                    }
+                }
+            ],
+            'items.*.can_use' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $parts = explode('.', $attribute);
+                    $index = $parts[1];
+                    $row = $this->items[$index] ?? null;
+                    if ($row) {
+                        $canUse = (int)$value;
+                        $cantUse = (int)($row['cant_use'] ?? 0);
+                        $verifyQuantity = (int)($row['verify_quantity'] ?? 0);
+                        if (($canUse + $cantUse) > $verifyQuantity) {
+                            $fail("The sum of Can Use ({$canUse}) and Can't Use ({$cantUse}) cannot exceed Verified Qty ({$verifyQuantity}).");
+                        }
+                    }
+                }
+            ],
+            'items.*.cant_use' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $parts = explode('.', $attribute);
+                    $index = $parts[1];
+                    $row = $this->items[$index] ?? null;
+                    if ($row) {
+                        $canUse = (int)($row['can_use'] ?? 0);
+                        $cantUse = (int)$value;
+                        $verifyQuantity = (int)($row['verify_quantity'] ?? 0);
+                        if (($canUse + $cantUse) > $verifyQuantity) {
+                            $fail("The sum of Can Use ({$canUse}) and Can't Use ({$cantUse}) cannot exceed Verified Qty ({$verifyQuantity}).");
+                        }
+                    }
+                }
+            ],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.currency' => ['required', 'string', 'max:10'],
-
         ];
     }
 
@@ -42,7 +113,7 @@ trait VerificationRules
             'items.*.defects.*.name' => ['required', 'string', 'max:191'],
             'items.*.defects.*.severity' => ['nullable', 'in:LOW,MEDIUM,HIGH'],
             'items.*.defects.*.source' => ['required', 'in:DAIJO,CUSTOMER,SUPPLIER'],
-            'items.*.defects.*.quantity' => ['required', 'numeric', 'min:1'],
+            'items.*.defects.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.defects.*.notes' => ['nullable', 'string'],
         ];
     }

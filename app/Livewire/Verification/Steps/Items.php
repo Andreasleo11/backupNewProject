@@ -3,8 +3,12 @@
 namespace App\Livewire\Verification\Steps;
 
 use App\Livewire\Verification\Concerns\VerificationRules;
+use App\Models\MasterDataRogPartName;
+use App\Models\MasterDataPartPriceLog;
+use App\Infrastructure\Persistence\Eloquent\Models\DefectCatalog;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
 class Items extends Component
@@ -18,11 +22,23 @@ class Items extends Component
 
     public string $defaultCurrency = 'IDR';
 
+    #[Reactive]
     public ?int $activeItem = null;
 
-    public bool $pasteDialog = false;
+    public array $partSuggestions = [];
 
-    public string $pasteBuffer = '';
+    // Catalog lookup & suggestions for defects
+    public ?int $pickerForItem = null;
+    public string $defectSearch = '';
+    public array $catalogResults = [];
+    public array $defectSuggestions = [];
+    public string $activeTab = 'details';
+
+    #[On('switch-tab')]
+    public function handleSwitchTab(string $tab): void
+    {
+        $this->activeTab = $tab;
+    }
 
     protected function messages(): array
     {
@@ -34,9 +50,88 @@ class Items extends Component
         return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
     }
 
-    public function updated()
+    public function updated($propertyName)
     {
-        $this->validate($this->rulesItems());
+        $this->validateOnly($propertyName, $this->rulesItems());
+        $this->validateOnly($propertyName, $this->rulesDefects());
+    }
+
+    public function updatedItems($value, $key): void
+    {
+        // 1. Part Name Suggestions & Price fetch
+        if (str_ends_with($key, '.part_name')) {
+            $parts = explode('.', $key);
+            $index = (int)$parts[0];
+
+            if ($value) {
+                $this->partSuggestions[$index] = MasterDataRogPartName::where('name', 'like', "%{$value}%")
+                    ->orderBy('name')
+                    ->limit(15)
+                    ->pluck('name')
+                    ->toArray();
+
+                $partCode = explode('/', $value)[0];
+                if ($partCode) {
+                    $latestPrice = MasterDataPartPriceLog::where('part_code', $partCode)
+                        ->orderByDesc('created_at')
+                        ->orderByDesc('id')
+                        ->value('price');
+                    if ($latestPrice !== null) {
+                        $this->items[$index]['price'] = (float)$latestPrice;
+                    }
+                }
+            } else {
+                $this->partSuggestions[$index] = [];
+            }
+        }
+
+        // 2. Defect Name Suggestions & Catalog Auto-fill
+        if (str_contains($key, '.defects.') && (str_ends_with($key, '.name') || str_ends_with($key, '.code'))) {
+            $parts = explode('.', $key);
+            $itemIndex = (int)$parts[1];
+            $defectIndex = (int)$parts[3];
+            $searchField = str_ends_with($key, '.name') ? 'name' : 'code';
+
+            if ($value) {
+                $suggestions = DefectCatalog::where('active', true)
+                    ->where($searchField, 'like', "%{$value}%")
+                    ->limit(15)
+                    ->get();
+
+                $this->defectSuggestions[$defectIndex] = $suggestions->map(fn($r) => [
+                    'code' => $r->code,
+                    'name' => $r->name,
+                    'severity' => $r->default_severity?->value ?? (string)$r->default_severity,
+                    'source' => $r->default_source?->value ?? (string)$r->default_source,
+                    'quantity' => (int)$r->default_quantity,
+                    'notes' => $r->notes,
+                ])->toArray();
+
+                $match = $suggestions->first(fn($r) => strcasecmp(trim($r->{$searchField}), trim($value)) === 0);
+                if ($match) {
+                    $this->items[$itemIndex]['defects'][$defectIndex]['code'] = $match->code;
+                    $this->items[$itemIndex]['defects'][$defectIndex]['name'] = $match->name;
+                    $this->items[$itemIndex]['defects'][$defectIndex]['severity'] = $match->default_severity?->value ?? (string)$match->default_severity;
+                    $this->items[$itemIndex]['defects'][$defectIndex]['source'] = $match->default_source?->value ?? (string)$match->default_source;
+                    $this->items[$itemIndex]['defects'][$defectIndex]['quantity'] = (int)$match->default_quantity;
+                    if (empty($this->items[$itemIndex]['defects'][$defectIndex]['notes'])) {
+                        $this->items[$itemIndex]['defects'][$defectIndex]['notes'] = $match->notes;
+                    }
+                    
+                    // Automatically re-calculate Cant Use quantity after auto-filling defect quantity
+                    $this->fillCantUseFromDefects($itemIndex);
+                } else {
+                    // If no longer a catalog match, check if it had a catalog code
+                    // and replace it with an auto-generated CUST- code.
+                    $currentCode = $this->items[$itemIndex]['defects'][$defectIndex]['code'] ?? '';
+                    if (empty($currentCode) || !str_starts_with($currentCode, 'CUST-')) {
+                        $this->items[$itemIndex]['defects'][$defectIndex]['code'] = 'CUST-' . strtoupper(\Illuminate\Support\Str::random(6));
+                    }
+                }
+            } else {
+                $this->defectSuggestions[$defectIndex] = [];
+            }
+        }
     }
 
     #[On('request-validate')]
@@ -48,14 +143,19 @@ class Items extends Component
 
         try {
             $this->validate($this->rulesItems());
+            $this->validate($this->rulesDefects());
             $this->resetErrorBag();
             $this->dispatch('step-valid', step: 2);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
             $this->dispatch('step-invalid', step: 2, errors: $e->errors());
-
             return;
         }
+    }
+
+    public function selectItem(int $i): void
+    {
+        $this->dispatch('go-to-item', index: $i);
     }
 
     public function addItem(): void
@@ -72,7 +172,9 @@ class Items extends Component
         ];
         if ($this->activeItem === null) {
             $this->activeItem = 0;
-            $this->dispatch('active-item-updated', index: 0);
+            $this->dispatch('go-to-item', index: 0);
+        } else {
+            $this->dispatch('go-to-item', index: count($this->items) - 1);
         }
     }
 
@@ -82,58 +184,57 @@ class Items extends Component
         $this->items = array_values($this->items);
         if ($this->activeItem !== null) {
             if (! array_key_exists($this->activeItem, $this->items)) {
-                $this->activeItem = count($this->items) ? 0 : null;
-                $this->dispatch('active-item-updated', index: $this->activeItem);
+                $newActive = count($this->items) ? 0 : null;
+                if ($newActive !== null) {
+                    $this->dispatch('go-to-item', index: $newActive);
+                } else {
+                    $this->activeItem = null;
+                }
             }
         }
     }
 
-    public function applyDefaultCurrency(): void
-    {
-        foreach ($this->items as &$r) {
-            $r['currency'] = $this->defaultCurrency ?: ($r['currency'] ?? 'IDR');
-        }
-        unset($r);
-    }
-
     public function fillCantUseFromDefects(int $i): void
     {
-        $sum = collect($this->items[$i]['defects'] ?? [])->sum(fn ($d) => (float) ($d['quantity'] ?? 0));
-        $this->items[$i]['cant_use'] = round((float) $sum, 4);
-    }
-
-    public function fillAllCantUseFromDefects(): void
-    {
-        foreach ($this->items as $i => $_) {
-            $this->fillCantUseFromDefects($i);
-        }
+        $sum = collect($this->items[$i]['defects'] ?? [])->sum(fn ($d) => (int) ($d['quantity'] ?? 0));
+        $this->items[$i]['cant_use'] = (int) $sum;
     }
 
     public function insertItemBelow(int $i): void
     {
         $empty = [
             'part_name' => '',
-            'rec_quantity' => 0,
-            'verify_quantity' => 0,
-            'can_use' => 0,
-            'cant_use' => 0,
+            'rec_quantity' => null,
+            'verify_quantity' => null,
+            'can_use' => null,
+            'cant_use' => null,
             'price' => 0,
             'currency' => $this->defaultCurrency ?: 'IDR',
             'defects' => [],
         ];
         array_splice($this->items, $i + 1, 0, [$empty]);
+        $this->dispatch('go-to-item', index: $i + 1);
     }
 
     public function duplicateItem(int $i): void
     {
         $copy = $this->items[$i];
         array_splice($this->items, $i + 1, 0, [$copy]);
+        $this->dispatch('go-to-item', index: $i + 1);
     }
 
     public function moveItemUp(int $i): void
     {
         if ($i > 0) {
             [$this->items[$i - 1], $this->items[$i]] = [$this->items[$i], $this->items[$i - 1]];
+            
+            $newActive = $this->activeItem;
+            if ($this->activeItem === $i) {
+                $newActive = $i - 1;
+            } elseif ($this->activeItem === $i - 1) {
+                $newActive = $i;
+            }
+            $this->dispatch('go-to-item', index: $newActive);
         }
     }
 
@@ -141,78 +242,115 @@ class Items extends Component
     {
         if ($i < count($this->items) - 1) {
             [$this->items[$i + 1], $this->items[$i]] = [$this->items[$i], $this->items[$i + 1]];
+            
+            $newActive = $this->activeItem;
+            if ($this->activeItem === $i) {
+                $newActive = $i + 1;
+            } elseif ($this->activeItem === $i + 1) {
+                $newActive = $i;
+            }
+            $this->dispatch('go-to-item', index: $newActive);
         }
     }
 
-    /* ---------------- Paste handler ---------------- */
-
-    public function applyPastedItems(): void
+    public function openDefectPicker(int $itemIndex): void
     {
-        $rows = preg_split('/\r\n|\r|\n/', trim($this->pasteBuffer));
-        $addedCount = 0;
-        $duplicateCount = 0;
+        $this->pickerForItem = $itemIndex;
+        $this->defectSearch = '';
+        $this->catalogResults = DefectCatalog::where('active', true)
+            ->orderBy('code')
+            ->limit(15)
+            ->get()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'code' => $r->code,
+                'name' => $r->name,
+                'severity' => $r->default_severity?->value ?? (string)$r->default_severity,
+                'source' => $r->default_source?->value ?? (string)$r->default_source,
+                'quantity' => (int)$r->default_quantity,
+                'notes' => $r->notes,
+            ])
+            ->toArray();
+    }
 
-        foreach ($rows as $line) {
-            if (trim($line) === '') {
-                continue;
-            }
-            $cols = str_getcsv($line, (str_contains($line, "\t") ? "\t" : ','));
-            
-            $partName = mb_substr(trim($cols[0] ?? ''), 0, 255);
-            if ($partName === '') {
-                continue;
-            }
+    public function closeDefectPicker(): void
+    {
+        $this->pickerForItem = null;
+        $this->defectSearch = '';
+        $this->catalogResults = [];
+    }
 
-            $recQty = max(0.0, (float) ($cols[1] ?? 0));
-            $verifyQty = max(0.0, (float) ($cols[2] ?? 0));
-            $canUse = max(0.0, (float) ($cols[3] ?? 0));
-            $cantUse = max(0.0, (float) ($cols[4] ?? 0));
-            $price = max(0.0, (float) ($cols[5] ?? 0));
-            $currency = mb_substr(trim($cols[6] ?? ($this->defaultCurrency ?: 'IDR')), 0, 10);
+    public function updatedDefectSearch(): void
+    {
+        $s = "%{$this->defectSearch}%";
+        $q = DefectCatalog::where('active', true);
+        if ($this->defectSearch !== '') {
+            $q->where(fn ($qq) => $qq->where('code', 'like', $s)->orWhere('name', 'like', $s));
+        }
+        $this->catalogResults = $q->orderBy('code')
+            ->limit(15)
+            ->get()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'code' => $r->code,
+                'name' => $r->name,
+                'severity' => $r->default_severity?->value ?? (string)$r->default_severity,
+                'source' => $r->default_source?->value ?? (string)$r->default_source,
+                'quantity' => (int)$r->default_quantity,
+                'notes' => $r->notes,
+            ])
+            ->toArray();
+    }
 
-            // Check if this exact item already exists in the list to prevent double pasting
-            $isDuplicate = false;
-            foreach ($this->items as $existing) {
-                if (strcasecmp($existing['part_name'], $partName) === 0 &&
-                    (float)$existing['rec_quantity'] === $recQty &&
-                    (float)$existing['verify_quantity'] === $verifyQty &&
-                    (float)$existing['price'] === $price) {
-                    $isDuplicate = true;
-                    break;
-                }
-            }
-
-            if ($isDuplicate) {
-                $duplicateCount++;
-                continue;
-            }
-
-            $this->items[] = [
-                'part_name' => $partName,
-                'rec_quantity' => $recQty,
-                'verify_quantity' => $verifyQty,
-                'can_use' => $canUse,
-                'cant_use' => $cantUse,
-                'price' => $price,
-                'currency' => $currency,
-                'defects' => [],
-            ];
-            $addedCount++;
+    public function pickCatalogDefect(int $catalogId): void
+    {
+        if ($this->pickerForItem === null) {
+            return;
         }
 
-        $this->pasteBuffer = '';
-        $this->pasteDialog = false;
+        $c = DefectCatalog::findOrFail($catalogId);
+        $row = [
+            'code' => $c->code,
+            'name' => $c->name,
+            'severity' => $c->default_severity?->value ?? (string) $c->default_severity,
+            'source' => $c->default_source?->value ?? (string) $c->default_source,
+            'quantity' => (int) $c->default_quantity,
+            'notes' => $c->notes,
+        ];
+        $this->items[$this->pickerForItem]['defects'] =
+            array_values(array_merge($this->items[$this->pickerForItem]['defects'] ?? [], [$row]));
 
-        if ($this->activeItem === null && count($this->items)) {
-            $this->activeItem = 0;
-            $this->dispatch('active-item-updated', index: 0);
-        }
+        // Update cant_use automatically
+        $this->fillCantUseFromDefects($this->pickerForItem);
 
-        if ($duplicateCount > 0) {
-            session()->flash('warning', "Imported {$addedCount} items. Ignored {$duplicateCount} duplicate rows.");
-        } else {
-            session()->flash('ok', "Imported {$addedCount} items successfully.");
-        }
+        $this->closeDefectPicker();
+    }
+
+    public function addDefect(int $itemIndex): void
+    {
+        $this->addCustomDefect($itemIndex);
+    }
+
+    public function addCustomDefect(int $itemIndex): void
+    {
+        $this->items[$itemIndex]['defects'][] = [
+            'code' => 'CUST-' . strtoupper(\Illuminate\Support\Str::random(6)),
+            'name' => '',
+            'severity' => 'LOW',
+            'source' => 'DAIJO',
+            'quantity' => null,
+            'notes' => null,
+        ];
+        $this->closeDefectPicker();
+        $defectIdx = array_key_last($this->items[$itemIndex]['defects']);
+        $this->dispatch('focus-field', key: "items.{$itemIndex}.defects.{$defectIdx}.name");
+    }
+
+    public function removeDefect(int $itemIndex, int $defectIndex): void
+    {
+        unset($this->items[$itemIndex]['defects'][$defectIndex]);
+        $this->items[$itemIndex]['defects'] = array_values($this->items[$itemIndex]['defects']);
+        $this->fillCantUseFromDefects($itemIndex);
     }
 
     public function render()

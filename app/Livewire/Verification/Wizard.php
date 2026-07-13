@@ -50,12 +50,12 @@ class Wizard extends Component
 
     protected function messages(): array
     {
-        return method_exists($this, 'messagesAll') ? $this->messagesAll() : [];
+        return $this->messagesAll();
     }
 
     protected function validationAttributes(): array
     {
-        return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
+        return $this->attributesAll();
     }
 
     protected function reportKey(): string
@@ -176,33 +176,55 @@ class Wizard extends Component
         if (! array_key_exists($i, $this->items)) {
             return;
         }
+
+        if ($this->step === 1) {
+            try {
+                $this->validate($this->rulesHeader());
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->setErrorBag($e->validator->errors());
+                return;
+            }
+        }
+
         $this->activeItem = $i;
-        $this->step = 3;
+        $this->step = 2;
         $this->autosaveDraft();
+    }
+
+    #[On('go-to-item')]
+    public function handleGoToItem(int $index): void
+    {
+        $this->goToItem($index);
     }
 
     #[On('go-to-step')]
     public function goToStep(int $step): void
     {
+        $step = max(1, min(3, $step));
+
         // Guard transitions forward with validation
         if ($step > $this->step) {
             if ($this->step === 1) {
                 $this->validate($this->rulesHeader());
             }
             if ($this->step === 2) {
-                $this->validate($this->rulesItems());
-            }
-            if ($this->step === 3) {
-                $this->validate($this->rulesDefects());
+                try {
+                    $this->validate($this->rulesItems());
+                    $this->validate($this->rulesDefects());
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    $errors = $e->validator->errors()->toArray();
+                    $this->setErrorBag($e->validator->errors());
+                    $this->autoSelectFirstInvalidItem($errors);
+                    throw $e;
+                }
             }
         }
-        $this->step = max(1, min(4, $step));
+        $this->step = $step;
 
-        // When entering Step 3, ensure an active item exists
-        if ($this->step === 3) {
+        // When entering Step 2, ensure an active item exists
+        if ($this->step === 2) {
             if (count($this->items) === 0) {
-                $this->step = 2;
-
+                $this->step = 1;
                 return;
             }
             if ($this->activeItem === null || ! array_key_exists($this->activeItem, $this->items)) {
@@ -233,9 +255,9 @@ class Wizard extends Component
 
         $this->resetErrorBag();
 
-        $this->step = min(4, $this->step + 1);
+        $this->step = min(3, $this->step + 1);
 
-        if ($this->step === 4) {
+        if ($this->step === 3) {
             $this->previewVersion++;
         }
 
@@ -249,10 +271,26 @@ class Wizard extends Component
             return;
         }
 
-        $this->setErrorBag(new MessageBag($errors));
+        $this->setErrorBag(new \Illuminate\Support\MessageBag($errors));
+        $this->autoSelectFirstInvalidItem($errors);
+    }
 
-        // optional if want to broadcast to other children as well
-        // $this->dispatch('validation-errors-updated', errors: $errors);
+    private function autoSelectFirstInvalidItem(array $errors): void
+    {
+        foreach ($errors as $key => $messages) {
+            if (str_starts_with($key, 'items.')) {
+                $parts = explode('.', $key);
+                $index = isset($parts[1]) ? (int)$parts[1] : null;
+                if ($index !== null && array_key_exists($index, $this->items)) {
+                    $this->activeItem = $index;
+                    $this->dispatch('active-item-updated', index: $index);
+
+                    $tab = str_contains($key, '.defects.') ? 'defects' : 'details';
+                    $this->dispatch('switch-tab', tab: $tab);
+                    break;
+                }
+            }
+        }
     }
 
     public function save(CreateReport $create, UpdateReport $update): void

@@ -13,6 +13,8 @@ class VerificationItem extends Model
         'verification_report_id', 'part_name',
         'rec_quantity', 'verify_quantity', 'can_use', 'cant_use',
         'price', 'currency', 'do_number',
+        // adjust form bridge columns
+        'fg_measure', 'fg_warehouse_name', 'remark',
     ];
 
     protected $casts = [
@@ -31,5 +33,13 @@ class VerificationItem extends Model
     public function defects()
     {
         return $this->hasMany(VerificationItemDefect::class, 'verification_item_id');
+    }
+
+    /**
+     * Adjust form raw material masters, keyed by detail_id (bridged column).
+     */
+    public function adjustdetail()
+    {
+        return $this->hasMany(\App\Models\FormAdjustMaster::class, 'detail_id', 'id');
     }
 }

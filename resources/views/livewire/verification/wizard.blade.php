@@ -1,402 +1,194 @@
-<div class="container-fluid">
-    <div class="row">
+<div class="w-full bg-slate-50/50 min-h-screen" x-data="{ openDiscard: false }">
+    <main class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8" x-data="{ step: @entangle('step') }" x-init="$root.addEventListener('input', () => $wire.set('isDirty', true), { capture: true });
+    $root.addEventListener('change', () => $wire.set('isDirty', true), { capture: true });"
+        x-on:livewire:navigated.window="$wire.set('isDirty', true)">
 
-        {{-- LEFT SIDEBAR (custom stepper) --}}
+        {{-- STEPPER CONSTANTS --}}
         @php
-            $labels = [1 => 'Header', 2 => 'Items', 3 => 'Defects', 4 => 'Preview'];
+            $labels = [1 => 'Header', 2 => 'Items & Defects', 3 => 'Preview'];
             $statuses = [
                 1 => $errors->hasAny(['form.*']) ? 'error' : (filled($form['customer']) ? 'done' : 'todo'),
-                2 =>
-                    ($errors->hasAny(['items']) || $errors->hasAny(['items.*'])) &&
-                    !$errors->hasAny(['items.*.defects.*'])
-                        ? 'error'
-                        : (count($items)
-                            ? 'done'
-                            : 'todo'),
-                3 => $errors->hasAny(['items.*.defects', 'items.*.defects.*']) ? 'error' : 'done',
-                4 => 'todo',
+                2 => ($errors->hasAny(['items', 'items.*'])) ? 'error' : (count($items) ? 'done' : 'todo'),
+                3 => 'todo',
             ];
         @endphp
 
-        <aside class="d-none d-lg-block col-lg-2 border-end bg-body position-sticky stepper-aside"
-            style="top: 0; height: 100vh; overflow-y: auto;">
-            <div class="p-2">
-                <div class="stepper-title">Steps</div>
-                <nav class="stepper" aria-label="Wizard steps">
-                    <ol class="stepper-list">
-                        @foreach ($labels as $s => $label)
-                            @php
-                                $state = $statuses[$s]; // 'todo' | 'done' | 'error'
-                                $isActive = $step === $s;
-                            @endphp
+        {{-- Top toolbar --}}
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-4 border-b border-slate-200 pb-4">
+            <div>
+                <div class="flex items-center flex-wrap gap-2">
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        {{ $report?->id ? "Edit Verification Report" : 'New Verification Report' }}
+                    </h1>
+                    @if ($lastAutosaveAt)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                            <i class="bi bi-cloud-check"></i> Autosaved at {{ $lastAutosaveAt }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-500 border border-slate-200">
+                            <i class="bi bi-cloud"></i> Autosave active
+                        </span>
+                    @endif
 
-                            <li class="stepper-item {{ $state }} {{ $isActive ? 'active' : '' }}">
-                                <div class="stepper-node">
-                                    <span class="stepper-bullet" aria-hidden="true">
-                                        {{-- State glyphs: check / ! / number --}}
-                                        @if ($state === 'done')
-                                            <i class="bi bi-check-lg"></i>
-                                        @elseif($state === 'error')
-                                            <i class="bi bi-exclamation-lg"></i>
-                                        @else
-                                            <span class="stepper-number">{{ $s }}</span>
-                                        @endif
-                                    </span>
-                                    <button type="button" class="stepper-label"
-                                        wire:click="goToStep({{ $s }})"
-                                        aria-current="{{ $isActive ? 'step' : 'false' }}"
-                                        aria-label="Go to step {{ $s }}: {{ $label }}">
-                                        <span class="stepper-label-main">{{ $label }}</span>
-                                        <span class="stepper-label-sub">
-                                            @if ($state === 'done')
-                                                Ready
-                                            @elseif($state === 'error')
-                                                Needs fixing
-                                            @else
-                                                To-do
-                                            @endif
-                                        </span>
-                                    </button>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ol>
-                </nav>
-            </div>
-        </aside>
-
-        @pushOnce('extraCss')
-            <style>
-                /* Tokens */
-                .stepper-aside {
-                    --sp-1: .25rem;
-                    --sp-2: .5rem;
-                    --sp-3: .75rem;
-                    --sp-4: 1rem;
-                    --fg: var(--bs-body-color);
-                    --muted: var(--bs-secondary-color, #6c757d);
-                    --ok: #0ea5e9;
-                    /* cyan-ish primary */
-                    --ok-weak: color-mix(in srgb, var(--ok) 16%, transparent);
-                    --err: #ef4444;
-                    --ring: color-mix(in srgb, var(--ok) 24%, transparent);
-                    --bg-alt: color-mix(in srgb, var(--bs-body-bg) 92%, black);
-                }
-
-                .stepper-title {
-                    font-size: .75rem;
-                    text-transform: uppercase;
-                    letter-spacing: .08em;
-                    color: var(--muted);
-                    margin-bottom: var(--sp-2);
-                    font-weight: 600;
-                }
-
-                .stepper {
-                    position: relative;
-                }
-
-                .stepper-list {
-                    list-style: none;
-                    margin: 0;
-                    padding: 0;
-                }
-
-                .stepper-item {
-                    position: relative;
-                }
-
-                .stepper-item+.stepper-item {
-                    margin-top: .5rem;
-                }
-
-                .stepper-node {
-                    display: grid;
-                    grid-template-columns: 1.75rem 1fr;
-                    gap: var(--sp-2);
-                    align-items: center;
-                }
-
-                .stepper-bullet {
-                    width: 1.25rem;
-                    height: 1.25rem;
-                    border-radius: 999px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: var(--bg-alt);
-                    color: var(--muted);
-                    border: 1px solid color-mix(in srgb, var(--fg) 8%, transparent);
-                    margin-left: .25rem;
-                    font-size: .85rem;
-                }
-
-                .stepper-number {
-                    font-size: .75rem;
-                    line-height: 1;
-                    font-weight: 600;
-                    transform: translateY(-.5px);
-                }
-
-                .stepper-label {
-                    appearance: none;
-                    background: transparent;
-                    border: 0;
-                    padding: .35rem .5rem;
-                    border-radius: .5rem;
-                    width: 100%;
-                    text-align: left;
-                    cursor: pointer;
-                }
-
-                .stepper-label:hover {
-                    background: color-mix(in srgb, var(--fg) 6%, transparent);
-                }
-
-                .stepper-label:focus-visible {
-                    outline: 2px solid var(--ring);
-                    outline-offset: 2px;
-                }
-
-                .stepper-label-main {
-                    display: block;
-                    font-weight: 600;
-                    color: var(--fg);
-                }
-
-                .stepper-label-sub {
-                    display: block;
-                    font-size: .75rem;
-                    color: var(--muted);
-                    margin-top: 2px;
-                }
-
-                /* States */
-                .stepper-item.done .stepper-bullet {
-                    background: var(--ok-weak);
-                    color: var(--ok);
-                    border-color: var(--ok-weak);
-                }
-
-                .stepper-item.error .stepper-bullet {
-                    background: color-mix(in srgb, var(--err) 12%, transparent);
-                    color: var(--err);
-                    border-color: color-mix(in srgb, var(--err) 22%, transparent);
-                }
-
-                .stepper-item.active .stepper-label {
-                    background: color-mix(in srgb, var(--ok) 8%, transparent);
-                    box-shadow: inset 0 0 0 1px var(--ring);
-                }
-
-                .stepper-item.active .stepper-bullet {
-                    background: var(--ok);
-                    color: #fff;
-                    border-color: var(--ok);
-                }
-
-                .stepper-item.active .stepper-label-main {
-                    color: var(--ok);
-                }
-
-                /* High-contrast/dark tweaks */
-                @media (prefers-color-scheme: dark) {
-                    .stepper-aside {
-                        --ok-weak: color-mix(in srgb, var(--ok) 26%, transparent);
-                        --bg-alt: color-mix(in srgb, var(--bs-body-bg) 70%, white);
-                    }
-                }
-            </style>
-        @endPushOnce
-
-        {{-- RIGHT CONTENT --}}
-        <main class="col-12 col-lg-10">
-            <div class="container py-4" x-data="{ step: @entangle('step') }" x-init="$root.addEventListener('input', () => $wire.set('isDirty', true), { capture: true });
-            $root.addEventListener('change', () => $wire.set('isDirty', true), { capture: true });"
-                x-on:livewire:navigated.window="$wire.set('isDirty', true)">
-
-                <span class="badge bg-warning-subtle text-warning-emphasis d-none" wire:dirty.class.remove="d-none"
-                    wire:target="form,items,defaultCurrency">
-                    Editing…
-                </span>
-
-
-                {{-- Top toolbar --}}
-                <div class="d-flex justify-content-between mb-3">
-                    <div>
-                        <h3 class="mb-0 fw-bold">
-                            {{ $report?->id ? "Edit Verification Report #{$report->id}" : 'New Verification Report' }}
-                        </h3>
-                        @if (!$report?->id)
-                            <p class="text-muted">This report will be auto-saved as a draft. You can close the form and
-                                continue editing it later.</p>
-                        @else
-                            @if ($report?->document_number)
-                                <div class="small text-muted">Doc#: <span
-                                        class="fw-semibold">{{ $report->document_number }}</span></div>
-                            @endif
-                        @endif
-                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
-                            @if ($autosaveEnabled)
-                                <div wire:poll.keep-alive.{{ (int) $autosaveMs }}ms="autosaveDraft" class="d-none">
-                                </div>
-                            @endif
-                            <span>
-                                @if ($lastAutosaveAt)
-                                    Autosaved at {{ $lastAutosaveAt }}
-                                @else
-                                    Autosave enabled (every {{ (int) ($autosaveMs / 1000) }}s)
-                                @endif
-                            </span>
-                        </div>
-                    </div>
-
-                    <div x-data="{
-                        confirmDiscard() {
-                            const el = document.getElementById('discardDraftModal');
-                            if (!el) return;
-                            const modal = bootstrap.Modal.getOrCreateInstance(el);
-                            modal.show();
-                        }
-                    }">
-                        <button class="btn btn-outline-danger" @click="confirmDiscard()">
-                            <i class="bi bi-trash"></i> Discard draft
-                        </button>
-
-                        <div wire:ignore.self class="modal fade" id="discardDraftModal" tabindex="-1"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Discard draft?</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        This will permanently remove the auto-saved draft for this report.
-                                        <br><span class="text-muted small">You can’t undo this action.</span>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-outline-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button class="btn btn-danger" wire:click="clearDraft" data-bs-dismiss="modal">
-                                            <i class="bi bi-trash"></i> Discard draft
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hidden" 
+                          wire:dirty.class.remove="hidden"
+                          wire:target="form,items,defaultCurrency">
+                        <i class="bi bi-pencil"></i> Unsaved changes
+                    </span>
                 </div>
-
-                {{-- MOBILE/HYBRID progress bar --}}
-                <div class="mb-4 d-flex align-items-center column-gap-3 d-lg-none">
-                    @php
-                        $stepsBar = [1 => 'Header', 2 => 'Items', 3 => 'Defects', 4 => 'Preview'];
-                        $totalSteps = count($stepsBar);
-                    @endphp
-                    @foreach ($stepsBar as $s => $label)
-                        <div class="text-center">
-                            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px; font-weight: bold; transition: all 0.7s ease;"
-                                :class="{
-                                    'bg-primary text-white border-primary': step >= {{ $s }},
-                                    'bg-transparent text-primary border border-primary': step < {{ $s }}
-                                }">
-                                {{ $s }}</div>
-                            <small class="d-block mt-1">{{ $label }}</small>
-                        </div>
-                        @if ($s < $totalSteps)
-                            <div class="flex-grow-1 mx-2">
-                                <div class="progress" style="height:6px;">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                        :class="step > {{ $s }} ? 'bg-primary' : 'bg-light'"
-                                        :style="'width: ' + (step > {{ $s }} ? '100%' : '0%') +
-                                        '; transition: width .7s ease;'">
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-
-                {{-- Errors (unchanged) --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <div class="fw-semibold mb-1">Please fix the following:</div>
-                        <ul class="mb-0">
-                            @foreach ($errors->toArray() as $field => $messages)
-                                @php $anchor = 'fld-' . preg_replace('/[^a-z0-9\-]+/i', '-', $field); @endphp
-                                <li>
-                                    <a href="#{{ $anchor }}" class="alert-link"
-                                        onclick="const el=document.getElementById('{{ $anchor }}'); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); } return false;">
-                                        {{ $messages[0] }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
+                @if ($report?->document_number)
+                    <div class="text-sm text-slate-500 mt-1">
+                        Document Number: <span class="font-bold text-slate-800">{{ $report->document_number }}</span>
                     </div>
+                @else
+                    <div class="text-sm text-slate-500 mt-1">This report is automatically saved as a draft.</div>
                 @endif
 
-                {{-- Sections (unchanged) --}}
-                <section x-show="step === 1" x-cloak>
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <livewire:verification.steps.header wire:model="form" wire:key="step-header" />
+                @if ($autosaveEnabled)
+                    <div wire:poll.keep-alive.{{ (int) $autosaveMs }}ms="autosaveDraft" class="hidden"></div>
+                @endif
+            </div>
+
+            <div>
+                <button class="inline-flex items-center justify-center font-medium rounded-lg text-xs px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 transition-colors" @click="openDiscard = true">
+                    <i class="bi bi-trash mr-1"></i> Discard draft
+                </button>
+
+                {{-- Tailwind Discard Modal --}}
+                <div x-show="openDiscard" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" x-cloak>
+                    <div class="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" @click="openDiscard = false"></div>
+                    <div class="flex min-h-full items-center justify-center p-4">
+                        <div class="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-slate-100" @click.outside="openDiscard = false">
+                            <h3 class="text-lg font-bold text-slate-900">Discard draft?</h3>
+                            <p class="mt-2 text-sm text-slate-500">This will permanently remove the auto-saved draft for this report.</p>
+                            <div class="mt-2 text-xs font-semibold text-red-600 flex items-center gap-1">
+                                <i class="bi bi-exclamation-triangle-fill"></i> You cannot undo this action.
+                            </div>
+                            <div class="mt-6 flex justify-end gap-3">
+                                <button type="button" class="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="openDiscard = false">Cancel</button>
+                                <button type="button" class="px-3 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700" wire:click="clearDraft" @click="openDiscard = false">Discard draft</button>
+                            </div>
                         </div>
-                    </div>
-                </section>
-
-                <section x-show="step === 2" x-cloak>
-                    <div class="card border-0">
-                        <div class="card-body pb-0">
-                            <livewire:verification.steps.items wire:model="items" :customer="$form['customer']" :default-currency="$defaultCurrency"
-                                :active-item="$activeItem" wire:key="step-items" />
-                        </div>
-                    </div>
-                </section>
-
-                <section x-show="step === 3" x-cloak>
-                    <div class="card border-0">
-                        <div class="card-body pb-0">
-                            <livewire:verification.steps.defects wire:model="items" :active-item="$activeItem"
-                                wire:key="step-defects" />
-                        </div>
-                    </div>
-                </section>
-
-                <section x-show="step === 4" x-cloak>
-                    <livewire:verification.steps.preview :form="$form" :items="$items"
-                        wire:key="preview-{{ $previewVersion }}" />
-                </section>
-
-                {{-- Sticky action bar (unchanged) --}}
-                <div class="position-sticky bottom-0 bg-body border-top py-2 mt-3" style="z-index:10">
-                    <div class="d-flex justify-content-end gap-2 align-items-center">
-                        @if ($step > 1)
-                            <button class="btn btn-outline-secondary" wire:click="prevStep"><i
-                                    class="bi bi-arrow-left"></i> Back</button>
-                        @else
-                            <a href="{{ route('verification.index') }}" class="btn btn-outline-secondary"><i
-                                    class="bi bi-list"></i> List</a>
-                        @endif
-
-                        @if ($step < 4)
-                            <button class="btn btn-primary" wire:click="nextStep">
-                                Save & Next <i class="bi bi-arrow-right ms-1"></i>
-                            </button>
-                        @else
-                            <button class="btn btn-success btn-lg"
-                                onclick="if (window.__stepInvalid) { if (!confirm('There are validation errors. Are you sure you want to save anyway?')) return false; }"
-                                wire:click="save">
-                                <i class="bi bi-check2-circle me-1"></i> Submit
-                            </button>
-                        @endif
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+
+        {{-- Horizontal Stepper Card --}}
+        <div class="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-sm">
+            <nav aria-label="Progress">
+                <ol role="list" class="flex flex-col md:flex-row items-stretch md:items-center justify-between w-full divide-y md:divide-y-0 divide-slate-100 gap-4 md:gap-2">
+                    @foreach ($labels as $s => $label)
+                        @php
+                            $state = $statuses[$s]; // 'todo' | 'done' | 'error'
+                            $isActive = $step === $s;
+                        @endphp
+                        <li class="flex-1 flex items-center gap-3 py-2.5 md:py-0">
+                            <button type="button" 
+                                    class="flex items-center text-left focus:outline-none transition-all duration-150 w-full"
+                                    wire:click="goToStep({{ $s }})"
+                                    aria-current="{{ $isActive ? 'step' : 'false' }}">
+                                
+                                {{-- Step Bullet --}}
+                                <span class="flex items-center justify-center rounded-full w-8 h-8 text-xs font-bold shrink-0 transition-colors
+                                             @if($state === 'done') bg-green-50 text-green-700 border border-green-200
+                                             @elseif($state === 'error') bg-red-50 text-red-700 border border-red-200
+                                             @elseif($isActive) bg-blue-600 text-white shadow-sm border border-blue-600
+                                             @else bg-slate-50 text-slate-400 border border-slate-200 @endif">
+                                    @if ($state === 'done')
+                                        <i class="bi bi-check-lg text-sm"></i>
+                                    @elseif($state === 'error')
+                                        <i class="bi bi-exclamation-lg text-sm"></i>
+                                    @else
+                                        {{ $s }}
+                                    @endif
+                                </span>
+
+                                {{-- Text details --}}
+                                <span class="ml-3 flex-1 min-w-0">
+                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Step {{ $s }}</span>
+                                    <span class="block text-sm font-semibold mt-1 leading-none @if($isActive) text-blue-700 @else text-slate-700 @endif">
+                                        {{ $label }}
+                                    </span>
+                                </span>
+
+                                @if($state === 'error')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 ml-1.5 shrink-0">Fix</span>
+                                @endif
+                            </button>
+
+                            {{-- Divider Line (except last item) --}}
+                            @if($s < 3)
+                                <div class="hidden md:block flex-1 h-0.5 bg-slate-200 mx-4 max-w-[60px]" aria-hidden="true"></div>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </nav>
+        </div>
+
+        {{-- Validation Errors summary --}}
+        @if ($errors->any())
+            <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 mb-6 text-sm">
+                <div class="font-bold mb-1">Please fix the following validation errors:</div>
+                <ul class="list-disc pl-4 space-y-0.5">
+                    @foreach ($errors->toArray() as $field => $messages)
+                        @php $anchor = 'fld-' . preg_replace('/[^a-z0-9\-]+/i', '-', $field); @endphp
+                        <li>
+                            <a href="#{{ $anchor }}" class="underline font-semibold hover:text-red-900"
+                                onclick="const el=document.getElementById('{{ $anchor }}'); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.focus(); } return false;">
+                                {{ $messages[0] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- Sections --}}
+        <section x-show="step === 1" x-cloak>
+            <div class="bg-transparent">
+                <livewire:verification.steps.header wire:model="form" wire:key="step-header" />
+            </div>
+        </section>
+
+        <section x-show="step === 2" x-cloak>
+            <div class="bg-transparent">
+                <livewire:verification.steps.items wire:model="items" :customer="$form['customer']" :default-currency="$defaultCurrency"
+                    :active-item="$activeItem" wire:key="step-items" />
+            </div>
+        </section>
+
+        <section x-show="step === 3" x-cloak>
+            <livewire:verification.steps.preview :form="$form" :items="$items"
+                wire:key="preview-{{ $previewVersion }}" />
+        </section>
+
+        {{-- Sticky action bar --}}
+        <div class="sticky bottom-0 bg-slate-50/90 backdrop-blur-sm border-t border-slate-200 py-3 mt-6 z-10 flex justify-end items-center gap-3">
+            @if ($step > 1)
+                <button class="inline-flex items-center justify-center font-medium rounded-lg text-sm px-4 py-2 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition-colors" wire:click="prevStep">
+                    <i class="bi bi-arrow-left mr-1.5"></i> Back
+                </button>
+            @else
+                <a href="{{ route('verification.index') }}" class="inline-flex items-center justify-center font-medium rounded-lg text-sm px-4 py-2 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition-colors">
+                    <i class="bi bi-list mr-1.5"></i> List
+                </a>
+            @endif
+
+            @if ($step < 3)
+                <button class="inline-flex items-center justify-center font-medium rounded-lg text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors" wire:click="nextStep">
+                    Save & Next <i class="bi bi-arrow-right ml-1.5"></i>
+                </button>
+            @else
+                <button class="inline-flex items-center justify-center font-bold rounded-lg text-base px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white shadow-md transition-colors"
+                    onclick="if (window.__stepInvalid) { if (!confirm('There are validation errors. Are you sure you want to save anyway?')) return false; }"
+                    wire:click="save">
+                    <i class="bi bi-check2-circle mr-1.5"></i> Submit Report
+                </button>
+            @endif
+        </div>
+    </main>
 
     @pushOnce('extraJs')
         <script>
@@ -414,7 +206,6 @@
 
             document.addEventListener('livewire:initialized', () => {
                 reinitTooltips();
-                // Re-init on any DOM patch
                 Livewire.hook('morph.updated', () => reinitTooltips());
                 Livewire.hook('morph.added', () => reinitTooltips());
                 Livewire.hook('morph.removed', () => reinitTooltips());
@@ -433,7 +224,6 @@
                 }
             };
 
-            // Wire to Livewire events from your step validators
             document.addEventListener('livewire:initialized', () => {
                 Livewire.on('step-invalid', () => {
                     window.__stepInvalid = true;
@@ -444,10 +234,8 @@
                 });
             });
 
-            // Simple guard that mirrors server dirtiness
             let _unsaved = false;
 
-            // mark unsaved when user edits (the x-init above already sets isDirty server-side)
             document.addEventListener('input', () => {
                 _unsaved = true;
             }, {
@@ -459,7 +247,6 @@
                 capture: true
             });
 
-            // when server finishes autosave, clear the guard
             document.addEventListener('livewire:initialized', () => {
                 Livewire.on('saved-clean', () => {
                     _unsaved = false;

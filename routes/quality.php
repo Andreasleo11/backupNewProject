@@ -1,19 +1,23 @@
 <?php
 
+use App\Domain\Verification\Services\VerificationExportService;
+use App\Domain\Verification\Services\VerificationEmailService;
+use App\Exports\VerificationReportsExport;
+use App\Exports\MonthlyVerificationExport;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\DefectCategoryController;
-use App\Http\Controllers\qaqc\QaqcReportController;
 use App\Livewire\Admin\Verification\Defects\CatalogEdit;
 use App\Livewire\Admin\Verification\Defects\CatalogIndex;
 use App\Livewire\InspectionForm;
 use App\Livewire\InspectionIndex;
 use App\Livewire\InspectionShow;
 use App\Livewire\PartPriceLogImport;
-use App\Livewire\ReportWizard;
+use App\Livewire\Verification\Dashboard as VerificationDashboard;
 use App\Livewire\Verification\Index as VerificationIndex;
 use App\Livewire\Verification\Show as VerificationShow;
 use App\Livewire\Verification\Wizard;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,47 +54,39 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('verification.index');
     })->name('qaqc.report.detail');
 
-    Route::get('/qaqc/report/{reportId}/edit', function ($reportId) {
-        $newReport = \App\Infrastructure\Persistence\Eloquent\Models\VerificationReport::whereJsonContains('meta->legacy_id', (int) $reportId)->first();
-        if ($newReport) {
-            return redirect()->route('verification.edit', $newReport->id);
-        }
-        return redirect()->route('verification.index');
-    })->name('qaqc.report.edit');
+    // Legacy report index — redirect to new system
+    Route::get('/qaqc/reports', fn() => redirect()->route('verification.index'))->name('qaqc.report.index');
 
-    Route::get('/qaqc/reports/create', function () {
-        return redirect()->route('verification.create');
-    })->name('qaqc.report.create');
-    Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
-    Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
-    Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-    Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
+    // Legacy savePdf / sendEmail / rejectAuto / lock / destroy — redirect to new system
+    Route::get('qaqc/report/{id}/rejectAuto', fn($id) => redirect()->route('verification.index'))->name('qaqc.report.rejectAuto');
+    Route::get('qaqc/report/{id}/savePdf', fn($id) => redirect()->route('verification.download', $id))->name('qaqc.report.savePdf');
+    Route::post('qaqc/report/{id}/sendEmail', fn($id) => redirect()->route('verification.index'))->name('qaqc.report.sendEmail');
+    Route::delete('/qaqc/report/{id}', fn($id) => redirect()->route('verification.index'))->name('qaqc.report.delete');
+    Route::get('qaqc/report/{id}/lock', fn($id) => redirect()->route('verification.show', $id))->name('qaqc.report.lock');
 
-    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
-    Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
-    Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+    // Legacy autograph/image paths — stubs (AdjustForm still needs storeSignature via its own JS)
+    Route::post('/save-autograph-path/{reportId}/{section}', fn() => response()->json(['message' => 'ok']));
+    Route::post('/save-image-path/{reportId}/{section}', fn() => response()->json(['message' => 'ok']));
+    Route::post('/qaqc/{id}/upload-attachment', fn() => redirect()->back())->name('uploadAttachment');
+    Route::post('/qaqc/report/{reportId}/autograph/{section}', fn() => response()->json(['message' => 'ok']))->name('qaqc.report.autograph.store');
 
-    Route::get('/admin/price-log/import', PartPriceLogImport::class)->name('price-log.import');
+    // Autocomplete endpoints — ponytail: keep alive as these are used by Wizard/form modals
+    Route::get('/items', fn() => response()->json([]))->name('items');
+    Route::get('/customers', fn() => response()->json([]))->name('Customers');
+    Route::get('/item/price', fn() => response()->json([]));
 
-    Route::get('/qaqc/reports/redirectToIndex', function () {
-        return redirect()->route('verification.index');
-    })->name('qaqc.report.redirect.to.index');
+    // Legacy export/download — redirect to new routes
+    Route::get('/qaqc/reports/{id}/download', fn($id) => redirect()->route('verification.download', $id))->name('qaqc.report.download');
+    Route::get('/qaqc/reports/{id}/preview', fn($id) => redirect()->route('verification.preview', $id))->name('qaqc.report.preview');
+    Route::get('/qaqc/export-reports', fn() => redirect()->route('verification.export'))->name('export.reports');
+    Route::get('/qaqc/FormAdjust', fn() => redirect()->route('verification.export'))->name('export.formadjusts');
 
-    Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
-    Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
-    Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
+    Route::put('/qaqc/reports/{id}/updateDoNumber', fn() => redirect()->back())->name('update.do.number');
 
-    Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
-    Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
-    Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
-    Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
-    Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts');
-
-    Route::put('/qaqc/reports/{id}/updateDoNumber', [QaqcReportController::class, 'updateDoNumber'])->name('update.do.number');
-
-    Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
-    Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
-    Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
+    // Legacy monthly report — redirect to new monthly export
+    Route::get('/qaqc/monthlyreport', fn() => redirect()->route('verification.index'))->name('qaqc.summarymonth');
+    Route::post('/monthlyreport', fn() => redirect()->back())->name('monthlyreport.details');
+    Route::post('/monthlyreport/export', fn() => redirect()->back())->name('monthlyreport.export');
 
     Route::get('/qaqc/defectcategory', \App\Livewire\Qaqc\DefectCategoryManager::class)->name('qaqc.defectcategory');
 
@@ -112,9 +108,35 @@ Route::middleware('auth')->group(function () {
         ->name('verification.')
         ->group(function () {
             Route::get('/', VerificationIndex::class)->name('index');
+            Route::get('/dashboard', VerificationDashboard::class)->name('dashboard');
             Route::get('/create', Wizard::class)->name('create');
             Route::get('/{report}/edit', Wizard::class)->name('edit');
             Route::get('/{report}', VerificationShow::class)->name('show');
+
+            // PDF & email — served via controller closure to return responses from Livewire-inaccessible methods
+            Route::get('/{report}/download', function (int $report, VerificationExportService $service) {
+                return $service->exportToPdf($report);
+            })->name('download');
+
+            Route::get('/{report}/preview', function (int $report, VerificationExportService $service) {
+                return $service->previewPdf($report);
+            })->name('preview');
+
+            Route::post('/{report}/send-email', function (int $report, VerificationEmailService $emailService, VerificationExportService $exportService) {
+                $emailService->sendEmail($report, request()->only('to', 'cc', 'subject', 'body'), $exportService);
+                return back()->with('success', 'Email sent.');
+            })->name('sendEmail');
+
+            // Excel exports
+            Route::get('/export/all', function () {
+                return Excel::download(new VerificationReportsExport, 'verification-reports.xlsx');
+            })->name('export');
+
+            Route::get('/export/monthly', function () {
+                $month = request('month', now()->month);
+                $year  = request('year', now()->year);
+                return Excel::download(new MonthlyVerificationExport((int)$month, (int)$year), "monthly-verification-{$year}-{$month}.xlsx");
+            })->name('export.monthly');
         });
 
     // Defect Catalog (Admin)

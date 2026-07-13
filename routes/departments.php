@@ -1,9 +1,5 @@
 <?php
 
-use App\Http\Controllers\director\ReportController;
-use App\Http\Controllers\hrd\HrdHomeController;
-use App\Http\Controllers\hrd\ImportantDocController;
-use App\Http\Controllers\qaqc\QaqcHomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,9 +17,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// QA/QC Home
+// QA/QC Home — redirect to new verification dashboard
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
-    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
+    Route::get('/qaqc/home', fn() => redirect()->route('verification.dashboard'))->name('qaqc');
 });
 
 // HRD Home
@@ -36,10 +32,11 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
 //     Route::get('/personnel/home', [HrdHomeController::class, 'index'])->name('personnel');
 // });
 
-// Director Home & QA/QC Reports
+// Director Home & QA/QC Reports — redirect to new verification system
 Route::middleware(['checkDepartment:DIRECTOR,PERSONNEL', 'checkSessionId'])->group(function () {
-    Route::get('/director/qaqc', [ReportController::class, 'index'])->name('director.qaqc.index');
-    Route::get('/director/qaqc/{id}', [ReportController::class, 'show'])->name('director.qaqc.show');
-    Route::put('/director/qaqc/{id}/approve', [ReportController::class, 'approve'])->name('director.qaqc.approve');
-    Route::put('/director/qaqc/{id}/reject', [ReportController::class, 'reject'])->name('director.qaqc.reject');
+    Route::get('/director/qaqc', fn() => redirect()->route('verification.index'))->name('director.qaqc.index');
+    // Legacy show/approve/reject removed — ApprovalEngine in verification.show handles these
+    Route::get('/director/qaqc/{id}', fn($id) => redirect()->route('verification.index'))->name('director.qaqc.show');
+    Route::put('/director/qaqc/{id}/approve', fn($id) => redirect()->route('verification.index'))->name('director.qaqc.approve');
+    Route::put('/director/qaqc/{id}/reject', fn($id) => redirect()->route('verification.index'))->name('director.qaqc.reject');
 });

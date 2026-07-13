@@ -119,36 +119,36 @@
             </thead>
 
             <tbody>
-                @foreach ($datas->report->details as $detail)
+                @foreach ($datas->report->items as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         @php
-                            $partName = $detail->part_name;
+                            $partName = $item->part_name;
                             [$partNumber, $partDescription] = explode('/', $partName, 2);
                         @endphp
                         <td>{{ $partNumber }}</td>
                         <td>{{ $partDescription }}</td>
                         <td>-</td>
-                        <td>{{ $detail->rec_quantity }}</td>
-                        <td>{{ $detail->fg_measure }}</td>
-                        <td>{{ $detail->can_use }}</td>
-                        <td>{{ $detail->cant_use }}</td>
-                        <td>{{ $detail->fg_warehouse_name }}</td>
-                        <td>{{ $detail->remark }}</td>
+                        <td>{{ $item->rec_quantity }}</td>
+                        <td>{{ $item->fg_measure }}</td>
+                        <td>{{ $item->can_use }}</td>
+                        <td>{{ $item->cant_use }}</td>
+                        <td>{{ $item->fg_warehouse_name }}</td>
+                        <td>{{ $item->remark }}</td>
                         @if (auth()->user()->name === 'Ari')
                             <td>
                                 @include('partials.add_remark_modal')
                                 <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#add-remark-modal-{{ $detail->id }}">
+                                    data-bs-target="#add-remark-modal-{{ $item->id }}">
                                     + Add Remark
                                 </button>
                             </td>
                         @endif
                     </tr>
-                    @foreach ($detail->adjustdetail as $adjustDetail)
+                    @foreach ($item->adjustdetail as $adjustDetail)
                         <tr>
                             @php
-                                $totalquantity = ($adjustDetail->rm_quantity * $detail->rec_quantity * 90) / 100;
+                                $totalquantity = ($adjustDetail->rm_quantity * $item->rec_quantity * 90) / 100;
                             @endphp
                             <td></td>
                             <td>{{ $adjustDetail->rm_code }}</td>

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\QAQC\Services;
 
-use App\Models\Detail;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationItem;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use App\Models\FormAdjustMaster;
 use App\Models\HeaderFormAdjust;
 use App\Models\MasterDataAdjust;
-use App\Models\Report;
 use Illuminate\Support\Facades\Auth;
 
 final class AdjustFormService
@@ -32,11 +32,11 @@ final class AdjustFormService
      */
     public function getMasterDataForReport(int $reportId): \Illuminate\Support\Collection
     {
-        $report = Report::with('details')->findOrFail($reportId);
+        $report = VerificationReport::with('items')->findOrFail($reportId);
         $firstParts = [];
 
-        foreach ($report->details as $detail) {
-            $parts = explode('/', $detail->part_name);
+        foreach ($report->items as $item) {
+            $parts = explode('/', $item->part_name);
             $firstParts[] = $parts[0];
         }
 
@@ -68,7 +68,7 @@ final class AdjustFormService
             'warehouse_name' => $data['rm_warehouse'],
         ]);
 
-        Detail::where('id', $data['detail_id'])->update([
+        VerificationItem::where('id', $data['detail_id'])->update([
             'fg_measure' => $masterData->fg_measure,
         ]);
     }
@@ -78,7 +78,7 @@ final class AdjustFormService
      */
     public function saveWarehouse(int $detailId, string $fgWarehouse): void
     {
-        Detail::where('id', $detailId)->update(['fg_warehouse_name' => $fgWarehouse]);
+        VerificationItem::where('id', $detailId)->update(['fg_warehouse_name' => $fgWarehouse]);
     }
 
     /**
@@ -86,7 +86,7 @@ final class AdjustFormService
      */
     public function addRemark(int $detailId, string $remark): void
     {
-        Detail::where('id', $detailId)->update(['remark' => $remark]);
+        VerificationItem::where('id', $detailId)->update(['remark' => $remark]);
     }
 
     /**

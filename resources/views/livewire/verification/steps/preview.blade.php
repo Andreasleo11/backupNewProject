@@ -1,15 +1,15 @@
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-transparent d-flex flex-wrap gap-2 justify-content-between align-items-center">
-        <div class="fw-semibold">Preview</div>
-        <div class="text-muted small">Review all data before saving</div>
+<div x-data="{ globalOpen: true }" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap gap-3 justify-between items-center">
+        <div>
+            <h5 class="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <i class="bi bi-eye mr-1.5"></i> Preview Report
+            </h5>
+            <div class="text-xs text-slate-400 mt-0.5">Review all details before submitting for approval</div>
+        </div>
 
-        <div class="ms-auto d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                <i class="bi bi-printer"></i> Print
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-copy-summary" data-bs-toggle="tooltip"
-                title="Copy plain-text summary">
-                <i class="bi bi-clipboard-check"></i> Copy summary
+        <div class="flex gap-2">
+            <button type="button" class="inline-flex items-center justify-center font-semibold rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 text-xs px-3.5 py-1.5 shadow-sm transition-colors" onclick="window.print()">
+                <i class="bi bi-printer mr-1.5"></i> Print
             </button>
         </div>
     </div>
@@ -27,65 +27,89 @@
     @endphp
 
     {{-- HEADER SUMMARY --}}
-    <div class="px-3 pb-3">
-        <div class="row row-cols-1 row-cols-md-4 g-3">
-            <div class="col">
-                <div class="summary-tile">
-                    <div class="summary-label">Receive Date</div>
-                    <div class="summary-value">{{ $form['rec_date'] ?? '—' }}</div>
+    <div class="px-6 py-5 bg-slate-50/30 border-t border-b border-slate-200">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {{-- Receive Date --}}
+            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-calendar2-check"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Receive Date</div>
+                    <div class="text-xs font-bold text-slate-800 truncate">{{ $form['rec_date'] ?? '—' }}</div>
                 </div>
             </div>
-            <div class="col">
-                <div class="summary-tile">
-                    <div class="summary-label">Verify Date</div>
-                    <div class="summary-value">{{ $form['verify_date'] ?? '—' }}</div>
+
+            {{-- Verify Date --}}
+            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-calendar2-event"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Verify Date</div>
+                    <div class="text-xs font-bold text-slate-800 truncate">{{ $form['verify_date'] ?? '—' }}</div>
                 </div>
             </div>
-            <div class="col">
-                <div class="summary-tile">
-                    <div class="summary-label">Customer</div>
-                    <div class="summary-value">{{ $form['customer'] ?? '—' }}</div>
+
+            {{-- Customer --}}
+            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Customer</div>
+                    <div class="text-xs font-bold text-slate-800 truncate" title="{{ $form['customer'] ?? '—' }}">
+                        {{ $form['customer'] ?? '—' }}
+                    </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="summary-tile">
-                    <div class="summary-label">Invoice #</div>
-                    <div class="summary-value">{{ $form['invoice_number'] ?? '—' }}</div>
+
+            {{-- Invoice Number --}}
+            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm flex-shrink-0">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1.5">Invoice Number</div>
+                    <div class="text-xs font-bold text-slate-800 truncate" title="{{ $form['invoice_number'] ?? '—' }}">
+                        {{ $form['invoice_number'] ?? '—' }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- ITEMS TABLE --}}
-    <div class="px-3 pb-3">
-        <div class="preview-toolbar d-flex align-items-center gap-2 mb-2">
-            <h6 class="mb-0 text-muted">Preview</h6>
-            <div class="vr"></div>
-            <button type="button" class="btn btn-sm btn-outline-secondary"
-                onclick="window.Preview.toggleAllDefects(true)">
-                <i class="bi bi-arrows-expand me-1"></i>Expand all
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary"
-                onclick="window.Preview.toggleAllDefects(false)">
-                <i class="bi bi-arrows-collapse me-1"></i>Collapse all
-            </button>
+    <div class="p-6">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h6 class="text-sm font-bold text-slate-500 uppercase tracking-wider">Items Summary</h6>
+            <div class="flex gap-2">
+                <button type="button" class="inline-flex items-center justify-center font-semibold rounded border border-slate-200 text-slate-650 hover:bg-slate-50 text-[10px] px-2 py-1 transition-colors shadow-sm"
+                    @click="globalOpen = true; $dispatch('toggle-defects', { open: true })">
+                    <i class="bi bi-arrows-expand mr-1"></i>Expand all
+                </button>
+                <button type="button" class="inline-flex items-center justify-center font-semibold rounded border border-slate-200 text-slate-650 hover:bg-slate-50 text-[10px] px-2 py-1 transition-colors shadow-sm"
+                    @click="globalOpen = false; $dispatch('toggle-defects', { open: false })">
+                    <i class="bi bi-arrows-collapse mr-1"></i>Collapse all
+                </button>
+            </div>
         </div>
 
-        <div class="table-responsive preview-table-wrap">
-            <table class="table table-sm align-middle preview-table">
-                <thead>
-                    <tr>
-                        <th style="min-width:260px">Part</th>
-                        <th class="text-end">Rec Qty</th>
-                        <th class="text-end">Verify Qty</th>
-                        <th class="text-end">Can Use</th>
-                        <th class="text-end">Can’t Use</th>
-                        <th class="text-end">Price</th>
-                        <th class="text-end">Line</th>
+        <div class="overflow-x-auto border rounded-xl shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-700">
+                <thead class="bg-slate-50">
+                    <tr class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="py-3 px-4" style="min-width: 280px;">Part</th>
+                        <th class="py-3 px-4 text-right" style="width: 10%">Rec Qty</th>
+                        <th class="py-3 px-4 text-right" style="width: 10%">Verify Qty</th>
+                        <th class="py-3 px-4 text-right" style="width: 10%">Can Use</th>
+                        <th class="py-3 px-4 text-right" style="width: 10%">Can’t Use</th>
+                        <th class="py-3 px-4 text-right" style="width: 12%">Price</th>
+                        <th class="py-3 px-4 text-right" style="width: 13%">Line Total</th>
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody class="divide-y divide-slate-200 bg-white">
                     @php $total = 0; @endphp
                     @forelse ($items as $idx => $row)
                         @php
@@ -98,140 +122,107 @@
                             $total += $line;
 
                             $defects = $row['defects'] ?? [];
-                            $hi = collect($defects)->where('severity', 'HIGH')->count();
-                            $md = collect($defects)->where('severity', 'MEDIUM')->count();
-                            $lo = collect($defects)->where('severity', 'LOW')->count();
-
-                            $collapseId = "pv-def-{$idx}";
                         @endphp
 
-                        <tr class="pv-row">
-                            <td>
-                                <div class="pv-part">
-                                    <div class="pv-title fw-semibold text-truncate">
+                        <tr class="pv-row hover:bg-slate-50/30 transition-colors">
+                            <td class="py-4 px-4">
+                                <div class="flex flex-col gap-1">
+                                    <div class="font-semibold text-slate-800 text-sm">
                                         {{ $row['part_name'] ?? '—' }}
                                     </div>
 
-                                    {{-- Defect ribbon (always visible if exists) --}}
+                                    {{-- Collapsible Defect Chips List --}}
                                     @if (!empty($defects))
-                                        <div class="pv-defect-ribbon">
-                                            <span class="chip sev-high {{ $hi ? '' : 'chip-muted' }}"><i
-                                                    class="bi bi-bug-fill me-1"></i>HIGH {{ $hi }}</span>
-                                            <span class="chip sev-med  {{ $md ? '' : 'chip-muted' }}"><i
-                                                    class="bi bi-bug me-1"></i>MED {{ $md }}</span>
-                                            <span class="chip sev-low  {{ $lo ? '' : 'chip-muted' }}"><i
-                                                    class="bi bi-bug me-1"></i>LOW {{ $lo }}</span>
-
-                                            @php
-                                                $srcCounts = collect($defects)->groupBy('source')->map->count();
-                                                $srcMeta = function ($src) {
-                                                    $map = [
-                                                        'SUPPLIER' => ['Supplier', 'bi-box-seam', 'src-supplier'],
-                                                        'INTERNAL' => ['Internal', 'bi-wrench', 'src-internal'],
-                                                        'LOGISTICS' => ['Logistics', 'bi-truck', 'src-logistics'],
-                                                        'CUSTOMER' => ['Customer', 'bi-person', 'src-customer'],
-                                                    ];
-                                                    return $map[$src] ?? [
-                                                        ucfirst(strtolower($src ?: 'Unknown')),
-                                                        'bi-info-circle',
-                                                        'src-unknown',
-                                                    ];
-                                                };
-                                            @endphp
-                                            @foreach ($srcCounts as $sKey => $cnt)
-                                                @php [$label,$icon,$cls] = $srcMeta($sKey); @endphp
-                                                <span class="chip chip-src {{ $cls }}"><i
-                                                        class="bi {{ $icon }} me-1"></i>{{ $label }}
-                                                    {{ $cnt }}</span>
-                                            @endforeach
-                                        </div>
-
-                                        {{-- Details toggle for full table --}}
-                                        <details class="pv-defects mt-2" data-preview-defects>
-                                            <summary class="defects-summary">
-                                                <i class="bi bi-chevron-right me-1"></i>
-                                                <strong>Show defects ({{ $hi + $md + $lo }})</strong>
-                                            </summary>
-
-                                            <div class="mt-2">
-                                                <div class="table-responsive">
-                                                    <table class="table table-sm mb-0 defects-table">
-                                                        <thead>
-                                                            <tr class="text-muted small">
-                                                                <th style="width:12%">Code</th>
-                                                                <th style="width:28%">Name</th>
-                                                                <th style="width:18%">Source</th>
-                                                                <th class="text-end" style="width:12%">Qty</th>
-                                                                <th>Notes</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach ($defects as $d)
-                                                                @php
-                                                                    $sev = $d['severity'] ?? 'LOW';
-                                                                    $sevCls = match ($sev) {
-                                                                        'HIGH' => 'sev-high',
-                                                                        'MEDIUM' => 'sev-med',
-                                                                        default => 'sev-low',
-                                                                    };
-                                                                    [$sLabel, $sIcon, $sCls] = $srcMeta(
-                                                                        $d['source'] ?? '',
-                                                                    );
-                                                                @endphp
-                                                                <tr class="defect-row {{ $sevCls }}">
-                                                                    <td class="font-monospace">{{ $d['code'] ?? '—' }}
-                                                                    </td>
-                                                                    <td class="fw-semibold">{{ $d['name'] ?? '—' }}
-                                                                    </td>
-                                                                    <td>
-                                                                        <span
-                                                                            class="badge badge-src {{ $sCls }}">
-                                                                            <i
-                                                                                class="bi {{ $sIcon }} me-1"></i>{{ $sLabel }}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="text-end">
-                                                                        {{ rtrim(rtrim(number_format((float) ($d['quantity'] ?? 0), 4, '.', ''), '0'), '.') }}
-                                                                    </td>
-                                                                    <td class="text-muted">{{ $d['notes'] ?? '—' }}
-                                                                    </td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
+                                        <div x-data="{ showDefects: true }"
+                                             @toggle-defects.window="showDefects = $event.detail.open"
+                                             class="mt-2 text-slate-550">
+                                            
+                                            <div class="flex items-center justify-between border-b border-slate-100 pb-1 mb-2">
+                                                <button type="button" class="text-slate-500 hover:text-slate-850 cursor-pointer font-bold text-[10px] uppercase tracking-wider inline-flex items-center gap-1.5 select-none focus:outline-none"
+                                                    @click="showDefects = !showDefects">
+                                                    <i class="bi text-[10px] transition-transform duration-200" :class="showDefects ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+                                                    <span>Defect Details ({{ count($defects) }})</span>
+                                                </button>
+                                                
+                                                {{-- Inline Source Summary (shown only when collapsed) --}}
+                                                <div x-show="!showDefects" class="flex gap-1.5 text-[9px] font-semibold text-slate-400">
+                                                    @php
+                                                        $srcCounts = collect($defects)->groupBy('source')->map->count();
+                                                    @endphp
+                                                    @foreach ($srcCounts as $sKey => $cnt)
+                                                        <span>{{ ucfirst(strtolower($sKey)) }}: {{ $cnt }}</span>
+                                                        @if(!$loop->last) <span class="text-slate-200">|</span> @endif
+                                                    @endforeach
                                                 </div>
                                             </div>
-                                        </details>
+
+                                            {{-- Defects Premium Card Chips --}}
+                                            <div x-show="showDefects" x-collapse class="flex flex-col gap-1.5 mt-2">
+                                                @foreach ($defects as $d)
+                                                    <div class="flex items-start justify-between gap-3 p-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                                        <div class="flex flex-col gap-0.5">
+                                                            <div class="flex items-center gap-2">
+                                                                {{-- Source Badge --}}
+                                                                @php
+                                                                    $srcColors = match($d['source'] ?? 'DAIJO') {
+                                                                        'CUSTOMER' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                                                        'SUPPLIER' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                                                        default => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                                    };
+                                                                    $srcIcons = match($d['source'] ?? 'DAIJO') {
+                                                                        'CUSTOMER' => 'bi-person-badge',
+                                                                        'SUPPLIER' => 'bi-box-seam',
+                                                                        default => 'bi-building',
+                                                                    };
+                                                                @endphp
+                                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold border {{ $srcColors }}">
+                                                                    <i class="bi {{ $srcIcons }} text-[8px]"></i>
+                                                                    {{ $d['source'] ?? 'DAIJO' }}
+                                                                </span>
+                                                                <span class="font-semibold text-slate-800 text-[11px]">{{ $d['name'] ?? '—' }}</span>
+                                                            </div>
+                                                            @if(!empty($d['notes']))
+                                                                <div class="text-[10px] text-slate-400 italic pl-1 mt-0.5">
+                                                                    <i class="bi bi-chat-left-text text-[9px] mr-1"></i>"{{ $d['notes'] }}"
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        <div class="text-right flex items-center gap-1 font-mono text-[10px] font-bold text-slate-900 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm self-center">
+                                                            <span class="text-slate-400 text-[9px] font-medium">Qty:</span>
+                                                            <span>{{ number_format((int) ($d['quantity'] ?? 0)) }}</span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
 
-                            <td class="text-end">{{ rtrim(rtrim(number_format($rq, 4, '.', ''), '0'), '.') }}</td>
-                            <td class="text-end">{{ rtrim(rtrim(number_format($vq, 4, '.', ''), '0'), '.') }}</td>
-                            <td class="text-end">{{ rtrim(rtrim(number_format($can, 4, '.', ''), '0'), '.') }}</td>
-                            <td class="text-end">{{ rtrim(rtrim(number_format($cant, 4, '.', ''), '0'), '.') }}</td>
-                            <td class="text-end">{{ $row['currency'] ?? '' }} {{ number_format($price, 2) }}</td>
-                            <td class="text-end fw-semibold">{{ $row['currency'] ?? '' }}
-                                {{ number_format($line, 2) }}</td>
+                            <td class="text-right pr-4 py-3 font-medium">{{ number_format((int) $rq) }}</td>
+                            <td class="text-right pr-4 py-3 font-medium">{{ number_format((int) $vq) }}</td>
+                            <td class="text-right pr-4 py-3 font-medium">{{ number_format((int) $can) }}</td>
+                            <td class="text-right pr-4 py-3 text-red-600 font-bold">{{ number_format((int) $cant) }}</td>
+                            <td class="text-right pr-4 py-3 text-slate-400 font-mono">{{ $row['currency'] ?? '' }} {{ number_format($price, 2) }}</td>
+                            <td class="text-right pr-4 py-3 font-extrabold text-slate-900 font-mono">{{ $row['currency'] ?? '' }} {{ number_format($line, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No items.</td>
+                            <td colspan="7" class="text-center text-slate-400 py-12">No items added to the report.</td>
                         </tr>
                     @endforelse
                 </tbody>
 
-                <tfoot class="preview-foot">
+                <tfoot class="bg-slate-50 font-bold border-t border-slate-200">
                     @foreach ($grandTotals as $gr)
                         <tr>
-                            <th colspan="6" class="text-end">Total ({{ $gr['currency'] }})</th>
-                            <th class="text-end fs-6">
-                                <span class="total-chip">{{ $gr['currency'] }}
-                                    {{ number_format($gr['sum'], 2) }}</span>
-                            </th>
+                            <td colspan="6" class="text-right pr-4 py-3.5 text-slate-500 font-semibold">Total ({{ $gr['currency'] }}):</td>
+                            <td class="text-right pr-4 py-3.5 font-extrabold text-blue-600 text-sm font-mono">
+                                {{ $gr['currency'] }} {{ number_format($gr['sum'], 2) }}
+                            </td>
                         </tr>
                     @endforeach
-                </tfoot>
+                </tbody>
             </table>
         </div>
     </div>
@@ -239,328 +230,19 @@
 
 @pushOnce('extraCss')
     <style>
-        /* Print-friendly: remove card shadow/borders and show all details open */
         @media print {
             .card {
                 box-shadow: none !important;
                 border: 0 !important;
             }
-
-            .card-header,
-            .btn,
-            [data-bs-toggle="tooltip"] {
+            .card-header, .btn, [data-bs-toggle="tooltip"] {
                 display: none !important;
             }
-
-            details.defects-details[open]>summary {
-                list-style: none;
-            }
-
-            details.defects-details {
-                page-break-inside: avoid;
-            }
-        }
-
-        .summary-tile {
-            background: var(--bs-body-tertiary);
-            border-radius: .75rem;
-            padding: .9rem .95rem;
-            height: 100%;
-        }
-
-        .summary-label {
-            font-size: .8rem;
-            color: var(--bs-secondary-color, #6c757d);
-            margin-bottom: .25rem;
-        }
-
-        .summary-value {
-            font-weight: 600;
-            word-break: break-word;
-        }
-
-        .preview-table-wrap {
-            overflow: hidden;
-        }
-
-        .preview-table thead th {
-            background: var(--bs-light, #f8f9fa);
-            position: sticky;
-            top: 0;
-            z-index: 1;
-        }
-
-        .preview-table tbody tr:nth-child(even) {
-            background: color-mix(in srgb, var(--bs-body-bg) 96%, black);
-        }
-
-        .preview-table td,
-        .preview-table th {
-            vertical-align: middle;
-        }
-
-        .preview-table tfoot th,
-        .preview-table tfoot td {
-            background: color-mix(in srgb, var(--bs-body-bg) 92%, black);
-        }
-
-        details.defects-details summary {
-            cursor: pointer;
-            user-select: none;
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-        }
-
-        details.defects-details[open] summary {
-            color: var(--bs-primary);
-        }
-
-        /* ---------- Preview Table Look ---------- */
-        .preview-table-wrap {
-            overflow: clip;
-            background: var(--bs-body-bg);
-            box-shadow: 0 1px 0 color-mix(in srgb, var(--bs-body-color) 6%, transparent);
-        }
-
-        .preview-table thead th {
-            position: sticky;
-            top: 0;
-            background: color-mix(in srgb, var(--bs-body-bg) 96%, white);
-            z-index: 1;
-            font-weight: 700;
-            border-bottom: 1px solid color-mix(in srgb, var(--bs-body-color) 8%, transparent);
-        }
-
-        .preview-table tbody tr:hover {
-            background: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
-        }
-
-        .preview-foot th {
-            position: sticky;
-            bottom: 0;
-            background: color-mix(in srgb, var(--bs-body-bg) 96%, white);
-            border-top: 1px solid color-mix(in srgb, var(--bs-body-color) 12%, transparent);
-        }
-
-        /* ---------- Part Cell ---------- */
-        .pv-part {
-            display: grid;
-            gap: .35rem;
-        }
-
-        .pv-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .35rem;
-        }
-
-        /* ---------- Defect Ribbon ---------- */
-        .pv-defect-ribbon {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .35rem;
-        }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            font-size: .75rem;
-            padding: .18rem .5rem;
-            border-radius: 999px;
-            border: 1px solid transparent;
-            font-weight: 600;
-        }
-
-        .chip-muted {
-            opacity: .5;
-            border-color: color-mix(in srgb, var(--bs-body-color) 10%, transparent);
-        }
-
-        .sev-high {
-            --sev-bg: color-mix(in srgb, #dc3545 12%, transparent);
-            --sev-br: #dc3545;
-            --sev-fg: #dc3545;
-        }
-
-        .sev-med {
-            --sev-bg: color-mix(in srgb, #ffc107 16%, transparent);
-            --sev-br: #ffc107;
-            --sev-fg: #b08900;
-        }
-
-        .sev-low {
-            --sev-bg: color-mix(in srgb, #198754 14%, transparent);
-            --sev-br: #198754;
-            --sev-fg: #198754;
-        }
-
-        .chip.sev-high {
-            background: var(--sev-bg);
-            color: var(--sev-fg);
-            border-color: var(--sev-br);
-        }
-
-        .chip.sev-med {
-            background: var(--sev-bg);
-            color: var(--sev-fg);
-            border-color: var(--sev-br);
-        }
-
-        .chip.sev-low {
-            background: var(--sev-bg);
-            color: var(--sev-fg);
-            border-color: var(--sev-br);
-        }
-
-        /* Sources */
-        .chip-src,
-        .badge-src {
-            border: 1px solid transparent;
-        }
-
-        .src-supplier {
-            background: color-mix(in srgb, #0d6efd 12%, transparent);
-            border-color: #0d6efd;
-            color: #0d6efd;
-        }
-
-        .src-internal {
-            background: color-mix(in srgb, #20c997 14%, transparent);
-            border-color: #20c997;
-            color: #198754;
-        }
-
-        .src-logistics {
-            background: color-mix(in srgb, #6f42c1 14%, transparent);
-            border-color: #6f42c1;
-            color: #6f42c1;
-        }
-
-        .src-customer {
-            background: color-mix(in srgb, #fd7e14 14%, transparent);
-            border-color: #fd7e14;
-            color: #fd7e14;
-        }
-
-        .src-unknown {
-            background: color-mix(in srgb, #6c757d 14%, transparent);
-            border-color: #6c757d;
-            color: #6c757d;
-        }
-
-        /* ---------- Defects details toggle ---------- */
-        .defects-summary {
-            cursor: pointer;
-            user-select: none;
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            color: var(--bs-secondary-color, #6c757d);
-        }
-
-        .pv-defects[open]>.defects-summary {
-            color: var(--bs-primary);
-        }
-
-        .defects-summary .bi-chevron-right {
-            transition: transform .2s ease;
-        }
-
-        .pv-defects[open] .defects-summary .bi-chevron-right {
-            transform: rotate(90deg);
-        }
-
-        /* ---------- Defects table emphasis ---------- */
-        .defects-table .defect-row {
-            --row-accent: var(--sev-br, #adb5bd);
-            --row-tint: var(--sev-bg, transparent);
-            border-left: .35rem solid var(--row-accent);
-            background: var(--row-tint);
-        }
-
-        .badge-sev {
-            background: var(--sev-bg);
-            color: var(--sev-fg);
-            border: 1px solid var(--sev-br);
-            font-weight: 700;
-        }
-
-        /* ---------- Totals ---------- */
-        .total-chip {
-            display: inline-block;
-            padding: .2rem .5rem;
-            border-radius: .5rem;
-            background: color-mix(in srgb, #0ea5e9 12%, transparent);
-            border: 1px solid color-mix(in srgb, #0ea5e9 50%, transparent);
-            font-weight: 700;
-            color: #0ea5e9;
-        }
-
-        /* ---------- Toolbar ---------- */
-        .preview-toolbar .vr {
-            width: 1px;
-            height: 18px;
-            background: color-mix(in srgb, var(--bs-body-color) 20%, transparent);
-        }
-
-        /* Dark-mode tweaks */
-        @media (prefers-color-scheme: dark) {
-
-            .preview-table thead th,
-            .preview-foot th {
-                background: color-mix(in srgb, var(--bs-body-bg) 85%, white);
+            /* Ensure Alpine collapsed elements are open for print */
+            [x-show="showDefects"] {
+                display: block !important;
             }
         }
     </style>
 @endPushOnce
 
-
-
-@pushOnce('extraJs')
-    <script>
-        // Copy a compact textual summary for chats/emails
-        document.getElementById('btn-copy-summary')?.addEventListener('click', () => {
-            const root = document.currentScript.closest('.card') || document.body;
-            const rows = [...root.querySelectorAll('.preview-table tbody tr')];
-            const lines = [];
-
-            rows.forEach(tr => {
-                const cells = tr.querySelectorAll('td');
-                if (!cells.length) return;
-                const part = cells[0]?.innerText.trim().replace(/\s+/g, ' ');
-                const rec = cells[1]?.innerText.trim();
-                const ver = cells[2]?.innerText.trim();
-                const can = cells[3]?.innerText.trim();
-                const cant = cells[4]?.innerText.trim();
-                const price = cells[5]?.innerText.trim();
-                const line = cells[6]?.innerText.trim();
-                lines.push(
-                    `${part} | Rec:${rec} | Verify:${ver} | OK:${can} | NG:${cant} | ${price} | ${line}`
-                );
-            });
-
-            if (!lines.length) {
-                navigator.clipboard.writeText('No items.');
-            } else {
-                navigator.clipboard.writeText(lines.join('\n'));
-            }
-
-            // quick feedback
-            const btn = document.getElementById('btn-copy-summary');
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-clipboard-check-fill"></i> Copied';
-            setTimeout(() => btn.innerHTML = original, 1200);
-        });
-
-        window.Preview = {
-            toggleAllDefects(open) {
-                document.querySelectorAll('[data-preview-defects]').forEach(d => {
-                    if (open) d.setAttribute('open', '');
-                    else d.removeAttribute('open');
-                });
-            }
-        };
-    </script>
-@endPushOnce

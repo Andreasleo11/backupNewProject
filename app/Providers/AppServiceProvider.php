@@ -4,8 +4,9 @@ namespace App\Providers;
 
 use App\Domain\Overtime\Models\OvertimeForm;
 use App\Domain\Overtime\Observers\OvertimeFormObserver;
-use App\Models\Detail;
-use App\Observers\DetailObserver;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationItem;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
+use App\Observers\VerificationItemObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -79,11 +80,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
         OvertimeForm::observe(OvertimeFormObserver::class);
-        Detail::observe(DetailObserver::class);
+        VerificationItem::observe(VerificationItemObserver::class);
 
         \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
-            'pr' => \App\Models\PurchaseRequest::class,
-            'overtime' => \App\Domain\Overtime\Models\OvertimeForm::class,
+            'pr'                   => \App\Models\PurchaseRequest::class,
+            'overtime'             => \App\Domain\Overtime\Models\OvertimeForm::class,
+            'verification_report'  => VerificationReport::class,
         ]);
 
         Blade::directive('currency', function ($expression) {

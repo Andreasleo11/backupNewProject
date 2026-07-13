@@ -2,18 +2,97 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Report as LegacyReport;
-use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
-use App\Infrastructure\Persistence\Eloquent\Models\VerificationItem;
-use App\Infrastructure\Persistence\Eloquent\Models\VerificationItemDefect;
-use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
+// App\Models\Report was deleted after legacy deprecation.
+// We define a lightweight read-only model here to query the legacy table directly.
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
+use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationItem;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationItemDefect;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use App\Domain\Verification\Enums\DefectSource;
 use App\Domain\Verification\Enums\Severity;
-use Spatie\Permission\Models\Role;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+
+// ---------------------------------------------------------------------------
+// Inline legacy models — read-only, no App\Models\Report dependency required.
+// ---------------------------------------------------------------------------
+
+/**
+ * @property int    $id
+ * @property string $doc_num
+ * @property string $customer
+ * @property string $invoice_no
+ * @property string $rec_date
+ * @property string $verify_date
+ * @property int    $is_approve
+ * @property string $created_by
+ * @property string|null $autograph_1
+ * @property string|null $autograph_2
+ * @property string|null $autograph_3
+ * @property string|null $autograph_user_1
+ * @property string|null $autograph_user_2
+ * @property string|null $autograph_user_3
+ * @property string|null $attachment
+ * @property string|null $description
+ * @property bool   $has_been_emailed
+ */
+class LegacyReport extends Model
+{
+    protected $table = 'reports';
+    protected $guarded = [];
+
+    public function details()
+    {
+        return $this->hasMany(LegacyDetail::class, 'report_id');
+    }
+}
+
+/**
+ * @property int    $id
+ * @property int    $report_id
+ * @property string $part_name
+ * @property float  $rec_quantity
+ * @property float  $verify_quantity
+ * @property float  $can_use
+ * @property float  $cant_use
+ * @property float  $price
+ * @property string $currency
+ * @property string $do_num
+ */
+class LegacyDetail extends Model
+{
+    protected $table = 'details';
+    protected $guarded = [];
+
+    public function defects()
+    {
+        return $this->hasMany(LegacyDefect::class, 'detail_id');
+    }
+}
+
+/**
+ * @property int    $id
+ * @property int    $detail_id
+ * @property int    $quantity
+ * @property string $remarks
+ * @property bool   $is_customer
+ * @property bool   $is_supplier
+ * @property int    $defect_category_id
+ */
+class LegacyDefect extends Model
+{
+    protected $table = 'defects';
+    protected $guarded = [];
+
+    public function category()
+    {
+        return $this->belongsTo(\App\Models\DefectCategory::class, 'defect_category_id');
+    }
+}
 
 class MigrateHistoricalReports extends Command
 {

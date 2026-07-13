@@ -1,308 +1,528 @@
-<div>
-    {{-- Toolbar --}}
-    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
-        <div class="fs-5">
-            @if ($customer)
-                Items for <span class="fw-semibold">{{ $customer }}</span>
-            @else
-                <span class="text-muted">Items</span>
-            @endif
-        </div>
-
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-            {{-- Default Currency --}}
-            <div class="input-group input-group-sm" style="width: 260px;" x-data="{ cur: @entangle('defaultCurrency') }">
-                <span class="input-group-text">Default currency</span>
-                <input list="dl-currencies" type="text" class="form-control" placeholder="IDR"
-                    wire:model.live.defer="defaultCurrency">
-                <button type="button" class="btn btn-outline-secondary"
-                    @click.prevent="confirm(`Apply '${cur || ''}' to all rows?`) && $wire.applyDefaultCurrency()">
-                    Apply to all
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-4">
+    {{-- LEFT PANE: Master List of Items --}}
+    <div class="lg:col-span-4">
+        <div class="bg-white border border-slate-300 shadow-sm rounded-xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <i class="bi bi-box-seam mr-1.5"></i> Items ({{ count($items) }})
+                </div>
+                <button class="inline-flex items-center justify-center font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1.5 shadow-sm transition-colors"
+                    wire:click="addItem" data-bs-toggle="tooltip" title="Add a new item to the list" aria-label="Add Item">
+                    <i class="bi bi-plus-lg mr-1"></i> Add Item
                 </button>
             </div>
-            <datalist id="dl-currencies">
-                <option value="IDR" />
-                <option value="USD" />
-                <option value="EUR" />
-                <option value="JPY" />
-                <option value="CNY" />
-            </datalist>
 
-            {{-- Paste from Excel --}}
-            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="$set('pasteDialog', true)"
-                data-bs-toggle="tooltip" title="Paste from Excel/CSV">
-                <i class="bi bi-clipboard"></i>
-            </button>
+            <div class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+                @forelse ($items as $i => $row)
+                    @php
+                        $vq = (int)($row['verify_quantity'] ?? 0);
+                        $price = (float)($row['price'] ?? 0);
+                        $defects = $row['defects'] ?? [];
+                        $hi = collect($defects)->where('severity', 'HIGH')->count();
+                        $md = collect($defects)->where('severity', 'MEDIUM')->count();
+                        $lo = collect($defects)->where('severity', 'LOW')->count();
 
-            {{-- Bulk helper --}}
-            <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="fillAllCantUseFromDefects"
-                data-bs-toggle="tooltip" title="Copy Defect → Can't Use (all)">
-                <i class="bi bi-arrow-down-square"></i>
-            </button>
-
-            <button type="button" class="btn btn-sm btn-primary" wire:click="addItem">
-                <i class="bi bi-plus-lg"></i> Add item
-            </button>
+                        // calculate percent metrics
+                        $okPct = $vq > 0 ? ((int)($row['can_use'] ?? 0) / $vq) * 100 : 0;
+                        $ngPct = $vq > 0 ? ((int)($row['cant_use'] ?? 0) / $vq) * 100 : 0;
+                        $errBag = collect($errors->getBag('default')->get("items.$i.*"))->collapse();
+                    @endphp
+                    <div wire:key="master-item-{{ $i }}"
+                        class="w-full text-left flex justify-between items-center py-3.5 px-4 transition-colors hover:bg-slate-55/70 cursor-pointer @if($activeItem == $i) bg-blue-50 text-blue-900 border-l-4 border-blue-600 rounded-l-none @endif"
+                        wire:click="selectItem({{ $i }})">
+                        <div class="flex-1 min-w-0 mr-3">
+                            <span class="block font-bold text-sm truncate @if($activeItem == $i) text-blue-950 @else text-slate-800 @endif">
+                                {{ $row['part_name'] ?: 'Untitled Part' }}
+                            </span>
+                            <span class="block text-xs text-slate-455 mt-1">
+                                Qty: {{ number_format($vq) }} | {{ $row['currency'] ?? 'IDR' }} {{ number_format($price, 2) }}
+                            </span>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                @if ($okPct >= 95)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">OK: {{ number_format($okPct, 0) }}%</span>
+                                @elseif($okPct > 0)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">OK: {{ number_format($okPct, 0) }}%</span>
+                                @endif
+                                @if ($ngPct > 0)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700 border border-red-200">NG: {{ number_format($ngPct, 0) }}%</span>
+                                @endif
+                                @if ($hi + $md + $lo > 0)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200"><i class="bi bi-bug-fill text-red-500 mr-0.5"></i>{{ $hi + $md + $lo }}</span>
+                                @endif
+                                @if ($errBag->isNotEmpty())
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">Error</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="shrink-0 text-slate-400">
+                            <i class="bi bi-chevron-right text-xs"></i>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center text-slate-400 py-12 px-4">
+                        <i class="bi bi-box2 text-4xl d-block mb-3 text-slate-300"></i>
+                        <span class="text-xs font-bold text-slate-500">No items added yet.</span>
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table align-middle table-hover editor-table">
-            <thead class="table-light sticky-head">
-                <tr>
-                    <th class="text-muted small">#</th>
-                    <th>Part Name</th>
-                    <th class="text-end">Rec Qty</th>
-                    <th class="text-end">Verify Qty</th>
-                    <th class="text-end">Can Use</th>
-                    <th class="text-end">Can't Use</th>
-                    <th class="text-end">OK %</th>
-                    <th class="text-end">Scrap %</th>
-                    <th class="text-end">Price</th>
-                    <th>Currency</th>
-                    <th class="text-end">Line Total</th>
-                    <th class="text-center"></th>
-                </tr>
-            </thead>
+    {{-- RIGHT PANE: Details & Defects Editor --}}
+    <div class="lg:col-span-8">
+        @if ($activeItem !== null && isset($items[$activeItem]))
+            @php
+                $row = $items[$activeItem];
+                $vq = (int)($row['verify_quantity'] ?? 0);
+                $price = (float)($row['price'] ?? 0);
+                $defects = $row['defects'] ?? [];
 
-            <tbody>
-                @forelse($items as $i => $row)
-                    @php
-                        $verify = (float) ($row['verify_quantity'] ?? 0);
-                        $can = (float) ($row['can_use'] ?? 0);
-                        $cant = (float) ($row['cant_use'] ?? 0);
-                        $price = (float) ($row['price'] ?? 0);
-                        $okPct = $verify > 0 ? ($can / $verify) * 100 : 0;
-                        $ngPct = $verify > 0 ? ($cant / $verify) * 100 : 0;
-                        $line = $verify * $price;
+                $okPct = $vq > 0 ? ((int)($row['can_use'] ?? 0) / $vq) * 100 : 0;
+                $ngPct = $vq > 0 ? ((int)($row['cant_use'] ?? 0) / $vq) * 100 : 0;
+                $lineTotal = $vq * $price;
+            @endphp
+            <div wire:key="detail-editor-{{ $activeItem }}"
+                 class="bg-white border border-slate-300 shadow-sm rounded-xl overflow-hidden">
+                
+                {{-- Detail Header --}}
+                <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Item Detail</span>
+                            <span class="block text-base font-extrabold text-slate-800 truncate max-w-sm sm:max-w-md">
+                                {{ $row['part_name'] ?: 'Untitled Item' }}
+                            </span>
+                        </div>
+                        
+                        {{-- Action Toolbar --}}
+                        <div class="flex items-center gap-1.5 self-start sm:self-center shrink-0">
+                            <button type="button" 
+                                class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-55 text-slate-600 transition-colors shadow-sm @if($activeItem === 0) opacity-50 cursor-not-allowed @endif"
+                                @if($activeItem > 0) wire:click="moveItemUp({{ $activeItem }})" @endif
+                                data-bs-toggle="tooltip" title="Move item up">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button type="button" 
+                                class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-55 text-slate-600 transition-colors shadow-sm @if($activeItem === count($items) - 1) opacity-50 cursor-not-allowed @endif"
+                                @if($activeItem < count($items) - 1) wire:click="moveItemDown({{ $activeItem }})" @endif
+                                data-bs-toggle="tooltip" title="Move item down">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                            <button type="button" 
+                                class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-55 text-slate-650 transition-colors shadow-sm"
+                                wire:click="insertItemBelow({{ $activeItem }})"
+                                data-bs-toggle="tooltip" title="Insert new row below">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                            <button type="button" 
+                                class="inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-55 text-slate-650 transition-colors shadow-sm"
+                                wire:click="duplicateItem({{ $activeItem }})"
+                                data-bs-toggle="tooltip" title="Duplicate item">
+                                <i class="bi bi-files"></i>
+                            </button>
+                            <button type="button" 
+                                class="inline-flex items-center justify-center p-2 rounded-lg border border-red-205 bg-white hover:bg-red-50 text-red-650 transition-colors shadow-sm"
+                                @click="if (confirm('Delete this item from the list?')) $wire.removeItem({{ $activeItem }})"
+                                data-bs-toggle="tooltip" title="Delete item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
 
-                        $defects = $items[$i]['defects'] ?? [];
-                        $errBag = collect($errors->getBag('default')->get("items.$i.*"))->collapse();
-                    @endphp
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">OK Ratio %</span>
+                            <span class="inline-flex items-center text-sm font-extrabold @if($okPct >= 95) text-green-700 @elseif($okPct >= 75) text-amber-700 @else text-red-700 @endif">
+                                {{ number_format($okPct, 2) }}%
+                            </span>
+                        </div>
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scrap Ratio %</span>
+                            <span class="inline-flex items-center text-sm font-extrabold @if($ngPct > 15) text-red-700 @elseif($ngPct > 5) text-amber-700 @else text-green-700 @endif">
+                                {{ number_format($ngPct, 2) }}%
+                            </span>
+                        </div>
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Logged Defects</span>
+                            <span class="inline-flex items-center text-sm font-extrabold text-slate-700 gap-1.5">
+                                <i class="bi bi-bug text-red-500"></i> {{ count($defects) }}
+                            </span>
+                        </div>
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Line Total</span>
+                            <span class="inline-flex items-center text-sm font-extrabold text-slate-900 truncate">
+                                {{ $row['currency'] ?? 'IDR' }} {{ number_format($lineTotal, 2) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-                    <tr wire:key="row-{{ $i }}"
-                        class="align-middle item-row {{ $errBag->isNotEmpty() ? 'table-warning' : '' }}">
-                        <td class="text-muted small">{{ $i + 1 }}</td>
+                {{-- Tabs Navigation Bar --}}
+                <div class="flex border-b border-slate-200 px-5 mt-4">
+                    <button type="button" 
+                        class="py-2.5 px-4 font-bold text-xs uppercase tracking-wider border-b-2 transition-colors focus:outline-none @if($activeTab === 'details') border-blue-600 text-blue-600 @else border-transparent text-slate-400 hover:text-slate-600 @endif"
+                        wire:click="$set('activeTab', 'details')">
+                        <i class="bi bi-list-ul mr-1.5"></i> General Details
+                    </button>
+                    <button type="button" 
+                        class="py-2.5 px-4 font-bold text-xs uppercase tracking-wider border-b-2 transition-colors focus:outline-none @if($activeTab === 'defects') border-blue-600 text-blue-600 @else border-transparent text-slate-400 hover:text-slate-600 @endif"
+                        wire:click="$set('activeTab', 'defects')">
+                        <i class="bi bi-bug-fill mr-1.5"></i> Defects ({{ count($defects) }})
+                    </button>
+                </div>
 
-                        <td style="min-width: 240px;">
-                            <div class="d-flex gap-2 align-items-start">
-                                <input type="text" autocomplete="off"
-                                    class="form-control form-control-sm @error('items.' . $i . '.part_name') is-invalid @enderror"
-                                    placeholder="Part name" wire:model.live.defer="items.{{ $i }}.part_name"
-                                    id="fld-items-{{ $i }}-part-name">
-                                {{-- row error chip --}}
-                                @if ($errBag->isNotEmpty())
-                                    <span class="badge text-bg-warning" data-bs-toggle="tooltip"
-                                        title="{{ implode(' • ', $errBag->toArray()) }}">!</span>
-                                @endif
+                {{-- Inputs Grid & Defects List --}}
+                <div class="p-6 flex flex-col gap-6">
+                    
+                    @if($activeTab === 'details')
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                            {{-- Part Name (6 columns) --}}
+                            <div class="md:col-span-6">
+                                <label for="fld-item-detail-partname" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Part Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" autocomplete="off" list="dl-part-detail-name"
+                                    wire:key="fld-part-name-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.part_name') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    placeholder="Type or select part..." 
+                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.part_name"
+                                    id="fld-item-detail-partname">
+                                <datalist id="dl-part-detail-name">
+                                    @if(!empty($partSuggestions[$activeItem]))
+                                        @foreach($partSuggestions[$activeItem] as $suggestion)
+                                            <option value="{{ $suggestion }}"></option>
+                                        @endforeach
+                                    @endif
+                                </datalist>
+                                @error('items.' . $activeItem . '.part_name')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
                             </div>
-                            @error('items.' . $i . '.part_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
 
-                            {{-- inline defect chips --}}
-                            @php
-                                $hi = collect($defects)->where('severity', 'HIGH')->count();
-                                $md = collect($defects)->where('severity', 'MEDIUM')->count();
-                                $lo = collect($defects)->where('severity', 'LOW')->count();
-                            @endphp
-                            <div class="d-flex flex-wrap gap-1 mt-1 small">
-                                @if ($hi + $md + $lo > 0)
-                                    <span class="badge bg-dark-subtle text-dark-emphasis border">
-                                        <i class="bi bi-bug"></i> {{ $hi + $md + $lo }}
-                                    </span>
-                                @endif
-                                @if ($hi > 0)
-                                    <span class="badge bg-danger-subtle text-danger">HIGH {{ $hi }}</span>
-                                @endif
-                                @if ($md > 0)
-                                    <span class="badge bg-warning-subtle text-warning-emphasis">MED
-                                        {{ $md }}</span>
-                                @endif
-                                @if ($lo > 0)
-                                    <span class="badge bg-success-subtle text-success">LOW {{ $lo }}</span>
-                                @endif
+                            {{-- Price (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-price" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Unit Price <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="0.01" id="fld-item-detail-price"
+                                    wire:key="fld-price-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.price') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.price"
+                                    inputmode="decimal">
+                                @error('items.' . $activeItem . '.price')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
                             </div>
-                        </td>
 
-                        {{-- Numbers --}}
-                        <td class="text-end" style="min-width:110px;">
-                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-rec-quantity"
-                                class="form-control form-control-sm text-end @error('items.' . $i . '.rec_quantity') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.rec_quantity" inputmode="decimal">
-                            @error('items.' . $i . '.rec_quantity')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
+                            {{-- Currency (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-currency" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Currency
+                                </label>
+                                <input type="text" id="fld-item-detail-currency"
+                                    wire:key="fld-currency-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.currency') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    wire:model.live.defer="items.{{ $activeItem }}.currency"
+                                    placeholder="{{ $defaultCurrency }}">
+                                @error('items.' . $activeItem . '.currency')
+                                    <div class="text-[10px] text-red-655 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
 
-                        <td class="text-end" style="min-width:110px;">
-                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-verify-quantity"
-                                class="form-control form-control-sm text-end @error('items.' . $i . '.verify_quantity') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.verify_quantity" inputmode="decimal">
-                            @error('items.' . $i . '.verify_quantity')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
+                            {{-- Received Qty (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-recqty" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Received Qty <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="1" id="fld-item-detail-recqty"
+                                    wire:key="fld-rec-qty-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.rec_quantity') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.rec_quantity"
+                                    inputmode="numeric">
+                                @error('items.' . $activeItem . '.rec_quantity')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
 
-                        <td class="text-end" style="min-width:110px;">
-                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-can-use"
-                                class="form-control form-control-sm text-end @error('items.' . $i . '.can_use') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.can_use" inputmode="decimal">
-                            @error('items.' . $i . '.can_use')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
+                            {{-- Verified Qty (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-verifyqty" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Verified Qty <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="1" id="fld-item-detail-verifyqty"
+                                    wire:key="fld-verify-qty-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.verify_quantity') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.verify_quantity"
+                                    inputmode="numeric">
+                                @error('items.' . $activeItem . '.verify_quantity')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
 
-                        <td class="text-end" style="min-width:110px;">
-                            <div class="input-group input-group-sm">
-                                <input type="number" step="0.0001" id="fld-items-{{ $i }}-cant-use"
-                                    class="form-control text-end @error('items.' . $i . '.cant_use') is-invalid @enderror"
-                                    wire:model.live.defer="items.{{ $i }}.cant_use" inputmode="decimal">
-                                <button class="btn btn-outline-secondary" type="button"
-                                    wire:click="fillCantUseFromDefects({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Copy Defect → Can't Use">
-                                    <i class="bi bi-arrow-down-square"></i>
+                            {{-- Can Use Qty (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-canuse" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Can Use Qty <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="1" id="fld-item-detail-canuse"
+                                    wire:key="fld-can-use-{{ $activeItem }}"
+                                    class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.can_use') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.can_use"
+                                    inputmode="numeric">
+                                @error('items.' . $activeItem . '.can_use')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            {{-- Can't Use Qty (3 columns) --}}
+                            <div class="md:col-span-3">
+                                <label for="fld-item-detail-cantuse" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    Can't Use Qty <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex rounded-lg shadow-sm">
+                                    <input type="number" step="1" id="fld-item-detail-cantuse"
+                                        wire:key="fld-cant-use-{{ $activeItem }}"
+                                        class="w-full rounded-l-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.cant_use') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                        wire:model.live.debounce.300ms="items.{{ $activeItem }}.cant_use"
+                                        inputmode="numeric">
+                                    <button class="inline-flex items-center justify-center px-2.5 border border-l-0 border-slate-350 bg-white hover:bg-slate-55 text-slate-550 hover:text-slate-800 transition-colors shrink-0 rounded-r-lg focus:outline-none focus:ring-4 focus:ring-blue-50/50" type="button"
+                                        wire:click="fillCantUseFromDefects({{ $activeItem }})"
+                                        data-bs-toggle="tooltip" title="Copy sum from logged defects">
+                                        <i class="bi bi-arrow-down-up text-xs"></i>
+                                    </button>
+                                </div>
+                                @error('items.' . $activeItem . '.cant_use')
+                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                        <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($activeTab === 'defects')
+                        {{-- Logged Defects Section (Unified - Compact Row List) --}}
+                        <div class="flex flex-col gap-3">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Defect Entries</span>
+                                <button type="button" class="inline-flex items-center justify-center font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 shadow-sm transition-colors"
+                                    wire:click="openDefectPicker({{ $activeItem }})" aria-label="Open Catalog">
+                                    <i class="bi bi-plus-lg mr-1"></i> Defect
                                 </button>
                             </div>
-                            @error('items.' . $i . '.cant_use')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
 
-                        <td
-                            class="text-end small {{ $okPct >= 98 ? 'text-success' : ($okPct < 90 ? 'text-danger' : '') }}">
-                            {{ number_format($okPct, 1) }}%
-                        </td>
+                            @if (empty($defects))
+                                <div class="text-center text-slate-400 py-10 border border-dashed border-slate-250 rounded-xl bg-slate-55/10">
+                                    <i class="bi bi-shield-check text-3xl text-green-500 mb-2 d-block"></i>
+                                    <span class="text-xs font-bold text-slate-600">No defects logged for this item.</span>
+                                </div>
+                            @else
+                                <div class="border border-slate-250 rounded-xl overflow-hidden shadow-sm">
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-slate-200 text-left text-xs text-slate-700">
+                                            <thead class="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                <tr>
+                                                    <th class="py-2.5 px-3 w-8 text-center">#</th>
+                                                    <th class="py-2.5 px-3 min-w-[200px]">Defect Name</th>
+                                                    <th class="py-2.5 px-3 w-32">Source</th>
+                                                    <th class="py-2.5 px-3 w-24 text-right">Quantity</th>
+                                                    <th class="py-2.5 px-3 min-w-[150px]">Notes</th>
+                                                    <th class="py-2.5 px-3 w-10"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-200 bg-white">
+                                                @foreach ($defects as $d => $def)
+                                                    <tr wire:key="defect-row-{{ $activeItem }}-{{ $d }}" class="hover:bg-slate-50/30 transition-colors">
+                                                        {{-- # --}}
+                                                        <td class="py-2 px-3 text-center font-bold text-slate-400 border-r border-slate-100">
+                                                            {{ $d + 1 }}
+                                                        </td>
+                                                        
+                                                        {{-- Name --}}
+                                                        <td class="py-2 px-3">
+                                                            <div class="flex flex-col gap-1">
+                                                                <input type="text" autocomplete="off" list="dl-defect-name-{{ $activeItem }}-{{ $d }}"
+                                                                    wire:key="fld-def-name-{{ $activeItem }}-{{ $d }}"
+                                                                    id="fld-items-{{ $activeItem }}-defects-{{ $d }}-name"
+                                                                    placeholder="Defect Name *"
+                                                                    class="w-full rounded-md border-slate-300 text-slate-900 bg-slate-50/30 text-xs py-1.5 px-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all @error('items.' . $activeItem . '.defects.' . $d . '.name') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.defects.{{ $d }}.name"
+                                                                    x-on:focus-field.window="
+                                                                        if ($event.detail.key === 'items.{{ $activeItem }}.defects.{{ $d }}.name') $el.focus()
+                                                                    ">
+                                                                <datalist id="dl-defect-name-{{ $activeItem }}-{{ $d }}">
+                                                                    @if(!empty($defectSuggestions[$d]))
+                                                                        @foreach($defectSuggestions[$d] as $sug)
+                                                                            <option value="{{ $sug['name'] }}">{{ $sug['code'] }}</option>
+                                                                        @endforeach
+                                                                    @endif
+                                                                </datalist>
+                                                            </div>
+                                                            @error('items.' . $activeItem . '.defects.' . $d . '.name')
+                                                                <div class="text-[10px] text-red-655 mt-0.5 flex items-center gap-0.5">
+                                                                    <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                                                </div>
+                                                            @enderror
+                                                        </td>
 
-                        <td class="text-end small {{ $ngPct >= 10 ? 'text-danger' : '' }}">
-                            {{ number_format($ngPct, 1) }}%
-                        </td>
+                                                        {{-- Source --}}
+                                                        <td class="py-2 px-3">
+                                                            <select wire:key="fld-def-src-{{ $activeItem }}-{{ $d }}"
+                                                                class="w-full rounded-md border-slate-300 text-slate-800 bg-slate-55/40 text-xs py-1.5 px-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                                                                wire:model.live="items.{{ $activeItem }}.defects.{{ $d }}.source">
+                                                                @foreach (\App\Domain\Verification\Enums\DefectSource::cases() as $src)
+                                                                    <option value="{{ $src->value }}">{{ $src->value }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
 
-                        <td class="text-end" style="min-width:120px;">
-                            <input type="number" step="0.01" id="fld-items-{{ $i }}-price"
-                                class="form-control form-control-sm text-end @error('items.' . $i . '.price') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.price" inputmode="decimal">
-                            @error('items.' . $i . '.price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
+                                                        {{-- Quantity --}}
+                                                        <td class="py-2 px-3 text-right">
+                                                            <input type="number" step="0.0001" wire:key="fld-def-qty-{{ $activeItem }}-{{ $d }}"
+                                                                id="fld-items-{{ $activeItem }}-defects-{{ $d }}-quantity"
+                                                                placeholder="Qty *"
+                                                                class="w-full rounded-md border-slate-300 text-slate-900 bg-slate-50/30 text-xs py-1.5 px-2 text-right focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all @error('items.' . $activeItem . '.defects.' . $d . '.quantity') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                                                wire:model.live.debounce.300ms="items.{{ $activeItem }}.defects.{{ $d }}.quantity"
+                                                                inputmode="decimal">
+                                                            @error('items.' . $activeItem . '.defects.' . $d . '.quantity')
+                                                                <div class="text-[10px] text-red-655 mt-0.5 flex items-center gap-0.5 text-left">
+                                                                    <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                                                </div>
+                                                            @enderror
+                                                        </td>
 
-                        <td style="min-width:90px;">
-                            <input type="text" id="fld-items-{{ $i }}-currency"
-                                class="form-control form-control-sm @error('items.' . $i . '.currency') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.currency"
-                                placeholder="{{ $defaultCurrency }}">
-                            @error('items.' . $i . '.currency')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </td>
+                                                        {{-- Notes --}}
+                                                        <td class="py-2 px-3">
+                                                            <input type="text" wire:key="fld-def-notes-{{ $activeItem }}-{{ $d }}"
+                                                                placeholder="Notes details..."
+                                                                class="w-full rounded-md border-slate-300 text-slate-800 bg-slate-50/30 text-xs py-1.5 px-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all @error('items.' . $activeItem . '.defects.' . $d . '.notes') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                                                                wire:model.live="items.{{ $activeItem }}.defects.{{ $d }}.notes">
+                                                            @error('items.' . $activeItem . '.defects.' . $d . '.notes')
+                                                                <div class="text-[10px] text-red-655 mt-0.5 flex items-center gap-0.5">
+                                                                    <i class="bi bi-exclamation-circle"></i>{{ $message }}
+                                                                </div>
+                                                            @enderror
+                                                        </td>
 
-                        <td class="text-end fw-semibold"> {{ number_format($line, 2) }} </td>
+                                                        {{-- Action --}}
+                                                        <td class="py-2 px-3 text-center">
+                                                            <button type="button" 
+                                                                class="inline-flex items-center justify-center p-1.5 border border-red-100 hover:border-red-200 text-red-650 hover:bg-red-50 rounded transition-colors shadow-sm focus:outline-none"
+                                                                wire:click="removeDefect({{ $activeItem }}, {{ $d }})"
+                                                                data-bs-toggle="tooltip" title="Remove defect">
+                                                                <i class="bi bi-trash text-xs"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
 
-                        <td class="text-end">
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-secondary"
-                                    wire:click="insertItemBelow({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Insert below">＋</button>
-                                <button class="btn btn-outline-secondary"
-                                    wire:click="duplicateItem({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Duplicate">⎘</button>
-                                <button class="btn btn-outline-secondary"
-                                    wire:click="moveItemUp({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Up">↑</button>
-                                <button class="btn btn-outline-secondary"
-                                    wire:click="moveItemDown({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Down">↓</button>
-                                <button class="btn btn-outline-danger" wire:click="removeItem({{ $i }})"
-                                    data-bs-toggle="tooltip" title="Remove"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="12" class="text-center text-muted py-4">No items yet.</td>
-                    </tr>
-                @endforelse
-            </tbody>
+                </div>
 
-            @php
-                // group totals by currency (handles mixed currencies gracefully)
-                $byCurr = collect($items)->groupBy(
-                    fn($r) => trim($r['currency'] ?? $defaultCurrency) ?: $defaultCurrency,
-                );
-                $grandRows = $byCurr
-                    ->map(
-                        fn($rows, $cur) => [
-                            'currency' => $cur,
-                            'sum' => $rows->sum(
-                                fn($r) => (float) ($r['verify_quantity'] ?? 0) * (float) ($r['price'] ?? 0),
-                            ),
-                        ],
-                    )
-                    ->values();
-            @endphp
-
-            @if (count($items))
-                <tfoot class="sticky-foot">
-                    @foreach ($grandRows as $gr)
-                        <tr>
-                            <th colspan="10" class="text-end">Monetary Total ({{ $gr['currency'] }})</th>
-                            <th class="text-end">{{ number_format($gr['sum'], 2) }}</th>
-                            <th></th>
-                        </tr>
-                    @endforeach
-                </tfoot>
-            @endif
-        </table>
+            </div>
+        @else
+            <div class="bg-white border border-slate-300 shadow-sm rounded-xl p-12 text-center text-slate-400">
+                <i class="bi bi-box-seam text-5xl d-block mb-4 text-slate-350"></i>
+                <h4 class="font-bold text-slate-800 text-base mb-1">No Item Selected</h4>
+                <p class="text-xs text-slate-450 max-w-sm mx-auto mb-6">Select an item from the left panel list or add a new one to view and edit its values.</p>
+                <button type="button" class="inline-flex items-center justify-center font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 shadow-sm transition-colors"
+                    wire:click="addItem">
+                    <i class="bi bi-plus-lg mr-1.5"></i> Add First Item
+                </button>
+            </div>
+        @endif
     </div>
 
-    @pushOnce('extraCss')
-        <style>
-            .editor-table th,
-            .editor-table td {
-                vertical-align: middle;
-            }
-
-            .sticky-head {
-                position: sticky;
-                top: 0;
-                z-index: 2;
-            }
-
-            .sticky-foot {
-                position: sticky;
-                bottom: 0;
-                background: var(--bs-body-bg);
-                z-index: 1;
-            }
-
-            .pick-table tr:hover {
-                background: var(--bs-secondary-bg);
-            }
-        </style>
-    @endPushOnce
-
-    {{-- Paste dialog (kept) --}}
-    @if ($pasteDialog ?? false)
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.35);">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Paste items from Excel/CSV</h5>
-                        <button type="button" class="btn-close" wire:click="$set('pasteDialog', false)"></button>
+    {{-- Catalog Picker Modal --}}
+    @if (!is_null($pickerForItem))
+        <div class="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative w-full max-w-3xl rounded-xl bg-white p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden">
+                    <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-900">Select defect from catalog</h3>
+                        <button type="button" class="text-slate-455 hover:text-slate-600 transition-colors" wire:click="closeDefectPicker">
+                            <i class="bi bi-x-lg text-lg"></i>
+                        </button>
                     </div>
-                    <div class="modal-body">
-                        <div class="small text-muted mb-2">
-                            Columns order: <code>part_name, rec_quantity, verify_quantity, can_use, cant_use, price,
-                                currency</code>
+                    <div class="overflow-y-auto flex-1 py-4">
+                        <div class="mb-4">
+                            <input class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-sm py-2.5 px-3.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all ps-3" placeholder="Search code or name..."
+                                wire:model.live.debounce.300ms="defectSearch">
                         </div>
-                        <textarea class="form-control" rows="8" placeholder="Paste tab- or comma-separated rows here"
-                            wire:model.defer="pasteBuffer"></textarea>
+                        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-700">
+                                <thead class="bg-slate-50">
+                                    <tr class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3.5 px-4">Code</th>
+                                        <th class="py-3.5 px-4">Name</th>
+                                        <th class="py-3.5 px-4">Severity</th>
+                                        <th class="py-3.5 px-4">Source</th>
+                                        <th class="py-3.5 px-4 text-right">Default Qty</th>
+                                        <th class="py-3.5 px-4"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 bg-white">
+                                    @forelse($catalogResults as $c)
+                                        <tr wire:click="pickCatalogDefect({{ $c['id'] }})" class="hover:bg-slate-55/70 transition-colors cursor-pointer">
+                                            <td class="py-3 px-4 font-bold text-slate-900">{{ $c['code'] }}</td>
+                                            <td class="py-3 px-4">{{ $c['name'] }}</td>
+                                            <td class="py-3 px-4">
+                                                @include('partials.severity-badge', [
+                                                    'severity' => $c['severity'],
+                                                ])
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                @include('partials.source-chip', ['source' => $c['source']])
+                                            </td>
+                                            <td class="py-3 px-4 text-right font-semibold">
+                                                {{ number_format((int) $c['quantity']) }}
+                                            </td>
+                                            <td class="py-3 px-4 text-right">
+                                                <button class="inline-flex items-center justify-center font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 shadow-sm transition-colors"
+                                                    wire:click.stop="pickCatalogDefect({{ $c['id'] }})">Use</button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-slate-400 py-8">
+                                                <div class="flex flex-col items-center justify-center gap-2">
+                                                    <span class="text-slate-500">No matching defects in catalog.</span>
+                                                    <button type="button" class="mt-2 inline-flex items-center justify-center font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-2 border border-slate-300 transition-colors shadow-sm"
+                                                        wire:click="addCustomDefect({{ $pickerForItem }})">
+                                                        <i class="bi bi-pencil-square mr-1"></i> Create Custom Defect
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline-secondary"
-                            wire:click="$set('pasteDialog', false)">Cancel</button>
-                        <button class="btn btn-primary" wire:click="applyPastedItems">Insert</button>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-200 mt-2">
+                        <button type="button" class="inline-flex items-center justify-center font-semibold rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs px-3.5 py-2 border border-slate-200 transition-colors"
+                            wire:click="addCustomDefect({{ $pickerForItem }})">
+                            <i class="bi bi-pencil-square mr-1.5"></i> Custom Defect
+                        </button>
+                        <button class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors" wire:click="closeDefectPicker">Close</button>
                     </div>
                 </div>
             </div>

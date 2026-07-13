@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\QAQC\Services\AdjustFormService;
 use App\Models\HeaderFormAdjust;
-use App\Models\Report;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use Illuminate\Http\Request;
 
 class AdjustFormQcController extends Controller
@@ -16,7 +16,7 @@ class AdjustFormQcController extends Controller
     public function index(Request $request)
     {
         $reportId = $request->input('reports');
-        $datas = Report::with('details')->findOrFail($reportId);
+        $datas = VerificationReport::with('items')->findOrFail($reportId);
         $masterDataCollection = $this->adjustFormService->getMasterDataForReport($reportId);
         $found = $this->adjustFormService->getOrCreateHeader($reportId);
 

@@ -58,7 +58,7 @@
 
                                     {{-- Invoice --}}
                                     <td>
-                                        {{ $report->report->invoice_no }}
+                                        {{ $report->report->invoice_number ?? $report->report->invoice_no ?? '-' }}
                                     </td>
 
                                     {{-- Status --}}

@@ -18,7 +18,7 @@
                             </div>
 
                             @php
-                                $activeId = session('active_tab') ?? optional($datas->details->first())->id;
+                                $activeId = session('active_tab') ?? optional($datas->items->first())->id;
                             @endphp
 
                             {{-- Sidebar: list part detail --}}
@@ -27,12 +27,12 @@
                                     1. Select Part Detail
                                 </h6>
                                 <div class="list-group small" id="part-detail-list" role="tablist">
-                                    @foreach ($datas->details as $detail)
-                                        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between @if ($activeId == $detail->id) active @endif"
-                                            id="list-detail-{{ $detail->id }}-list" data-bs-toggle="list"
-                                            href="#list-detail{{ $detail->id }}" role="tab"
-                                            aria-controls="list-detail{{ $detail->id }}">
-                                            <span class="text-truncate">{{ $detail->part_name }}</span>
+                                    @foreach ($datas->items as $item)
+                                        <a class="list-group-item list-group-item-action d-flex align-items-center justify-content-between @if ($activeId == $item->id) active @endif"
+                                            id="list-detail-{{ $item->id }}-list" data-bs-toggle="list"
+                                            href="#list-detail{{ $item->id }}" role="tab"
+                                            aria-controls="list-detail{{ $item->id }}">
+                                            <span class="text-truncate">{{ $item->part_name }}</span>
                                         </a>
                                     @endforeach
                                 </div>
@@ -41,10 +41,10 @@
                             {{-- Main content: tab panes --}}
                             <div class="col-12 col-lg-9 px-4 py-4">
                                 <div class="tab-content" id="nav-tabContent">
-                                    @foreach ($datas->details as $detail)
-                                        <div class="tab-pane fade @if ($activeId == $detail->id) show active @endif"
-                                            id="list-detail{{ $detail->id }}" role="tabpanel"
-                                            aria-labelledby="list-detail-{{ $detail->id }}-list">
+                                    @foreach ($datas->items as $item)
+                                        <div class="tab-pane fade @if ($activeId == $item->id) show active @endif"
+                                            id="list-detail{{ $item->id }}" role="tabpanel"
+                                            aria-labelledby="list-detail-{{ $item->id }}-list">
 
                                             {{-- Section header --}}
                                             <div
@@ -52,7 +52,7 @@
                                                 <div>
                                                     <h6 class="mb-1">
                                                         2. Add Raw Material Adjust for
-                                                        <span class="fw-semibold">{{ $detail->part_name }}</span>
+                                                        <span class="fw-semibold">{{ $item->part_name }}</span>
                                                     </h6>
                                                     <small class="text-muted">
                                                         Pilih / tambah raw material yang akan digunakan sebagai penyesuaian
@@ -61,9 +61,9 @@
                                                 </div>
 
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <div class="modal fade" id="add-fgwarehouse-modal-{{ $detail->id }}"
+                                                    <div class="modal fade" id="add-fgwarehouse-modal-{{ $item->id }}"
                                                         tabindex="-1"
-                                                        aria-labelledby="fgWarehouseLabel-{{ $detail->id }}"
+                                                        aria-labelledby="fgWarehouseLabel-{{ $item->id }}"
                                                         aria-hidden="true">
                                                         <div class="modal-dialog modal-dialog-centered modal-sm">
                                                             <div class="modal-content border-0 shadow-lg">
@@ -71,13 +71,13 @@
                                                                 <div class="modal-header border-bottom-0 pb-0">
                                                                     <div>
                                                                         <h5 class="modal-title fw-semibold"
-                                                                            id="fgWarehouseLabel-{{ $detail->id }}">
+                                                                            id="fgWarehouseLabel-{{ $item->id }}">
                                                                             Add FG Warehouse
                                                                         </h5>
                                                                         <p class="mb-0 mt-1 small text-muted">
                                                                             Pilih lokasi warehouse untuk FG
                                                                             <span
-                                                                                class="fw-semibold">{{ $detail->part_name }}</span>.
+                                                                                class="fw-semibold">{{ $item->part_name }}</span>.
                                                                         </p>
                                                                     </div>
                                                                     <button type="button" class="btn-close"
@@ -88,63 +88,31 @@
                                                                     action="{{ route('fgwarehousesave') }}">
                                                                     @csrf
                                                                     <input type="hidden" name="detail_id"
-                                                                        value="{{ $detail->id }}">
+                                                                        value="{{ $item->id }}">
 
                                                                     <div class="modal-body">
                                                                         @php
                                                                             $warehouses = [
-                                                                                '01',
-                                                                                'CFC',
-                                                                                'CMS',
-                                                                                'CMSO',
-                                                                                'FFA',
-                                                                                'FFI',
-                                                                                'FFM',
-                                                                                'FFS',
-                                                                                'FG',
-                                                                                'FT',
-                                                                                'IN6',
-                                                                                'IND',
-                                                                                'KRCMS',
-                                                                                'KRFG',
-                                                                                'KRRJCT',
-                                                                                'KRRM',
-                                                                                'KRWIP',
-                                                                                'MLD',
-                                                                                'MLDCPG',
-                                                                                'QCFT',
-                                                                                'QCRM',
-                                                                                'RFA',
-                                                                                'RFI',
-                                                                                'RFM',
-                                                                                'RFS',
-                                                                                'RJCT',
-                                                                                'RM',
-                                                                                'RMC',
-                                                                                'RYCL',
-                                                                                'SMP',
-                                                                                'SUB-F',
-                                                                                'SUB-W',
-                                                                                'WFA',
-                                                                                'WFI',
-                                                                                'WFM',
-                                                                                'WFS',
-                                                                                'WIP',
-                                                                                'WOS',
+                                                                                '01', 'CFC', 'CMS', 'CMSO', 'FFA', 'FFI', 'FFM',
+                                                                                'FFS', 'FG', 'FT', 'IN6', 'IND', 'KRCMS', 'KRFG',
+                                                                                'KRRJCT', 'KRRM', 'KRWIP', 'MLD', 'MLDCPG', 'QCFT',
+                                                                                'QCRM', 'RFA', 'RFI', 'RFM', 'RFS', 'RJCT', 'RM',
+                                                                                'RMC', 'RYCL', 'SMP', 'SUB-F', 'SUB-W', 'WFA',
+                                                                                'WFI', 'WFM', 'WFS', 'WIP', 'WOS',
                                                                             ];
 
                                                                             $selectedWarehouse = old(
                                                                                 'fg_warehouse',
-                                                                                $detail->fg_warehouse_name,
+                                                                                $item->fg_warehouse_name,
                                                                             );
                                                                         @endphp
 
                                                                         <div class="mb-3">
-                                                                            <label for="fg_warehouse_{{ $detail->id }}"
+                                                                            <label for="fg_warehouse_{{ $item->id }}"
                                                                                 class="form-label small fw-semibold">
                                                                                 FG Warehouse
                                                                             </label>
-                                                                            <select id="fg_warehouse_{{ $detail->id }}"
+                                                                            <select id="fg_warehouse_{{ $item->id }}"
                                                                                 name="fg_warehouse"
                                                                                 class="form-select form-select-sm">
                                                                                 <option value="" disabled
@@ -162,9 +130,7 @@
                                                                         </div>
 
                                                                         <p class="small text-muted mb-0">
-                                                                            Kode mengikuti kode warehouse di sistem
-                                                                            (SAP/WMS)
-                                                                            .
+                                                                            Kode mengikuti kode warehouse di sistem (SAP/WMS).
                                                                         </p>
                                                                     </div>
 
@@ -184,7 +150,7 @@
                                                     </div>
                                                     <button type="button" class="btn btn-outline-primary btn-sm"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#add-fgwarehouse-modal-{{ $detail->id }}">
+                                                        data-bs-target="#add-fgwarehouse-modal-{{ $item->id }}">
                                                         + FG Warehouse
                                                     </button>
                                                 </div>
@@ -204,7 +170,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @forelse ($detail->adjustdetail as $adjust)
+                                                        @forelse ($item->adjustdetail as $adjust)
                                                             <tr class="text-center">
                                                                 <td>{{ $loop->iteration }}</td>
                                                                 <td class="text-nowrap">{{ $adjust->rm_code }}</td>
@@ -230,7 +196,7 @@
                             {{-- Footer actions --}}
                             <div
                                 class="d-flex justify-content-between align-items-center border-top px-4 py-3 bg-light mt-2">
-                                <a href="{{ route('qaqc.report.detail', ['id' => $datas->id]) }}"
+                                <a href="{{ route('verification.show', $datas->id) }}"
                                     class="btn btn-outline-secondary">
                                     Back
                                 </a>

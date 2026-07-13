@@ -5,7 +5,7 @@
             <div class="absolute inset-0" @click="openSendMail = false"></div>
 
             <div class="relative z-10 w-full max-w-3xl mx-4 rounded-2xl bg-white shadow-xl border border-slate-100">
-                <form action="{{ route('qaqc.report.sendEmail', $report->id) }}" method="post"
+                <form action="{{ route('verification.sendEmail', $report->id) }}" method="post"
                     enctype="multipart/form-data">
                     @csrf
                     @method('POST')
@@ -112,7 +112,7 @@
                                 <div class="mt-1 text-xs font-semibold text-slate-500">
                                     You need to export the document first
                                 </div>
-                                <a href="{{ route('qaqc.report.savePdf', $report->id) }}"
+                            <a href="{{ route('verification.download', $report->id) }}"
                                     class="inline-flex items-center rounded-md border border-indigo-600 bg-white
                                           px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
                                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">

@@ -5,10 +5,12 @@ namespace App\Livewire\Verification;
 use App\Application\Verification\UseCases\ApproveReport;
 use App\Application\Verification\UseCases\RejectReport;
 use App\Application\Verification\UseCases\SubmitReport;
+use App\Domain\Verification\Services\VerificationEmailService;
+use App\Domain\Verification\Services\VerificationExportService;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Component;
 
 class Show extends Component
 {
@@ -17,6 +19,12 @@ class Show extends Component
     public VerificationReport $report;
 
     public string $remarks = '';
+
+    // Mail form fields — bound to mail-modal inputs via wire:model
+    public string $mailTo      = '';
+    public string $mailCc      = '';
+    public string $mailSubject = '';
+    public string $mailBody    = '';
 
     // --- Lifecycle ----------------------------------------------------------
 
@@ -109,7 +117,35 @@ class Show extends Component
         $this->refreshReport();
     }
 
-    // --- Computed Properties for Legacy Integration ---
+    // --- PDF / Email / Delete -----------------------------------------------
+
+    public function exportPdf(VerificationExportService $service)
+    {
+        return $service->exportToPdf($this->report->id);
+    }
+
+    public function savePdf(VerificationExportService $service): void
+    {
+        $service->savePdf($this->report->id);
+        $this->dispatch('toast', body: 'PDF saved to storage.');
+    }
+
+    public function sendEmail(VerificationEmailService $emailService, VerificationExportService $exportService): void
+    {
+        $this->authorize('update', $this->report);
+
+        $emailService->sendEmail($this->report->id, [
+            'to'      => $this->mailTo,
+            'cc'      => $this->mailCc,
+            'subject' => $this->mailSubject,
+            'body'    => $this->mailBody,
+        ], $exportService);
+
+        $this->dispatch('toast', body: 'Email sent.');
+        $this->dispatch('close-mail-modal');
+    }
+
+    // --- Computed Properties for Legacy / Adjust Form -----------------------
 
     public function getLegacyIdProperty(): ?int
     {
@@ -118,9 +154,11 @@ class Show extends Component
 
     public function getHasAdjustFormProperty(): bool
     {
-        if (! $this->legacyId) return false;
-        // Check if legacy HeaderFormAdjust exists
-        return \App\Models\HeaderFormAdjust::where('report_id', $this->legacyId)->exists();
+        // ponytail: during transition, check both legacy and new report_id columns
+        if ($this->legacyId) {
+            return \App\Models\HeaderFormAdjust::where('report_id', $this->legacyId)->exists();
+        }
+        return \App\Models\HeaderFormAdjust::where('verification_report_id', $this->report->id)->exists();
     }
 
     public function getAreAllDoNumbersFilledProperty(): bool

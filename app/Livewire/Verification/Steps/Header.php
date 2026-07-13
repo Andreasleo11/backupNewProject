@@ -3,6 +3,7 @@
 namespace App\Livewire\Verification\Steps;
 
 use App\Livewire\Verification\Concerns\VerificationRules;
+use App\Models\MasterDataRogCustomerName;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -16,17 +17,17 @@ class Header extends Component
 
     protected function messages(): array
     {
-        return method_exists($this, 'messagesAll') ? $this->messagesAll() : [];
+        return $this->messagesAll();
     }
 
     protected function validationAttributes(): array
     {
-        return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
+        return $this->attributesAll();
     }
 
     public function updated($propertyName)
     {
-        $this->validateOnly($propertyName);
+        $this->validateOnly($propertyName, $this->rulesHeader());
     }
 
     #[On('request-validate')]
@@ -50,6 +51,8 @@ class Header extends Component
 
     public function render()
     {
-        return view('livewire.verification.steps.header');
+        return view('livewire.verification.steps.header', [
+            'customers' => MasterDataRogCustomerName::orderBy('name')->get(),
+        ]);
     }
 }

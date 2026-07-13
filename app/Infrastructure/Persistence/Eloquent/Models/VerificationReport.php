@@ -34,8 +34,29 @@ class VerificationReport extends Model implements Approvable
         return $this->hasMany(\App\Models\File::class, 'doc_id', 'document_number');
     }
 
-    public function getApprovalStatusAttribute(): string
+
+    public function getApprovableTypeLabel(): string
     {
-        return $this->approvalStatus(); // DRAFT | IN_REVIEW | APPROVED | REJECTED
+        return 'Verification Report';
+    }
+
+    public function getApprovableIdentifier(): string
+    {
+        return $this->document_number ?? (string) $this->getKey();
+    }
+
+    public function getApprovableShowUrl(): string
+    {
+        return route('verification.show', $this->id);
+    }
+
+    public function getApprovableDepartmentName(): ?string
+    {
+        return data_get($this->meta, 'department');
+    }
+
+    public function getApprovableBranchValue(): ?string
+    {
+        return null; // ponytail: no branch concept on verification reports
     }
 }

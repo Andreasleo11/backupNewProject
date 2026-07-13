@@ -57,15 +57,14 @@
                 </button>
             @endcanany
 
-            @if ($this->legacyId)
-                <a href="{{ route('qaqc.report.savePdf', $this->legacyId) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition">
-                    <i class="bi bi-file-earmark-pdf text-rose-600"></i> Export PDF
-                </a>
-                @if ($report->status !== 'DRAFT')
-                    <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-mail-modal')">
-                        <i class="bi bi-envelope"></i> Send Mail
-                    </button>
-                @endif
+            {{-- PDF download: always available once report exists --}}
+            <a href="{{ route('verification.download', $report->id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm transition">
+                <i class="bi bi-file-earmark-pdf text-rose-600"></i> Export PDF
+            </a>
+            @if ($report->status !== 'DRAFT')
+                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition" x-data @click="$dispatch('open-mail-modal')">
+                    <i class="bi bi-envelope"></i> Send Mail
+                </button>
             @endif
 
             <!-- Primary Edit Action (if draft) -->
@@ -177,16 +176,16 @@
                             <td class="px-5 py-3.5 text-center font-mono text-slate-400 font-bold w-12">{{ $loop->iteration }}</td>
                             <td class="px-5 py-3.5 font-medium text-slate-900">{{ $i->part_name }}</td>
                             <td class="px-4 py-3.5 text-end font-mono">
-                                {{ rtrim(rtrim(number_format($i->rec_quantity, 4, '.', ''), '0'), '.') }}
+                                {{ number_format((int) $i->rec_quantity) }}
                             </td>
                             <td class="px-4 py-3.5 text-end font-mono font-semibold text-slate-900">
-                                {{ rtrim(rtrim(number_format($i->verify_quantity, 4, '.', ''), '0'), '.') }}
+                                {{ number_format((int) $i->verify_quantity) }}
                             </td>
                             <td class="px-4 py-3.5 text-end font-mono text-emerald-600 font-medium">
-                                {{ rtrim(rtrim(number_format($i->can_use, 4, '.', ''), '0'), '.') }}
+                                {{ number_format((int) $i->can_use) }}
                             </td>
                             <td class="px-4 py-3.5 text-end font-mono text-rose-600 font-medium">
-                                {{ rtrim(rtrim(number_format($i->cant_use, 4, '.', ''), '0'), '.') }}
+                                {{ number_format((int) $i->cant_use) }}
                             </td>
                             <td class="px-4 py-3.5 text-end font-mono">{{ number_format($i->price, 2) }}</td>
                             <td class="px-4 py-3.5 font-medium text-slate-500">{{ $i->currency }}</td>
@@ -285,7 +284,7 @@
                                                         </span>
                                                         <span class="text-slate-300">|</span>
                                                         <span class="font-bold text-slate-900 font-mono w-16 text-end">
-                                                            {{ rtrim(rtrim(number_format($d->quantity, 4, '.', ''), '0'), '.') }}
+                                                            {{ number_format((int) $d->quantity) }}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -415,18 +414,17 @@
             ])
         </div>
     </div>
-
-    {{-- Modals --}}
     {{-- Upload Files Modal --}}
     @include('partials.upload-files-modal', ['doc_id' => $report->document_number])
 
-    {{-- Send Mail Modal (Legacy) --}}
-    @if ($this->legacyId)
+    {{-- Send Mail Modal --}}
+    @if ($report->status !== 'DRAFT')
         @include('partials.mail-modal', [
             'report' => (object)[
-                'id' => $this->legacyId, 
-                'customer' => $report->customer, 
-                'files' => $report->files
+                'id'              => $report->id,
+                'customer'        => $report->customer,
+                'files'           => $report->files,
+                'has_been_emailed' => false,
             ]
         ])
     @endif
