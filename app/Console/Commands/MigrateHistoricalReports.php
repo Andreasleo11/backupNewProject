@@ -76,6 +76,16 @@ class LegacyDetail extends Model
 
 /**
  * @property int    $id
+ * @property string $name
+ */
+class LegacyDefectCategory extends Model
+{
+    protected $table = 'defect_categories';
+    protected $guarded = [];
+}
+
+/**
+ * @property int    $id
  * @property int    $detail_id
  * @property int    $quantity
  * @property string $remarks
@@ -90,7 +100,7 @@ class LegacyDefect extends Model
 
     public function category()
     {
-        return $this->belongsTo(\App\Models\DefectCategory::class, 'defect_category_id');
+        return $this->belongsTo(LegacyDefectCategory::class, 'category_id');
     }
 }
 
@@ -145,8 +155,17 @@ class MigrateHistoricalReports extends Command
         $leaderRole = Role::where('name', 'leader')->first();
         $deptHeadRole = Role::where('name', 'department-head')->first();
 
+        $defaultUser = \App\Infrastructure\Persistence\Eloquent\Models\User::where('email', 'raymond@daijo.co.id')->first()
+            ?? \App\Infrastructure\Persistence\Eloquent\Models\User::first();
+
+        if (!$defaultUser && !$dryRun) {
+            $this->error("No users found in the database. Please run seeders (e.g. php artisan db:seed) first to create users.");
+            return Command::FAILURE;
+        }
+        $defaultUserId = $defaultUser ? $defaultUser->id : null;
+
         try {
-            DB::transaction(function () use ($legacyReports, $dryRun, $refresh, $ruleTemplate, $leaderRole, $deptHeadRole, &$migrated, &$skipped) {
+            DB::transaction(function () use ($legacyReports, $dryRun, $refresh, $ruleTemplate, $leaderRole, $deptHeadRole, $defaultUserId, &$migrated, &$skipped) {
                 if ($refresh) {
                     $this->comment('Wiping existing verification reports and approval records...');
                     // Delete all new records
@@ -208,7 +227,7 @@ class MigrateHistoricalReports extends Command
                     if (!$dryRun) {
                         $newReport = VerificationReport::create([
                             'document_number' => $docNum,
-                            'creator_id' => $creatorId ?? 1, // Default to 1 if null
+                            'creator_id' => $creatorId ?? $defaultUserId, // Default to resolved fallback user ID if null
                             'status' => $status,
                             'meta' => $meta,
                             'rec_date' => $legacyReport->rec_date,
@@ -265,7 +284,7 @@ class MigrateHistoricalReports extends Command
                             'rule_template_id' => $ruleTemplate->id,
                             'rule_template_version_id' => $ruleTemplate->id,
                             'current_step' => 1, // Will update below
-                            'submitted_by' => $creatorId ?? 1,
+                            'submitted_by' => $creatorId ?? $defaultUserId,
                             'submitted_at' => $legacyReport->created_at,
                             'created_at' => $legacyReport->created_at,
                             'updated_at' => $legacyReport->updated_at,
