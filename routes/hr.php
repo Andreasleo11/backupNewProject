@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\FormCutiController;
-use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\hrd\ImportantDocController;
 use App\Livewire\Overtime\ApprovalHub as FormOvertimeHub;
@@ -61,22 +59,6 @@ Route::middleware('auth')->group(function () {
 
     // === Server-side detail rejection (admin action) ===
     Route::delete('/formovertime/detail/{id}/reject', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime.detail.reject');
-
-    // FormCuti
-    Route::get('/formcuti/index', [FormCutiController::class, 'index'])->name('formcuti');
-    Route::post('/formcuti/input', [FormCutiController::class, 'input'])->name('formcuti.input');
-    Route::get('/formcuti/{id}/detail', [FormCutiController::class, 'detail'])->name('formcuti.detail');
-    Route::post('/formcuti/approve/{id}', [FormCutiController::class, 'approve'])->name('formcuti.approve');
-    Route::post('/formcuti/reject/{id}', [FormCutiController::class, 'reject'])->name('formcuti.reject');
-    Route::delete('/formcuti/delete/{id}', [FormCutiController::class, 'delete'])->name('formcuti.delete');
-
-    // FormKeluar
-    Route::get('/formkeluar/index', [FormKeluarController::class, 'index'])->name('formkeluar');
-    Route::post('/formkeluar/input', [FormKeluarController::class, 'input'])->name('formkeluar.input');
-    Route::get('/formkeluar/{id}/detail', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
-    Route::post('/formkeluar/approve/{id}', [FormKeluarController::class, 'approve'])->name('formkeluar.approve');
-    Route::post('/formkeluar/reject/{id}', [FormKeluarController::class, 'reject'])->name('formkeluar.reject');
-    Route::delete('/formkeluar/delete/{id}', [FormKeluarController::class, 'delete'])->name('formkeluar.delete');
 
     // Employee Trainings
     Route::resource('employee_trainings', EmployeeTrainingController::class);

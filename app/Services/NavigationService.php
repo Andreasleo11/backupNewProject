@@ -395,27 +395,7 @@ class NavigationService
                     ],
                 ],
             ],
-            [
-                'type' => 'group',
-                'label' => 'Personnel Forms',
-                'icon' => 'clipboard-document',
-                'permission' => 'dashboard.view', // Everyone can see basic forms
-                'priority' => 64,
-                'children' => [
-                    [
-                        'label' => 'Leave Forms',
-                        'route' => 'formcuti',
-                        'icon' => 'calendar-days',
-                        'active' => request()->routeIs('formcuti*'),
-                    ],
-                    [
-                        'label' => 'Exit Forms',
-                        'route' => 'formkeluar',
-                        'icon' => 'arrow-left-on-rectangle',
-                        'active' => request()->routeIs('formkeluar*'),
-                    ],
-                ],
-            ],
+
             [
                 'type' => 'group',
                 'label' => 'Personnel Management',
