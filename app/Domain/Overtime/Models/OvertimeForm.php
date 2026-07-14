@@ -4,7 +4,6 @@ namespace App\Domain\Overtime\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\ApprovalFlow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -23,7 +22,6 @@ class OvertimeForm extends Model implements Approvable
         'is_export',
         'description',
         'is_planned',
-        'approval_flow_id',
         'is_after_hour',
     ];
 
@@ -54,16 +52,6 @@ class OvertimeForm extends Model implements Approvable
         return $this->hasMany(OvertimeFormDetail::class, 'header_id', 'id')
             ->where('status', 'Rejected')
             ->where('reason', 'like', '%JPAYROLL%');
-    }
-
-    public function flow()
-    {
-        return $this->belongsTo(ApprovalFlow::class, 'approval_flow_id', 'id');
-    }
-
-    public function approvals()
-    {
-        return $this->hasMany(\App\Models\OvertimeFormApproval::class, 'overtime_form_id', 'id');
     }
 
     // -------------------------------------------------------------------------

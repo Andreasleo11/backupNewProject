@@ -20,7 +20,6 @@ return new class extends Migration
             $table->time('return_time')->nullable();
             $table->string('vehicle_number');
             $table->string('driver_name');
-            $table->foreignId('approval_flow_id')->constrained('approval_flows');
             $table->enum('status', ['draft', 'submitted']);
             $table->softDeletes();
             $table->timestamps();

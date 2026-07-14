@@ -3,8 +3,6 @@
 namespace App\Domains\Operations\Actions;
 
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
-use App\Models\ApprovalFlow; // Assuming this is the new conditional resolver
-use App\Support\ApprovalFlowResolver;
 use Illuminate\Support\Facades\DB;
 
 class CreateDeliveryNote
@@ -16,19 +14,8 @@ class CreateDeliveryNote
             // Calculate total costs for the approval context
             $totalCost = $this->calculateTotalCost($destinations);
 
-            // Dynamically resolve Approval Flow
-            // We use the delivery note attributes for evaluation
-            $context = array_merge($data, [
-                'total_cost' => $totalCost,
-                'is_design' => false,
-                'dept_id' => null,
-            ]);
-            $flowSlug = ApprovalFlowResolver::for($context);
-            $approvalFlow = ApprovalFlow::where('slug', $flowSlug)->first();
-
             $note = DeliveryNote::create(array_merge($data, [
                 'status' => $isDraft ? 'draft' : 'submitted',
-                'approval_flow_id' => $approvalFlow ? $approvalFlow->id : 1, // Fallback if no matching rule
                 'total_cost' => $totalCost, // assuming we want to track it or not, wait, delivery_notes doesn't have total_cost column yet, so we won't insert it.
             ]));
 

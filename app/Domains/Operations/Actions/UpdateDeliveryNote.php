@@ -3,8 +3,6 @@
 namespace App\Domains\Operations\Actions;
 
 use App\Infrastructure\Persistence\Eloquent\Models\DeliveryNote;
-use App\Models\ApprovalFlow;
-use App\Support\ApprovalFlowResolver;
 use Illuminate\Support\Facades\DB;
 
 class UpdateDeliveryNote
@@ -15,17 +13,8 @@ class UpdateDeliveryNote
 
             $totalCost = $this->calculateTotalCost($destinations);
 
-            $context = array_merge($data, [
-                'total_cost' => $totalCost,
-                'is_design' => false,
-                'dept_id' => null,
-            ]);
-            $flowSlug = ApprovalFlowResolver::for($context);
-            $approvalFlow = ApprovalFlow::where('slug', $flowSlug)->first();
-
             $note->update(array_merge($data, [
                 'status' => $isDraft ? 'draft' : 'submitted',
-                'approval_flow_id' => $approvalFlow ? $approvalFlow->id : $note->approval_flow_id,
             ]));
 
             // Prevent syncing complexity by recreating destinations (existing approach in Livewire)

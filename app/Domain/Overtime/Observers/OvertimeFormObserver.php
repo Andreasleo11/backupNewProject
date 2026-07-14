@@ -3,7 +3,7 @@
 namespace App\Domain\Overtime\Observers;
 
 use App\Domain\Overtime\Models\OvertimeForm;
-use Illuminate\Support\Facades\Cache;
+
 
 class OvertimeFormObserver
 {
@@ -12,7 +12,6 @@ class OvertimeFormObserver
      */
     public function created(OvertimeForm $OvertimeForm): void
     {
-        Cache::forget('approval_flow_rules');
     }
 
     /**
