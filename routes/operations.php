@@ -1,10 +1,7 @@
 <?php
 
-use App\Http\Controllers\DownloadUploadController;
-use App\Http\Controllers\PreviewUploadController;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
-use App\Livewire\FileLibrary;
 use App\Livewire\Services\Form as ServiceForm;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
@@ -53,9 +50,4 @@ Route::middleware('auth')->group(function () {
     // Vehicle Services
     Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
     Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
-
-    // File Library
-    Route::get('/files', FileLibrary::class)->name('files.index');
-    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
-    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
 });

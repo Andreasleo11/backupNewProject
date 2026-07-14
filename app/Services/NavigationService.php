@@ -530,13 +530,6 @@ class NavigationService
                         'active' => request()->routeIs('requirement-uploads.review'),
                         'permission' => 'compliance.review-uploads',
                     ],
-                    [
-                        'label' => 'File Library',
-                        'route' => 'files.index',
-                        'icon' => 'folder-open',
-                        'active' => request()->routeIs('files.*'),
-                        'permission' => 'compliance.view',
-                    ],
                 ],
             ],
         ];
