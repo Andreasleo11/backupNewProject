@@ -15,6 +15,6 @@ class sapFctBomWipThird extends Model
     // relation buat insert data semi 3
     public function semiThirdInventoryMtrForecast()
     {
-        return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'semi_third');
+        return $this->hasMany(sapFctInventoryMtr::class, 'fg_code', 'semi_third');
     }
 }

@@ -16,7 +16,7 @@ class sapForecast extends Model
     // Relationship buat data tanpa wip -> langsung raw material
     public function inventoryMtr()
     {
-        return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'item_no');
+        return $this->hasMany(sapFctInventoryMtr::class, 'fg_code', 'item_no');
     }
 
     // ga kepake
@@ -27,16 +27,16 @@ class sapForecast extends Model
 
     public function firstBomWip()
     {
-        return $this->hasMany(SapFctBomWipFirst::class, 'fg_code', 'item_no');
+        return $this->hasMany(sapFctBomWipFirst::class, 'fg_code', 'item_no');
     }
 
     public function secondBomWip()
     {
-        return $this->hasMany(SapFctBomWipSecond::class, 'fg_code', 'item_no');
+        return $this->hasMany(sapFctBomWipSecond::class, 'fg_code', 'item_no');
     }
 
     public function thirdBomWip()
     {
-        return $this->hasMany(SapFctBomWipThird::class, 'fg_code', 'item_no');
+        return $this->hasMany(sapFctBomWipThird::class, 'fg_code', 'item_no');
     }
 }

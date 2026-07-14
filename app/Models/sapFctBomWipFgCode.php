@@ -15,6 +15,6 @@ class sapFctBomWipFgCode extends Model
     // relation buat insert data semi 1
     public function rawMaterialFgcode()
     {
-        return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'FinishG_Code');
+        return $this->hasMany(sapFctInventoryMtr::class, 'fg_code', 'FinishG_Code');
     }
 }

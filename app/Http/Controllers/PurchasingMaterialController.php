@@ -13,6 +13,7 @@ class PurchasingMaterialController extends Controller
 {
     public function storeDataInNewTable()
     {
+        \Illuminate\Support\Facades\DB::disableQueryLog();
         $log = PurchasingUpdateLog::find(1);
         $log->updated_at = Carbon::now();
         $log->save();
@@ -58,108 +59,78 @@ class PurchasingMaterialController extends Controller
 
     private function Insert_final($data)
     {
-        // DONE
+        $inserts = [];
         foreach ($data as $item) {
-            $vendor_code = null;
-            $vendor_name = null;
-            $material_code = null;
-            $material_name = null;
-            $item_group = null;
-            $material_quan = null;
-            $materialPrediction = null;
-            $material_measure = null;
-
             $inventoryMtra = $item->inventoryMtr;
             foreach ($inventoryMtra as $inventoryMtrData) {
-                $vendor_code = $inventoryMtrData->vendor_code;
-                $vendor_name = $inventoryMtrData->vendor_name;
-                $material_code = $inventoryMtrData->material_code;
-                $material_name = $inventoryMtrData->material_name;
-                $item_group = $inventoryMtrData->item_group;
-                $material_quan = $inventoryMtrData->material_quantity;
-                $material_measure = $inventoryMtrData->Measure;
-                $materialPrediction = $material_quan * $item->quantity;
-
-                foremindFinal::create([
+                $inserts[] = [
                     'forecast_code' => $item->forecast_code,
                     'forecast_name' => $item->forecast_name,
-                    'vendor_code' => $vendor_code,
-                    'vendor_name' => $vendor_name,
+                    'vendor_code' => $inventoryMtrData->vendor_code,
+                    'vendor_name' => $inventoryMtrData->vendor_name,
                     'day_forecast' => $item->forecast_date,
                     'Item_no' => $item->item_no,
                     'quantity_forecast' => $item->quantity,
-                    'item_group' => $item_group,
-                    'material_code' => $material_code,
-                    'material_name' => $material_name,
-                    'quantity_material' => $material_quan,
-                    'material_prediction' => $materialPrediction,
-                    'U/M' => $material_measure,
-                ]);
+                    'item_group' => $inventoryMtrData->item_group,
+                    'material_code' => $inventoryMtrData->material_code,
+                    'material_name' => $inventoryMtrData->material_name,
+                    'quantity_material' => $inventoryMtrData->material_quantity,
+                    'material_prediction' => $inventoryMtrData->material_quantity * $item->quantity,
+                    'U/M' => $inventoryMtrData->Measure,
+                ];
+
+                if (count($inserts) >= 500) {
+                    \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
+                    $inserts = [];
+                }
             }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
         }
     }
 
     private function Insert_finalrest($data)
     {
-        // DONE
+        $inserts = [];
         foreach ($data as $item) {
-            $vendor_code = null;
-            $vendor_name = null;
-            $material_code = null;
-            $material_name = null;
-            $item_group = null;
-            $material_quan = null;
-            $materialPrediction = null;
-            $material_measure = null;
-            // dd($item);
             $bomWipI = $item->bomWip;
             foreach ($bomWipI as $bomWipItem) {
                 $inventoryQu = $bomWipItem->rawMaterialFgcode;
 
                 foreach ($inventoryQu as $inventoryQuantity) {
-                    $vendor_code = $inventoryQuantity->vendor_code;
-                    $vendor_name = $inventoryQuantity->vendor_name;
-                    $material_code = $inventoryQuantity->material_code;
-                    $material_name = $inventoryQuantity->material_name;
-                    $item_group = $inventoryQuantity->item_group;
-                    $material_quan = $inventoryQuantity->material_quantity;
-                    $material_measure = $inventoryQuantity->Measure;
-                    $materialPrediction = $material_quan * $item->quantity;
-
-                    foremindFinal::create([
+                    $inserts[] = [
                         'forecast_code' => $item->forecast_code,
                         'forecast_name' => $item->forecast_name,
-                        'vendor_code' => $vendor_code,
-                        'vendor_name' => $vendor_name,
+                        'vendor_code' => $inventoryQuantity->vendor_code,
+                        'vendor_name' => $inventoryQuantity->vendor_name,
                         'day_forecast' => $item->forecast_date,
                         'Item_no' => $item->item_no,
                         'quantity_forecast' => $item->quantity,
-                        'item_group' => $item_group,
-                        'material_code' => $material_code,
-                        'material_name' => $material_name,
-                        'quantity_material' => $material_quan,
-                        'material_prediction' => $materialPrediction,
-                        'U/M' => $material_measure,
-                    ]);
+                        'item_group' => $inventoryQuantity->item_group,
+                        'material_code' => $inventoryQuantity->material_code,
+                        'material_name' => $inventoryQuantity->material_name,
+                        'quantity_material' => $inventoryQuantity->material_quantity,
+                        'material_prediction' => $inventoryQuantity->material_quantity * $item->quantity,
+                        'U/M' => $inventoryQuantity->Measure,
+                    ];
+
+                    if (count($inserts) >= 500) {
+                        \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
+                        $inserts = [];
+                    }
                 }
             }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
         }
     }
 
     private function Insert_finalrest1($data)
     {
-        // DONE
+        $inserts = [];
         foreach ($data as $item) {
-            $vendor_code = null;
-            $vendor_name = null;
-            $material_code = null;
-            $material_name = null;
-            $item_group = null;
-            $material_quan = null;
-            $materialPrediction = null;
-            $bom_quantity = null;
-            $material_measure = null;
-            $semi_code = null;
             $bomWipI = $item->firstBomWip;
 
             foreach ($bomWipI as $bomWipItem) {
@@ -168,52 +139,40 @@ class PurchasingMaterialController extends Controller
                 $inventoryQu = $bomWipItem->semiFirstInventoryMtrForecast;
 
                 foreach ($inventoryQu as $inventoryQuantity) {
-                    $vendor_code = $inventoryQuantity->vendor_code;
-                    $vendor_name = $inventoryQuantity->vendor_name;
-                    $material_code = $inventoryQuantity->material_code;
-                    $material_name = $inventoryQuantity->material_name;
-                    $item_group = $inventoryQuantity->item_group;
-                    $material_quan = $inventoryQuantity->material_quantity * $bom_quantity;
-                    $material_measure = $inventoryQuantity->Measure;
-                    $materialPrediction = $material_quan * $item->quantity;
-
-                    foremindFinal::create([
+                    $inserts[] = [
                         'forecast_code' => $item->forecast_code,
                         'forecast_name' => $item->forecast_name,
-                        'vendor_code' => $vendor_code,
-                        'vendor_name' => $vendor_name,
+                        'vendor_code' => $inventoryQuantity->vendor_code,
+                        'vendor_name' => $inventoryQuantity->vendor_name,
                         'day_forecast' => $item->forecast_date,
                         'Item_no' => $item->item_no,
                         'semi_code' => $semi_code,
                         'quantity_forecast' => $item->quantity,
-                        'item_group' => $item_group,
-                        'material_code' => $material_code,
-                        'material_name' => $material_name,
-                        'quantity_material' => $material_quan,
+                        'item_group' => $inventoryQuantity->item_group,
+                        'material_code' => $inventoryQuantity->material_code,
+                        'material_name' => $inventoryQuantity->material_name,
+                        'quantity_material' => $inventoryQuantity->material_quantity * $bom_quantity,
                         'quantity_bomWip' => $bom_quantity,
-                        'material_prediction' => $materialPrediction,
-                        'U/M' => $material_measure,
-                    ]);
+                        'material_prediction' => $inventoryQuantity->material_quantity * $bom_quantity * $item->quantity,
+                        'U/M' => $inventoryQuantity->Measure,
+                    ];
+
+                    if (count($inserts) >= 500) {
+                        \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
+                        $inserts = [];
+                    }
                 }
             }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
         }
     }
 
     private function Insert_finalrest2($data)
     {
-        // DONE
+        $inserts = [];
         foreach ($data as $item) {
-            $vendor_code = null;
-            $vendor_name = null;
-            $material_code = null;
-            $material_name = null;
-            $item_group = null;
-            $material_quan = null;
-            $materialPrediction = null;
-            $bom_quantity = null;
-            $material_measure = null;
-            $semi_code = null;
-
             $bomWipItem = $item->secondBomWip;
 
             foreach ($bomWipItem as $bomWipItems) {
@@ -222,111 +181,73 @@ class PurchasingMaterialController extends Controller
 
                 $inventoryQuantity = $bomWipItems->semiSecondInventoryMtrForecast;
                 foreach ($inventoryQuantity as $secondInventory) {
-                    $vendor_code = $secondInventory->vendor_code;
-                    $vendor_name = $secondInventory->vendor_name;
-                    $material_code = $secondInventory->material_code;
-                    $material_name = $secondInventory->material_name;
-                    $item_group = $secondInventory->item_group;
-                    $material_quan = $secondInventory->material_quantity * $bom_quantity;
-                    $material_measure = $secondInventory->Measure;
-                    $materialPrediction = $material_quan * $item->quantity;
-
-                    foremindFinal::create([
+                    $inserts[] = [
                         'forecast_code' => $item->forecast_code,
                         'forecast_name' => $item->forecast_name,
-                        'vendor_code' => $vendor_code,
-                        'vendor_name' => $vendor_name,
+                        'vendor_code' => $secondInventory->vendor_code,
+                        'vendor_name' => $secondInventory->vendor_name,
                         'day_forecast' => $item->forecast_date,
                         'Item_no' => $item->item_no,
                         'semi_code' => $semi_code,
                         'quantity_forecast' => $item->quantity,
-                        'item_group' => $item_group,
-                        'material_code' => $material_code,
-                        'material_name' => $material_name,
-                        'quantity_material' => $material_quan,
+                        'item_group' => $secondInventory->item_group,
+                        'material_code' => $secondInventory->material_code,
+                        'material_name' => $secondInventory->material_name,
+                        'quantity_material' => $secondInventory->material_quantity * $bom_quantity,
                         'quantity_bomWip' => $bom_quantity,
-                        'material_prediction' => $materialPrediction,
-                        'U/M' => $material_measure,
-                    ]);
+                        'material_prediction' => $secondInventory->material_quantity * $bom_quantity * $item->quantity,
+                        'U/M' => $secondInventory->Measure,
+                    ];
+
+                    if (count($inserts) >= 500) {
+                        \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
+                        $inserts = [];
+                    }
                 }
             }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
         }
     }
 
     private function Insert_finalrest3($data)
     {
-        // DONE
-        // dd($data->toArray());
+        $inserts = [];
         foreach ($data as $item) {
-            $vendor_code = null;
-            $vendor_name = null;
-            $material_code = null;
-            $material_name = null;
-            $item_group = null;
-            $material_quan = null;
-            $materialPrediction = null;
-            $bom_quantity = null;
-            $material_measure = null;
-            $semi_code = null;
-
             $bomWipItem = $item->thirdBomWip;
-            // dd($bomWipItem);
             foreach ($bomWipItem as $bomWipItems) {
                 $bom_quantity = $bomWipItems->bom_quantity;
                 $semi_code = $bomWipItems->semi_third;
                 $inventoryQuantity = $bomWipItems->semiThirdInventoryMtrForecast;
                 foreach ($inventoryQuantity as $thirdInventory) {
-                    $vendor_code = $thirdInventory->vendor_code;
-                    $vendor_name = $thirdInventory->vendor_name;
-                    $material_code = $thirdInventory->material_code;
-                    $material_name = $thirdInventory->material_name;
-                    $item_group = $thirdInventory->item_group;
-                    $material_quan = $thirdInventory->material_quantity * $bom_quantity;
-                    $material_measure = $thirdInventory->Measure;
-                    $materialPrediction = $material_quan * $item->quantity;
-                    foremindFinal::create([
+                    $inserts[] = [
                         'forecast_code' => $item->forecast_code,
                         'forecast_name' => $item->forecast_name,
-                        'vendor_code' => $vendor_code,
-                        'vendor_name' => $vendor_name,
+                        'vendor_code' => $thirdInventory->vendor_code,
+                        'vendor_name' => $thirdInventory->vendor_name,
                         'day_forecast' => $item->forecast_date,
                         'Item_no' => $item->item_no,
                         'semi_code' => $semi_code,
                         'quantity_forecast' => $item->quantity,
-                        'item_group' => $item_group,
-                        'material_code' => $material_code,
-                        'material_name' => $material_name,
-                        'quantity_material' => $material_quan,
+                        'item_group' => $thirdInventory->item_group,
+                        'material_code' => $thirdInventory->material_code,
+                        'material_name' => $thirdInventory->material_name,
+                        'quantity_material' => $thirdInventory->material_quantity * $bom_quantity,
                         'quantity_bomWip' => $bom_quantity,
-                        'material_prediction' => $materialPrediction,
-                        'U/M' => $material_measure,
-                        // Add more attributes as needed
-                    ]);
+                        'material_prediction' => $thirdInventory->material_quantity * $bom_quantity * $item->quantity,
+                        'U/M' => $thirdInventory->Measure,
+                    ];
+
+                    if (count($inserts) >= 500) {
+                        \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
+                        $inserts = [];
+                    }
                 }
             }
-
-            //     $existingRecord = foremindFinal::where([
-            //         'forecast_code' => $item->forecast_code,
-            //         'forecast_name' => $item->forecast_name,
-            //         'vendor_code' => $vendor_code,
-            //         'vendor_name' => $vendor_name,
-            //         'day_forecast' => $item->forecast_date,
-            //         'Item_no' => $item->item_no,
-            //         'quantity_forecast' => $item->quantity,
-            //         'item_group' => $item_group,
-            //         'material_code' => $material_code,
-            //         'material_name' => $material_name,
-            //         'quantity_material' => $material_quan,
-            //         'quantity_bomWip' => $bom_quantity,
-            //         'material_prediction' => $materialPrediction,
-            //         'U/M' => $material_measure
-            //         // Add more unique fields as needed
-            //     ])->first();
-
-            //     if (!$existingRecord)
-            // {
-
-            // }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('foremind_final')->insert($inserts);
         }
     }
 }

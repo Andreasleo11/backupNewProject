@@ -15,6 +15,6 @@ class sapFctBomWipFirst extends Model
     // relation buat insert data semi 1
     public function semiFirstInventoryMtrForecast()
     {
-        return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'semi_first');
+        return $this->hasMany(sapFctInventoryMtr::class, 'fg_code', 'semi_first');
     }
 }

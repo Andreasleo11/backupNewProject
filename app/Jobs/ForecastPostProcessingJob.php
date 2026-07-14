@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\MaterialPredictionController;
 use App\Http\Controllers\PurchasingMaterialController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,6 +35,8 @@ class ForecastPostProcessingJob implements ShouldQueue
     public function handle(): void
     {
         Log::info('[ForecastPostProcessing] Job started.');
+        
+        \Illuminate\Support\Facades\DB::disableQueryLog();
 
         try {
             // Step 1: Truncate tabel foremind_detail
@@ -53,7 +55,7 @@ class ForecastPostProcessingJob implements ShouldQueue
 
             // Step 4: Jalankan materialPredictionController::processForemindFinalData
             // (setara dengan GET /insert-material_prediction)
-            $predictionController = app(materialPredictionController::class);
+            $predictionController = app(MaterialPredictionController::class);
             $predictionController->processForemindFinalData();
             Log::info('[ForecastPostProcessing] processForemindFinalData executed successfully.');
 

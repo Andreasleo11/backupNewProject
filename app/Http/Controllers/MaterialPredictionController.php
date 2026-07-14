@@ -12,29 +12,42 @@ class MaterialPredictionController extends Controller
 {
     public function processForemindFinalData()
     {
-        // Retrieve forecasts from the foremindFinal table
-        $forecasts = ForemindFinal::all();
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+
+        // Retrieve unique months in a database query first to avoid multiple iterations of cursor
+        $uniqueMonths = ForemindFinal::query()
+            ->select('day_forecast')
+            ->distinct()
+            ->pluck('day_forecast')
+            ->map(fn($date) => Carbon::parse($date)->format('Y-m'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        // Use cursor to stream rows memory-efficiently
+        $forecasts = ForemindFinal::query()->select([
+            'material_code',
+            'material_name',
+            'forecast_code',
+            'Item_no',
+            'U/M',
+            'quantity_material',
+            'vendor_name',
+            'vendor_code',
+            'day_forecast',
+            'material_prediction',
+            'quantity_forecast'
+        ])->cursor();
+
         $transformedData = [];
-
-        // Get unique months from all forecasts
-        $allMonths = [];
-
-        foreach ($forecasts as $forecast) {
-            $dayForecast = Carbon::parse($forecast->day_forecast);
-            $allMonths[] = $dayForecast->format('Y-m');
-        }
-
-        // Code untuk ambil jumlah bulan yang ada di database
-        $uniqueMonths = array_unique($allMonths);
-        sort($uniqueMonths);
+        $monthYear = null;
 
         foreach ($forecasts as $forecast) {
             // Extract necessary data
             $materialCode = $forecast->material_code;
             $materialName = $forecast->material_name;
             $customer = $forecast->forecast_code;
-            // Changes 1 agustus 2024 , bu bertha dan mba dian minta customer diubah ke forecast code
-            // $customer = $forecast->forecast_name;
             $itemNo = $forecast->Item_no;
             $unitOfMeasure = $forecast->{'U/M'};
             $materialquantity = (float) $forecast->quantity_material;
@@ -58,55 +71,23 @@ class MaterialPredictionController extends Controller
                 $transformedData[$materialCode][$materialName][$customer][$itemNo] = [];
             }
 
-            if (
-                ! isset(
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ],
-                )
-            ) {
-                $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                    $unitOfMeasure
-                ] = [];
+            if (! isset($transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure])) {
+                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure] = [];
             }
 
             // Use string representation of the quantity as the key
             $quantityKey = (string) $materialquantity;
 
-            if (
-                ! isset(
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ][$quantityKey],
-                )
-            ) {
-                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][
-                    $quantityKey
-                ] = [];
+            if (! isset($transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey])) {
+                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey] = [];
             }
 
-            if (
-                ! isset(
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ][$quantityKey][$vendorCode],
-                )
-            ) {
-                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][
-                    $quantityKey
-                ][$vendorCode] = [];
+            if (! isset($transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode])) {
+                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode] = [];
             }
 
-            if (
-                ! isset(
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ][$quantityKey][$vendorCode][$vendorName],
-                )
-            ) {
-                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][
-                    $quantityKey
-                ][$vendorCode][$vendorName] = [
+            if (! isset($transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName])) {
+                $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName] = [
                     'months' => [],
                     'quantity_forecast' => [],
                 ];
@@ -118,37 +99,21 @@ class MaterialPredictionController extends Controller
 
             // Ensure that the necessary keys are initialized for months
             foreach ($uniqueMonths as $uniqueMonth) {
-                if (
-                    ! isset(
-                        $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                            $unitOfMeasure
-                        ][$quantityKey][$vendorCode][$vendorName]['months'][$uniqueMonth],
-                    )
-                ) {
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ][$quantityKey][$vendorCode][$vendorName]['months'][$uniqueMonth] = 0;
-                    $transformedData[$materialCode][$materialName][$customer][$itemNo][
-                        $unitOfMeasure
-                    ][$quantityKey][$vendorCode][$vendorName]['quantity_forecast'][
-                        $uniqueMonth
-                    ] = 0;
+                if (! isset($transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName]['months'][$uniqueMonth])) {
+                    $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName]['months'][$uniqueMonth] = 0;
+                    $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName]['quantity_forecast'][$uniqueMonth] = 0;
                 }
             }
 
             // Increment the value based on material_prediction
-            $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][
-                $quantityKey
-            ][$vendorCode][$vendorName]['months'][$monthYear] += $forecast->material_prediction;
+            $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName]['months'][$monthYear] += $forecast->material_prediction;
 
             // Store quantity_forecast
-            $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][
-                $quantityKey
-            ][$vendorCode][$vendorName]['quantity_forecast'][$monthYear] =
-                $forecast->quantity_forecast;
+            $transformedData[$materialCode][$materialName][$customer][$itemNo][$unitOfMeasure][$quantityKey][$vendorCode][$vendorName]['quantity_forecast'][$monthYear] = $forecast->quantity_forecast;
         }
 
         // Loop through transformed data to store it in the forecast_material_prediction table
+        $inserts = [];
         foreach ($transformedData as $materialCode => $materialData) {
             foreach ($materialData as $materialName => $unitData) {
                 foreach ($unitData as $customer => $nextdata) {
@@ -157,7 +122,7 @@ class MaterialPredictionController extends Controller
                             foreach ($UnitM as $quantityKey => $vendorData) {
                                 foreach ($vendorData as $vendorCode => $dataVendor) {
                                     foreach ($dataVendor as $vendorName => $data) {
-                                        ForecastMaterialPrediction::create([
+                                        $inserts[] = [
                                             'material_code' => $materialCode,
                                             'material_name' => $materialName,
                                             'customer' => $customer,
@@ -166,13 +131,14 @@ class MaterialPredictionController extends Controller
                                             'quantity_material' => $quantityKey,
                                             'vendor_code' => $vendorCode,
                                             'vendor_name' => $vendorName,
-                                            'months' => json_encode(
-                                                $data['months'] + [$monthYear => 0],
-                                            ),
-                                            'quantity_forecast' => json_encode(
-                                                $data['quantity_forecast'],
-                                            ),
-                                        ]);
+                                            'months' => json_encode($data['months'] + ($monthYear !== null ? [$monthYear => 0] : [])),
+                                            'quantity_forecast' => json_encode($data['quantity_forecast']),
+                                        ];
+
+                                        if (count($inserts) >= 500) {
+                                            \Illuminate\Support\Facades\DB::table('forecast_material_predictions')->insert($inserts);
+                                            $inserts = [];
+                                        }
                                     }
                                 }
                             }
@@ -180,6 +146,9 @@ class MaterialPredictionController extends Controller
                     }
                 }
             }
+        }
+        if (count($inserts) > 0) {
+            \Illuminate\Support\Facades\DB::table('forecast_material_predictions')->insert($inserts);
         }
     }
 }
