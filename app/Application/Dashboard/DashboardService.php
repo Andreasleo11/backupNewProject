@@ -86,7 +86,7 @@ class DashboardService
             
             $query->whereHasMorph('causer', [$user->getMorphClass()], function ($q) use ($department) {
                 $q->whereHas('employee', function ($q2) use ($department) {
-                    $q2->where('department', $department);
+                    $q2->where('dept_code', $department->dept_no);
                 });
             });
         }
