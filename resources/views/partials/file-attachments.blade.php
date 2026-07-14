@@ -20,7 +20,7 @@
     $gridCols = $gridCols ?? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 @endphp
 
-<div class="space-y-4">
+<div x-data="{ previewOpen: false, previewUrl: '', previewType: '' }" class="space-y-4">
     @if ($title || $showUpload)
         <div class="flex items-center justify-between">
             @if ($title)
@@ -84,9 +84,19 @@
                     </div>
 
                     <div class="flex items-center gap-1.5 pl-2">
+                        {{-- Preview Button --}}
+                        @if (in_array($extension, ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp']))
+                            <button type="button"
+                                @click="previewUrl = '{{ asset('storage/files/' . $file->name) }}'; previewType = '{{ $extension }}'; previewOpen = true"
+                                class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-450 transition-all hover:bg-indigo-50 hover:text-indigo-650"
+                                title="Preview File">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        @endif
+
                         {{-- Download Link --}}
                         <a href="{{ asset('storage/files/' . $file->name) }}" target="_blank"
-                            class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-all hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-450 transition-all hover:bg-indigo-50 hover:text-indigo-650"
                             title="Download / View">
                             <i class="bi bi-download"></i>
                         </a>
@@ -98,7 +108,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                    class="flex h-9 w-9 items-center justify-center rounded-xl text-rose-400 transition-all hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200"
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl text-rose-400 transition-all hover:bg-rose-50 hover:text-rose-600"
                                     title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -109,4 +119,36 @@
             @endforeach
         </div>
     @endif
+
+    {{-- Document Preview Modal --}}
+    <div x-show="previewOpen" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;" 
+         x-cloak>
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" @click="previewOpen = false"></div>
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative w-full max-w-5xl rounded-2xl bg-white shadow-2xl border border-slate-100 flex flex-col h-[85vh] overflow-hidden" 
+                 @click.outside="previewOpen = false">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Document Preview</h3>
+                    <button type="button" @click="previewOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="bi bi-x-lg text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex-1 bg-slate-50 relative p-4 flex items-center justify-center">
+                    <template x-if="previewType === 'pdf'">
+                        <iframe :src="previewUrl" class="w-full h-full rounded-lg border-0 shadow-sm"></iframe>
+                    </template>
+                    <template x-if="previewType !== 'pdf'">
+                        <img :src="previewUrl" class="max-w-full max-h-full object-contain rounded-lg shadow-md">
+                    </template>
+                </div>
+                <div class="px-6 py-3 border-t border-slate-100 flex justify-end">
+                    <a :href="previewUrl" download class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition" target="_blank">
+                        <i class="bi bi-download"></i> Open in New Tab
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

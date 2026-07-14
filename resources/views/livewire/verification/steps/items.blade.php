@@ -82,6 +82,26 @@
                 $lineTotal = $vq * $price;
             @endphp
             <div wire:key="detail-editor-{{ $activeItem }}"
+                 x-data="{ 
+                     price: @entangle('items.' . $activeItem . '.price').live, 
+                     verifyQty: @entangle('items.' . $activeItem . '.verify_quantity').live,
+                     recQty: @entangle('items.' . $activeItem . '.rec_quantity').live,
+                     canUse: @entangle('items.' . $activeItem . '.can_use').live,
+                     cantUse: @entangle('items.' . $activeItem . '.cant_use').live,
+                     get okPct() {
+                         let vq = parseInt(this.verifyQty) || 0;
+                         if (vq <= 0) return 0;
+                         return ((parseInt(this.canUse) || 0) / vq) * 100;
+                     },
+                     get ngPct() {
+                         let vq = parseInt(this.verifyQty) || 0;
+                         if (vq <= 0) return 0;
+                         return ((parseInt(this.cantUse) || 0) / vq) * 100;
+                     },
+                     get lineTotal() {
+                         return (parseInt(this.verifyQty) || 0) * (parseFloat(this.price) || 0);
+                     }
+                 }"
                  class="bg-white border border-slate-300 shadow-sm rounded-xl overflow-hidden">
                 
                 {{-- Detail Header --}}
@@ -132,13 +152,17 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
                         <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">OK Ratio %</span>
-                            <span class="inline-flex items-center text-sm font-extrabold @if($okPct >= 95) text-green-700 @elseif($okPct >= 75) text-amber-700 @else text-red-700 @endif">
+                            <span class="inline-flex items-center text-sm font-extrabold"
+                                  :class="okPct >= 95 ? 'text-green-700' : (okPct >= 75 ? 'text-amber-700' : 'text-red-700')"
+                                  x-text="okPct.toFixed(2) + '%'">
                                 {{ number_format($okPct, 2) }}%
                             </span>
                         </div>
                         <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scrap Ratio %</span>
-                            <span class="inline-flex items-center text-sm font-extrabold @if($ngPct > 15) text-red-700 @elseif($ngPct > 5) text-amber-700 @else text-green-700 @endif">
+                            <span class="inline-flex items-center text-sm font-extrabold"
+                                  :class="ngPct > 15 ? 'text-red-700' : (ngPct > 5 ? 'text-amber-700' : 'text-green-700')"
+                                  x-text="ngPct.toFixed(2) + '%'">
                                 {{ number_format($ngPct, 2) }}%
                             </span>
                         </div>
@@ -150,7 +174,8 @@
                         </div>
                         <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col gap-1">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Line Total</span>
-                            <span class="inline-flex items-center text-sm font-extrabold text-slate-900 truncate">
+                            <span class="inline-flex items-center text-sm font-extrabold text-slate-900 truncate"
+                                  x-text="'{{ $row['currency'] ?? 'IDR' }} ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(lineTotal)">
                                 {{ $row['currency'] ?? 'IDR' }} {{ number_format($lineTotal, 2) }}
                             </span>
                         </div>
@@ -209,10 +234,10 @@
                                 <input type="number" step="0.01" id="fld-item-detail-price"
                                     wire:key="fld-price-{{ $activeItem }}"
                                     class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.price') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
-                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.price"
+                                    x-model="price"
                                     inputmode="decimal">
                                 @error('items.' . $activeItem . '.price')
-                                    <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
+                                    <div class="text-[10px] text-red-655 mt-1 flex items-center gap-1">
                                         <i class="bi bi-exclamation-circle"></i>{{ $message }}
                                     </div>
                                 @enderror
@@ -243,7 +268,7 @@
                                 <input type="number" step="1" id="fld-item-detail-recqty"
                                     wire:key="fld-rec-qty-{{ $activeItem }}"
                                     class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.rec_quantity') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
-                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.rec_quantity"
+                                    x-model="recQty"
                                     inputmode="numeric">
                                 @error('items.' . $activeItem . '.rec_quantity')
                                     <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
@@ -260,7 +285,7 @@
                                 <input type="number" step="1" id="fld-item-detail-verifyqty"
                                     wire:key="fld-verify-qty-{{ $activeItem }}"
                                     class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.verify_quantity') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
-                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.verify_quantity"
+                                    x-model="verifyQty"
                                     inputmode="numeric">
                                 @error('items.' . $activeItem . '.verify_quantity')
                                     <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
@@ -277,7 +302,7 @@
                                 <input type="number" step="1" id="fld-item-detail-canuse"
                                     wire:key="fld-can-use-{{ $activeItem }}"
                                     class="w-full rounded-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.can_use') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
-                                    wire:model.live.debounce.300ms="items.{{ $activeItem }}.can_use"
+                                    x-model="canUse"
                                     inputmode="numeric">
                                 @error('items.' . $activeItem . '.can_use')
                                     <div class="text-[10px] text-red-650 mt-1 flex items-center gap-1">
@@ -295,7 +320,7 @@
                                     <input type="number" step="1" id="fld-item-detail-cantuse"
                                         wire:key="fld-cant-use-{{ $activeItem }}"
                                         class="w-full rounded-l-lg border-slate-350 text-slate-900 bg-slate-50/50 text-xs py-1.5 px-2.5 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all @error('items.' . $activeItem . '.cant_use') border-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
-                                        wire:model.live.debounce.300ms="items.{{ $activeItem }}.cant_use"
+                                        x-model="cantUse"
                                         inputmode="numeric">
                                     <button class="inline-flex items-center justify-center px-2.5 border border-l-0 border-slate-350 bg-white hover:bg-slate-55 text-slate-550 hover:text-slate-800 transition-colors shrink-0 rounded-r-lg focus:outline-none focus:ring-4 focus:ring-blue-50/50" type="button"
                                         wire:click="fillCantUseFromDefects({{ $activeItem }})"
