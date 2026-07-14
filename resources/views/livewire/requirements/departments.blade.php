@@ -184,7 +184,7 @@
                     {{-- Actions --}}
                     <div class="flex items-center gap-2 shrink-0">
                         <button x-data
-                            x-on:click="$dispatch('open-upload', { requirementId: {{ $req->id }}, departmentId: {{ $row['dept']->id }} })"
+                            x-on:click="$dispatch('trigger-upload-modal', { reqId: {{ $req->id }}, deptId: {{ $row['dept']->id }} })"
                             class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold shadow-sm transition-all">
                             <i class="bx bx-upload text-sm"></i> Upload
                         </button>

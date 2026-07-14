@@ -7,6 +7,7 @@
         $wire.open(detail);
     }
 }" @trigger-upload-modal.window="openModal($event.detail)"
+    @show-upload-modal.window="open = true"
     @hide-upload-modal.window="open = false" class="relative z-[100]" x-cloak x-show="open">
 
     {{-- Backdrop --}}
