@@ -36,151 +36,68 @@
             </span>
         </template>
     </div>
-    <div x-data="{ q: '', previewUrl: null, isImg: false }" x-init="$nextTick(() => {
-        const uploadPreviewModal = document.getElementById('uploadPreviewModal');
-        if (!uploadPreviewModal) return;
-    
-        uploadPreviewModal.addEventListener('show.bs.modal', (ev) => {
-            const btn = ev.relatedTarget;
-            previewUrl = btn?.dataset.previewUrl || '';
-            isImg = btn?.dataset.isImg === 'true';
-        });
-    
-        uploadPreviewModal.addEventListener('hidden.bs.modal', () => {
-            previewUrl = null;
-            isImg = false;
-        });
-    });">
-        @if ($uploads && $uploads->count())
-            <div class="card mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Related Uploads</strong>
-                        <span class="text-muted">({{ $uploads->count() }})</span>
-                    </div>
-                    <input type="text" class="form-control form-control-sm w-auto" placeholder="Search files..."
-                        x-model="q">
-                </div>
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <strong>Inspection Reference Documents</strong>
+                <span class="text-muted">({{ count($files) }})</span>
+            </div>
+            
+            <div class="d-flex gap-2 align-items-center">
+                <div wire:loading wire:target="newAttachments" class="text-muted small me-2">Processing files...</div>
+                <input type="file" wire:model="newAttachments" class="form-control form-control-sm" multiple style="max-width: 250px;">
+                <button wire:click="uploadDocuments" class="btn btn-sm btn-primary" wire:loading.attr="disabled" wire:target="newAttachments,uploadDocuments">
+                    <span wire:loading.remove wire:target="uploadDocuments">Upload</span>
+                    <span wire:loading wire:target="uploadDocuments">Uploading...</span>
+                </button>
+            </div>
+        </div>
+        @error('newAttachments.*') <span class="text-danger d-block mb-2">{{ $message }}</span> @enderror
 
-                <div class="card-body">
-                    <div class="row g-3">
-                        @foreach ($uploads as $u)
-                            <template
-                                x-if="('{{ Str::of($u->original_name ?? ($u->filename ?? '#' . $u->id))->lower() }}'.includes(q.toLowerCase()))">
-                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                                    <div class="card h-100 shadow-sm">
-                                        {{-- Thumb / placeholder --}}
-                                        @php
-                                            $url = \Illuminate\Support\Facades\Storage::url(
-                                                $u->path ?? ($u->file_path ?? ''),
-                                            );
-                                            $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
-                                            $isExcelish = in_array($ext, ['xls', 'xlsx', 'xlsm', 'xlt', 'ods', 'csv']);
-                                            // If you built an HTML preview route for Excel, use it here instead of disabling.
-                                            // $previewTarget = $isExcelish ? route('uploads.preview', $u) : $url;
-                                            $previewTarget = $isExcelish ? '' : $url; // keep disabled for now
-                                            $isImage = isset($u->mime_type)
-                                                ? str_starts_with($u->mime_type, 'image/')
-                                                : false;
-                                            $isPdf = isset($u->mime_type) ? $u->mime_type === 'application/pdf' : false;
-                                        @endphp
-
-                                        <div class="ratio ratio-16x9 overflow-hidden rounded-3">
-                                            @if ($isImage && $url)
-                                                <img src="{{ $url }}" class="w-100 h-100 object-fit-cover"
-                                                    alt="{{ $u->original_name ?? 'file' }}" loading="lazy"
-                                                    decoding="async">
-                                            @else
-                                                <div
-                                                    class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                                    <i class="bi bi-file-earmark-text fs-1 text-secondary"></i>
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        <div class="card-body p-2">
-                                            <div class="small fw-semibold text-truncate"
-                                                title="{{ $u->original_name ?? ($u->filename ?? '') }}">
-                                                {{ $u->original_name ?? ($u->filename ?? 'Unnamed file') }}
-                                            </div>
-                                            <div class="text-muted small">
-                                                {{ $u->created_at ? $u->created_at->format('d M Y H:i') : '' }}
-                                            </div>
-
-                                            {{-- Optional tags display --}}
-                                            @if (method_exists($u, 'tags') && $u->relationLoaded('tags'))
-                                                <div class="mt-1">
-                                                    @foreach ($u->tags as $t)
-                                                        <span class="badge text-bg-secondary">{{ $t->name }}</span>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        <div class="card-footer p-2 d-flex gap-2">
-                                            @if ($url)
-                                                <a class="btn btn-sm btn-outline-secondary flex-fill"
-                                                    href="{{ $url }}" target="_blank">
-                                                    Open
-                                                </a>
-                                                <a class="btn btn-sm btn-outline-secondary flex-fill"
-                                                    href="{{ $url }}" download>
-                                                    Download
-                                                </a>
-                                                <button type="button" class="btn btn-sm btn-outline-primary flex-fill"
-                                                    data-bs-toggle="modal" data-bs-target="#uploadPreviewModal"
-                                                    data-preview-url="{{ $previewTarget }}"
-                                                    data-is-img="{{ $isImage ? 'true' : 'false' }}"
-                                                    @disabled($isExcelish)
-                                                    title="{{ $isExcelish ? 'Excel preview not supported here' : '' }}">
-                                                    Preview
-                                                </button>
-                                            @endif
-                                        </div>
+        @if (count($files) > 0)
+            <div class="row g-3">
+                @foreach ($files as $file)
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body p-3 d-flex flex-column">
+                                <div class="d-flex align-items-start gap-2 mb-2">
+                                    @php
+                                        $ext = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
+                                        $icon = 'bi-file-earmark-text text-secondary';
+                                        if (in_array($ext, ['pdf'])) $icon = 'bi-file-earmark-pdf text-danger';
+                                        elseif (in_array($ext, ['xls', 'xlsx', 'csv'])) $icon = 'bi-file-earmark-spreadsheet text-success';
+                                        elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) $icon = 'bi-file-earmark-image text-primary';
+                                    @endphp
+                                    <i class="bi {{ $icon }} fs-4"></i>
+                                    <div class="text-truncate fw-semibold flex-fill" title="{{ $file->name }}">
+                                        {{ $file->name }}
                                     </div>
                                 </div>
-                            </template>
-                        @endforeach
+                                <div class="text-muted small mt-auto">
+                                    {{ number_format($file->size / 1024, 2) }} KB
+                                </div>
+                            </div>
+                            <div class="card-footer p-2 d-flex gap-2">
+                                <a class="btn btn-sm btn-outline-secondary flex-fill"
+                                    href="{{ asset('storage/files/' . $file->name) }}" target="_blank">
+                                    Open
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    wire:click="deleteDocument({{ $file->id }})"
+                                    wire:confirm="Are you sure you want to delete this document?">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                @endforeach
             </div>
         @else
             <div class="alert alert-secondary d-flex align-items-center gap-2">
                 <i class="bi bi-info-circle"></i>
-                No uploads found for this part.
+                No reference documents attached to this inspection report.
             </div>
         @endif
-        {{-- Modal Preview (image uses <img>, others via <iframe>) --}}
-        <template x-teleport="body">
-            <div class="modal fade" id="uploadPreviewModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Preview</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- Use x-if so elements mount fresh each time, and :key to force reload -->
-                            <template x-if="isImg">
-                                <img :src="previewUrl" :key="'img:' + previewUrl" class="img-fluid w-100"
-                                    alt="Preview">
-                            </template>
-
-                            <template x-if="!isImg">
-                                <iframe :src="previewUrl" :key="'frame:' + previewUrl"
-                                    style="width:100%; height:70vh;" frameborder="0"></iframe>
-                            </template>
-
-                            <!-- Optional: fallback open-in-new-tab (helpful if X-Frame-Options blocks PDF) -->
-                            <div class="mt-2" x-show="previewUrl && !isImg">
-                                <a class="btn btn-sm btn-outline-secondary" :href="previewUrl" target="_blank">Open
-                                    in new tab</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </template>
     </div>
     @php
         $showDocumentInfo = false;

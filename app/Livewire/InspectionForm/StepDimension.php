@@ -2,16 +2,18 @@
 
 namespace App\Livewire\InspectionForm;
 
-use App\Models\Upload;
+use App\Domain\FileCompliance\Services\FileService;
+use App\Models\File;
 use App\Traits\ClearsNestedSession;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class StepDimension extends Component
 {
-    use ClearsNestedSession;
+    use ClearsNestedSession, WithFileUploads;
 
     public $dimensions = [];
 
@@ -21,7 +23,9 @@ class StepDimension extends Component
 
     public $inspection_report_document_number;
 
-    public $uploads;
+    public $files = [];
+    
+    public $newAttachments = [];
 
     public $periodKey;
 
@@ -203,9 +207,32 @@ class StepDimension extends Component
             }
         }
 
-        $part_code = session('stepHeaderSaved.part_number');
-        $this->uploads = Upload::whereHas('tags', fn ($q) => $q->where('name', $part_code))->get();
+        $this->loadFiles();
         // if (empty($this->dimensions)) $this->addDimension();
+    }
+
+    public function loadFiles()
+    {
+        $this->files = File::where('doc_id', $this->inspection_report_document_number)->get();
+    }
+
+    public function uploadDocuments(FileService $fileService)
+    {
+        $this->validate([
+            'newAttachments.*' => 'max:10240', // 10MB Max
+        ]);
+
+        $fileService->uploadFiles($this->newAttachments, (string) $this->inspection_report_document_number);
+        $this->newAttachments = [];
+        $this->loadFiles();
+        $this->dispatch('toast', message: 'Documents uploaded successfully!');
+    }
+
+    public function deleteDocument(FileService $fileService, $fileId)
+    {
+        $fileService->deleteFile($fileId);
+        $this->loadFiles();
+        $this->dispatch('toast', message: 'Document deleted successfully!');
     }
 
     public function addDimension()
