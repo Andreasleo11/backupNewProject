@@ -155,7 +155,7 @@ class MigrateHistoricalReports extends Command
         $leaderRole = Role::where('name', 'leader')->first();
         $deptHeadRole = Role::where('name', 'department-head')->first();
 
-        $defaultUser = \App\Infrastructure\Persistence\Eloquent\Models\User::where('email', 'raymond@daijo.co.id')->first()
+        $defaultUser = \App\Infrastructure\Persistence\Eloquent\Models\User::where('email', 'iqcdaijo@daijo.co.id')->first()
             ?? \App\Infrastructure\Persistence\Eloquent\Models\User::first();
 
         if (!$defaultUser && !$dryRun) {
