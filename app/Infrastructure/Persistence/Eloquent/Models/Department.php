@@ -12,6 +12,11 @@ class Department extends Model
 {
     use HasFactory;
 
+    protected static function newFactory()
+    {
+        return \Database\Factories\DepartmentFactory::new();
+    }
+
     protected $table = 'departments';
 
     protected $fillable = ['dept_no', 'name', 'code', 'branch', 'is_office', 'is_active'];

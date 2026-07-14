@@ -28,7 +28,35 @@ class WeeklyComplianceDigest extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        $channels = ['mail'];
+        if (config('services.slack.webhook_url') || method_exists($notifiable, 'routeNotificationForSlack')) {
+            $channels[] = 'slack';
+        }
+
+        return $channels;
+    }
+
+    public function toSlack(object $notifiable): \Illuminate\Notifications\Messages\SlackMessage
+    {
+        $count = $this->rows->count();
+        $message = (new \Illuminate\Notifications\Messages\SlackMessage)
+            ->info()
+            ->content("📊 Weekly Compliance Digest: There are *{$count}* department(s) below the {$this->threshold}% threshold.");
+
+        if ($count > 0) {
+            $attachmentContent = "";
+            $this->rows->each(function ($r) use (&$attachmentContent) {
+                $code = $r['code'] ?? '—';
+                $attachmentContent .= "• *{$r['name']}* ({$code}) — {$r['percent']}%\n";
+            });
+            $message->attachment(fn ($attachment) => $attachment->color('#36a64f')->text(rtrim($attachmentContent)));
+        }
+
+        if ($this->dashboardUrl) {
+            $message->attachment(fn ($attachment) => $attachment->title('View Compliance Dashboard', $this->dashboardUrl));
+        }
+
+        return $message;
     }
 
     public function toMail($notifiable): MailMessage

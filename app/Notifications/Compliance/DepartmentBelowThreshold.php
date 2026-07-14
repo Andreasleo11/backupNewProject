@@ -30,7 +30,12 @@ class DepartmentBelowThreshold extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        $channels = ['mail'];
+        if (config('services.slack.webhook_url') || method_exists($notifiable, 'routeNotificationForSlack')) {
+            $channels[] = 'slack';
+        }
+
+        return $channels;
     }
 
     /**
@@ -42,6 +47,14 @@ class DepartmentBelowThreshold extends Notification implements ShouldQueue
             ->subject("Compliance alert: {$this->department->name} at {$this->percent}%")
             ->line("Department {$this->department->name} dropped below {$this->threshold}%.")
             ->action('Open Dashboard', route('compliance.dashboard'));
+    }
+
+    public function toSlack(object $notifiable): \Illuminate\Notifications\Messages\SlackMessage
+    {
+        return (new \Illuminate\Notifications\Messages\SlackMessage)
+            ->warning()
+            ->content("⚠️ Compliance Alert: Department *{$this->department->name}* has dropped below {$this->threshold}% threshold (Current: *{$this->percent}%*).")
+            ->attachment(fn ($attachment) => $attachment->title('Open Compliance Dashboard', route('compliance.dashboard')));
     }
 
     /**

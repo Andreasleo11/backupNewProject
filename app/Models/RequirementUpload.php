@@ -6,8 +6,21 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
 class RequirementUpload extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['*'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
     protected $fillable = [
         'requirement_id', 'scope_type', 'scope_id', 'path', 'original_name', 'mime_type', 'size', 'uploaded_by', 'valid_from', 'valid_until', 'status', 'review_notes',
     ];
@@ -48,16 +61,21 @@ class RequirementUpload extends Model
         return $this->morphTo();
     }
 
-    public function isCurrentlyValid(): bool
+    public function isCurrentlyValid(?Requirement $requirement = null): bool
     {
         $today = Carbon::today();
         if ($this->valid_from && $today->lt($this->valid_from)) {
             return false;
         }
-        if ($this->valid_until && $today->gt($this->valid_until)) {
+
+        $req = $requirement ?? $this->requirement;
+        $validUntil = $this->valid_until ?? ($this->valid_from && $req?->validity_days ? $this->valid_from->copy()->addDays($req->validity_days) : null);
+
+        if ($validUntil && $today->gt($validUntil)) {
             return false;
         }
-        if ($this->requirement?->requires_approval && $this->status !== 'approved') {
+
+        if ($req?->requires_approval && $this->status !== 'approved') {
             return false;
         }
 

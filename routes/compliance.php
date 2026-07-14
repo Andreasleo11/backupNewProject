@@ -30,22 +30,33 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function () {
-    // Compliance Dashboard
-    Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
+    // View compliance dashboards and tracking
+    Route::middleware('can:compliance.view')->group(function () {
+        // Compliance Dashboard
+        Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
 
-    // Department Compliance
-    Route::get('/departments', DepartmentsOverview::class)->name('departments.index');
-    Route::get('/departments/{department}/compliance', DeptCompliance::class)->name('departments.compliance');
+        // Department Compliance
+        Route::get('/departments', DepartmentsOverview::class)->name('departments.index');
+        Route::get('/departments/{department}/compliance', DeptCompliance::class)->name('departments.compliance');
+    });
 
-    // Requirements
-    Route::get('/requirements', ReqIndex::class)->name('requirements.index');
-    Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
-    Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
-    Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
-    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)->name('requirements.departments');
+    // Manage compliance requirements
+    Route::middleware('can:compliance.manage')->group(function () {
+        // Requirements
+        Route::get('/requirements', ReqIndex::class)->name('requirements.index');
+        Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
+        Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
+        Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
+        Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)->name('requirements.departments');
+    });
 
-    // Requirement Uploads
-    Route::get('/requirement-uploads/review', ReviewUploads::class)->name('requirement-uploads.review');
+    // Review requirement uploads
+    Route::middleware('can:compliance.review-uploads')->group(function () {
+        // Requirement Uploads
+        Route::get('/requirement-uploads/review', ReviewUploads::class)->name('requirement-uploads.review');
+    });
+
+    // Signed download (shared, security check is signed middleware)
     Route::get('/requirement-uploads/{upload}/download', [RequirementUploadDownloadController::class, 'show'])
         ->name('uploads.download')
         ->middleware('signed');

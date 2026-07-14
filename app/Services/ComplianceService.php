@@ -40,22 +40,8 @@ class ComplianceService
             // Pull uploads from memory collection
             $uploads = $allUploads->get($req->id, collect());
 
-            // filter valid uploads
-            $validUploads = $uploads->filter(function ($u) use ($req, $today) {
-                if ($req->requires_approval && $u->status !== 'approved') {
-                    return false;
-                }
-                if ($u->valid_from && $today->lt($u->valid_from)) {
-                    return false;
-                }
-                // validity_days fallback if valid_until not set
-                $validUntil = $u->valid_until ?? ($u->valid_from && $req->validity_days ? $u->valid_from->copy()->addDays($req->validity_days) : null);
-                if ($validUntil && $today->gt($validUntil)) {
-                    return false;
-                }
-
-                return true;
-            });
+            // filter valid uploads using the model's helper method
+            $validUploads = $uploads->filter(fn ($u) => $u->isCurrentlyValid($req));
 
             $hasEnough = $validUploads->count() >= ($req->min_count ?? 1);
 
