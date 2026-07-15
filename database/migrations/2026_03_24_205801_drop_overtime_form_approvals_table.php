@@ -12,11 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Migrate existing data to unified Approval system before dropping the table
-        Artisan::call('db:seed', [
-            '--class' => 'MigrateLegacyOvertimeToUnifiedApprovalSeeder',
-            '--force' => true,
-        ]);
+        try {
+            Artisan::call('db:seed', [
+                '--class' => 'MigrateLegacyOvertimeToUnifiedApprovalSeeder',
+                '--force' => true,
+            ]);
+        } catch (\Throwable $e) {
+            // Seeder might be deleted in newer code versions; ignore
+        }
 
         // 2. Drop the legacy table
         Schema::dropIfExists('overtime_form_approvals');

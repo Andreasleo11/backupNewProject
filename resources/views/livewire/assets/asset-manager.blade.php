@@ -4,13 +4,18 @@
             <h1 class="text-3xl font-bold text-gray-800">Assets</h1>
             <p class="text-gray-600">Manage your company assets.</p>
         </div>
-        <button wire:click="$toggle('showForm')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-            @if($showForm)
-                Hide Form
-            @else
-                + Add Asset
-            @endif
-        </button>
+        <div class="flex space-x-2">
+            <button wire:click="export" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center text-sm font-semibold">
+                <span class="mr-1">📊</span> Export Excel
+            </button>
+            <button wire:click="$toggle('showForm')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold">
+                @if($showForm)
+                    Hide Form
+                @else
+                    + Add Asset
+                @endif
+            </button>
+        </div>
     </div>
 
     <!-- Message -->
@@ -42,6 +47,13 @@
                     <option value="retired">Retired</option>
                 </select>
 
+                <button type="button" onclick="document.getElementById('advanced-filters').classList.toggle('hidden')" class="px-4 py-2 bg-gray-150 text-gray-700 hover:bg-gray-200 transition rounded-lg text-sm font-semibold border border-gray-200 flex items-center">
+                    <span class="mr-1">⚙️</span> Filters
+                </button>
+                <button type="button" wire:click="resetFilters" class="px-4 py-2 bg-gray-50 text-red-600 hover:bg-red-50 transition rounded-lg text-sm font-semibold border border-gray-200">
+                    Reset
+                </button>
+
                 <script>
                     document.addEventListener('livewire:load', function () {
                         Livewire.hook('message.processed', () => {
@@ -51,6 +63,39 @@
                         });
                     });
                 </script>
+            </div>
+
+            <!-- Advanced Filters Collapsible -->
+            <div id="advanced-filters" class="hidden p-4 bg-gray-50 border-b border-gray-100 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 animate-fadeIn">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">IP Address</label>
+                    <input type="text" wire:model.debounce.300ms="filterIpAddress" placeholder="e.g. 192.168..." class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Username</label>
+                    <input type="text" wire:model.debounce.300ms="filterUsername" placeholder="e.g. op-01" class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Purpose</label>
+                    <input type="text" wire:model.debounce.300ms="filterPurpose" placeholder="e.g. Production" class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">OS</label>
+                    <input type="text" wire:model.debounce.300ms="filterOs" placeholder="e.g. Windows 10" class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Brand</label>
+                    <input type="text" wire:model.debounce.300ms="filterBrand" placeholder="e.g. Lenovo" class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Department</label>
+                    <select wire:model="filterDepartmentId" class="mt-1 w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                        <option value="">All...</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             <!-- Table -->
@@ -205,6 +250,57 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Warranty Expiry</label>
                     <input type="date" wire:model="warranty_expiry" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">IP Address</label>
+                        <input type="text" wire:model="ip_address" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('ip_address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Username (Operator)</label>
+                        <input type="text" wire:model="username" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('username') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Purpose</label>
+                        <input type="text" wire:model="purpose" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('purpose') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Operating System</label>
+                        <input type="text" wire:model="os" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('os') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Department</label>
+                        <select wire:model="department_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Select Department...</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('department_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Position Image</label>
+                        <input type="file" wire:model="position_image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        @error('position_image') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @if ($position_image)
+                            @if (is_object($position_image))
+                                <div class="mt-2 text-xs text-gray-500">Preview: <img src="{{ $position_image->temporaryUrl() }}" class="mt-1 max-h-20 rounded shadow"></div>
+                            @else
+                                <div class="mt-2 text-xs text-gray-500">Current Image: <img src="{{ asset('storage/' . $position_image) }}" class="mt-1 max-h-20 rounded shadow"></div>
+                            @endif
+                        @endif
+                    </div>
                 </div>
 
                 <div>

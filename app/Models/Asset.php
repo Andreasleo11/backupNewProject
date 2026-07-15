@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -26,6 +27,12 @@ class Asset extends Model
         'purchase_cost',
         'warranty_expiry',
         'notes',
+        'ip_address',
+        'username',
+        'purpose',
+        'os',
+        'position_image',
+        'department_id',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -54,5 +61,20 @@ class Asset extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\Employee::class, 'assigned_to_nik', 'nik');
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\Department::class, 'department_id');
+    }
+
+    public function components(): HasMany
+    {
+        return $this->hasMany(AssetComponent::class);
+    }
+
+    public function serviceRecords(): HasMany
+    {
+        return $this->hasMany(AssetServiceRecord::class);
     }
 }

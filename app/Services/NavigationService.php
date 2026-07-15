@@ -99,31 +99,17 @@ class NavigationService
                 'priority' => 80,
                 'children' => [
                     [
-                        'label' => 'Stock Management',
-                        'route' => 'mastertinta.index',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('mastertinta.index'),
-                        'permission' => 'inventory.view',
-                    ],
-                    [
-                        'label' => 'Inventory Master',
-                        'route' => 'masterinventory.index',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('masterinventory.index'),
-                        'permission' => 'inventory.view',
-                    ],
-                    [
                         'label' => 'Maintenance Inventory',
-                        'route' => 'maintenance.inventory.index',
+                        'route' => 'assets.maintenance-reports',
                         'icon' => 'wrench',
-                        'active' => request()->routeIs('maintenance.inventory.index'),
+                        'active' => request()->routeIs('assets.maintenance-reports'),
                         'permission' => 'inventory.view',
                     ],
                     [
-                        'label' => 'Type Inventory',
-                        'route' => 'masterinventory.typeindex',
+                        'label' => 'Component Types',
+                        'route' => 'assets.component-types',
                         'icon' => 'cog',
-                        'active' => request()->routeIs('masterinventory.typeindex'),
+                        'active' => request()->routeIs('assets.component-types'),
                         'permission' => 'inventory.manage',
                     ],
                     [

@@ -194,4 +194,13 @@ class ConsumableManager extends Component
         $this->dispatch('consumableUpdated', $id);
         $this->dispatch('transactionCreated');
     }
- }
+
+    public function delete($id)
+    {
+        $consumable = Consumable::findOrFail($id);
+        $consumable->delete();
+        session()->flash('message', 'Consumable deleted successfully.');
+        $this->dispatch('consumableUpdated', $id);
+    }
+}
+
