@@ -11,7 +11,7 @@ class MaintenanceReportDetail extends Model
 
     protected $table = 'maintenance_report_details';
 
-    protected $fillable = ['report_id', 'checklist_item_id', 'condition', 'remark', 'checked_by'];
+    protected $fillable = ['report_id', 'checklist_item_id', 'custom_item_name', 'condition', 'remark', 'checked_by'];
 
     public function report()
     {

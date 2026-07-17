@@ -18,9 +18,8 @@ class AssetManager extends Component
     public $selectedCategory = '';
     public $selectedStatus = '';
 
-    public $name, $brand, $asset_tag, $category_id, $status, $location_id, $assigned_to_user_id, $assigned_to_nik, $purchase_date;
-    public $serial_number, $purchase_cost, $warranty_expiry, $notes;
-    public $ip_address, $username, $purpose, $os, $position_image, $department_id;
+    public \App\Livewire\Forms\AssetForm $form;
+    
     public $editingAssetId = null;
     public $showForm = false;
 
@@ -55,25 +54,25 @@ class AssetManager extends Component
             ->when($this->selectedStatus, function ($query) {
                 $query->where('status', $this->selectedStatus);
             })
-            ->when($this->filterIpAddress, function ($query) {
-                $query->where('ip_address', 'like', '%' . $this->filterIpAddress . '%');
-            })
-            ->when($this->filterUsername, function ($query) {
-                $query->where('username', 'like', '%' . $this->filterUsername . '%');
-            })
-            ->when($this->filterPurpose, function ($query) {
-                $query->where('purpose', 'like', '%' . $this->filterPurpose . '%');
-            })
-            ->when($this->filterOs, function ($query) {
-                $query->where('os', 'like', '%' . $this->filterOs . '%');
-            })
             ->when($this->filterDepartmentId, function ($query) {
                 $query->where('department_id', $this->filterDepartmentId);
-            })
-            ->when($this->filterBrand, function ($query) {
-                $query->where('brand', 'like', '%' . $this->filterBrand . '%');
-            })
-            ->paginate(10);
+            });
+            
+        $filters = [
+            'ip_address' => $this->filterIpAddress,
+            'username' => $this->filterUsername,
+            'purpose' => $this->filterPurpose,
+            'os' => $this->filterOs,
+            'brand' => $this->filterBrand,
+        ];
+
+        foreach ($filters as $field => $value) {
+            $assets->when($value, function ($query) use ($field, $value) {
+                $query->where($field, 'like', '%' . $value . '%');
+            });
+        }
+
+        $assets = $assets->paginate(10);
 
         return view('livewire.assets.asset-manager', [
             'assets' => $assets,
@@ -86,25 +85,7 @@ class AssetManager extends Component
 
     public function resetFields()
     {
-        $this->name = '';
-        $this->brand = '';
-        $this->asset_tag = '';
-        $this->serial_number = '';
-        $this->category_id = '';
-        $this->status = 'in_stock';
-        $this->location_id = '';
-        $this->assigned_to_user_id = '';
-        $this->assigned_to_nik = '';
-        $this->purchase_date = '';
-        $this->purchase_cost = '';
-        $this->warranty_expiry = '';
-        $this->notes = '';
-        $this->ip_address = '';
-        $this->username = '';
-        $this->purpose = '';
-        $this->os = '';
-        $this->position_image = null;
-        $this->department_id = '';
+        $this->form->reset();
         $this->editingAssetId = null;
         $this->showForm = false;
     }
@@ -117,8 +98,8 @@ class AssetManager extends Component
 
     public function store()
     {
-        if (!$this->editingAssetId && empty($this->asset_tag)) {
-            $category = AssetCategory::find($this->category_id);
+        if (!$this->editingAssetId && empty($this->form->asset_tag)) {
+            $category = AssetCategory::find($this->form->category_id);
             if ($category) {
                 $prefix = strtoupper(substr($category->name, 0, 3));
                 $year = date('Y');
@@ -135,52 +116,20 @@ class AssetManager extends Component
                     $seq = '001';
                 }
                 
-                $this->asset_tag = $baseTag . $seq;
+                $this->form->asset_tag = $baseTag . $seq;
             }
         }
 
         $this->validate([
-            'name' => 'required',
-            'asset_tag' => 'required|unique:assets,asset_tag,' . $this->editingAssetId,
-            'category_id' => 'required',
-            'status' => 'required',
-            'ip_address' => 'nullable|string|max:255',
-            'username' => 'nullable|string|max:255',
-            'purpose' => 'nullable|string|max:255',
-            'os' => 'nullable|string|max:255',
-            'position_image' => 'nullable|' . (is_object($this->position_image) ? 'image|max:2048' : 'string'),
-            'department_id' => 'nullable|exists:departments,id',
+            'form.asset_tag' => 'required|unique:assets,asset_tag,' . $this->editingAssetId,
+            'form.position_image' => 'nullable|' . (is_object($this->form->position_image) ? 'image|max:2048' : 'string'),
         ]);
 
-        $imagePath = $this->position_image;
-        if (is_object($this->position_image)) {
-            $imagePath = $this->position_image->store('assets', 'public');
-        }
+        $imagePath = is_object($this->form->position_image) 
+            ? $this->form->position_image->store('assets', 'public') 
+            : $this->form->position_image;
 
-        Asset::updateOrCreate(
-            ['id' => $this->editingAssetId],
-            [
-                'name' => $this->name,
-                'brand' => $this->brand,
-                'asset_tag' => $this->asset_tag,
-                'serial_number' => $this->serial_number,
-                'category_id' => $this->category_id,
-                'status' => $this->status,
-                'location_id' => $this->location_id ?: null,
-                'assigned_to_user_id' => $this->assigned_to_user_id ?: null,
-                'assigned_to_nik' => $this->assigned_to_nik ?: null,
-                'purchase_date' => $this->purchase_date ?: null,
-                'purchase_cost' => $this->purchase_cost ?: null,
-                'warranty_expiry' => $this->warranty_expiry ?: null,
-                'notes' => $this->notes,
-                'ip_address' => $this->ip_address ?: null,
-                'username' => $this->username ?: null,
-                'purpose' => $this->purpose ?: null,
-                'os' => $this->os ?: null,
-                'position_image' => $imagePath ?: null,
-                'department_id' => $this->department_id ?: null,
-            ]
-        );
+        $this->form->save($imagePath);
 
         $this->resetFields();
         session()->flash('message', $this->editingAssetId ? 'Asset updated.' : 'Asset created.');
@@ -190,25 +139,7 @@ class AssetManager extends Component
     {
         $asset = Asset::findOrFail($id);
         $this->editingAssetId = $id;
-        $this->name = $asset->name;
-        $this->brand = $asset->brand;
-        $this->asset_tag = $asset->asset_tag;
-        $this->serial_number = $asset->serial_number;
-        $this->category_id = $asset->category_id;
-        $this->status = $asset->status;
-        $this->location_id = $asset->location_id;
-        $this->assigned_to_user_id = $asset->assigned_to_user_id;
-        $this->assigned_to_nik = $asset->assigned_to_nik;
-        $this->purchase_date = $asset->purchase_date;
-        $this->purchase_cost = $asset->purchase_cost;
-        $this->warranty_expiry = $asset->warranty_expiry;
-        $this->notes = $asset->notes;
-        $this->ip_address = $asset->ip_address;
-        $this->username = $asset->username;
-        $this->purpose = $asset->purpose;
-        $this->os = $asset->os;
-        $this->position_image = $asset->position_image;
-        $this->department_id = $asset->department_id;
+        $this->form->setAsset($asset);
         $this->showForm = true;
     }
 

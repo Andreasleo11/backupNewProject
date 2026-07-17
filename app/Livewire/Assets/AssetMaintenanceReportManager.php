@@ -168,16 +168,12 @@ class AssetMaintenanceReportManager extends Component
                 }
             }
 
-            // Handle Custom/New items (persisted to items table and added to details)
+            // Handle Custom/New items (persisted as generic details without templates)
             foreach ($this->newItems as $newItem) {
-                $item = MaintenanceChecklistItem::create([
-                    'group_id' => $newItem['group_id'],
-                    'name' => $newItem['name'],
-                ]);
-
                 MaintenanceReportDetail::create([
                     'report_id' => $report->id,
-                    'checklist_item_id' => $item->id,
+                    'checklist_item_id' => null,
+                    'custom_item_name' => $newItem['name'],
                     'condition' => $newItem['condition'],
                     'remark' => $newItem['remark'] ?: null,
                     'checked_by' => $newItem['checked_by'],
@@ -206,6 +202,18 @@ class AssetMaintenanceReportManager extends Component
                 'condition' => $detail?->condition ?? '',
                 'remark' => $detail?->remark ?? '',
                 'checked_by' => $detail?->checked_by ?? '',
+            ];
+        }
+
+        // Initialize custom items
+        $customDetails = $report->details->whereNull('checklist_item_id');
+        foreach ($customDetails as $custom) {
+            $this->newItems[] = [
+                'group_id' => 1, // Fallback since it's now untied to a group in DB
+                'name' => $custom->custom_item_name,
+                'condition' => $custom->condition,
+                'remark' => $custom->remark ?? '',
+                'checked_by' => $custom->checked_by,
             ];
         }
 

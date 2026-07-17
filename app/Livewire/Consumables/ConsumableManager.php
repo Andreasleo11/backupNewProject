@@ -153,12 +153,6 @@ class ConsumableManager extends Component
             DB::transaction(function () {
                 $consumable = Consumable::where('id', $this->selectedConsumableId)->lockForUpdate()->firstOrFail();
 
-                if ($this->transactionType === 'Out' && $consumable->current_stock < $this->transactionQuantity) {
-                    session()->flash('error', 'Not enough stock.');
-                    // Throw to rollback
-                    throw new \Exception('insufficient_stock');
-                }
-
                 StockTransaction::create([
                     'consumable_id' => $this->selectedConsumableId,
                     'type' => $this->transactionType,

@@ -171,42 +171,42 @@
             <form wire:submit.prevent="store" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Name <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="name" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                    @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    <input type="text" wire:model="form.name" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('form.name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Brand</label>
-                    <input type="text" wire:model="brand" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                    @error('brand') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    <input type="text" wire:model="form.brand" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('form.brand') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Asset Tag <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="asset_tag" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('asset_tag') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="form.asset_tag" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('form.asset_tag') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Serial Number</label>
-                        <input type="text" wire:model="serial_number" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" wire:model="form.serial_number" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
-                        <select wire:model="category_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <select wire:model="form.category_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Select...</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
-                        @error('category_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('form.category_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select wire:model="status" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <select wire:model="form.status" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="in_stock">In Stock</option>
                             <option value="assigned">Assigned</option>
                             <option value="maintenance">Maintenance</option>
@@ -218,7 +218,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Location</label>
-                        <select wire:model="location_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <select wire:model="form.location_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Select...</option>
                             @foreach($locations as $location)
                                 <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -227,7 +227,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Assign To</label>
-                        <input list="employee-list" wire:model="assigned_to_nik" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type NIK or Name...">
+                        <input list="employee-list" wire:model="form.assigned_to_nik" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Type NIK or Name...">
                         <datalist id="employee-list">
                             @foreach($employees as $emp)
                                 <option value="{{ $emp->nik }}">{{ $emp->name }}</option>
@@ -239,65 +239,65 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Purchase Date</label>
-                        <input type="date" wire:model="purchase_date" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="date" wire:model="form.purchase_date" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Purchase Cost</label>
-                        <input type="number" step="0.01" wire:model="purchase_cost" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="number" step="0.01" wire:model="form.purchase_cost" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Warranty Expiry</label>
-                    <input type="date" wire:model="warranty_expiry" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="date" wire:model="form.warranty_expiry" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">IP Address</label>
-                        <input type="text" wire:model="ip_address" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('ip_address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="form.ip_address" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('form.ip_address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Username (Operator)</label>
-                        <input type="text" wire:model="username" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('username') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="form.username" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('form.username') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Purpose</label>
-                        <input type="text" wire:model="purpose" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('purpose') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="form.purpose" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('form.purpose') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Operating System</label>
-                        <input type="text" wire:model="os" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        @error('os') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="form.os" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @error('form.os') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Department</label>
-                        <select wire:model="department_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <select wire:model="form.department_id" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Select Department...</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                             @endforeach
                         </select>
-                        @error('department_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('form.department_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Position Image</label>
-                        <input type="file" wire:model="position_image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        @error('position_image') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                        @if ($position_image)
-                            @if (is_object($position_image))
-                                <div class="mt-2 text-xs text-gray-500">Preview: <img src="{{ $position_image->temporaryUrl() }}" class="mt-1 max-h-20 rounded shadow"></div>
+                        <input type="file" wire:model="form.position_image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        @error('form.position_image') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @if ($form->position_image)
+                            @if (is_object($form->position_image))
+                                <div class="mt-2 text-xs text-gray-500">Preview: <img src="{{ $form->position_image->temporaryUrl() }}" class="mt-1 max-h-20 rounded shadow"></div>
                             @else
-                                <div class="mt-2 text-xs text-gray-500">Current Image: <img src="{{ asset('storage/' . $position_image) }}" class="mt-1 max-h-20 rounded shadow"></div>
+                                <div class="mt-2 text-xs text-gray-500">Current Image: <img src="{{ asset('storage/' . $form->position_image) }}" class="mt-1 max-h-20 rounded shadow"></div>
                             @endif
                         @endif
                     </div>
@@ -305,7 +305,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Notes</label>
-                    <textarea wire:model="notes" rows="2" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    <textarea wire:model="form.notes" rows="2" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-2 pt-2">

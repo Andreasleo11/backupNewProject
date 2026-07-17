@@ -238,7 +238,7 @@
                 <div class="space-y-6">
                     @php
                         $groupedDetails = $activeReport->details->groupBy(function($detail) {
-                            return $detail->checklistItem->group->name;
+                            return $detail->checklistItem ? $detail->checklistItem->group->name : 'Other / Custom Items';
                         });
                     @endphp
 
@@ -259,7 +259,7 @@
                                 <tbody class="divide-y divide-gray-100 text-sm">
                                     @foreach($details as $detail)
                                         <tr class="hover:bg-gray-50/50">
-                                            <td class="px-4 py-3 font-semibold text-gray-800">{{ $detail->checklistItem->name }}</td>
+                                            <td class="px-4 py-3 font-semibold text-gray-800">{{ $detail->checklistItem ? $detail->checklistItem->name : $detail->custom_item_name }}</td>
                                             <td class="px-4 py-3">
                                                 <span class="px-2 py-0.5 text-xs font-semibold rounded-full {{ $detail->condition === 'good' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                                     {{ ucfirst($detail->condition) }}
