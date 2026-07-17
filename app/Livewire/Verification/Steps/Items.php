@@ -171,7 +171,6 @@ class Items extends Component
             'defects' => [],
         ];
         if ($this->activeItem === null) {
-            $this->activeItem = 0;
             $this->dispatch('go-to-item', index: 0);
         } else {
             $this->dispatch('go-to-item', index: count($this->items) - 1);
@@ -188,7 +187,7 @@ class Items extends Component
                 if ($newActive !== null) {
                     $this->dispatch('go-to-item', index: $newActive);
                 } else {
-                    $this->activeItem = null;
+                    $this->dispatch('active-item-updated', index: null);
                 }
             }
         }
