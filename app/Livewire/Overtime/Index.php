@@ -70,6 +70,10 @@ class Index extends Component
 
     public array $warnings = [];
 
+    public array $conflictingFormIds = [];
+
+    public bool $warningsAcknowledged = false;
+
     public bool $isProcessingBulk = false;
 
     #[On('confirm-delete')]
@@ -438,9 +442,12 @@ class Index extends Component
     private function calculateHeuristicWarnings($details): void
     {
         $this->warnings = [];
+        $this->conflictingFormIds = [];
+        $this->warningsAcknowledged = false;
 
         // 1. Session Overlap Check (within selected batch)
         $overlaps = [];
+        $conflictHeaderIds = [];
         $byNik = $details->groupBy('NIK');
 
         foreach ($byNik as $nik => $rows) {
@@ -458,7 +465,14 @@ class Index extends Component
                     $currStart = Carbon::parse($current->start_date . ' ' . $current->start_time);
 
                     if ($currStart->lt($prevEnd)) {
-                        $overlaps[] = "Employee #{$nik} ({$current->name}) has overlapping sessions on " . Carbon::parse($current->start_date)->format('d M');
+                        // Collect the header IDs of both conflicting details
+                        $conflictHeaderIds[] = $prev->header_id;
+                        $conflictHeaderIds[] = $current->header_id;
+
+                        $overlaps[] = [
+                            'message' => "Employee #{$nik} ({$current->name}) has overlapping sessions on " . Carbon::parse($current->start_date)->format('d M'),
+                            'header_ids' => [$prev->header_id, $current->header_id],
+                        ];
                         break; // Only report once per employee to avoid spam
                     }
                 }
@@ -467,9 +481,13 @@ class Index extends Component
         }
 
         if (! empty($overlaps)) {
+            $this->conflictingFormIds = array_values(array_unique($conflictHeaderIds));
             $this->warnings['overlaps'] = array_slice($overlaps, 0, 5); // Limit to top 5
             if (count($overlaps) > 5) {
-                $this->warnings['overlaps'][] = '...and ' . (count($overlaps) - 5) . ' more conflicts.';
+                $this->warnings['overlaps'][] = [
+                    'message' => '...and ' . (count($overlaps) - 5) . ' more conflicts.',
+                    'header_ids' => [],
+                ];
             }
         }
 
@@ -488,6 +506,39 @@ class Index extends Component
         if ($highIntensity->count() > 0) {
             $this->warnings['intensity'] = "{$highIntensity->count()} sessions exceed 12 hours of duration.";
         }
+    }
+
+    /**
+     * Exclude all forms that have session conflicts from the current selection,
+     * then reload the snapshot with the remaining forms.
+     */
+    public function excludeConflictingForms(): void
+    {
+        if (empty($this->conflictingFormIds)) {
+            return;
+        }
+
+        $this->selectedIds = array_values(
+            array_diff($this->selectedIds, array_map('strval', $this->conflictingFormIds))
+        );
+
+        // If no forms left, close the drawer
+        if (empty($this->selectedIds)) {
+            $this->showSnapshot = false;
+            $this->dispatch('flash', type: 'info', message: 'All selected forms had conflicts. Selection cleared.');
+            return;
+        }
+
+        // Reload snapshot with cleaned selection
+        $this->loadSnapshot();
+    }
+
+    /**
+     * Acknowledge warnings and allow approval to proceed despite conflicts.
+     */
+    public function acknowledgeWarnings(): void
+    {
+        $this->warningsAcknowledged = true;
     }
 
     public function bulkApprove(): void

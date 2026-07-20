@@ -101,7 +101,12 @@
                                     <div class="space-y-1">
                                         <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest">Session Conflicts</p>
                                         @foreach ($warnings['overlaps'] as $overlap)
-                                            <p class="text-xs font-medium text-rose-700 leading-relaxed">• {{ $overlap }}</p>
+                                            <p class="text-xs font-medium text-rose-700 leading-relaxed">
+                                                • {{ $overlap['message'] }}
+                                                @if (!empty($overlap['header_ids']))
+                                                    <span class="text-[10px] text-rose-400 ml-1">(Form #{{ implode(', #', $overlap['header_ids']) }})</span>
+                                                @endif
+                                            </p>
                                         @endforeach
                                     </div>
                                 @endif
@@ -112,6 +117,43 @@
                                     </div>
                                 @endif
                             </div>
+
+                            {{-- Conflict Resolution Actions --}}
+                            @if (!$warningsAcknowledged)
+                                <div class="pt-3 border-t border-rose-200/50 space-y-3">
+                                    <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Resolve Before Approving</p>
+
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        @if (!empty($conflictingFormIds))
+                                            <button type="button" wire:click="excludeConflictingForms"
+                                                wire:loading.attr="disabled"
+                                                wire:target="excludeConflictingForms"
+                                                class="flex-1 h-10 rounded-xl bg-white border border-rose-200 text-[10px] font-black text-rose-700 uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center justify-center gap-2">
+                                                <span wire:loading.remove wire:target="excludeConflictingForms">
+                                                    <i class='bx bx-filter-alt text-sm'></i>
+                                                    Exclude {{ count($conflictingFormIds) }} Conflicting {{ count($conflictingFormIds) === 1 ? 'Form' : 'Forms' }}
+                                                </span>
+                                                <span wire:loading wire:target="excludeConflictingForms">
+                                                    <i class='bx bx-loader-alt animate-spin text-sm'></i> Updating…
+                                                </span>
+                                            </button>
+                                        @endif
+
+                                        <button type="button" wire:click="acknowledgeWarnings"
+                                            class="flex-1 h-10 rounded-xl bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-700 uppercase tracking-widest hover:bg-amber-100 transition-all flex items-center justify-center gap-2">
+                                            <i class='bx bx-check-shield text-sm'></i>
+                                            Acknowledge & Continue
+                                        </button>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="pt-3 border-t border-emerald-200/50">
+                                    <div class="flex items-center gap-2 text-emerald-600">
+                                        <i class='bx bx-check-circle text-lg'></i>
+                                        <p class="text-[10px] font-black uppercase tracking-widest">Warnings acknowledged — you may proceed</p>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @else
                         <div class="p-8 rounded-3xl bg-emerald-50 border border-emerald-100 text-center">
@@ -136,13 +178,21 @@
                         class="flex-1 h-12 rounded-2xl border border-slate-200 bg-white text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all">
                         Back to Index
                     </button>
-                    <button type="button" wire:click="bulkApprove" wire:loading.attr="disabled"
-                        class="flex-[1.5] h-12 rounded-2xl bg-emerald-600 text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all">
-                        <span wire:loading.remove wire:target="bulkApprove">Confirm Batch Approval</span>
-                        <span wire:loading wire:target="bulkApprove">
-                            <i class='bx bx-loader-alt animate-spin'></i> Signing…
-                        </span>
-                    </button>
+                    @if (!empty($warnings) && !$warningsAcknowledged)
+                        <button type="button" disabled
+                            class="flex-[1.5] h-12 rounded-2xl bg-slate-300 text-[11px] font-black text-slate-500 uppercase tracking-widest cursor-not-allowed"
+                            title="Resolve or acknowledge warnings above before approving">
+                            Resolve Warnings First
+                        </button>
+                    @else
+                        <button type="button" wire:click="bulkApprove" wire:loading.attr="disabled"
+                            class="flex-[1.5] h-12 rounded-2xl bg-emerald-600 text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all">
+                            <span wire:loading.remove wire:target="bulkApprove">Confirm Batch Approval</span>
+                            <span wire:loading wire:target="bulkApprove">
+                                <i class='bx bx-loader-alt animate-spin'></i> Signing…
+                            </span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
