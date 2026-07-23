@@ -1,99 +1,321 @@
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <!-- Page header -->
-    <div class="sm:flex sm:justify-between sm:items-center mb-8">
-        <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-slate-800 font-bold tracking-tight">System Audit Log ✨</h1>
-            <p class="text-sm text-slate-500 mt-1">Review all system activities, data modifications, and user actions.</p>
+<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto space-y-6">
+
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900 text-white p-6 rounded-2xl shadow-xl border border-slate-800 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+            <i class="bx bx-shield-quarter text-9xl"></i>
         </div>
-        
-        <!-- Search and Actions -->
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="bi bi-search text-slate-400"></i>
-                </div>
-                <input wire:model.live.debounce.300ms="search" type="search" class="form-input w-full pl-9 py-2 rounded-xl border-slate-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" placeholder="Search logs..." />
+        <div class="relative z-10 space-y-1">
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <i class="bx bx-lock-alt mr-1"></i> Super User Console
+                </span>
+                <span class="text-slate-400 text-xs">• Real-Time Forensics</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                System Audit & Security Logs
+            </h1>
+            <p class="text-slate-400 text-sm max-w-2xl">
+                Comprehensive activity trail, data modification tracking, and user event forensics across the platform.
+            </p>
+        </div>
+
+        <div class="relative z-10 flex items-center gap-3">
+            <button wire:click="resetFilters" 
+                class="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm">
+                <i class="bx bx-reset text-base"></i> Reset Filters
+            </button>
+            <button wire:click="$refresh" 
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30">
+                <i class="bx bx-refresh text-base"></i> Refresh Trail
+            </button>
+        </div>
+    </div>
+
+    <!-- Security Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Logs -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Recorded Logs</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($totalLogs) }}</h3>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                    <i class="bx bx-data text-indigo-500"></i> Full audit persistence
+                </p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="bx bx-list-ul"></i>
+            </div>
+        </div>
+
+        <!-- Today's Logs -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Today's Activity</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($todayLogs) }}</h3>
+                <p class="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                    <i class="bx bx-time text-emerald-500"></i> Since 00:00 today
+                </p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="bx bx-pulse"></i>
+            </div>
+        </div>
+
+        <!-- Critical Deletions -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Deletions & Purges</p>
+                <h3 class="text-2xl font-extrabold text-rose-600 mt-1">{{ number_format($deletedLogs) }}</h3>
+                <p class="text-[11px] text-rose-500 font-semibold mt-1 flex items-center gap-1">
+                    <i class="bx bx-error-circle"></i> High importance events
+                </p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="bx bx-trash text-2xl"></i>
+            </div>
+        </div>
+
+        <!-- Active Causers 24h -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Actors (24h)</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($activeCausers) }}</h3>
+                <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                    <i class="bx bx-user-check text-blue-500"></i> Distinct user actions
+                </p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl font-bold shrink-0">
+                <i class="bx bx-group"></i>
             </div>
         </div>
     </div>
 
-    <!-- Table -->
+    <!-- Advanced Search & Multi-Facet Filters Bar -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <!-- Search Keyword Input -->
+            <div class="lg:col-span-2 relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="bx bx-search text-lg"></i>
+                </div>
+                <input wire:model.live.debounce.300ms="search" type="search"
+                    class="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all placeholder:text-slate-400"
+                    placeholder="Search by action, user name, email, or subject ID..." />
+                @if($search)
+                    <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i class="bx bx-x text-lg"></i>
+                    </button>
+                @endif
+            </div>
+
+            <!-- Event Filter -->
+            <div>
+                <select wire:model.live="eventFilter" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-700 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all font-medium">
+                    <option value="">All Event Types</option>
+                    <option value="created">Created (Additions)</option>
+                    <option value="updated">Updated (Modifications)</option>
+                    <option value="deleted">Deleted (Removals)</option>
+                </select>
+            </div>
+
+            <!-- Target Model/Subject Filter -->
+            <div>
+                <select wire:model.live="subjectFilter" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-700 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all font-medium">
+                    <option value="">All Model Subjects</option>
+                    @foreach($availableSubjects as $fullClass => $shortName)
+                        <option value="{{ $fullClass }}">{{ $shortName }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Date Range Filter -->
+            <div>
+                <select wire:model.live="dateFilter" class="w-full py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-700 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all font-medium">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="custom">Custom Date Range</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Custom Date Range Row -->
+        @if($dateFilter === 'custom')
+        <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 bg-slate-50/50 p-3 rounded-xl">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Date Range:</span>
+            <div class="flex items-center gap-2">
+                <input wire:model.live="startDate" type="date" class="py-1.5 px-3 rounded-lg border border-slate-200 text-xs text-slate-700 focus:border-indigo-500" />
+                <span class="text-slate-400 text-xs">to</span>
+                <input wire:model.live="endDate" type="date" class="py-1.5 px-3 rounded-lg border border-slate-200 text-xs text-slate-700 focus:border-indigo-500" />
+            </div>
+        </div>
+        @endif
+
+        <!-- Active Filter Indicator Tags -->
+        @if($search || $eventFilter || $subjectFilter || $dateFilter)
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+            <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Active Filters:</span>
+            @if($search)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
+                    Search: "{{ $search }}"
+                    <button wire:click="$set('search', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                </span>
+            @endif
+            @if($eventFilter)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
+                    Event: {{ ucfirst($eventFilter) }}
+                    <button wire:click="$set('eventFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                </span>
+            @endif
+            @if($subjectFilter)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
+                    Subject: {{ class_basename($subjectFilter) }}
+                    <button wire:click="$set('subjectFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                </span>
+            @endif
+            @if($dateFilter)
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
+                    Date: {{ ucfirst($dateFilter) }}
+                    <button wire:click="$set('dateFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                </span>
+            @endif
+            <button wire:click="resetFilters" class="text-rose-600 hover:underline font-semibold ml-2 text-xs">Clear All</button>
+        </div>
+        @endif
+    </div>
+
+    <!-- Forensics Data Table -->
     <div class="bg-white shadow-sm rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div class="flex items-center gap-2">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Audit Log Entries</h3>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-700">
+                    {{ $activities->total() }} total
+                </span>
+            </div>
+
+            <!-- Per Page Dropdown -->
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span>Display per page:</span>
+                <select wire:model.live="perPage" class="py-1 px-2 rounded-lg border border-slate-200 text-xs bg-white font-medium focus:border-indigo-500">
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                <thead class="text-[11px] text-slate-500 uppercase tracking-wider bg-slate-50 border-b border-slate-200">
                     <tr>
-                        <th class="px-6 py-4 font-semibold">Date & Time</th>
-                        <th class="px-6 py-4 font-semibold">User</th>
-                        <th class="px-6 py-4 font-semibold">Event</th>
-                        <th class="px-6 py-4 font-semibold">Subject</th>
-                        <th class="px-6 py-4 font-semibold">Properties (Changes)</th>
+                        <th class="px-6 py-3.5 font-bold">Date & Time</th>
+                        <th class="px-6 py-3.5 font-bold">Actor (Causer)</th>
+                        <th class="px-6 py-3.5 font-bold">Event & Description</th>
+                        <th class="px-6 py-3.5 font-bold">Target Subject</th>
+                        <th class="px-6 py-3.5 font-bold text-right">Forensics Payload</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($activities as $activity)
-                    <tr class="hover:bg-slate-50/50 transition-colors">
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <!-- Date & Time -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-slate-900">{{ $activity->created_at->format('M d, Y') }}</div>
-                            <div class="text-xs text-slate-500">{{ $activity->created_at->format('H:i:s') }}</div>
+                            <div class="text-sm font-bold text-slate-900">{{ $activity->created_at->format('M d, Y') }}</div>
+                            <div class="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
+                                <i class="bx bx-time text-slate-400"></i> {{ $activity->created_at->format('H:i:s') }}
+                                <span class="text-[10px] text-slate-400 font-sans">({{ $activity->created_at->diffForHumans() }})</span>
+                            </div>
                         </td>
+
+                        <!-- Actor (Causer) -->
                         <td class="px-6 py-4">
                             @if($activity->causer)
                                 <div class="flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
-                                        {{ strtoupper(substr($activity->causer->name, 0, 1)) }}
+                                    <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                                        {{ strtoupper(substr($activity->causer->name ?? 'U', 0, 1)) }}
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-slate-900">{{ $activity->causer->name }}</div>
-                                        <div class="text-xs text-slate-500">{{ class_basename($activity->causer_type) }}</div>
+                                        <div class="text-sm font-bold text-slate-900">{{ $activity->causer->name ?? 'Unknown User' }}</div>
+                                        <div class="text-xs text-slate-500 font-mono">{{ $activity->causer->email ?? class_basename($activity->causer_type) }}</div>
                                     </div>
                                 </div>
                             @else
                                 <div class="flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">
-                                        <i class="bi bi-robot"></i>
+                                    <div class="h-9 w-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0 border border-slate-200">
+                                        <i class="bx bx-bot"></i>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-slate-900">System</div>
+                                        <div class="text-sm font-bold text-slate-900">System Engine</div>
+                                        <div class="text-[11px] text-slate-400">Automated Task / Seed</div>
                                     </div>
                                 </div>
                             @endif
                         </td>
+
+                        <!-- Event & Action -->
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-widest
-                                @if($activity->event === 'created') bg-emerald-100 text-emerald-700
-                                @elseif($activity->event === 'updated') bg-blue-100 text-blue-700
-                                @elseif($activity->event === 'deleted') bg-rose-100 text-rose-700
-                                @else bg-slate-100 text-slate-700 @endif
-                            ">
-                                {{ $activity->event }}
-                            </span>
-                            <div class="text-xs text-slate-500 mt-1.5">{{ $activity->description }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border
+                                    @if($activity->event === 'created') bg-emerald-50 text-emerald-700 border-emerald-200
+                                    @elseif($activity->event === 'updated') bg-indigo-50 text-indigo-700 border-indigo-200
+                                    @elseif($activity->event === 'deleted') bg-rose-50 text-rose-700 border-rose-200
+                                    @else bg-slate-100 text-slate-700 border-slate-200 @endif">
+                                    <span class="h-1.5 w-1.5 rounded-full mr-1.5
+                                        @if($activity->event === 'created') bg-emerald-500
+                                        @elseif($activity->event === 'updated') bg-indigo-500
+                                        @elseif($activity->event === 'deleted') bg-rose-500
+                                        @else bg-slate-400 @endif"></span>
+                                    {{ $activity->event ?? 'action' }}
+                                </span>
+
+                                @if($activity->log_name && $activity->log_name !== 'default')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-600 border border-slate-200">
+                                        {{ $activity->log_name }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-slate-700 font-medium mt-1.5">
+                                {{ $activity->description }}
+                            </div>
                         </td>
+
+                        <!-- Target Subject -->
                         <td class="px-6 py-4">
                             @if($activity->subject_type)
-                                <div class="text-sm font-medium text-slate-900">{{ class_basename($activity->subject_type) }}</div>
-                                <div class="text-[11px] font-mono text-slate-500 mt-0.5">ID: {{ $activity->subject_id }}</div>
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-semibold text-xs border border-slate-200">
+                                    <i class="bx bx-cube text-slate-500"></i>
+                                    {{ class_basename($activity->subject_type) }}
+                                </div>
+                                <div class="text-[11px] font-mono text-slate-500 mt-1">ID: #{{ $activity->subject_id }}</div>
                             @else
-                                <span class="text-slate-400 italic text-xs">-</span>
+                                <span class="text-slate-400 italic text-xs">No subject target</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4">
-                            @if(!empty($activity->properties) && count($activity->properties) > 0)
-                                <div class="max-h-32 overflow-y-auto custom-scrollbar-thin bg-slate-900 text-emerald-400 p-3 rounded-xl text-[10px] font-mono whitespace-pre-wrap max-w-sm shadow-inner">
-{{ json_encode($activity->properties, JSON_PRETTY_PRINT) }}
-                                </div>
-                            @else
-                                <span class="text-slate-400 italic text-xs">No recorded properties</span>
-                            @endif
+
+                        <!-- Inspect Button -->
+                        <td class="px-6 py-4 text-right">
+                            <button wire:click="inspectActivity({{ $activity->id }})"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                                <i class="bx bx-search-alt text-sm"></i>
+                                Inspect Changes
+                            </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
                         <td colspan="5" class="px-6 py-16 text-center">
-                            <div class="text-slate-300 mb-3"><i class="bi bi-shield-lock text-4xl"></i></div>
-                            <h3 class="text-lg font-bold text-slate-800">No logs found</h3>
-                            <p class="text-slate-500 text-sm mt-1">There are no audit logs matching your search criteria.</p>
+                            <div class="h-16 w-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 border border-slate-200">
+                                <i class="bx bx-shield-x"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">No matching audit logs found</h3>
+                            <p class="text-slate-500 text-sm mt-1 max-w-sm mx-auto">There are no system audit records matching your specified search and filter criteria.</p>
+                            <button wire:click="resetFilters" class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all">
+                                <i class="bx bx-reset"></i> Clear All Filters
+                            </button>
                         </td>
                     </tr>
                     @endforelse
@@ -107,4 +329,169 @@
         </div>
         @endif
     </div>
+
+    <!-- Forensic Details & Changes Inspection Modal -->
+    @if($selectedActivity)
+    <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data="{ copied: false }">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" wire:click="closeInspection"></div>
+
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl border border-slate-200">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-900 text-white px-6 py-5 flex items-center justify-between relative overflow-hidden">
+                    <div class="flex items-center gap-3 relative z-10">
+                        <div class="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-xl font-bold">
+                            <i class="bx bx-microscope"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold text-white">Log Inspection #{{ $selectedActivity->id }}</h3>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider
+                                    @if($selectedActivity->event === 'created') bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                                    @elseif($selectedActivity->event === 'updated') bg-indigo-500/20 text-indigo-300 border border-indigo-500/30
+                                    @elseif($selectedActivity->event === 'deleted') bg-rose-500/20 text-rose-300 border border-rose-500/30
+                                    @else bg-slate-700 text-slate-300 @endif">
+                                    {{ $selectedActivity->event ?? 'event' }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ $selectedActivity->created_at->format('F d, Y \a\t H:i:s A') }}</p>
+                        </div>
+                    </div>
+                    
+                    <button wire:click="closeInspection" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-all">
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                    
+                    <!-- Actor & Target Overview Card -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Actor / Triggered By</span>
+                            <div class="mt-1 flex items-center gap-2">
+                                <i class="bx bx-user-circle text-xl text-indigo-600"></i>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">
+                                        {{ $selectedActivity->causer->name ?? 'System Engine' }}
+                                    </div>
+                                    <div class="text-xs text-slate-500 font-mono">
+                                        {{ $selectedActivity->causer->email ?? ($selectedActivity->causer_type ? class_basename($selectedActivity->causer_type) . ' #' . $selectedActivity->causer_id : 'Automated Background Process') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Subject</span>
+                            <div class="mt-1 flex items-center gap-2">
+                                <i class="bx bx-cube text-xl text-purple-600"></i>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">
+                                        {{ $selectedActivity->subject_type ? class_basename($selectedActivity->subject_type) : 'None' }}
+                                    </div>
+                                    <div class="text-xs text-slate-500 font-mono">
+                                        Subject ID: #{{ $selectedActivity->subject_id ?? 'N/A' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Activity Action Summary:</span>
+                        <div class="mt-1 text-sm font-medium text-slate-800 p-3 rounded-xl bg-indigo-50/50 border border-indigo-100">
+                            {{ $selectedActivity->description }}
+                        </div>
+                    </div>
+
+                    <!-- Visual Changes Diff Table (Old vs New) -->
+                    @if(!empty($parsedDiff))
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="bx bx-git-compare text-indigo-600 text-base"></i> Attribute Modification Comparison
+                            </h4>
+                            <span class="text-[10px] text-slate-400 font-mono">{{ count($parsedDiff) }} fields affected</span>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-2.5">Field / Attribute</th>
+                                        <th class="px-4 py-2.5">Previous Value (Old)</th>
+                                        <th class="px-4 py-2.5">Updated Value (New)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 font-mono">
+                                    @foreach($parsedDiff as $diff)
+                                    <tr class="@if($diff['changed']) bg-amber-50/30 @endif">
+                                        <td class="px-4 py-3 font-bold text-slate-800">{{ $diff['field'] }}</td>
+                                        <td class="px-4 py-3">
+                                            @if($diff['old'] !== '')
+                                                <span class="px-2 py-1 rounded bg-rose-50 text-rose-700 border border-rose-200 line-through text-[11px] block break-all">
+                                                    {{ $diff['old'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-slate-400 italic text-[11px]">&lt;empty&gt;</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @if($diff['new'] !== '')
+                                                <span class="px-2 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] block break-all font-semibold">
+                                                    {{ $diff['new'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-slate-400 italic text-[11px]">&lt;empty&gt;</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Raw JSON Payload Viewer -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                                <i class="bx bx-code-alt text-slate-400 text-base"></i> Full Raw Properties Payload (JSON)
+                            </span>
+                            <button @click="navigator.clipboard.writeText(JSON.stringify({{ json_encode($selectedActivity->properties) }}, null, 2)); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">
+                                <i class="bx" :class="copied ? 'bx-check text-emerald-600' : 'bx-copy'"></i>
+                                <span x-text="copied ? 'Copied!' : 'Copy JSON'"></span>
+                            </button>
+                        </div>
+                        <div class="bg-slate-900 text-emerald-400 p-4 rounded-2xl text-[11px] font-mono whitespace-pre-wrap max-h-48 overflow-y-auto shadow-inner border border-slate-800 custom-scrollbar-thin">
+                            @if(!empty($selectedActivity->properties))
+                                {{ json_encode($selectedActivity->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}
+                            @else
+                                <span class="text-slate-500 italic">No additional payload properties stored.</span>
+                            @endif
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-mono">Log ID: {{ $selectedActivity->id }}</span>
+                    <button wire:click="closeInspection" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition-all shadow-sm">
+                        Close Inspection
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
