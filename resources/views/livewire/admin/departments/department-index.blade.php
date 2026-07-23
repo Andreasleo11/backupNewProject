@@ -13,7 +13,7 @@
             @can('department.create')
                 <button wire:click="openCreateModal" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="openCreateModal"></i>
+                    <x-bx-loader-alt class="animate-spin" wire:loading wire:target="openCreateModal" />
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" wire:loading.remove wire:target="openCreateModal">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -311,7 +311,7 @@
                         </button>
                         <button type="submit" wire:loading.attr="disabled" wire:target="save"
                             class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                            <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
+                            <x-bx-loader-alt class="animate-spin" wire:loading wire:target="save" />
                             <span wire:loading.remove wire:target="save">{{ $editingId ? 'Save Changes' : 'Create Department' }}</span>
                             <span wire:loading wire:target="save">Saving...</span>
                         </button>

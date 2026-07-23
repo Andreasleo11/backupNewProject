@@ -110,7 +110,7 @@
                                     px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
                                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                         @click="openSendMailConfirm = true">
-                        <i class="bx bx-envelope text-sm"></i>
+                        <x-bx-envelope class="w-4 h-4" />
                         <span class="hidden sm:inline">Send mail</span>
                     </button>
                 @else
@@ -119,7 +119,7 @@
                                     px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
                                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                         @click="openSendMail = true">
-                        <i class="bx bx-envelope text-sm"></i>
+                        <x-bx-envelope class="w-4 h-4" />
                         <span class="hidden sm:inline">Send mail</span>
                     </button>
                 @endif

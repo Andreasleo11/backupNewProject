@@ -80,12 +80,12 @@
                 <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
                     <button @click="openUploadModal"
                         class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-amber-900 hover:bg-amber-50 font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-white/20 whitespace-nowrap">
-                        <i class='bx bx-cloud-upload text-xl'></i>
+                        <x-bx-cloud-upload class="w-5 h-5" />
                         <span>Unggah Data Mingguan</span>
                     </button>
                     <button @click="confirmTruncate"
                         class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-500/20 text-red-200 hover:bg-rose-600 hover:text-white font-bold rounded-xl transition-all border border-rose-500/30 whitespace-nowrap">
-                        <i class='bx bx-trash-alt text-xl'></i>
+                        <x-bx-trash-alt class="w-5 h-5" />
                         <span>Flush Tabel</span>
                     </button>
                 </div>
@@ -112,14 +112,14 @@
 
                 <div class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer p-2 bg-slate-100 rounded-full z-20"
                     @click="closeUploadModal">
-                    <i class="bx bx-x text-xl"></i>
+                    <x-bx-x class="w-5 h-5" />
                 </div>
 
                 <!-- Step 1: Upload -->
                 <div x-show="step === 1" class="w-full p-8 flex flex-col items-center">
                     <div
                         class="h-16 w-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm">
-                        <i class="bx bx-calendar-week"></i>
+                        <x-bx-calendar-week class="" />
                     </div>
 
                     <h3 class="text-xl font-bold text-slate-800 mb-2">Unggah Data Mingguan</h3>
@@ -135,10 +135,8 @@
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
 
                             <div class="text-center flex flex-col items-center">
-                                <i class="bx"
-                                    :class="selectedFile ? 'bx-check-circle text-emerald-500 bx-tada text-5xl' :
-                                        'bx-cloud-upload text-amber-400 group-hover:text-amber-500 text-5xl'"
-                                    class="mb-3 transition-colors"></i>
+                                <x-bx-check-circle class="w-12 h-12 text-emerald-500 mb-3 transition-colors animate-bounce" x-show="selectedFile" x-cloak />
+                                <x-bx-cloud-upload class="w-12 h-12 text-amber-400 group-hover:text-amber-500 mb-3 transition-colors" x-show="!selectedFile" x-cloak />
 
                                 <h4 x-show="!selectedFile" class="text-slate-700 font-bold text-base mb-1">Tarik & Lepas
                                     File</h4>
@@ -166,7 +164,7 @@
                     <div class="bg-amber-50 p-6 border-b border-amber-100 flex items-center gap-4">
                         <div
                             class="h-12 w-12 bg-white text-amber-600 rounded-xl flex items-center justify-center text-2xl shadow-sm border border-amber-100 shrink-0">
-                            <i class="bx bx-shield-check"></i>
+                            <x-bx-check-shield class="w-6 h-6" />
                         </div>
                         <div>
                             <h3 class="font-bold text-amber-900 text-lg">Integrity Guard Report (Weekly)</h3>
@@ -196,7 +194,7 @@
                         <div x-show="scanResult?.errors.length > 0"
                             class="max-h-48 overflow-y-auto rounded-xl border border-rose-100 bg-rose-50/50 p-4">
                             <h4 class="text-rose-800 font-bold text-sm mb-2 flex items-center gap-2">
-                                <i class="bx bx-error-circle"></i>
+                                <x-bx-error-circle class="" />
                                 Daftar Masalah yang Ditemukan:
                             </h4>
                             <ul class="text-rose-600 text-xs space-y-1 ml-6 list-disc">
@@ -208,7 +206,7 @@
 
                         <div x-show="scanResult?.errors.length === 0"
                             class="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 text-sm">
-                            <i class="bx bxs-check-shield text-xl"></i>
+                            <x-bxs-check-shield class="w-5 h-5" />
                             <span>Integritas data valid. Siap untuk proses impor ke database.</span>
                         </div>
 

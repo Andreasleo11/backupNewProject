@@ -23,11 +23,11 @@
                 <div class="flex items-center gap-2">
                     <a href="{{ route('hrd.importantDocs.edit', $importantDoc->id) }}"
                         class="inline-flex h-9 items-center justify-center rounded-lg bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-all active:scale-95">
-                        <i class="bx bx-edit mr-1.5"></i> Edit Document
+                        <x-bx-edit class="mr-1.5" /> Edit Document
                     </a>
                     <a href="{{ route('hrd.importantDocs.index') }}"
                         class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                        <i class="bx bx-arrow-back mr-1.5"></i> Back to List
+                        <x-bx-arrow-back class="mr-1.5" /> Back to List
                     </a>
                 </div>
             </div>

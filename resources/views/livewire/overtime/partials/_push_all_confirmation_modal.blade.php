@@ -35,7 +35,7 @@
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <i class='bx bx-cloud-upload text-indigo-600 text-xl'></i>
+                            <x-bx-cloud-upload class="text-indigo-600 w-5 h-5" />
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
@@ -71,7 +71,7 @@
                                 @if($pushAllSummary['total_forms'] === 0)
                                     <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                                         <div class="flex">
-                                            <i class='bx bx-info-circle text-yellow-400'></i>
+                                            <x-bx-info-circle class="text-yellow-400" />
                                             <div class="ml-3">
                                                 <p class="text-sm text-yellow-800">
                                                     No eligible forms found. Forms must be approved and contain pending details to be pushed.
@@ -94,7 +94,7 @@
                                 class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm">
                             <span wire:loading.remove>Start Push Operation</span>
                             <span wire:loading>
-                                <i class='bx bx-loader-alt animate-spin mr-2'></i>
+                                <x-bx-loader-alt class="animate-spin mr-2" />
                                 Starting...
                             </span>
                         </button>

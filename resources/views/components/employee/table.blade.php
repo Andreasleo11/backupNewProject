@@ -142,9 +142,9 @@
                             <span
                                 class="inline-flex items-center px-3 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider {{ $employee->branch === 'JAKARTA' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-purple-50 text-purple-700 border border-purple-100' }}">
                                 @if ($employee->branch === 'JAKARTA')
-                                    <i class='bx bx-buildings mr-1 opacity-50'></i>
+                                    <x-bx-buildings class="mr-1 opacity-50" />
                                 @else
-                                    <i class='bx bx-map-pin mr-1 opacity-50'></i>
+                                    <x-bx-map-pin class="mr-1 opacity-50" />
                                 @endif
                                 {{ $employee->branch }}
                             </span>
@@ -182,7 +182,7 @@
                         <td colspan="8" class="px-6 py-20 text-center">
                             <div
                                 class="mx-auto h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mb-4">
-                                <i class='bx bx-group text-4xl text-slate-300'></i>
+                                <x-bx-group class="w-9 h-9 text-slate-300" />
                             </div>
                             <h3 class="text-sm font-semibold text-slate-900">No employees found
                             </h3>

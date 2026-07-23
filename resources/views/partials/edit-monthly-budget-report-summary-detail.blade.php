@@ -75,7 +75,7 @@
                         <div class="flex items-center gap-3">
                             <div
                                 class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                <i class="bx bx-edit-alt text-xl"></i>
+                                <x-bx-edit-alt class="w-5 h-5" />
                             </div>
                             <div>
                                 <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest leading-none">
@@ -86,7 +86,7 @@
                         </div>
                         <button type="button" @click="open = false"
                             class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
-                            <i class="bx bx-x text-xl"></i>
+                            <x-bx-x class="w-5 h-5" />
                         </button>
                     </div>
 

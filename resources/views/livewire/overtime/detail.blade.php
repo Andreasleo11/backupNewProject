@@ -13,7 +13,7 @@
         <div class="flex items-center gap-3">
             <a href="{{ route('overtime.index') }}"
                 class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm border border-slate-200/60 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all">
-                <i class='bx bx-arrow-back text-xl'></i>
+                <x-bx-arrow-back class="w-5 h-5" />
             </a>
             <div>
                 <div class="flex items-center gap-2">
@@ -38,7 +38,7 @@
             @can('update', $form)
                 <a href="{{ route('overtime.edit', $form->id) }}"
                     class="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-700 shadow-sm transition-all hover:bg-amber-100 hover:border-amber-400">
-                    <i class='bx bx-edit text-base'></i>
+                    <x-bx-edit class="w-4 h-4" />
                     EDIT FORM
                 </a>
             @endcan
@@ -46,7 +46,7 @@
             @can('export', $form)
                 <a href="{{ route('overtime.export', $form->id) }}"
                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-800 focus:ring-2 focus:ring-slate-200">
-                    <i class='bx bx-export text-base'></i>
+                    <x-bx-export class="w-4 h-4" />
                     EXPORT EXCEL
                 </a>
             @endcan
@@ -55,7 +55,7 @@
                 <button type="button" wire:click="pushAll" wire:loading.attr="disabled"
                     wire:confirm="Push all pending details to JPayroll?"
                     class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:shadow-none">
-                    <i class='bx bx-cloud-upload text-lg'></i>
+                    <x-bx-cloud-upload class="w-5 h-5" />
                     PUSH TO PAYROLL
                 </button>
             @endif
@@ -68,7 +68,7 @@
         <div class="glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
             <div class="px-6 py-4 border-b border-slate-100/60 bg-white/50 flex items-center gap-3">
                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                    <i class='bx bx-info-circle text-lg'></i>
+                    <x-bx-info-circle class="w-5 h-5" />
                 </div>
                 <h2 class="text-sm font-extrabold text-slate-800 tracking-tight">General Information</h2>
             </div>
@@ -104,7 +104,7 @@
         <div class="glass-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50">
             <div class="px-6 py-4 border-b border-slate-100/60 bg-white/50 flex items-center gap-3">
                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                    <i class='bx bx-check-shield text-lg'></i>
+                    <x-bx-check-shield class="w-5 h-5" />
                 </div>
                 <h2 class="text-sm font-extrabold text-slate-800 tracking-tight">Approval Signature Timeline</h2>
             </div>
@@ -132,11 +132,11 @@
                                 {{ $step['status'] === 'pending' && !$step['is_current'] ? 'border-slate-200 bg-slate-50 text-slate-400' : '' }}
                             ">
                                     @if ($step['status'] === 'approved')
-                                        <i class='bx bx-check text-2xl'></i>
+                                        <x-bx-check class="w-6 h-6" />
                                     @elseif ($step['status'] === 'rejected')
-                                        <i class='bx bx-x text-2xl'></i>
+                                        <x-bx-x class="w-6 h-6" />
                                     @elseif ($step['is_current'])
-                                        <i class='bx bx-edit-alt text-xl'></i>
+                                        <x-bx-edit-alt class="w-5 h-5" />
                                     @else
                                         <span class="text-xs font-black">{{ $step['step_order'] }}</span>
                                     @endif
@@ -176,12 +176,12 @@
                                         <button type="button" wire:click="sign({{ $step['step_id'] }})"
                                             wire:loading.attr="disabled"
                                             class="inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 disabled:opacity-50 transition-all">
-                                            <i class='bx bx-check text-sm'></i> Sign
+                                            <x-bx-check class="w-4 h-4" /> Sign
                                         </button>
                                         <button type="button"
                                             x-on:click="rejectOpen = true; $wire.openRejectModal({{ $step['approval_id'] }})"
                                             class="inline-flex items-center gap-1 rounded-lg border-2 border-rose-200 bg-rose-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-600 shadow-sm hover:bg-rose-100 hover:border-rose-300 transition-all">
-                                            <i class='bx bx-x text-sm'></i> Reject
+                                            <x-bx-x class="w-4 h-4" /> Reject
                                         </button>
                                     </div>
                                 @endif
@@ -191,7 +191,7 @@
                         <div class="text-center w-full py-8">
                             <div
                                 class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 mb-3 border border-slate-100">
-                                <i class='bx bx-question-mark text-2xl'></i>
+                                <x-bx-question-mark class="w-6 h-6" />
                             </div>
                             <p class="text-sm font-bold text-slate-500">No approval flow is attached to this form.</p>
                         </div>
@@ -206,7 +206,7 @@
                 class="px-6 py-4 border-b border-slate-100/60 bg-white/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                        <i class='bx bx-spreadsheet text-lg'></i>
+                        <x-bx-spreadsheet class="w-5 h-5" />
                     </div>
                     <h2 class="text-sm font-extrabold text-slate-800 tracking-tight">
                         Overtime Details
@@ -223,18 +223,15 @@
                     @php $pending  = $form->details->whereNull('status')->count(); @endphp
                     @if ($approved)
                         <span
-                            class="rounded-lg border border-emerald-200/50 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm"><i
-                                class='bx bx-check'></i> {{ $approved }} Approved</span>
+                            class="rounded-lg border border-emerald-200/50 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 uppercase tracking-wider shadow-sm"><x-bx-check class="" /> {{ $approved }} Approved</span>
                     @endif
                     @if ($rejected)
                         <span
-                            class="rounded-lg border border-rose-200/50 bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 uppercase tracking-wider shadow-sm"><i
-                                class='bx bx-x'></i> {{ $rejected }} Rejected</span>
+                            class="rounded-lg border border-rose-200/50 bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 uppercase tracking-wider shadow-sm"><x-bx-x class="" /> {{ $rejected }} Rejected</span>
                     @endif
                     @if ($pending)
                         <span
-                            class="rounded-lg border border-amber-200/50 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 uppercase tracking-wider shadow-sm"><i
-                                class='bx bx-time-five'></i> {{ $pending }} Pending</span>
+                            class="rounded-lg border border-amber-200/50 bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 uppercase tracking-wider shadow-sm"><x-bx-time-five class="" /> {{ $pending }} Pending</span>
                     @endif
                 </div>
             </div>
@@ -325,16 +322,15 @@
                                         @if ($detail->status === 'Approved')
                                             <span
                                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm"
-                                                title="Approved"><i class='bx bx-check'></i></span>
+                                                title="Approved"><x-bx-check class="" /></span>
                                         @elseif ($detail->status === 'Rejected')
                                             <span
                                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm"
-                                                title="Rejected: {{ $detail->reason }}"><i
-                                                    class='bx bx-x'></i></span>
+                                                title="Rejected: {{ $detail->reason }}"><x-bx-x class="" /></span>
                                         @else
                                             <span
                                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-600 shadow-sm"
-                                                title="Pending"><i class='bx bx-time-five'></i></span>
+                                                title="Pending"><x-bx-time-five class="" /></span>
                                         @endif
                                     </td>
                                 @endif
@@ -347,12 +343,12 @@
                                                 <button type="button" wire:click="pushDetail({{ $detail->id }})"
                                                     wire:loading.attr="disabled" title="Approve & Push to JPayroll"
                                                     class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition disabled:opacity-50">
-                                                    <i class='bx bx-cloud-upload'></i>
+                                                    <x-bx-cloud-upload class="" />
                                                 </button>
                                                 <button type="button" wire:click="rejectDetail({{ $detail->id }})"
                                                     wire:loading.attr="disabled" title="Reject Manual"
                                                     class="flex h-7 w-7 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600 shadow-sm hover:bg-rose-100 transition disabled:opacity-50">
-                                                    <i class='bx bx-x'></i>
+                                                    <x-bx-x class="" />
                                                 </button>
                                             </div>
                                         @elseif ($detail->is_processed == 1)
@@ -364,7 +360,7 @@
                                                     wire:confirm="Remove this record from JPayroll? This will use Choice 3 (Delete)."
                                                     title="Un-push / Delete from JPayroll"
                                                     class="flex h-6 w-6 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition shadow-sm">
-                                                    <i class='bx bx-trash-alt'></i>
+                                                    <x-bx-trash-alt class="" />
                                                 </button>
                                             </div>
                                         @else
@@ -379,7 +375,7 @@
                                 <td colspan="12" class="px-6 py-12 text-center">
                                     <div
                                         class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 border border-slate-100 mb-3">
-                                        <i class='bx bx-spreadsheet text-2xl text-slate-400'></i>
+                                        <x-bx-spreadsheet class="w-6 h-6 text-slate-400" />
                                     </div>
                                     <p class="text-sm font-bold text-slate-500">No detail records found in this form.
                                     </p>
@@ -404,12 +400,12 @@
                     @click.stop>
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2 text-rose-600">
-                            <i class='bx bx-error-circle text-2xl'></i>
+                            <x-bx-error-circle class="w-6 h-6" />
                             <h3 class="text-base font-black tracking-tight">Reject Form Overtime</h3>
                         </div>
                         <button type="button" @click="rejectOpen = false"
                             class="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
-                            <i class='bx bx-x text-xl'></i>
+                            <x-bx-x class="w-5 h-5" />
                         </button>
                     </div>
 
@@ -433,7 +429,7 @@
                         <button type="button" wire:click="submitReject" wire:loading.attr="disabled"
                             @click="rejectOpen = false"
                             class="rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-rose-500/30 hover:bg-rose-700 transition-all disabled:opacity-50 inline-flex items-center gap-2">
-                            <i class='bx bx-check'></i> CONFIRM REJECT
+                            <x-bx-check class="" /> CONFIRM REJECT
                         </button>
                     </div>
                 </div>

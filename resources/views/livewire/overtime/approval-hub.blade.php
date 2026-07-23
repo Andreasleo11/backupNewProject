@@ -13,7 +13,7 @@
                 <!-- Title -->
                 <div class="flex items-center gap-4">
                     <div class="h-11 w-11 rounded-2xl bg-indigo-600 flex items-center justify-center flex-shrink-0">
-                        <i class='bx bxs-zap text-3xl text-white'></i>
+                        <x-bxs-zap class="w-8 h-8 text-white" />
                     </div>
                     <div>
                         <h1 class="text-2xl font-semibold text-slate-900">Approval Hub</h1>
@@ -27,12 +27,12 @@
                             wire:click="expandAll" 
                             wire:loading.attr="disabled"
                             class="px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-2 text-sm transition-all">
-                        <i class='bx bx-expand-alt'></i>
+                        <x-bx-expand-alt class="" />
                         Expand All
                     </button>
                     <a href="{{ route('overtime.index') }}"
                     class="px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-2 text-sm transition-all">
-                        <i class='bx bx-arrow-back'></i>
+                        <x-bx-arrow-back class="" />
                         Back
                     </a>
                 </div>
@@ -41,28 +41,28 @@
             <!-- Minimal Summary Metrics -->
             <div class="mt-6 flex flex-wrap gap-x-10 gap-y-5 text-sm">
                 <div class="flex items-center gap-3">
-                    <span class="text-blue-600"><i class='bx bx-file'></i></span>
+                    <span class="text-blue-600"><x-bx-file class="" /></span>
                     <div>
                         <span class="font-semibold text-slate-900">{{ $totalForms }}</span>
                         <span class="text-slate-500 ml-1">forms</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-green-600"><i class='bx bx-user'></i></span>
+                    <span class="text-green-600"><x-bx-user class="" /></span>
                     <div>
                         <span class="font-semibold text-slate-900">{{ $totalEmployees }}</span>
                         <span class="text-slate-500 ml-1">employees</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-amber-600"><i class='bx bx-time'></i></span>
+                    <span class="text-amber-600"><x-bx-time class="" /></span>
                     <div>
                         <span class="font-semibold text-slate-900">{{ round($totalHours, 1) }}h</span>
                         <span class="text-slate-500 ml-1">total hours</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-purple-600"><i class='bx bx-bar-chart'></i></span>
+                    <span class="text-purple-600"><x-bx-bar-chart class="" /></span>
                     <div>
                         <span class="font-semibold text-slate-900">{{ $avgHours }}h</span>
                         <span class="text-slate-500 ml-1">avg/person</span>
@@ -81,8 +81,8 @@
                     wire:loading.attr="disabled"
                     :class="{ 'bg-slate-900 text-white shadow': $wire.groupingMode === 'department' }"
                     class="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all relative">
-                <i class='bx bx-building' wire:loading.remove wire:target="setGroupingModeDepartment"></i>
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="setGroupingModeDepartment"></i>
+                <x-bx-building class="" wire:loading.remove wire:target="setGroupingModeDepartment" />
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="setGroupingModeDepartment" />
                 <span wire:loading.remove wire:target="setGroupingModeDepartment">Department</span>
                 <span wire:loading wire:target="setGroupingModeDepartment">Loading...</span>
             </button>
@@ -90,8 +90,8 @@
                     wire:loading.attr="disabled"
                     :class="{ 'bg-slate-900 text-white shadow': $wire.groupingMode === 'creator' }"
                     class="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all relative">
-                <i class='bx bx-user' wire:loading.remove wire:target="setGroupingModeCreator"></i>
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="setGroupingModeCreator"></i>
+                <x-bx-user class="" wire:loading.remove wire:target="setGroupingModeCreator" />
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="setGroupingModeCreator" />
                 <span wire:loading.remove wire:target="setGroupingModeCreator">Creator</span>
                 <span wire:loading wire:target="setGroupingModeCreator">Loading...</span>
             </button>
@@ -99,8 +99,8 @@
                     wire:loading.attr="disabled"
                     :class="{ 'bg-slate-900 text-white shadow': $wire.groupingMode === 'branch' }"
                     class="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all relative">
-                <i class='bx bx-map-pin' wire:loading.remove wire:target="setGroupingModeBranch"></i>
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="setGroupingModeBranch"></i>
+                <x-bx-map-pin class="" wire:loading.remove wire:target="setGroupingModeBranch" />
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="setGroupingModeBranch" />
                 <span wire:loading.remove wire:target="setGroupingModeBranch">Branch</span>
                 <span wire:loading wire:target="setGroupingModeBranch">Loading...</span>
             </button>
@@ -108,7 +108,7 @@
 
         <!-- Minimal Search -->
         <div class="flex-1 relative w-full">
-            <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'></i>
+            <x-bx-search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
                 wire:model.live="search" 
                 placeholder="Search name or NIK..." 
@@ -135,7 +135,7 @@
                             <div class="p-8">
                                 <div class="text-center mb-6">
                                     <div class="h-16 w-16 bg-indigo-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                        <i class='bx bxs-layer text-3xl text-indigo-600'></i>
+                                        <x-bxs-layer class="w-8 h-8 text-indigo-600" />
                                     </div>
                                     <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight" id="grouping-modal-title">Choose Your View</h2>
                                     <p class="text-slate-600 mt-2">Select how you want to organize overtime requests for review</p>
@@ -145,10 +145,10 @@
                                         wire:loading.attr="disabled"
                                         class="group p-6 bg-white border-2 border-slate-200 hover:border-blue-300 rounded-2xl transition-all hover:shadow-lg text-center relative">
                                         <div wire:loading.remove wire:target="setGroupingModeDepartment" class="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-colors">
-                                            <i class='bx bx-building text-2xl text-blue-600'></i>
+                                            <x-bx-building class="w-6 h-6 text-blue-600" />
                                         </div>
                                         <div wire:loading wire:target="setGroupingModeDepartment" class="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class='bx bx-loader-alt animate-spin text-2xl text-blue-600'></i>
+                                            <x-bx-loader-alt class="animate-spin w-6 h-6 text-blue-600" />
                                         </div>
                                         <h3 wire:loading.remove wire:target="setGroupingModeDepartment" class="font-bold text-slate-900 mb-2">By Department</h3>
                                         <h3 wire:loading wire:target="setGroupingModeDepartment" class="font-bold text-slate-900 mb-2">Loading...</h3>
@@ -159,10 +159,10 @@
                                         wire:loading.attr="disabled"
                                         class="group p-6 bg-white border-2 border-slate-200 hover:border-gray-300 rounded-2xl transition-all hover:shadow-lg text-center relative">
                                         <div wire:loading.remove wire:target="setGroupingModeCreator" class="h-12 w-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-200 transition-colors">
-                                            <i class='bx bx-user text-2xl text-gray-600'></i>
+                                            <x-bx-user class="w-6 h-6 text-gray-600" />
                                         </div>
                                         <div wire:loading wire:target="setGroupingModeCreator" class="h-12 w-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class='bx bx-loader-alt animate-spin text-2xl text-gray-600'></i>
+                                            <x-bx-loader-alt class="animate-spin w-6 h-6 text-gray-600" />
                                         </div>
                                         <h3 wire:loading.remove wire:target="setGroupingModeCreator" class="font-bold text-slate-900 mb-2">By Creator</h3>
                                         <h3 wire:loading wire:target="setGroupingModeCreator" class="font-bold text-slate-900 mb-2">Loading...</h3>
@@ -173,10 +173,10 @@
                                         wire:loading.attr="disabled"
                                         class="group p-6 bg-white border-2 border-slate-200 hover:border-violet-300 rounded-2xl transition-all hover:shadow-lg text-center relative">
                                         <div wire:loading.remove wire:target="setGroupingModeBranch" class="h-12 w-12 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-violet-200 transition-colors">
-                                            <i class='bx bx-map-pin text-2xl text-violet-600'></i>
+                                            <x-bx-map-pin class="w-6 h-6 text-violet-600" />
                                         </div>
                                         <div wire:loading wire:target="setGroupingModeBranch" class="h-12 w-12 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class='bx bx-loader-alt animate-spin text-2xl text-violet-600'></i>
+                                            <x-bx-loader-alt class="animate-spin w-6 h-6 text-violet-600" />
                                         </div>
                                         <h3 wire:loading.remove wire:target="setGroupingModeBranch" class="font-bold text-slate-900 mb-2">By Branch</h3>
                                         <h3 wire:loading wire:target="setGroupingModeBranch" class="font-bold text-slate-900 mb-2">Loading...</h3>
@@ -210,7 +210,7 @@
                             <div class="p-8">
                                 <div class="text-center mb-6">
                                     <div class="h-16 w-16 bg-indigo-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                        <i class='bx bxs-zap text-3xl text-indigo-600'></i>
+                                        <x-bxs-zap class="w-8 h-8 text-indigo-600" />
                                     </div>
                                     <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight" id="onboarding-modal-title">Welcome to Approval Hub</h2>
                                     <p class="text-slate-600 mt-2">Your streamlined tool for managing overtime approvals</p>
@@ -218,7 +218,7 @@
                                 <div class="space-y-4 mb-6">
                                     <div class="flex items-start gap-4">
                                         <div class="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class='bx bx-group text-blue-600'></i>
+                                            <x-bx-group class="text-blue-600" />
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-900">Group & Review</h3>
@@ -228,7 +228,7 @@
                                     </div>
                                     <div class="flex items-start gap-4">
                                         <div class="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class='bx bx-check-circle text-green-600'></i>
+                                            <x-bx-check-circle class="text-green-600" />
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-900">Quick Approve</h3>
@@ -238,7 +238,7 @@
                                     </div>
                                     <div class="flex items-start gap-4">
                                         <div class="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <i class='bx bx-search text-purple-600'></i>
+                                            <x-bx-search class="text-purple-600" />
                                         </div>
                                         <div>
                                             <h3 class="font-bold text-slate-900">Search & Filter</h3>
@@ -277,7 +277,7 @@
                         <div class="p-6">
                             <div class="text-center mb-4">
                                 <div class="h-12 w-12 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                    <i class='bx bx-x text-2xl text-rose-600'></i>
+                                    <x-bx-x class="w-6 h-6 text-rose-600" />
                                 </div>
                                 <h2 class="text-lg font-black text-slate-900" id="reject-modal-title">Rejection Reason</h2>
                                 <p class="text-sm text-slate-600">Please provide a reason for rejecting the selected requests.</p>
@@ -304,7 +304,7 @@
     @if ($groups->isEmpty())
         <div class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-20 text-center">
             <div class="h-24 w-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-200">
-                <i class='bx bx-check-double text-6xl'></i>
+                <x-bx-check-double class="w-14 h-14" />
             </div>
             <h3 class="text-xl font-black text-slate-400 uppercase tracking-tight">Zero Pending Tasks</h3>
             <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest mt-2">All your assigned flows are
@@ -315,7 +315,7 @@
         <div wire:loading wire:target="toggleGroup,setGroupingModeDepartment,setGroupingModeCreator,setGroupingModeBranch"
              class="fixed inset-0 bg-slate-900/10 z-50 flex items-center justify-center" wire:loading.class="opacity-100" style="opacity: 0; transition: opacity 0.2s;">
             <div class="bg-white rounded-2xl shadow-xl p-6 flex items-center gap-3">
-                <i class='bx bx-loader-alt animate-spin text-2xl text-indigo-600'></i>
+                <x-bx-loader-alt class="animate-spin w-6 h-6 text-indigo-600" />
                 <span class="text-slate-700 font-medium">Loading groups...</span>
             </div>
         </div>
@@ -334,7 +334,7 @@
                                 wire:click="toggleGroup('dept-{{ $deptId }}')"
                                 wire:loading.class="opacity-75">
                                 <div class="flex items-center gap-6">
-                                    <i class='bx bx-building text-2xl text-blue-600'></i>
+                                    <x-bx-building class="w-6 h-6 text-blue-600" />
                                     <div class="flex flex-col">
                                         <span
                                             class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] leading-none mb-1">Department</span>
@@ -371,8 +371,7 @@
                                         wire:click="toggleBulkSelection('department', '{{ $deptId }}')"
                                         wire:key="bulk-dept-{{ $deptId }}-{{ $bulkSelectionKey }}"
                                         class="h-5 w-5 rounded-lg border-2 border-slate-200 text-indigo-600">
-                                    <i
-                                        class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$deptId}"]) ? 'rotate-180' : '' }}'></i>
+                                    <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$deptId}"]) ? "rotate-180' : '' }}' />
                                 </div>
                             </div>
 
@@ -388,7 +387,7 @@
                                                 wire:click="toggleGroup('user-{{ $deptId }}-{{ $userId }}')"
                                                 wire:loading.class="opacity-75">
                                                 <div class="flex items-center gap-6">
-                                                    <i class='bx bx-user text-xl text-gray-600'></i>
+                                                    <x-bx-user class="w-5 h-5 text-gray-600" />
                                                     <div class="flex flex-col">
                                                         <span
                                                             class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Creator</span>
@@ -420,8 +419,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <i
-                                                    class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$deptId}-{$userId}"]) ? 'rotate-180' : '' }}'></i>
+                                                <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$deptId}-{$userId}"]) ? "rotate-180' : '' }}' />
                                             </div>
 
                                             {{-- EXPANDED: DATES --}}
@@ -470,7 +468,7 @@
                                 wire:click="toggleGroup('user-{{ $userId }}')"
                                 wire:loading.class="opacity-75">
                                 <div class="flex items-center gap-6">
-                                    <i class='bx bx-user text-2xl text-gray-600'></i>
+                                    <x-bx-user class="w-6 h-6 text-gray-600" />
                                     <div class="flex flex-col">
                                         <span
                                             class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Creator</span>
@@ -507,8 +505,7 @@
                                         wire:click="toggleBulkSelection('creator', '{{ $userId }}')"
                                         wire:key="bulk-creator-{{ $userId }}-{{ $bulkSelectionKey }}"
                                         class="h-5 w-5 rounded-lg border-2 border-slate-200 text-indigo-600">
-                                    <i
-                                        class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$userId}"]) ? 'rotate-180' : '' }}'></i>
+                                    <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$userId}"]) ? "rotate-180' : '' }}' />
                                 </div>
                             </div>
 
@@ -524,7 +521,7 @@
                                                 wire:click="toggleGroup('dept-{{ $userId }}-{{ $deptId }}')"
                                                 wire:loading.class="opacity-75">
                                                 <div class="flex items-center gap-6">
-                                                    <i class='bx bx-building text-xl text-blue-600'></i>
+                                                    <x-bx-building class="w-5 h-5 text-blue-600" />
                                                     <div class="flex flex-col">
                                                         <span
                                                             class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] leading-none mb-1">Department</span>
@@ -556,8 +553,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <i
-                                                    class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$userId}-{$deptId}"]) ? 'rotate-180' : '' }}'></i>
+                                                <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$userId}-{$deptId}"]) ? "rotate-180' : '' }}' />
                                             </div>
 
                                             {{-- EXPANDED: DATES --}}
@@ -606,7 +602,7 @@
                                 wire:click="toggleGroup('branch-{{ $branch }}')"
                                 wire:loading.class="opacity-75">
                                 <div class="flex items-center gap-6">
-                                    <i class='bx bx-map-pin text-2xl text-violet-600'></i>
+                                    <x-bx-map-pin class="w-6 h-6 text-violet-600" />
                                     <div class="flex flex-col">
                                         <span
                                             class="text-[10px] font-black text-violet-400 uppercase tracking-[0.2em] leading-none mb-1">Branch</span>
@@ -643,8 +639,7 @@
                                         wire:click="toggleBulkSelection('branch', '{{ $branch }}')"
                                         wire:key="bulk-branch-{{ $branch }}-{{ $bulkSelectionKey }}"
                                         class="h-5 w-5 rounded-lg border-2 border-slate-200 text-indigo-600">
-                                    <i
-                                        class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["branch-{$branch}"]) ? 'rotate-180' : '' }}'></i>
+                                    <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["branch-{$branch}"]) ? "rotate-180' : '' }}' />
                                 </div>
                             </div>
 
@@ -660,7 +655,7 @@
                                                 wire:click="toggleGroup('dept-{{ $branch }}-{{ $deptId }}')"
                                                 wire:loading.class="opacity-75">
                                                 <div class="flex items-center gap-6">
-                                                    <i class='bx bx-building text-xl text-blue-600'></i>
+                                                    <x-bx-building class="w-5 h-5 text-blue-600" />
                                                     <div class="flex flex-col">
                                                         <span
                                                             class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] leading-none mb-1">Department</span>
@@ -692,8 +687,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <i
-                                                    class='bx bx-chevron-down text-xl text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$branch}-{$deptId}"]) ? 'rotate-180' : '' }}'></i>
+                                                <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["dept-{$branch}-{$deptId}"]) ? "rotate-180' : '' }}' />
                                             </div>
 
                                             {{-- EXPANDED: USERS --}}
@@ -709,7 +703,7 @@
                                                                 wire:click="toggleGroup('user-{{ $branch }}-{{ $deptId }}-{{ $userId }}')"
                                                                 wire:loading.class="opacity-75">
                                                                 <div class="flex items-center gap-4">
-                                                                    <i class='bx bx-user text-lg text-gray-600'></i>
+                                                                    <x-bx-user class="w-5 h-5 text-gray-600" />
                                                                     <div class="flex flex-col">
                                                                         <span
                                                                             class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Creator</span>
@@ -726,8 +720,7 @@
                                                                             {{ $userData['total_forms'] }} forms</span>
                                                                     </div>
                                                                 </div>
-                                                                <i
-                                                                    class='bx bx-chevron-down text-lg text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$branch}-{$deptId}-{$userId}"]) ? 'rotate-180' : '' }}'></i>
+                                                                <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform duration-300 {{ isset($expandedGroups["user-{$branch}-{$deptId}-{$userId}"]) ? "rotate-180' : '' }}' />
                                                             </div>
 
                                                             {{-- EXPANDED: DATES --}}
@@ -791,7 +784,7 @@
             <div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-3" x-cloak>
                 <!-- Contextual Message -->
                 <div class="bg-slate-900 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium">
-                    <i class='bx bx-info-circle mr-2'></i>
+                    <x-bx-info-circle class="mr-2" />
                     {{ $this->bulkSelectionInfo['message'] }}
                 </div>
 
@@ -804,7 +797,7 @@
                         wire:loading.attr="disabled"
                         wire:confirm="Approve all selected overtime requests?"
                         class="group flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-95">
-                        <i class='bx bx-check text-2xl'></i>
+                        <x-bx-check class="w-6 h-6" />
                         <span>Approve Selected</span>
                         <span class="bg-emerald-500/30 text-xs px-2.5 py-0.5 rounded-full font-mono">
                             {{ count($selectedPackKeys) }}
@@ -816,7 +809,7 @@
                         type="button"
                         wire:click="$set('showRejectModal', true)"
                         class="group flex items-center gap-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-rose-500/30 transition-all active:scale-95">
-                        <i class='bx bx-x text-2xl'></i>
+                        <x-bx-x class="w-6 h-6" />
                         <span>Reject Selected</span>
                     </button>
                 </div>
@@ -844,7 +837,7 @@
                     <button type="button"
                             @click="open = false; $wire.set('showInsightModal', false)"
                             class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
-                        <i class='bx bx-x text-xl'></i>
+                        <x-bx-x class="w-5 h-5" />
                     </button>
                 </div>
 
@@ -907,7 +900,7 @@
                         @endif
                     @else
                         <div class="text-center py-8 text-slate-500">
-                            <i class='bx bx-loader-alt animate-spin text-2xl mb-2'></i>
+                            <x-bx-loader-alt class="animate-spin w-6 h-6 mb-2" />
                             <p>Loading insights...</p>
                         </div>
                     @endif

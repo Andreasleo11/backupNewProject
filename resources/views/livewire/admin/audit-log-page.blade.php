@@ -3,12 +3,12 @@
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900 text-white p-6 rounded-2xl shadow-xl border border-slate-800 relative overflow-hidden">
         <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-            <i class="bx bx-shield-quarter text-9xl"></i>
+            <x-bx-shield-quarter class="text-9xl" />
         </div>
         <div class="relative z-10 space-y-1">
             <div class="flex items-center gap-2">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    <i class="bx bx-lock-alt mr-1"></i> Super User Console
+                    <x-bx-lock-alt class="mr-1" /> Super User Console
                 </span>
                 <span class="text-slate-400 text-xs">• Real-Time Forensics</span>
             </div>
@@ -23,11 +23,11 @@
         <div class="relative z-10 flex items-center gap-3">
             <button wire:click="resetFilters" 
                 class="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all shadow-sm">
-                <i class="bx bx-reset text-base"></i> Reset Filters
+                <x-bx-reset class="w-4 h-4" /> Reset Filters
             </button>
             <button wire:click="$refresh" 
                 class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30">
-                <i class="bx bx-refresh text-base"></i> Refresh Trail
+                <x-bx-refresh class="w-4 h-4" /> Refresh Trail
             </button>
         </div>
     </div>
@@ -40,11 +40,11 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Recorded Logs</p>
                 <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($totalLogs) }}</h3>
                 <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-                    <i class="bx bx-data text-indigo-500"></i> Full audit persistence
+                    <x-bx-data class="text-indigo-500" /> Full audit persistence
                 </p>
             </div>
             <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold shrink-0">
-                <i class="bx bx-list-ul"></i>
+                <x-bx-list-ul class="" />
             </div>
         </div>
 
@@ -54,11 +54,11 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Today's Activity</p>
                 <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($todayLogs) }}</h3>
                 <p class="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-                    <i class="bx bx-time text-emerald-500"></i> Since 00:00 today
+                    <x-bx-time class="text-emerald-500" /> Since 00:00 today
                 </p>
             </div>
             <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold shrink-0">
-                <i class="bx bx-pulse"></i>
+                <x-bx-pulse class="" />
             </div>
         </div>
 
@@ -68,11 +68,11 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Deletions & Purges</p>
                 <h3 class="text-2xl font-extrabold text-rose-600 mt-1">{{ number_format($deletedLogs) }}</h3>
                 <p class="text-[11px] text-rose-500 font-semibold mt-1 flex items-center gap-1">
-                    <i class="bx bx-error-circle"></i> High importance events
+                    <x-bx-error-circle class="" /> High importance events
                 </p>
             </div>
             <div class="h-12 w-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl font-bold shrink-0">
-                <i class="bx bx-trash text-2xl"></i>
+                <x-bx-trash class="w-6 h-6" />
             </div>
         </div>
 
@@ -82,11 +82,11 @@
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Actors (24h)</p>
                 <h3 class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($activeCausers) }}</h3>
                 <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-                    <i class="bx bx-user-check text-blue-500"></i> Distinct user actions
+                    <x-bx-user-check class="text-blue-500" /> Distinct user actions
                 </p>
             </div>
             <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl font-bold shrink-0">
-                <i class="bx bx-group"></i>
+                <x-bx-group class="" />
             </div>
         </div>
     </div>
@@ -97,14 +97,14 @@
             <!-- Search Keyword Input -->
             <div class="lg:col-span-2 relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <i class="bx bx-search text-lg"></i>
+                    <x-bx-search class="w-5 h-5" />
                 </div>
                 <input wire:model.live.debounce.300ms="search" type="search"
                     class="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 text-sm focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all placeholder:text-slate-400"
                     placeholder="Search by action, user name, email, or subject ID..." />
                 @if($search)
                     <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
-                        <i class="bx bx-x text-lg"></i>
+                        <x-bx-x class="w-5 h-5" />
                     </button>
                 @endif
             </div>
@@ -160,25 +160,25 @@
             @if($search)
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
                     Search: "{{ $search }}"
-                    <button wire:click="$set('search', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                    <button wire:click="$set('search', '')" class="hover:text-indigo-900"><x-bx-x class="" /></button>
                 </span>
             @endif
             @if($eventFilter)
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
                     Event: {{ ucfirst($eventFilter) }}
-                    <button wire:click="$set('eventFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                    <button wire:click="$set('eventFilter', '')" class="hover:text-indigo-900"><x-bx-x class="" /></button>
                 </span>
             @endif
             @if($subjectFilter)
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
                     Subject: {{ class_basename($subjectFilter) }}
-                    <button wire:click="$set('subjectFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                    <button wire:click="$set('subjectFilter', '')" class="hover:text-indigo-900"><x-bx-x class="" /></button>
                 </span>
             @endif
             @if($dateFilter)
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium">
                     Date: {{ ucfirst($dateFilter) }}
-                    <button wire:click="$set('dateFilter', '')" class="hover:text-indigo-900"><i class="bx bx-x"></i></button>
+                    <button wire:click="$set('dateFilter', '')" class="hover:text-indigo-900"><x-bx-x class="" /></button>
                 </span>
             @endif
             <button wire:click="resetFilters" class="text-rose-600 hover:underline font-semibold ml-2 text-xs">Clear All</button>
@@ -226,7 +226,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-bold text-slate-900">{{ $activity->created_at->format('M d, Y') }}</div>
                             <div class="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                                <i class="bx bx-time text-slate-400"></i> {{ $activity->created_at->format('H:i:s') }}
+                                <x-bx-time class="text-slate-400" /> {{ $activity->created_at->format('H:i:s') }}
                                 <span class="text-[10px] text-slate-400 font-sans">({{ $activity->created_at->diffForHumans() }})</span>
                             </div>
                         </td>
@@ -246,7 +246,7 @@
                             @else
                                 <div class="flex items-center gap-3">
                                     <div class="h-9 w-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-base shrink-0 border border-slate-200">
-                                        <i class="bx bx-bot"></i>
+                                        <x-bx-bot class="" />
                                     </div>
                                     <div>
                                         <div class="text-sm font-bold text-slate-900">System Engine</div>
@@ -287,7 +287,7 @@
                         <td class="px-6 py-4">
                             @if($activity->subject_type)
                                 <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-semibold text-xs border border-slate-200">
-                                    <i class="bx bx-cube text-slate-500"></i>
+                                    <x-bx-cube class="text-slate-500" />
                                     {{ class_basename($activity->subject_type) }}
                                 </div>
                                 <div class="text-[11px] font-mono text-slate-500 mt-1">ID: #{{ $activity->subject_id }}</div>
@@ -300,7 +300,7 @@
                         <td class="px-6 py-4 text-right">
                             <button wire:click="inspectActivity({{ $activity->id }})"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
-                                <i class="bx bx-search-alt text-sm"></i>
+                                <x-bx-search-alt class="w-4 h-4" />
                                 Inspect Changes
                             </button>
                         </td>
@@ -309,12 +309,12 @@
                     <tr>
                         <td colspan="5" class="px-6 py-16 text-center">
                             <div class="h-16 w-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 border border-slate-200">
-                                <i class="bx bx-shield-x"></i>
+                                <x-bx-shield-x class="" />
                             </div>
                             <h3 class="text-lg font-bold text-slate-800">No matching audit logs found</h3>
                             <p class="text-slate-500 text-sm mt-1 max-w-sm mx-auto">There are no system audit records matching your specified search and filter criteria.</p>
                             <button wire:click="resetFilters" class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all">
-                                <i class="bx bx-reset"></i> Clear All Filters
+                                <x-bx-reset class="" /> Clear All Filters
                             </button>
                         </td>
                     </tr>
@@ -343,7 +343,7 @@
                 <div class="bg-slate-900 text-white px-6 py-5 flex items-center justify-between relative overflow-hidden">
                     <div class="flex items-center gap-3 relative z-10">
                         <div class="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-xl font-bold">
-                            <i class="bx bx-microscope"></i>
+                            <x-bx-analyse class="w-5 h-5" />
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
@@ -361,7 +361,7 @@
                     </div>
                     
                     <button wire:click="closeInspection" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-all">
-                        <i class="bx bx-x text-2xl"></i>
+                        <x-bx-x class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -373,7 +373,7 @@
                         <div>
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Actor / Triggered By</span>
                             <div class="mt-1 flex items-center gap-2">
-                                <i class="bx bx-user-circle text-xl text-indigo-600"></i>
+                                <x-bx-user-circle class="w-5 h-5 text-indigo-600" />
                                 <div>
                                     <div class="text-sm font-bold text-slate-900">
                                         {{ $selectedActivity->causer->name ?? 'System Engine' }}
@@ -388,7 +388,7 @@
                         <div>
                             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Subject</span>
                             <div class="mt-1 flex items-center gap-2">
-                                <i class="bx bx-cube text-xl text-purple-600"></i>
+                                <x-bx-cube class="w-5 h-5 text-purple-600" />
                                 <div>
                                     <div class="text-sm font-bold text-slate-900">
                                         {{ $selectedActivity->subject_type ? class_basename($selectedActivity->subject_type) : 'None' }}
@@ -414,7 +414,7 @@
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
                             <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                                <i class="bx bx-git-compare text-indigo-600 text-base"></i> Attribute Modification Comparison
+                                <x-bx-git-compare class="text-indigo-600 w-4 h-4" /> Attribute Modification Comparison
                             </h4>
                             <span class="text-[10px] text-slate-400 font-mono">{{ count($parsedDiff) }} fields affected</span>
                         </div>
@@ -462,11 +462,12 @@
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                <i class="bx bx-code-alt text-slate-400 text-base"></i> Full Raw Properties Payload (JSON)
+                                <x-bx-code-alt class="text-slate-400 w-4 h-4" /> Full Raw Properties Payload (JSON)
                             </span>
                             <button @click="navigator.clipboard.writeText(JSON.stringify({{ json_encode($selectedActivity->properties) }}, null, 2)); copied = true; setTimeout(() => copied = false, 2000)"
                                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">
-                                <i class="bx" :class="copied ? 'bx-check text-emerald-600' : 'bx-copy'"></i>
+                                <x-bx-check class="w-4 h-4 text-emerald-600" x-show="copied" x-cloak />
+                                <x-bx-copy class="w-4 h-4 text-slate-500" x-show="!copied" x-cloak />
                                 <span x-text="copied ? 'Copied!' : 'Copy JSON'"></span>
                             </button>
                         </div>

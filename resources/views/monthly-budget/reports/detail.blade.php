@@ -60,10 +60,10 @@
                             <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-medium text-slate-400">
                                 <li><a href="{{ route('home') }}"
                                         class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
-                                <li><i class="bx bx-chevron-right"></i></li>
+                                <li><x-bx-chevron-right class="" /></li>
                                 <li><a href="{{ route('monthly-budget-reports.index') }}"
                                         class="hover:text-indigo-600 transition-colors">Budget Reports</a></li>
-                                <li><i class="bx bx-chevron-right"></i></li>
+                                <li><x-bx-chevron-right class="" /></li>
                                 <li class="text-slate-600">Detail</li>
                             </ol>
                         </nav>
@@ -71,7 +71,7 @@
                         <div class="flex items-center gap-3">
                             <div
                                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-                                <i class="bx bx-receipt text-white text-2xl"></i>
+                                <x-bx-receipt class="text-white w-6 h-6" />
                             </div>
                             <div>
                                 <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
@@ -100,7 +100,7 @@
                         @if ($isCreator && $isDraft)
                             <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
                                 class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-white shadow-xl shadow-amber-900/10 transition-all hover:bg-amber-600 hover:scale-[1.02] active:scale-95">
-                                <i class="bx bx-edit-alt text-base"></i>
+                                <x-bx-edit-alt class="w-4 h-4" />
                                 Edit Report
                             </a>
                         @endif
@@ -116,7 +116,7 @@
                         <p class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-1">Total Budgeted</p>
                         <h4 class="text-2xl font-black text-slate-800">@currency($totalAmount)</h4>
                         <div class="mt-4 flex items-center gap-2 text-slate-400">
-                            <i class="bx bx-calculator text-sm"></i>
+                            <x-bx-calculator class="w-4 h-4" />
                             <span class="text-[10px] font-bold uppercase tracking-widest">Sum of all entries</span>
                         </div>
                     </div>
@@ -129,7 +129,7 @@
                         <h4 class="text-2xl font-black text-slate-800">{{ $report->details->count() }} <span
                                 class="text-sm text-slate-400 font-bold uppercase tracking-widest">Entries</span></h4>
                         <div class="mt-4 flex items-center gap-2 text-slate-400">
-                            <i class="bx bx-list-check text-sm"></i>
+                            <x-bx-list-check class="w-4 h-4" />
                             <span class="text-[10px] font-bold uppercase tracking-widest">Detailed breakdown</span>
                         </div>
                     </div>
@@ -207,7 +207,7 @@
                                         <tr>
                                             <td colspan="{{ $isMoulding ? 7 : 5 }}" class="px-4 py-12 text-center">
                                                 <div class="flex flex-col items-center gap-2">
-                                                    <i class="bx bx-receipt text-3xl text-slate-200"></i>
+                                                    <x-bx-receipt class="w-8 h-8 text-slate-200" />
                                                     <span
                                                         class="text-xs font-bold text-slate-400 uppercase tracking-widest">No
                                                         entries found for this report.</span>
@@ -246,7 +246,7 @@
                         </div>
                         <h3
                             class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="bx bx-pen text-indigo-500"></i> Local Draft
+                            <x-bx-pen class="text-indigo-500" /> Local Draft
                         </h3>
                         <p class="text-xs text-slate-500 font-medium leading-relaxed mb-6">
                             This report is currently in <span class="text-indigo-600 font-black">Draft</span> mode. It is
@@ -256,7 +256,7 @@
                             @csrf
                             <button type="submit"
                                 class="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 active:scale-95">
-                                <i class="bx bx-paper-plane text-base"></i> Sign & Submit
+                                <x-bx-paper-plane class="w-4 h-4" /> Sign & Submit
                             </button>
                         </form>
                     </div>
@@ -269,12 +269,12 @@
                         </div>
                         <h3
                             class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-6 flex items-center gap-2">
-                            <i class="bx bx-bolt-circle text-amber-500"></i> Review Portal
+                            <x-bx-bolt-circle class="text-amber-500" /> Review Portal
                         </h3>
                         <div class="space-y-4">
                             <button type="button" @click="$dispatch('open-approve-modal')"
                                 class="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-1 active:scale-95">
-                                <i class="bx bx-check-double text-base"></i> Approve Report
+                                <x-bx-check-double class="w-4 h-4" /> Approve Report
                             </button>
 
                             <div class="grid grid-cols-2 gap-3 pt-2">
@@ -294,7 +294,7 @@
                 {{-- Workflow History --}}
                 <div class="glass-card p-8 premium-shadow">
                     <h3 class="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-8">
-                        <i class="bx bx-history text-indigo-500 text-xl"></i> Approval Trail
+                        <x-bx-history class="text-indigo-500 w-5 h-5" /> Approval Trail
                     </h3>
                     <div class="relative px-2">
                         @include('partials.workflow-timeline', ['record' => $report])
@@ -304,7 +304,7 @@
                 {{-- Activities --}}
                 <div class="glass-card p-8 premium-shadow">
                     <h3 class="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-8">
-                        <i class="bx bx-list-ul text-indigo-500 text-xl"></i> Recent Activities
+                        <x-bx-list-ul class="text-indigo-500 w-5 h-5" /> Recent Activities
                     </h3>
                     <div class="space-y-4">
                         @forelse($report->combined_activities->take(5) as $activity)

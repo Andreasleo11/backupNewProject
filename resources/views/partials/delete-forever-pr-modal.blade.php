@@ -40,7 +40,7 @@
                             class="bg-gradient-to-r from-rose-600 to-rose-700 px-5 py-6 flex items-center justify-between text-white">
                             <div class="flex items-center gap-3">
                                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-inner">
-                                    <i class="bx bxs-skull text-2xl"></i>
+                                    <x-bxs-skull class="w-6 h-6" />
                                 </div>
                                 <div>
                                     <h5 class="font-black uppercase tracking-widest text-sm">Critical Danger</h5>
@@ -49,14 +49,14 @@
                             </div>
                             <button type="button" @click="show = false"
                                 class="text-white/60 hover:text-white transition-colors">
-                                <i class="bx bx-x text-3xl"></i>
+                                <x-bx-x class="w-8 h-8" />
                             </button>
                         </div>
 
                         <div class="p-6 bg-white relative">
                             <div class="flex flex-col items-center text-center mb-6">
                                 <div class="h-16 w-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 mb-4 ring-8 ring-rose-50/50">
-                                    <i class="bx bx-trash text-4xl animate-bounce"></i>
+                                    <x-bx-trash class="w-9 h-9 animate-bounce" />
                                 </div>
                                 <h3 class="text-lg font-black text-slate-800">Destroy Record Permanently?</h3>
                                 <p class="text-xs text-slate-500 mt-2 leading-relaxed">
@@ -67,7 +67,7 @@
 
                             <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 mb-6">
                                 <p class="text-[10px] font-black text-rose-700 uppercase tracking-widest flex items-center gap-2 mb-1">
-                                    <i class="bx bx-error"></i> Warning
+                                    <x-bx-error class="" /> Warning
                                 </p>
                                 <p class="text-[11px] text-rose-600 font-medium italic">
                                     "Once confirmed, there is no technical way to recover this data. Please ensure you have authorization for this purge."
@@ -85,7 +85,7 @@
                                 wire:loading.attr="disabled"
                                 wire:target="deleteForeverPurchaseRequest"
                                 class="flex-1 bg-rose-600 hover:bg-rose-700 hover:shadow-xl hover:shadow-rose-300/50 text-white border-0 rounded-xl text-[10px] font-black uppercase tracking-widest py-3 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
-                                <i class="bx bx-trash" wire:loading.class="bx-spin" wire:target="deleteForeverPurchaseRequest"></i>
+                                <x-bx-trash class="w-4 h-4" wire:loading.class="animate-spin" wire:target="deleteForeverPurchaseRequest" />
                                 <span wire:loading.remove wire:target="deleteForeverPurchaseRequest">Confirm Purge</span>
                                 <span wire:loading wire:target="deleteForeverPurchaseRequest">Purging...</span>
                             </button>

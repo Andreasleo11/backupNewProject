@@ -39,7 +39,7 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
                             onclick="deleteRow(\'' . $deleteUrl . '\')"
                             class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-rose-700 bg-rose-100 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-colors tooltip-trigger"
                             data-tippy-content="Hapus Baris">
-                        <i class="bx bx-trash text-sm"></i>
+                        ' . svg('bx-trash', 'w-4 h-4')->toHtml() . '
                     </button>
                 ';
             })
@@ -79,10 +79,10 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
                     'infoEmpty' => 'Data tidak ditemukan',
                     'zeroRecords' => 'Tidak ada data yang cocok',
                     'paginate' => [
-                        'first' => '<i class="bx bx-chevrons-left"></i>',
-                        'last' => '<i class="bx bx-chevrons-right"></i>',
-                        'next' => '<i class="bx bx-chevron-right"></i>',
-                        'previous' => '<i class="bx bx-chevron-left"></i>',
+                        'first' => svg('bx-chevrons-left', 'w-4 h-4')->toHtml(),
+                        'last' => svg('bx-chevrons-right', 'w-4 h-4')->toHtml(),
+                        'next' => svg('bx-chevron-right', 'w-4 h-4')->toHtml(),
+                        'previous' => svg('bx-chevron-left', 'w-4 h-4')->toHtml(),
                     ],
                 ],
             ]);

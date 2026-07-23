@@ -26,7 +26,7 @@
                             <div class="flex items-center gap-3">
                                 <div
                                     class="flex h-10 w-10 items-center justify-center rounded-full bg-white bg-opacity-20">
-                                    <i class='bx bx-x-circle text-2xl text-white'></i>
+                                    <x-bx-x-circle class="w-6 h-6 text-white" />
                                 </div>
                                 <h3 class="text-lg font-semibold text-white" id="modal-title">
                                     {{ $title }}
@@ -34,7 +34,7 @@
                             </div>
                             <button type="button" @click="open = false"
                                 class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
-                                <i class='bx bx-x text-2xl'></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
 
                         <div class="mb-6">
                             <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4 border border-rose-100">
-                                <i class='bx bx-info-circle text-xl text-rose-600'></i>
+                                <x-bx-info-circle class="w-5 h-5 text-rose-600" />
                                 <div class="text-sm text-rose-800">
                                     <p class="font-medium">This action cannot be undone.</p>
                                     <p class="mt-1 text-rose-700">
@@ -78,7 +78,7 @@
                             </button>
                             <button type="submit"
                                 class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-200 transition-all hover:bg-rose-700 hover:-translate-y-0.5 hover:shadow-rose-300">
-                                <i class='bx bx-x-circle'></i>
+                                <x-bx-x-circle class="" />
                                 <span>{{ $buttonLabel }}</span>
                             </button>
                         </div>

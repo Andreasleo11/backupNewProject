@@ -3,7 +3,7 @@
     class="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white 
           px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm 
           hover:bg-gray-50 mr-2 my-1">
-    <i class='bx bx-info-circle text-gray-500'></i>
+    <x-bx-info-circle class="text-gray-500" />
     <span class="hidden sm:inline">Detail</span>
 </a>
 
@@ -46,7 +46,7 @@
     <a href="{{ route('qaqc.report.edit', $report->id) }}"
         class="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 
               text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 mr-2 my-1">
-        <i class='bx bx-edit text-white'></i>
+        <x-bx-edit class="text-white" />
         <span class="hidden sm:inline">Edit</span>
     </a>
 @endif
@@ -233,7 +233,7 @@
             {{-- Export PDF --}}
             <a href="{{ route('qaqc.report.download', $report->id) }}"
                 class="flex w-full items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
-                <i class='bx bxs-file-pdf text-red-500'></i>
+                <x-bxs-file-pdf class="text-red-500" />
                 <span>Export PDF</span>
             </a>
 
@@ -244,7 +244,7 @@
                        @if ($lockDisabled) opacity-40 cursor-not-allowed pointer-events-none
                        @else
                            hover:bg-gray-50 @endif">
-                <i class='bx bxs-lock text-amber-500'></i>
+                <x-bxs-lock class="text-amber-500" />
                 <span>Lock</span>
             </button>
         </div>

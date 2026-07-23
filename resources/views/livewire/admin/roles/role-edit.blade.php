@@ -6,7 +6,7 @@
             </h2>
             @if(in_array($name, ['super-admin', 'admin']))
                 <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-1 mt-2 text-xs font-semibold text-indigo-700 border border-indigo-100">
-                    <i class="bx bx-shield-quarter"></i> System Role
+                    <x-bx-shield-quarter class="" /> System Role
                 </span>
             @endif
         </div>
@@ -61,7 +61,7 @@
 
             @if($name === 'super-admin')
                 <div class="rounded-lg border border-indigo-200 bg-indigo-50 p-4 mb-4 flex items-start gap-3">
-                    <i class="bx bx-info-circle text-indigo-500 text-lg mt-0.5"></i>
+                    <x-bx-info-circle class="text-indigo-500 w-5 h-5 mt-0.5" />
                     <div>
                         <h4 class="text-sm font-semibold text-indigo-900">Super Admin Override</h4>
                         <p class="text-xs text-indigo-700 mt-1">The <code>super-admin</code> role automatically bypasses all permission checks via a system Gate. The checkboxes below are display-only and cannot be modified.</p>
@@ -130,7 +130,7 @@
                 Cancel
             </a>
             <button type="submit" wire:loading.attr="disabled" wire:target="save" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50 shadow-sm">
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="save" />
                 <span wire:loading.remove wire:target="save">Save Changes</span>
                 <span wire:loading wire:target="save">Saving...</span>
             </button>

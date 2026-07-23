@@ -8,7 +8,7 @@
     <div class="flex items-center gap-4 shrink-0">
         {{-- Dark icon — matches PR index --}}
         <div class="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shrink-0">
-            <i class='bx bx-time-five text-2xl'></i>
+            <x-bx-time-five class="w-6 h-6" />
         </div>
         <div>
             <h1 class="text-2xl font-black tracking-tight text-slate-800">
@@ -29,7 +29,7 @@
         {{-- Search bar (PR-style: large, rounded-2xl, buttons inside) --}}
         <div class="relative flex-1 group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <i class='bx bx-search text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl'></i>
+                <x-bx-search class="text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
             </div>
 
             <input type="text" wire:model.live.debounce.400ms="search"
@@ -48,7 +48,7 @@
                 <button type="button" @click="filtersOpen = true"
                     class="h-9 px-3 rounded-xl flex items-center gap-1.5 transition-all text-[10px] font-bold uppercase tracking-tight
                     {{ $activeFilterCount > 0 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600' }}">
-                    <i class='bx bx-slider-alt text-sm'></i>
+                    <x-bx-slider-alt class="w-4 h-4" />
                     @if ($activeFilterCount > 0)
                         <span>{{ $activeFilterCount }}</span>
                     @endif
@@ -72,7 +72,7 @@
             <button @click="menuOpen = !menuOpen"
                 class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all"
                 title="More options">
-                <i class='bx bx-dots-horizontal-rounded text-lg'></i>
+                <x-bx-dots-horizontal-rounded class="w-5 h-5" />
             </button>
             <div x-show="menuOpen" @click.outside="menuOpen = false"
                 x-transition:enter="transition ease-out duration-100"
@@ -86,12 +86,12 @@
                 @can('overtime.approve')
                     <a href="{{ route('overtime.hub') }}"
                         class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
-                        <i class='bx bxs-zap text-indigo-500'></i> Switch to Hub
+                        <x-bxs-zap class="text-indigo-500" /> Switch to Hub
                     </a>
                 @endcan
                 <a href="{{ route('overtime.bulk') }}"
                     class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
-                    <i class='bx bx-cloud-upload text-slate-400'></i> Smart Bulk Upload
+                    <x-bx-cloud-upload class="text-slate-400" /> Smart Bulk Upload
                 </a>
             </div>
         </div>
@@ -99,7 +99,7 @@
         {{-- Primary CTA --}}
         <a href="{{ route('overtime.create') }}"
             class="h-10 px-5 rounded-2xl bg-indigo-600 flex items-center gap-2 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all font-bold text-sm uppercase tracking-widest whitespace-nowrap">
-            <i class='bx bx-plus-circle text-lg'></i>
+            <x-bx-plus-circle class="w-5 h-5" />
             <span class="hidden sm:inline">New Request</span>
         </a>
     </div>

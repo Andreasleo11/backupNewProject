@@ -40,7 +40,7 @@
                             <button @click="open = false"
                                 class="text-slate-400 hover:text-rose-500 transition-colors shrink-0">
                                 <span class="sr-only">Close panel</span>
-                                <i class="bx bx-x text-2xl"></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
 
@@ -48,7 +48,7 @@
                         <div class="flex-1 overflow-y-auto w-full">
                             @if (!$requirement || !$department)
                                 <div class="px-6 py-12 text-center">
-                                    <i class="bx bx-ghost text-4xl text-slate-300 mb-2"></i>
+                                    <x-bx-ghost class="w-9 h-9 text-slate-300 mb-2" />
                                     <p class="text-sm text-slate-500">Pick a requirement to view its history.</p>
                                 </div>
                             @else
@@ -88,12 +88,12 @@
                                             <div
                                                 class="flex items-center gap-4 text-[10px] font-medium text-slate-400 mb-3">
                                                 <div class="flex items-center gap-1">
-                                                    <i class="bx bx-time text-slate-300"></i>
+                                                    <x-bx-time class="text-slate-300" />
                                                     {{ $u->created_at->format('d M y, H:i') }}
                                                 </div>
                                                 @if ($u->valid_until)
                                                     <div class="flex items-center gap-1 text-slate-500">
-                                                        <i class="bx bx-calendar text-slate-300"></i> Valid ≤
+                                                        <x-bx-calendar class="text-slate-300" /> Valid ≤
                                                         {{ $u->valid_until->format('d M y') }}
                                                     </div>
                                                 @endif
@@ -102,7 +102,7 @@
                                             @if ($u->review_notes)
                                                 <div class="rounded bg-slate-100 border border-slate-200 p-2 mb-3">
                                                     <div class="flex items-start gap-1.5">
-                                                        <i class="bx bx-comment-detail text-slate-400 mt-0.5"></i>
+                                                        <x-bx-comment-detail class="text-slate-400 mt-0.5" />
                                                         <p class="text-xs text-slate-600 leading-tight">
                                                             {{ $u->review_notes }}</p>
                                                     </div>
@@ -112,19 +112,19 @@
                                             <div class="flex items-center justify-end gap-2">
                                                 <a href="{{ $downloadUrl }}"
                                                     class="inline-flex items-center justify-center h-7 px-3 rounded border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 text-[11px] font-bold transition-colors">
-                                                    <i class="bx bx-download mr-1 text-sm"></i> Download
+                                                    <x-bx-download class="mr-1 w-4 h-4" /> Download
                                                 </a>
                                                 @if ($previewable)
                                                     <a href="{{ $publicUrl }}" target="_blank" rel="noopener"
                                                         class="inline-flex items-center justify-center h-7 px-3 rounded border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white text-[11px] font-bold transition-all">
-                                                        Open <i class="bx bx-link-external ml-1"></i>
+                                                        Open <x-bx-link-external class="ml-1" />
                                                     </a>
                                                 @endif
                                             </div>
                                         </div>
                                     @empty
                                         <div class="px-6 py-12 text-center">
-                                            <i class="bx bx-folder-open text-3xl text-slate-200 mb-2"></i>
+                                            <x-bx-folder-open class="w-8 h-8 text-slate-200 mb-2" />
                                             <p class="text-xs text-slate-400 italic">No uploads found.</p>
                                         </div>
                                     @endforelse

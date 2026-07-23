@@ -16,7 +16,7 @@
                 <div class="flex items-center gap-4 border-l-4 border-indigo-600 pl-4">
                     <div
                         class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                        <i class='bx bx-user-check text-2xl'></i>
+                        <x-bx-user-check class="w-6 h-6" />
                     </div>
                     <div>
                         <h1 class="text-2xl font-black tracking-tight text-slate-800">
@@ -40,8 +40,7 @@
 
                     {{-- Month selector --}}
                     <div class="relative">
-                        <i
-                            class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none"></i>
+                        <x-bx-calendar class="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" />
                         <select id="period-month" style="padding-left: 2.25rem;"
                             class="form-select form-select-sm border-0 bg-transparent py-1.5 pr-6 text-sm font-semibold text-slate-700 focus:ring-0 cursor-pointer w-auto shadow-none">
                             @foreach (range(1, 12) as $m)
@@ -77,7 +76,7 @@
 
                     <button id="apply-period"
                         class="ml-1 inline-flex items-center justify-center h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">
-                        <i class="bx bx-search-alt text-lg"></i>
+                        <x-bx-search-alt class="w-5 h-5" />
                     </button>
                 </div>
             </div>
@@ -117,7 +116,7 @@
                         </div>
                         <div
                             class="h-10 w-10 rounded-xl bg-{{ $chip['color'] }}-50 flex items-center justify-center text-{{ $chip['color'] }}-500 transition-colors group-hover:bg-{{ $chip['color'] }}-100">
-                            <i class='bx {{ $chip['icon'] }} text-xl'></i>
+                            <x-icon :name="$chip['icon']" class="w-5 h-5" />
                         </div>
                     </div>
                 </div>
@@ -179,12 +178,12 @@
             <div class="flex gap-2 flex-wrap">
                 <button type="button" @click="showLegend = !showLegend"
                     class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                    <i class="bx bx-book-open text-sm text-indigo-500"></i>
+                    <x-bx-book-open class="w-4 h-4 text-indigo-500" />
                     <span x-text="showLegend ? 'Sembunyikan Legenda' : 'Lihat Legenda Singkatan'"></span>
                 </button>
                 <button type="button" @click="showFormula = !showFormula"
                     class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                    <i class="bx bx-calculator text-sm text-indigo-500"></i>
+                    <x-bx-calculator class="w-4 h-4 text-indigo-500" />
                     <span x-text="showFormula ? 'Sembunyikan Formula' : 'Cara Perhitungan Nilai'"></span>
                 </button>
             </div>
@@ -192,7 +191,7 @@
             {{-- Legend Panel --}}
             <div x-show="showLegend" x-transition class="glass-card p-5 border border-slate-200/60 space-y-4">
                 <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i class="bx bx-info-circle text-indigo-500"></i>
+                    <x-bx-info-circle class="text-indigo-500" />
                     Legenda &amp; Singkatan
                 </h3>
 
@@ -246,7 +245,7 @@
             {{-- Formula Panel --}}
             <div x-show="showFormula" x-transition class="glass-card p-5 border border-slate-200/60 space-y-5">
                 <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i class="bx bx-calculator text-indigo-500"></i>
+                    <x-bx-calculator class="text-indigo-500" />
                     Cara Perhitungan Nilai
                 </h3>
 
@@ -383,7 +382,7 @@
                                 <button type="submit" id="btn-approve-dept"
                                     class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition-all hover:-translate-y-0.5 group disabled:opacity-50 disabled:pointer-events-none"
                                     {{ ($summary['graded'] ?? 0) == 0 ? 'disabled' : '' }}>
-                                    <i class="bx bx-check-double text-lg group-hover:scale-110 transition-transform"></i>
+                                    <x-bx-check-double class="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     Approve Semua
                                     <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold"
                                         id="approve-dept-count">{{ $summary['graded'] ?? 0 }}</span>
@@ -404,7 +403,7 @@
                                     class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group disabled:opacity-50 disabled:pointer-events-none"
                                     title="Approve semua data department di tab ini"
                                     {{ ($summary['dept_approved'] ?? 0) == 0 ? 'disabled' : '' }}>
-                                    <i class="bx bx-check-shield text-lg group-hover:scale-110 transition-transform"></i>
+                                    <x-bx-check-shield class="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     Final Approve (All Dept)
                                     <span class="ml-1 bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold"
                                         id="approve-hrd-count">{{ $summary['dept_approved'] ?? 0 }}</span>
@@ -420,7 +419,7 @@
                                     $dispatch('open-focus-mode', { type: activeTab, month: {{ $month }}, year: {{ $year }} })
                                 "
                                 class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group">
-                                <i class="bx bx-scan text-lg group-hover:scale-110 transition-transform"></i>
+                                <x-bx-scan class="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 <span>Mode Fokus</span>
                             </button>
                         @endif
@@ -429,7 +428,7 @@
                             {{-- Advanced Toggle Button --}}
                             <button type="button" @click="$dispatch('open-advanced-sidebar')"
                                 class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5">
-                                <i class="bx bx-slider-alt text-lg text-slate-500"></i>
+                                <x-bx-slider-alt class="w-5 h-5 text-slate-500" />
                                 <span>Tingkat Lanjut</span>
                             </button>
                         @endrole
@@ -440,7 +439,7 @@
                             class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5"
                             :href="'{{ route('evaluation.export') }}?month={{ $month }}&year={{ $year }}&type=' + activeTab">
 
-                            <i class="bx bx-export text-lg text-emerald-600"></i>
+                            <x-bx-export class="w-5 h-5 text-emerald-600" />
                             <span>Export Excel</span>
                         </a>
 
@@ -448,7 +447,7 @@
                         @role('super-admin')
                             <button type="button" id="open-history-modal-btn"
                                 class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-50 hover:-translate-y-0.5">
-                                <i class="bx bx-history text-lg text-indigo-500"></i>
+                                <x-bx-history class="w-5 h-5 text-indigo-500" />
                                 <span>History</span>
                             </button>
                         @endrole
@@ -504,20 +503,20 @@
                             class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
                             <div>
                                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                                    <i class="bx bx-history text-xl"></i> Evaluation Activity History
+                                    <x-bx-history class="w-5 h-5" /> Evaluation Activity History
                                 </h2>
                                 <p class="text-indigo-100 text-xs mt-0.5">Semua perubahan grade, approval, & rejection tercatat di
                                     sini</p>
                             </div>
                             <button id="close-history-modal-btn" class="text-white/70 hover:text-white transition-colors">
-                                <i class="bx bx-x text-2xl"></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
 
                         {{-- Search bar --}}
                         <div class="px-6 py-3 border-b border-slate-100 bg-slate-50">
                             <div class="relative">
-                                <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input id="history-search" type="text" placeholder="Cari nama karyawan, user, deskripsi..."
                                     class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
                             </div>
@@ -543,8 +542,7 @@
                                 </thead>
                                 <tbody id="history-tbody" class="divide-y divide-slate-100">
                                     <tr>
-                                        <td colspan="5" class="py-8 text-center text-slate-400"><i
-                                                class="bx bx-loader-alt bx-spin text-2xl"></i></td>
+                                        <td colspan="5" class="py-8 text-center text-slate-400"><x-bx-loader-alt class="w-6 h-6 animate-spin inline" /></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -558,12 +556,12 @@
                                 <button id="history-prev"
                                     class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none"
                                     disabled>
-                                    <i class="bx bx-chevron-left"></i>
+                                    <x-bx-chevron-left class="" />
                                 </button>
                                 <button id="history-next"
                                     class="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none"
                                     disabled>
-                                    <i class="bx bx-chevron-right"></i>
+                                    <x-bx-chevron-right class="" />
                                 </button>
                             </div>
                         </div>
@@ -610,7 +608,7 @@
                                             <div class="flex items-center gap-4">
                                                 <div
                                                     class="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-                                                    <i class="bx bx-slider-alt text-2xl"></i>
+                                                    <x-bx-slider-alt class="w-6 h-6" />
                                                 </div>
                                                 <div class="flex flex-col">
                                                     <h2 class="text-lg font-bold text-slate-900" id="advancedFeaturesLabel">
@@ -642,7 +640,7 @@
                                                 <h6
                                                     class="text-[13px] font-extrabold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
                                                     <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
-                                                        <i class="bx bx-printer"></i>
+                                                        <x-bx-printer class="" />
                                                     </div>
                                                     Cetak Format Penilaian
                                                 </h6>
@@ -650,26 +648,22 @@
                                                     <a href="{{ route('format.evaluation.year.allin') }}"
                                                         class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
                                                         <span class="truncate pr-4">Format Regular (All In)</span>
-                                                        <i
-                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                        <x-bx-chevron-right class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all" />
                                                     </a>
                                                     <a href="{{ route('format.evaluation.year.yayasan') }}"
                                                         class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
                                                         <span class="truncate pr-4">Format Yayasan</span>
-                                                        <i
-                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                        <x-bx-chevron-right class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all" />
                                                     </a>
                                                     <a href="{{ route('format.evaluation.year.magang') }}"
                                                         class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
                                                         <span class="truncate pr-4">Format Magang</span>
-                                                        <i
-                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                        <x-bx-chevron-right class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all" />
                                                     </a>
                                                     <a href="{{ route('format.evaluation.year.allinperpanjangan') }}"
                                                         class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
                                                         <span class="truncate pr-4">Format Perpanjangan Kontrak</span>
-                                                        <i
-                                                            class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                                        <x-bx-chevron-right class="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all" />
                                                     </a>
                                                 </div>
                                             </div>
@@ -679,12 +673,12 @@
                                                 class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
                                                 <div
                                                     class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 pointer-events-none">
-                                                    <i class="bx bx-buildings text-9xl"></i>
+                                                    <x-bx-buildings class="text-9xl" />
                                                 </div>
                                                 <h6
                                                     class="relative text-[13px] font-extrabold text-indigo-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                                                     <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm font-black">
-                                                        <i class="bx bxs-file-export"></i>
+                                                        <x-bxs-file-export class="" />
                                                     </div>
                                                     Export Yayasan
                                                 </h6>
@@ -692,8 +686,7 @@
                                                     <a href="{{ route('evaluation.jpayroll.select') }}"
                                                         class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
                                                         <span>Export Data ke JPayroll</span>
-                                                        <i
-                                                            class="bx bx-right-arrow-alt text-xl text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
+                                                        <x-bx-right-arrow-alt class="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                                                     </a>
                                                 </div>
                                             </div>
@@ -702,7 +695,7 @@
                                             <div>
                                                 <h6
                                                     class="text-[13px] font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                    <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
+                                                    <x-bx-bar-chart-alt-2 class="text-indigo-500 w-5 h-5" /> Distribusi Nilai
                                                 </h6>
                                                 @php
                                                     $total = $summary['total'] ?? 0;
@@ -941,7 +934,7 @@
 
                     if (id === 'approve-hrd-form') {
                         alertText +=
-                            `<br><br><span class="text-sm text-rose-600 font-semibold"><i class="bx bx-error pb-1"></i> Peringatan: Tindakan ini akan meng-approve semua data "Dept Approved" di SELURUH departemen.</span>`;
+                            `<br><br><span class="text-sm text-rose-600 font-semibold"><x-bx-error class="pb-1" /> Peringatan: Tindakan ini akan meng-approve semua data "Dept Approved" di SELURUH departemen.</span>`;
                     }
 
                     Swal.fire({
@@ -1116,7 +1109,7 @@
 
                 function fetchHistory() {
                     tbody.innerHTML =
-                        '<tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="bx bx-loader-alt bx-spin text-2xl"></i></td></tr>';
+                        '<tr><td colspan="5" class="py-8 text-center text-slate-400">{!! addslashes(svg('bx-loader-alt', 'w-6 h-6 animate-spin inline')->toHtml()) !!}</td></tr>';
 
                     axios.get('{{ route('evaluation.history') }}', {
                         params: {

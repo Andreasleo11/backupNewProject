@@ -29,7 +29,7 @@
     <div class="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-                <i class='bx bx-receipt text-2xl'></i>
+                <x-bx-receipt class="w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-2xl font-black tracking-tight text-slate-800">
@@ -43,7 +43,7 @@
 
         <div class="flex-1 w-full max-w-2xl relative group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <i class='bx bx-search text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl'></i>
+                <x-bx-search class="text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
             </div>
 
             <input type="text" wire:model.live.debounce.400ms="search"
@@ -126,7 +126,7 @@
                 <template x-if="fStatus">
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-tighter">
-                        <i class="bx bx-check-circle text-xs"></i>
+                        <x-bx-check-circle class="w-3 h-3" />
                         <span x-text="fStatus"></span>
                         <button @click="applyFilter('fStatus', 'status', '')"
                             class="ml-0.5 hover:text-rose-600">✕</button>
@@ -135,7 +135,7 @@
                 <template x-if="fDept">
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-tighter">
-                        <i class="bx bx-building text-xs"></i>
+                        <x-bx-building class="w-3 h-3" />
                         <span x-text="fDept"></span>
                         <button @click="applyFilter('fDept', 'department', '')"
                             class="ml-0.5 hover:text-rose-600">✕</button>
@@ -144,7 +144,7 @@
                 <template x-if="fBranch">
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-tighter">
-                        <i class="bx bx-map-pin text-xs"></i>
+                        <x-bx-map-pin class="w-3 h-3" />
                         <span x-text="fBranch"></span>
                         <button @click="applyFilter('fBranch', 'branch', '')"
                             class="ml-0.5 hover:text-rose-600">✕</button>
@@ -153,7 +153,7 @@
                 @if ($page > 1)
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-tighter">
-                        <i class="bx bx-list-ul text-xs"></i>
+                        <x-bx-list-ul class="w-3 h-3" />
                         Page: {{ $page }}
                         <button @click="$wire.set('page', 1)" class="ml-0.5 hover:text-rose-600">✕</button>
                     </span>
@@ -163,7 +163,7 @@
             <button @click="resetAllFilters()"
                 class="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
                 :class="activeFilterCount > 0 ? 'text-rose-400' : ''">
-                <i class='bx bx-reset'></i> Reset All
+                <x-bx-reset class="" /> Reset All
             </button>
         </div>
     </div>
@@ -246,7 +246,7 @@
                                             class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold border border-slate-200 uppercase">{{ $row->branch->value ?? ($row->branch ?? 'HQ') }}</span>
                                     </div>
                                     <div class="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                                        <i class="bx bx-user text-xs"></i>
+                                        <x-bx-user class="w-3 h-3" />
                                         <span>{{ $row->createdBy->name ?? 'System' }}</span>
                                     </div>
                                 </div>
@@ -265,7 +265,7 @@
                                     </span>
                                     <div class="text-[10px] text-slate-400 font-medium whitespace-nowrap">
                                         <span class="text-slate-500">{{ $row->from_department }}</span>
-                                        <i class="bx bx-right-arrow-alt mx-0.5"></i>
+                                        <x-bx-right-arrow-alt class="mx-0.5" />
                                         <span
                                             class="text-indigo-600 font-semibold">{{ $row->to_department->value ?? $row->to_department }}</span>
                                     </div>
@@ -287,7 +287,7 @@
                             <td class="px-4 py-3 text-center">
                                 <button @click="$dispatch('open-quick-view-modal', { id: {{ $row->id }} })"
                                     class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all hover:scale-110 active:scale-95 flex items-center justify-center">
-                                    <i class="bx bx-show text-sm"></i>
+                                    <x-bx-show class="w-4 h-4" />
                                 </button>
                             </td>
                         </tr>
@@ -297,7 +297,7 @@
                                 <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                     <div
                                         class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                                        <i class="bx bx-search-alt text-3xl opacity-50"></i>
+                                        <x-bx-search-alt class="w-8 h-8 opacity-50" />
                                     </div>
                                     <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No matching
                                         requests found</h5>
@@ -314,7 +314,7 @@
                                     @elseif(auth()->user()->hasRole('super-admin'))
                                         <div
                                             class="mt-8 p-3 bg-amber-50 rounded-xl border border-amber-100 text-[10px] text-amber-700 font-bold flex items-start gap-2 text-left">
-                                            <i class="bx bx-info-circle text-base"></i>
+                                            <x-bx-info-circle class="w-4 h-4" />
                                             <div>
                                                 SYSTEM NOTE: Total records exist in DB
                                                 ({{ \App\Models\PurchaseRequest::count() }}), but your current scope or

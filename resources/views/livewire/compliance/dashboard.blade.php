@@ -12,7 +12,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
-                <i class="bx bxs-shield-alt-2 text-white text-2xl"></i>
+                <x-bxs-shield-alt-2 class="text-white w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Compliance Dashboard</h1>
@@ -27,7 +27,7 @@
         </div>
         <button wire:click="exportCsv"
             class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all">
-            <i class="bx bx-download text-base"></i> Export Excel
+            <x-bx-download class="w-4 h-4" /> Export Excel
         </button>
     </div>
 
@@ -35,7 +35,7 @@
     <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
         {{-- Search --}}
         <div class="relative flex-1 min-w-[200px]">
-            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search department…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
@@ -200,7 +200,7 @@
                         </a>
                     @empty
                         <div class="py-10 text-center">
-                            <i class="bx bx-data text-3xl text-slate-300"></i>
+                            <x-bx-data class="w-8 h-8 text-slate-300" />
                             <p class="text-sm text-slate-400 mt-2">No data available</p>
                         </div>
                     @endforelse
@@ -234,7 +234,7 @@
                     </div>
                 @empty
                     <div class="py-8 text-center">
-                        <i class="bx bx-check-circle text-3xl text-emerald-300"></i>
+                        <x-bx-check-circle class="w-8 h-8 text-emerald-300" />
                         <p class="text-sm text-slate-400 mt-1">No pending approvals</p>
                     </div>
                 @endforelse
@@ -263,7 +263,7 @@
                     </div>
                 @empty
                     <div class="py-8 text-center">
-                        <i class="bx bx-calendar-check text-3xl text-emerald-300"></i>
+                        <x-bx-calendar-check class="w-8 h-8 text-emerald-300" />
                         <p class="text-sm text-slate-400 mt-1">Nothing expiring soon</p>
                     </div>
                 @endforelse

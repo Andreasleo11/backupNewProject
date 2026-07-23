@@ -46,13 +46,13 @@
                                 <h5 class="font-bold text-slate-800 flex items-center gap-2">
                                     <div
                                         class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-                                        <i class="bx bx-x-circle text-lg"></i>
+                                        <x-bx-x-circle class="w-5 h-5" />
                                     </div>
                                     Cancel Purchase Request
                                 </h5>
                                 <button type="button" @click="show = false"
                                     class="text-slate-400 hover:text-slate-600 transition-colors">
-                                    <i class="bx bx-x text-2xl"></i>
+                                    <x-bx-x class="w-6 h-6" />
                                 </button>
                             </div>
 
@@ -80,7 +80,7 @@
                                     wire:loading.attr="disabled"
                                     wire:target="cancelPurchaseRequest"
                                     class="bg-orange-500 hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-200 text-white border-0 rounded-lg text-sm px-4 py-2 font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
-                                    <i class="bx bx-check-circle" wire:loading.class="bx-spin" wire:target="cancelPurchaseRequest"></i>
+                                    <x-bx-check-circle class="w-4 h-4" wire:loading.class="animate-spin" wire:target="cancelPurchaseRequest" />
                                     <span wire:loading.remove wire:target="cancelPurchaseRequest">Confirm Cancel</span>
                                     <span wire:loading wire:target="cancelPurchaseRequest">Cancelling...</span>
                                 </button>

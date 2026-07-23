@@ -13,7 +13,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger"><i class='bx bxs-lock'></i> Lock</button>
+                    <button type="submit" class="btn btn-danger"><x-bxs-lock class="" /> Lock</button>
                 </div>
             </form>
         </div>

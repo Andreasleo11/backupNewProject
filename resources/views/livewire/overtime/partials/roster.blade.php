@@ -10,8 +10,7 @@
       {{-- UNIFIED ROSTER TOOLBAR --}}
       <div class="bg-white rounded-3xl border border-slate-200/60 shadow-sm px-6 py-4 flex items-center justify-between">
           <div class="flex items-center gap-4">
-                <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg"><i
-                      class='bx bx-group text-xl'></i>
+                <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg"><x-bx-group class="w-5 h-5" />
                 </div>
                 <div>
                     <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">3. Employee Roster</h2>
@@ -25,12 +24,13 @@
                   class="h-10 px-6 rounded-xl border-2 font-black text-[9px] uppercase tracking-widest transition-all flex items-center gap-2 group"
                   :class="$wire.showBulkTray ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' :
                       'bg-white border-slate-100 text-slate-400 hover:border-indigo-100 hover:text-indigo-600'">
-                  <i class='bx' :class="$wire.showBulkTray ? 'bx-chevron-up' : 'bx-layer-plus'"></i>
+                  <x-bx-chevron-up class="w-5 h-5" x-show="$wire.showBulkTray" x-cloak />
+                  <x-bx-layer-plus class="w-5 h-5" x-show="!$wire.showBulkTray" x-cloak />
                   Bulk Operations
               </button>
               <button type="button" @click="addRow()"
                   class="h-10 px-6 rounded-xl bg-slate-900 text-white text-[9px] font-black hover:bg-slate-800 transition-all uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-200">
-                  <i class='bx bx-plus'></i> Add Member
+                  <x-bx-plus class="" /> Add Member
               </button>
           </div>
       </div>
@@ -53,7 +53,7 @@
                 <div class="relative" x-data="{ q: '' }">
                     <div class="relative mb-6">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class='bx bx-search text-slate-400 text-lg'></i>
+                            <x-bx-search class="text-slate-400 w-5 h-5" />
                         </div>
                         <input type="text" x-model="q" placeholder="Search by name or NIK..."
                             class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-3 pl-12 pr-6 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 placeholder-slate-300 transition-all">
@@ -77,11 +77,8 @@
                                         :class="items.some(i => i.nik === emp.nik) ?
                                             'bg-indigo-600 border-indigo-600 text-white' :
                                             'border-slate-200 bg-white group-hover:border-slate-300'">
-                                        <i class='bx bx-check text-xs'
-                                            x-show="items.some(i => i.nik === emp.nik)" wire:loading.remove
-                                            wire:target="toggleEmployee"></i>
-                                        <i class='bx bx-loader-alt animate-spin text-[10px]' wire:loading
-                                            wire:target="toggleEmployee"></i>
+                                        <x-bx-check class="w-3 h-3" x-show="items.some(i => i.nik === emp.nik)" wire:loading.remove wire:target="toggleEmployee" />
+                                        <x-bx-loader-alt class="w-3 h-3 animate-spin" wire:loading wire:target="toggleEmployee" />
                                     </div>
                                 </div>
 
@@ -100,7 +97,7 @@
                                 </div>
                                 <div
                                     class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all transition-transform group-active:scale-95">
-                                    <i class='bx bx-user'></i>
+                                    <x-bx-user class="" />
                                 </div>
                             </button>
                         </template>
@@ -111,7 +108,7 @@
                             <div class="col-span-full py-20 text-center">
                                 <div
                                     class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                    <i class='bx bx-search-alt text-3xl'></i></div>
+                                    <x-bx-search-alt class="w-8 h-8" /></div>
                                 <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No
                                     matching employees found</p>
                             </div>
@@ -130,7 +127,7 @@
                   class="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-8 text-center animate-in fade-in zoom-in duration-500">
                   <div
                       class="h-24 w-24 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-indigo-600 shadow-inner">
-                      <i class='bx bxs-group-plus text-5xl'></i>
+                      <x-bxs-user-plus class="w-12 h-12" />
                   </div>
                   <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Build Your Roster</h3>
                   <p
@@ -149,7 +146,7 @@
                           </span>
                           <div
                               class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">
-                              <i class='bx bx-layer-plus'></i>
+                              <x-bx-layer-plus class="" />
                           </div>
                           <div class="text-left">
                               <p
@@ -167,7 +164,7 @@
                           class="h-20 px-10 rounded-3xl bg-slate-900 text-white shadow-2xl shadow-slate-200 transition-all hover:scale-[1.03] active:scale-95 flex items-center gap-4 group">
                           <div
                               class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl group-hover:translate-x-1 transition-transform">
-                              <i class='bx bx-plus'></i>
+                              <x-bx-plus class="" />
                           </div>
                           <div class="text-left">
                               <p
@@ -230,9 +227,9 @@
                                               :class="hasError(index, 'nik') ? 'bg-rose-500 border-rose-600 text-white' : (!row
                                                   .nik ? 'bg-amber-100 border-amber-200 text-amber-600' :
                                                   'bg-indigo-50 border-indigo-100 text-indigo-600')">
-                                              <i class='bx'
-                                                  :class="hasError(index, 'nik') ? 'bx-error-circle' : (!row.nik ?
-                                                      'bx-user-plus' : 'bx-user')"></i>
+                                              <x-bx-error-circle class="w-5 h-5" x-show="hasError(index, 'nik')" x-cloak />
+                                              <x-bx-user-plus class="w-5 h-5" x-show="!hasError(index, 'nik') && !row.nik" x-cloak />
+                                              <x-bx-user class="w-5 h-5" x-show="!hasError(index, 'nik') && row.nik" x-cloak />
                                           </div>
                                           <div class="flex-1 min-w-0 relative" @click.outside="open = false">
                                               <div class="relative">
@@ -263,7 +260,7 @@
                                                           @click="pick(index, emp); open=false; q=''">
                                                           <div
                                                               class="h-8 w-8 rounded-lg bg-indigo-50 group-hover/item:bg-white/20 flex items-center justify-center text-indigo-600 group-hover/item:text-white">
-                                                              <i class='bx bx-user'></i>
+                                                              <x-bx-user class="" />
                                                           </div>
                                                           <div class="flex-1 min-w-0">
                                                               <p class="text-[11px] font-black truncate"
@@ -318,8 +315,7 @@
                                                   :class="hasTimeError(index) ? 'text-rose-600' : 'text-slate-700'">
                                                   <span
                                                       x-text="row.start_time ? row.start_time.substring(0,5) : '--:--'"></span>
-                                                  <i class='bx bx-right-arrow-alt text-slate-300 text-[8px]'
-                                                      :class="hasTimeError(index) && 'text-rose-300'"></i>
+                                                  <x-bx-right-arrow-alt class="w-3 h-3 text-slate-300" x-bind:class="hasTimeError(index) && 'text-rose-300'" />
                                                   <span
                                                       x-text="row.end_time ? row.end_time.substring(0,5) : '--:--'"></span>
                                               </div>
@@ -328,7 +324,7 @@
                                               <template x-if="hasTimeError(index)">
                                                   <div
                                                       class="absolute -top-1.5 -right-1.5 h-3 w-3 rounded-full bg-rose-500 border-2 border-white shadow-sm flex items-center justify-center">
-                                                      <i class='bx bx-error text-[7px] text-white'></i>
+                                                      <x-bx-error class="text-[7px] text-white" />
                                                   </div>
                                               </template>
                                           </button>
@@ -351,8 +347,7 @@
                                                       </template>
                                                   </div>
                                                   <button type="button" @click="syncToGlobal(index)"
-                                                      class="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1"><i
-                                                          class='bx bx-sync'></i> Sync Global</button>
+                                                      class="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1"><x-bx-sync class="" /> Sync Global</button>
                                               </div>
 
                                               {{-- DATE CONTEXT OVERRIDES --}}
@@ -446,10 +441,9 @@
                                               .payroll_status === 'exists' ?
                                               'bg-rose-50 text-rose-500 animate-pulse' :
                                               'bg-slate-50 text-slate-300')">
-                                          <i class='bx'
-                                              :class="row.payroll_status === 'safe' ? 'bxs-check-shield' : (row
-                                                  .payroll_status === 'exists' ? 'bxs-error-circle' :
-                                                  'bx-hourglass-top')"></i>
+                                          <x-bxs-check-shield class="w-5 h-5" x-show="row.payroll_status === 'safe'" x-cloak />
+                                          <x-bxs-error-circle class="w-5 h-5" x-show="row.payroll_status === 'exists'" x-cloak />
+                                          <x-bxs-hourglass-top class="w-5 h-5" x-show="row.payroll_status !== 'safe' && row.payroll_status !== 'exists'" x-cloak />
                                       </div>
                                   </td>
 
@@ -457,7 +451,7 @@
                                   <td class="px-4 py-4 align-top text-right">
                                       <button type="button" @click="removeRow(index)" x-show="items.length > 1"
                                           class="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all">
-                                          <i class='bx bx-trash-alt'></i>
+                                          <x-bx-trash-alt class="" />
                                       </button>
                                   </td>
                               </tr>
@@ -471,7 +465,7 @@
                   <div class="py-20 text-center">
                       <div
                           class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                          <i class='bx bx-user-plus text-3xl'></i></div>
+                          <x-bx-user-plus class="w-8 h-8" /></div>
                       <p class="text-xs font-black text-slate-400 uppercase tracking-widest">No members added yet</p>
                       <button type="button" @click="addRow()"
                           class="mt-6 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Click

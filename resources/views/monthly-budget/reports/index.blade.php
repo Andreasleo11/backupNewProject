@@ -8,8 +8,7 @@
                 <input type="text" wire:model.live.debounce.300ms="search"
                     class="rounded-xl border-slate-200 bg-white/50 pl-10 pr-4 py-2.5 text-xs font-bold shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white min-w-[240px]"
                     placeholder="Search doc, creator...">
-                <i
-                    class="bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                <x-bx-search class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
             </div>
 
             {{-- Department Filter --}}
@@ -37,7 +36,7 @@
                 <button wire:click="clearFilters"
                     class="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-all"
                     title="Clear Filters">
-                    <i class="bx bx-reset text-lg"></i>
+                    <x-bx-reset class="w-5 h-5" />
                 </button>
             @endif
         </div>
@@ -46,7 +45,7 @@
         @if ($showCreateButton)
             <a href="{{ route('monthly-budget-reports.create') }}"
                 class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
-                <i class="bx bx-plus text-[1.1rem]"></i>
+                <x-bx-plus class="text-[1.1rem]" />
                 New Report
             </a>
         @endif
@@ -58,7 +57,7 @@
         <div wire:loading
             class="absolute inset-0 z-50 bg-white/40 backdrop-blur-[1px] flex items-center justify-center">
             <div class="flex flex-col items-center gap-2">
-                <i class="bx bx-loader-alt animate-spin text-3xl text-indigo-600"></i>
+                <x-bx-loader-alt class="animate-spin w-8 h-8 text-indigo-600" />
                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Updating...</span>
             </div>
         </div>
@@ -72,7 +71,7 @@
                                 class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
                                 Document Info
                                 @if ($sortField === 'doc_num')
-                                    <i class="bx bx-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-sm"></i>
+                                    <x-icon :name="'bx-sort-' . ($sortDirection === 'asc' ? 'up' : 'down')" class="w-4 h-4" />
                                 @endif
                             </button>
                         </th>
@@ -81,7 +80,7 @@
                                 class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
                                 Department
                                 @if ($sortField === 'department')
-                                    <i class="bx bx-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-sm"></i>
+                                    <x-icon :name="'bx-sort-' . ($sortDirection === 'asc' ? 'up' : 'down')" class="w-4 h-4" />
                                 @endif
                             </button>
                         </th>
@@ -90,7 +89,7 @@
                                 class="flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors mx-auto">
                                 Period
                                 @if ($sortField === 'report_date')
-                                    <i class="bx bx-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-sm"></i>
+                                    <x-icon :name="'bx-sort-' . ($sortDirection === 'asc' ? 'up' : 'down')" class="w-4 h-4" />
                                 @endif
                             </button>
                         </th>
@@ -163,7 +162,7 @@
                                     <a href="{{ route('monthly-budget-reports.show', $report->id) }}"
                                         class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95"
                                         title="View Details">
-                                        <i class='bx bx-show-alt text-lg'></i>
+                                        <x-bx-show-alt class="w-5 h-5" />
                                     </a>
 
                                     @if ($authUser->id === $report->creator_id && $isDraft)
@@ -171,7 +170,7 @@
                                         <a href="{{ route('monthly-budget-reports.edit', $report->id) }}"
                                             class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition-all active:scale-95"
                                             title="Edit Draft">
-                                            <i class='bx bx-edit-alt text-lg'></i>
+                                            <x-bx-edit-alt class="w-5 h-5" />
                                         </a>
 
                                         {{-- Delete --}}
@@ -201,7 +200,7 @@
                                 <div class="flex flex-col items-center gap-3">
                                     <div
                                         class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200">
-                                        <i class="bx bx-receipt text-3xl"></i>
+                                        <x-bx-receipt class="w-8 h-8" />
                                     </div>
                                     <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No
                                         reports match your filters</div>

@@ -45,7 +45,7 @@
                                 <td class="px-4 py-3">
                                     <a href="{{ route('overtime.detail', $form->id) }}" class="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
                                         #{{ $form->id }}
-                                        <i class="bx bx-link-external text-[9px]"></i>
+                                        <x-bx-link-external class="text-[9px]" />
                                     </a>
                                     @if(strtoupper($form->workflow_status) === 'REJECTED')
                                         <div class="mt-1 text-[9px] font-black text-rose-500 uppercase tracking-widest">Rejected Form</div>
@@ -114,12 +114,12 @@
                                                 <button wire:click="pushDetail({{ $form->id }}, {{ $detail->id }})"
                                                     class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
                                                     title="Push to Payroll">
-                                                    <i class='bx bx-cloud-upload text-sm'></i>
+                                                    <x-bx-cloud-upload class="w-4 h-4" />
                                                 </button>
                                                 <button wire:click="rejectDetail({{ $form->id }}, {{ $detail->id }})"
                                                     class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all"
                                                     title="Reject Detail">
-                                                    <i class='bx bx-x text-sm'></i>
+                                                    <x-bx-x class="w-4 h-4" />
                                                 </button>
                                             @endif
                                         @endcan
@@ -138,7 +138,7 @@
                                 <td colspan="7" class="px-4 py-20 text-center">
                                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                         <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                                            <i class='bx bx-group text-3xl opacity-50'></i>
+                                            <x-bx-group class="w-8 h-8 opacity-50" />
                                         </div>
                                         <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No employee details found</h5>
                                         <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">There are no overtime records to display for the current filters.</p>
@@ -175,7 +175,7 @@
                                 <div class="flex items-center gap-3">
                                     <a href="{{ route('overtime.detail', $form->id) }}"
                                         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition-colors">
-                                        <i class='bx bx-file text-base'></i>
+                                        <x-bx-file class="w-4 h-4" />
                                         #{{ $form->id }}
                                     </a>
 
@@ -198,8 +198,7 @@
                             {{-- Expand/Collapse Toggle --}}
                             <button @click="expandedForms[{{ $form->id }}] = !expandedForms[{{ $form->id }}]"
                                 class="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
-                                <i class='bx bx-chevron-down text-slate-400 text-sm transition-transform'
-                                   :class="expandedForms[{{ $form->id }}] ? 'rotate-180' : ''"></i>
+                                <x-bx-chevron-down class="w-4 h-4 text-slate-400 transition-transform" x-bind:class="expandedForms[{{ $form->id }}] ? 'rotate-180' : ''" />
                             </button>
                         </div>
                     </div>
@@ -296,12 +295,12 @@
                                                             <button wire:click="pushDetail({{ $form->id }}, {{ $detail->id }})"
                                                                 class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
                                                                 title="Push to Payroll">
-                                                                <i class='bx bx-cloud-upload text-sm'></i>
+                                                                <x-bx-cloud-upload class="w-4 h-4" />
                                                             </button>
                                                             <button wire:click="rejectDetail({{ $form->id }}, {{ $detail->id }})"
                                                                 class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all"
                                                                 title="Reject Detail">
-                                                                <i class='bx bx-x text-sm'></i>
+                                                                <x-bx-x class="w-4 h-4" />
                                                             </button>
                                                         @endif
                                                     @endcan
@@ -320,7 +319,7 @@
                 <div class="px-4 py-20 text-center">
                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                         <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                            <i class='bx bx-group text-3xl opacity-50'></i>
+                            <x-bx-group class="w-8 h-8 opacity-50" />
                         </div>
                         <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No employee details found</h5>
                         <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">There are no overtime records to display for the current filters.</p>

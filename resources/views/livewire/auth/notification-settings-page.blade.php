@@ -5,7 +5,7 @@
             <div class="flex items-center gap-4 mb-6">
                 <div
                     class="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-blue-100">
-                    <i class='bx bx-globe text-2xl'></i>
+                    <x-bx-globe class="w-6 h-6" />
                 </div>
                 <div>
                     <h3 class="text-lg font-bold text-slate-900">Global Preference</h3>
@@ -20,7 +20,7 @@
                     class="relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 {{ $global_mode === 'both' ? 'border-indigo-500 bg-indigo-50/50 ring-4 ring-indigo-500/10' : 'border-slate-100 bg-slate-50/50 hover:border-slate-200' }}">
                     <div
                         class="h-10 w-10 rounded-full flex items-center justify-center {{ $global_mode === 'both' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' : 'bg-slate-200 text-slate-500 font-bold' }}">
-                        <i class='bx bx-layer text-xl'></i>
+                        <x-bx-layer class="w-5 h-5" />
                     </div>
                     <div class="text-center">
                         <span class="block text-sm font-bold text-slate-900 uppercase tracking-tight">Both <span
@@ -30,7 +30,7 @@
                     </div>
                     @if ($global_mode === 'both')
                         <div class="absolute top-3 right-3 text-indigo-500">
-                            <i class='bx bxs-check-circle text-lg'></i>
+                            <x-bxs-check-circle class="w-5 h-5" />
                         </div>
                     @endif
                 </button>
@@ -40,7 +40,7 @@
                     class="relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 {{ $global_mode === 'immediate' ? 'border-blue-500 bg-blue-50/50 ring-4 ring-blue-500/10' : 'border-slate-100 bg-slate-50/50 hover:border-slate-200' }}">
                     <div
                         class="h-10 w-10 rounded-full flex items-center justify-center {{ $global_mode === 'immediate' ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' : 'bg-slate-200 text-slate-500 font-bold' }}">
-                        <i class='bx bx-bolt-circle text-xl'></i>
+                        <x-bx-bolt-circle class="w-5 h-5" />
                     </div>
                     <div class="text-center">
                         <span class="block text-sm font-bold text-slate-900 uppercase tracking-tight">Immediate</span>
@@ -49,7 +49,7 @@
                     </div>
                     @if ($global_mode === 'immediate')
                         <div class="absolute top-3 right-3 text-blue-500">
-                            <i class='bx bxs-check-circle text-lg'></i>
+                            <x-bxs-check-circle class="w-5 h-5" />
                         </div>
                     @endif
                 </button>
@@ -59,7 +59,7 @@
                     class="relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 {{ $global_mode === 'daily_summary' ? 'border-amber-500 bg-amber-50/50 ring-4 ring-amber-500/10' : 'border-slate-100 bg-slate-50/50 hover:border-slate-200' }}">
                     <div
                         class="h-10 w-10 rounded-full flex items-center justify-center {{ $global_mode === 'daily_summary' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'bg-slate-200 text-slate-500 font-bold' }}">
-                        <i class='bx bx-calendar-star text-xl'></i>
+                        <x-bx-calendar-star class="w-5 h-5" />
                     </div>
                     <div class="text-center">
                         <span class="block text-sm font-bold text-slate-900 uppercase tracking-tight">Daily
@@ -69,7 +69,7 @@
                     </div>
                     @if ($global_mode === 'daily_summary')
                         <div class="absolute top-3 right-3 text-amber-500">
-                            <i class='bx bxs-check-circle text-lg'></i>
+                            <x-bxs-check-circle class="w-5 h-5" />
                         </div>
                     @endif
                 </button>
@@ -79,7 +79,7 @@
                     class="relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 {{ $global_mode === 'none' ? 'border-rose-500 bg-rose-50/50 ring-4 ring-rose-500/10' : 'border-slate-100 bg-slate-50/50 hover:border-slate-200' }}">
                     <div
                         class="h-10 w-10 rounded-full flex items-center justify-center {{ $global_mode === 'none' ? 'bg-rose-500 text-white shadow-lg shadow-rose-200' : 'bg-slate-200 text-slate-500 font-bold' }}">
-                        <i class='bx bx-bell-off text-xl'></i>
+                        <x-bx-bell-off class="w-5 h-5" />
                     </div>
                     <div class="text-center">
                         <span class="block text-sm font-bold text-slate-900 uppercase tracking-tight">No Emails</span>
@@ -88,7 +88,7 @@
                     </div>
                     @if ($global_mode === 'none')
                         <div class="absolute top-3 right-3 text-rose-500">
-                            <i class='bx bxs-check-circle text-lg'></i>
+                            <x-bxs-check-circle class="w-5 h-5" />
                         </div>
                     @endif
                 </button>
@@ -99,8 +99,8 @@
                     class="text-xs font-bold text-slate-500 hover:text-blue-600 transition-all flex items-center gap-2 px-4 py-2 flex-col group">
                     <span
                         x-text="showOverrides ? 'Hide Module Customization' : 'Customize Notifications per Module'"></span>
-                    <i class='bx text-xl transition-transform group-hover:translate-y-0.5'
-                        :class="showOverrides ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+                    <x-bx-chevron-up class="w-5 h-5 transition-transform group-hover:translate-y-0.5" x-show="showOverrides" x-cloak />
+                    <x-bx-chevron-down class="w-5 h-5 transition-transform group-hover:translate-y-0.5" x-show="!showOverrides" x-cloak />
                 </button>
             </div>
         </div>
@@ -113,7 +113,7 @@
                         <div class="flex items-center gap-3">
                             <div
                                 class="h-10 w-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
-                                <i class='bx bx-category text-xl'></i>
+                                <x-bx-category class="w-5 h-5" />
                             </div>
                             <div>
                                 <h3 class="text-base font-extrabold text-slate-900 leading-tight">Module Overrides</h3>
@@ -134,7 +134,7 @@
                             <div class="flex items-center gap-4">
                                 <div
                                     class="h-10 w-10 flex-shrink-0 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                                    <i class='bx bx-file text-xl'></i>
+                                    <x-bx-file class="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-slate-900">{{ $label }}</h4>
@@ -160,7 +160,7 @@
                         <div class="p-12 text-center">
                             <div
                                 class="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 mb-4">
-                                <i class='bx bx-search text-3xl'></i>
+                                <x-bx-search class="w-8 h-8" />
                             </div>
                             <h4 class="text-sm font-bold text-slate-900">No Modules Detected</h4>
                             <p class="text-xs text-slate-500 mt-2">No classes implementing the Approvable interface were
@@ -177,14 +177,14 @@
             class="glass-card px-6 py-6 border border-slate-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div
                 class="flex items-center gap-3 text-slate-600 bg-blue-50/50 px-4 py-3 rounded-xl border border-blue-100/50">
-                <i class='bx bx-info-circle text-xl text-blue-500'></i>
+                <x-bx-info-circle class="w-5 h-5 text-blue-500" />
                 <span class="text-xs font-bold leading-tight">Preferences are applied immediately upon saving.</span>
             </div>
             <button wire:click="save" wire:loading.attr="disabled"
                 class="px-8 h-12 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200/50 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3">
                 <span wire:loading.remove>Save Preferences</span>
                 <span wire:loading>Saving...</span>
-                <i class='bx bx-save text-lg' wire:loading.remove></i>
+                <x-bx-save class="w-5 h-5" wire:loading.remove />
             </button>
         </div>
 

@@ -11,7 +11,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
-                <i class="bx bx-buildings text-white text-2xl"></i>
+                <x-bx-buildings class="text-white w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Departments</h1>
@@ -20,7 +20,7 @@
         </div>
         <a href="{{ route('compliance.dashboard') }}"
             class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
-            <i class="bx bx-bar-chart-alt text-base"></i> Dashboard
+            <x-bx-bar-chart-alt class="w-4 h-4" /> Dashboard
         </a>
     </div>
 
@@ -48,7 +48,7 @@
     <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
         {{-- Search --}}
         <div class="relative flex-1 min-w-[180px]">
-            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name or code…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
@@ -80,7 +80,7 @@
             </select>
             <button wire:click="toggleDir"
                 class="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors">
-                <i class="bx {{ $dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down' }} text-lg"></i>
+                <x-icon :name="$dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down'" class="w-5 h-5" />
             </button>
         </div>
 
@@ -133,12 +133,11 @@
                     </span>
 
                     {{-- Arrow --}}
-                    <i
-                        class="bx bx-chevron-right text-slate-300 group-hover:text-indigo-400 transition-colors text-xl shrink-0"></i>
+                    <x-bx-chevron-right class="text-slate-300 group-hover:text-indigo-400 transition-colors w-5 h-5 shrink-0" />
                 </a>
             @empty
                 <div class="py-16 text-center">
-                    <i class="bx bx-search text-4xl text-slate-300"></i>
+                    <x-bx-search class="w-9 h-9 text-slate-300" />
                     <p class="text-sm text-slate-400 mt-2">No departments match your filters.</p>
                     <button wire:click="$set('search', ''); $set('status', 'all'); $set('bucket', '')"
                         class="mt-3 text-xs text-indigo-600 hover:underline">Clear filters</button>

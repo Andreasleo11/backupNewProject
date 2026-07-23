@@ -63,7 +63,7 @@
 
                     <button type="button" @click="openUploadFiles = true"
                         class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
-                        <i class='bx bx-upload text-base mr-1.5'></i>
+                        <x-bx-upload class="w-4 h-4 mr-1.5" />
                         Upload related files
                     </button>
                 @endif

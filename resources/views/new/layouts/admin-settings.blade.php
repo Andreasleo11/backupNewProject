@@ -15,28 +15,28 @@
         
         @can('system.admin')
         <a href="{{ route('admin.access-overview.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.access-overview.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-shield-quarter text-lg"></i>
+            <x-bx-shield-quarter class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Access Overview</span>
         </a>
         @endcan
         
         @can('user.view-any')
         <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.users.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-user text-lg"></i>
+            <x-bx-user class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Users</span>
         </a>
         @endcan
         
         @can('role.view-any')
         <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.roles.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-key text-lg"></i>
+            <x-bx-key class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Roles</span>
         </a>
         @endcan
 
         @can('system.admin')
         <a href="{{ route('admin.permission-sync.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.permission-sync.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-refresh text-lg"></i>
+            <x-bx-refresh class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Permission Sync</span>
         </a>
         @endcan
@@ -49,14 +49,14 @@
 
         @can('department.view-any')
         <a href="{{ route('admin.departments.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.departments.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-building text-lg"></i>
+            <x-bx-building class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Departments</span>
         </a>
         @endcan
 
         @can('employee.view-any')
         <a href="{{ route('admin.employees.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.employees.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-group text-lg"></i>
+            <x-bx-group class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Employees</span>
         </a>
         @endcan
@@ -69,7 +69,7 @@
 
         @can('approval.manage-rules')
         <a href="{{ route('admin.approval-rules.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors group {{ request()->routeIs('admin.approval-rules.*') ? 'bg-slate-900 text-slate-50 font-medium' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-            <i class="bx bx-check-shield text-lg"></i>
+            <x-bx-check-shield class="w-5 h-5" />
             <span class="text-sm tracking-tight pt-0.5">Approval Rules</span>
         </a>
         @endcan

@@ -17,8 +17,7 @@
                     <button @click="open = !open" wire:loading.attr="disabled"
                         class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 shadow-sm hover:bg-slate-900/90 transition-colors disabled:opacity-50"
                         title="Sync from JPayroll">
-                        <i class='bx bx-refresh text-lg' wire:loading.class="animate-spin"
-                            wire:target="sync"></i>
+                        <x-bx-refresh class="w-5 h-5" wire:loading.class="animate-spin" wire:target="sync" />
                         <span>Configure Sync</span>
                     </button>
 
@@ -37,7 +36,7 @@
                                     class="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-950">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <i class='bx bx-user text-slate-600 text-base'></i>
+                                        <x-bx-user class="text-slate-600 w-4 h-4" />
                                         <span class="text-xs font-semibold text-slate-900">Employee Master</span>
                                     </div>
                                     <p class="text-[10px] text-slate-500 mt-0.5 ml-6">Upsert employee records from JPayroll</p>
@@ -50,7 +49,7 @@
                                     class="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-950">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <i class='bx bx-calendar-check text-slate-600 text-base'></i>
+                                        <x-bx-calendar-check class="text-slate-600 w-4 h-4" />
                                         <span class="text-xs font-semibold text-slate-900">Annual Leave</span>
                                     </div>
                                     <p class="text-[10px] text-slate-500 mt-0.5 ml-6">Refresh leave balance quotas</p>
@@ -63,7 +62,7 @@
                                     class="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-950">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <i class='bx bx-time text-slate-600 text-base'></i>
+                                        <x-bx-time class="text-slate-600 w-4 h-4" />
                                         <span class="text-xs font-semibold text-slate-900">Attendance Records</span>
                                     </div>
                                     <p class="text-[10px] text-slate-500 mt-0.5 ml-6">Import raw daily attendance data</p>
@@ -97,8 +96,8 @@
                                 wire:loading.attr="disabled"
                                 :disabled="phases.length === 0"
                                 class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md text-xs font-medium hover:bg-slate-900/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                                <i class='bx bx-search-alt text-sm' wire:loading.class="hidden" wire:target="sync"></i>
-                                <i class='bx bx-loader-alt animate-spin text-sm hidden' wire:loading.class.remove="hidden" wire:target="sync"></i>
+                                <x-bx-search-alt class="w-4 h-4" wire:loading.class="hidden" wire:target="sync" />
+                                <x-bx-loader-alt class="animate-spin w-4 h-4 hidden" wire:loading.class.remove="hidden" wire:target="sync" />
                                 Preview
                             </button>
                         </div>
@@ -109,7 +108,7 @@
                         <button @click="histOpen = !histOpen"
                             class="inline-flex items-center justify-center p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-md transition-colors bg-white"
                             title="View Sync History">
-                            <i class='bx bx-history text-lg'></i>
+                            <x-bx-history class="w-5 h-5" />
                         </button>
 
                         <div x-show="histOpen" @click.away="histOpen = false" x-transition
@@ -135,7 +134,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <i class='bx bx-right-arrow-alt text-slate-300 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-1 transition-all'></i>
+                                        <x-bx-right-arrow-alt class="text-slate-300 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-x-1 transition-all" />
                                     </button>
                                 @empty
                                     <div class="px-6 py-4">

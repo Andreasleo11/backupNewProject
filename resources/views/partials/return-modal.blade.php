@@ -33,7 +33,7 @@
                             </div>
                             <button type="button" @click="open = false"
                                 class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
-                                <i class='bx bx-x text-2xl'></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
                     </div>
@@ -46,7 +46,7 @@
                         <div class="mb-6">
                             <div
                                 class="mb-4 flex items-start gap-3 rounded-lg bg-orange-50 p-4 border border-orange-100">
-                                <i class='bx bx-info-circle text-xl text-orange-600'></i>
+                                <x-bx-info-circle class="w-5 h-5 text-orange-600" />
                                 <div class="text-sm text-orange-800">
                                     <p class="font-medium">The creator will be notified to revise this
                                         {{ strtolower($entityName) }}.</p>

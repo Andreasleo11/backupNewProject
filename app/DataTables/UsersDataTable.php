@@ -23,8 +23,8 @@ class UsersDataTable extends DataTable
 
             ->addColumn(
                 'action',
-                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}"><i class="bx bx-edit"></i></button>
-                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal{{$id}}"><i class="bx bx-trash"></i></button>
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}">' . svg('bx-edit', 'w-4 h-4')->toHtml() . '</button>
+                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal{{$id}}">' . svg('bx-trash', 'w-4 h-4')->toHtml() . '</button>
                                     <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#resetPasswordConfirmationModal{{$id}}">Reset Password</button>
                                     ',
             )

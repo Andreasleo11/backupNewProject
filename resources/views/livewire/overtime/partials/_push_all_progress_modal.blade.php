@@ -89,11 +89,10 @@
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10"
                              :class="jobProgress?.status === 'completed' ? 'bg-green-100' : (jobProgress?.status === 'failed' ? 'bg-red-100' : 'bg-indigo-100')">
-                            <i class='bx text-xl'
-                               :class="jobProgress?.status === 'completed' ? 'bx-check text-green-600' : (jobProgress?.status === 'failed' ? 'bx-x text-red-600' : 'bx-cloud-upload text-indigo-600')"
-                               x-show="jobProgress?.status !== 'processing'">
-                            </i>
-                            <i class='bx bx-loader-alt animate-spin text-indigo-600 text-xl' x-show="jobProgress?.status === 'processing'"></i>
+                            <x-bx-check class="w-5 h-5 text-green-600" x-show="jobProgress?.status === 'completed'" x-cloak />
+                            <x-bx-x class="w-5 h-5 text-red-600" x-show="jobProgress?.status === 'failed'" x-cloak />
+                            <x-bx-cloud-upload class="w-5 h-5 text-indigo-600" x-show="jobProgress?.status !== 'processing' && jobProgress?.status !== 'completed' && jobProgress?.status !== 'failed'" x-cloak />
+                            <x-bx-loader-alt class="animate-spin text-indigo-600 w-5 h-5" x-show="jobProgress?.status === 'processing'" />
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="progress-modal-title">
@@ -103,7 +102,7 @@
                                 {{-- Error State --}}
                                 <div x-show="jobProgress?.status === 'error'" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
                                     <div class="flex">
-                                        <i class='bx bx-error-circle text-red-400 text-xl'></i>
+                                        <x-bx-error-circle class="text-red-400 w-5 h-5" />
                                         <div class="ml-3">
                                             <h4 class="text-sm font-medium text-red-800">Progress Tracking Error</h4>
                                             <p class="text-sm text-red-700 mt-1" x-text="jobProgress?.error || 'Unable to track progress. The operation may still be running.'"></p>
@@ -163,7 +162,7 @@
                                     {{-- Error Message --}}
                                     <div x-show="jobProgress.error_message" class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
                                         <div class="flex">
-                                            <i class='bx bx-error-circle text-red-400'></i>
+                                            <x-bx-error-circle class="text-red-400" />
                                             <div class="ml-3">
                                                 <p class="text-sm text-red-800" x-text="jobProgress.error_message"></p>
                                             </div>
@@ -183,7 +182,7 @@
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm">
                         <span wire:loading.remove>Cancel Operation</span>
                         <span wire:loading>
-                            <i class='bx bx-loader-alt animate-spin mr-2'></i>
+                            <x-bx-loader-alt class="animate-spin mr-2" />
                             Cancelling...
                         </span>
                     </button>

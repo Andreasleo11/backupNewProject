@@ -34,7 +34,7 @@
             </div>
             <a href="{{ route('departments.index') }}"
                 class="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
-                <i class="bx bx-arrow-back text-base"></i> Departments
+                <x-bx-arrow-back class="w-4 h-4" /> Departments
             </a>
         </div>
     </div>
@@ -43,7 +43,7 @@
     <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
         {{-- Search --}}
         <div class="relative flex-1 min-w-[180px]">
-            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by code or name…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
@@ -86,7 +86,7 @@
             </select>
             <button wire:click="sortBy('{{ $sort }}')"
                 class="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors">
-                <i class="bx {{ $dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down' }} text-lg"></i>
+                <x-icon :name="$dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down'" class="w-5 h-5" />
             </button>
         </div>
 
@@ -140,7 +140,7 @@
                                 @if ($r['requires_approval'])
                                     <span
                                         class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-indigo-50 text-indigo-600 border border-indigo-200">
-                                        <i class="bx bx-shield-quarter text-xs"></i> Approval required
+                                        <x-bx-shield-quarter class="w-3 h-3" /> Approval required
                                     </span>
                                 @endif
                             </div>
@@ -175,12 +175,12 @@
                                 <button type="button"
                                     @click="$dispatch('trigger-upload-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
                                     class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm shadow-indigo-200 transition-all">
-                                    <i class="bx bx-upload text-sm"></i> Upload
+                                    <x-bx-upload class="w-4 h-4" /> Upload
                                 </button>
                                 <button type="button"
                                     @click="$dispatch('trigger-history-modal', { reqId: {{ $r['id'] }}, deptId: {{ $department->id }} })"
                                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold transition-all">
-                                    <i class="bx bx-history text-sm"></i> History
+                                    <x-bx-history class="w-4 h-4" /> History
                                     @if ($r['pending'] > 0)
                                         <span
                                             class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-amber-400 text-white text-[10px] font-bold">{{ $r['pending'] }}</span>
@@ -192,7 +192,7 @@
                 </div>
             @empty
                 <div class="py-16 text-center">
-                    <i class="bx bx-search text-4xl text-slate-300"></i>
+                    <x-bx-search class="w-9 h-9 text-slate-300" />
                     <p class="text-sm text-slate-400 mt-2">No requirements match your filters.</p>
                     <button wire:click="$set('search', ''); $set('status', 'all'); $set('onlyUnmet', false)"
                         class="mt-3 text-xs text-indigo-600 hover:underline">Clear filters</button>

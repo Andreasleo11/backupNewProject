@@ -24,7 +24,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
                 'action',
                 '
                                     <a href="{{ route("purchase-requests.show", ["id" => $id]) }}" class="btn btn-secondary me-2">
-                                        <i class="bx bx-info-circle" ></i> Detail
+                                        ' . svg('bx-info-circle', 'w-4 h-4')->toHtml() . ' Detail
                                     </a>
 
                                 ',

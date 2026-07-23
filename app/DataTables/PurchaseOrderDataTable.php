@@ -291,7 +291,7 @@ class PurchaseOrderDataTable extends DataTable
         $buttons = [
             Button::make('excel')
                 ->text(
-                    '<i class=\'bx bx-spreadsheet\' style\'color:#ffffff\' ></i> Export to Excel',
+                    '\' . svg('bx-spreadsheet', 'w-4 h-4')->toHtml() . \' Export to Excel',
                 )
                 ->attr(['class' => 'btn btn-secondary btn-sm']),
             Button::make('csv'),
@@ -306,13 +306,13 @@ class PurchaseOrderDataTable extends DataTable
             $buttons = array_merge(
                 [
                     Button::make()
-                        ->text('<i class=\'bx bx-check-circle\'></i> Approve Selected')
+                        ->text('\' . svg('bx-check-circle', 'w-4 h-4')->toHtml() . \' Approve Selected')
                         ->attr([
                             'id' => 'approve-selected-btn',
                             'class' => 'btn btn-success btn-sm',
                         ]),
                     Button::make()
-                        ->text('<i class=\'bx bx-x-circle\'></i> Reject Selected')
+                        ->text('\' . svg('bx-x-circle', 'w-4 h-4')->toHtml() . \' Reject Selected')
                         ->attr(['id' => 'reject-selected-btn', 'class' => 'btn btn-danger btn-sm']),
                 ],
                 $buttons,

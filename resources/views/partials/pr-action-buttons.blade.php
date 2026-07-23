@@ -4,12 +4,12 @@
         <button type="button" title="Quick View" wire:click.prefetch="openQuickView({{ $pr->id }})"
             @click="$dispatch('open-quick-view-modal', { id: {{ $pr->id }} })"
             class="group flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm">
-            <i class='bx bx-search-alt text-lg group-hover:scale-110 transition-transform'></i>
+            <x-bx-search-alt class="w-5 h-5 group-hover:scale-110 transition-transform" />
         </button>
     @else
         <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}" title="View Details"
             class="group flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all shadow-sm">
-            <i class='bx bx-info-circle text-lg'></i>
+            <x-bx-info-circle class="w-5 h-5" />
         </a>
     @endif
 
@@ -18,7 +18,7 @@
         <button type="button" @click="open = !open; x = $event.clientX; y = $event.clientY;"
             class="flex h-8 w-8 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
             :class="{ 'bg-slate-100 border-slate-300 text-slate-900 ring-4 ring-slate-100': open }">
-            <i class='bx bx-dots-vertical-rounded text-lg'></i>
+            <x-bx-dots-vertical-rounded class="w-5 h-5" />
         </button>
 
         <template x-teleport="body">
@@ -40,12 +40,12 @@
 
                 <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}"
                     class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-                    <i class='bx bx-info-circle text-lg opacity-80'></i> Full Detail View
+                    <x-bx-info-circle class="w-5 h-5 opacity-80" /> Full Detail View
                 </a>
 
                 <a href="{{ route('purchase-requests.export-pdf', $pr->id) }}"
                     class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-                    <i class='bx bxs-file-pdf text-lg opacity-80'></i> Export to PDF
+                    <x-bxs-file-pdf class="w-5 h-5 opacity-80" /> Export to PDF
                 </a>
 
                 {{-- Administrative --}}
@@ -58,7 +58,7 @@
                             po: '{{ addslashes($pr->po_number) }}'
                         })"
                         class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors w-full text-left">
-                        <i class='bx bx-edit text-lg opacity-80'></i> 
+                        <x-bx-edit class="w-5 h-5 opacity-80" /> 
                         Edit PO Number
                     </button>
                 @endcan
@@ -77,7 +77,7 @@
                             <button type="button"
                                 @click="$dispatch('open-cancel-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' }); open = false;"
                                 class="flex items-center gap-2.5 px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors w-full text-left font-medium">
-                                <i class='bx bx-x-circle text-lg opacity-80'></i> Cancel Request
+                                <x-bx-x-circle class="w-5 h-5 opacity-80" /> Cancel Request
                             </button>
                         @endcan
 
@@ -85,7 +85,7 @@
                             <button type="button"
                                 @click="$dispatch('open-delete-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' }); open = false;"
                                 class="flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors w-full text-left font-medium">
-                                <i class='bx bx-trash text-lg opacity-80'></i> Move to Trash
+                                <x-bx-trash class="w-5 h-5 opacity-80" /> Move to Trash
                             </button>
                         @endcan
 
@@ -93,7 +93,7 @@
                             <button type="button"
                                 @click="$dispatch('open-delete-forever-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' }); open = false;"
                                 class="flex items-center gap-2.5 px-3 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900 transition-colors w-full text-left font-black">
-                                <i class='bx bxs-trash-alt text-lg opacity-80'></i> Purge Forever
+                                <x-bxs-trash-alt class="w-5 h-5 opacity-80" /> Purge Forever
                             </button>
                         @endcan
                     @endif

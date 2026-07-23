@@ -19,7 +19,7 @@
                     class="sticky top-0 z-20 bg-white/90 backdrop-blur-md px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                            <i class="bx bx-show-alt text-xl"></i>
+                            <x-bx-show-alt class="w-5 h-5" />
                         </div>
                         <div>
                             <h2 class="text-sm font-black text-slate-800 uppercase tracking-tight">Quick Requisition
@@ -30,7 +30,7 @@
                     </div>
                     <button @click="open = false"
                         class="h-9 w-9 rounded-xl hover:bg-slate-50 text-slate-400 transition-colors flex items-center justify-center">
-                        <i class="bx bx-x text-2xl"></i>
+                        <x-bx-x class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -71,11 +71,9 @@
                                     <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">
                                         Requestor Origin</p>
                                     <div class="space-y-1">
-                                        <p class="text-sm font-bold text-slate-700 flex items-center gap-2"><i
-                                                class="bx bx-user opacity-40"></i>{{ $pr->createdBy->name ?? 'Unknown' }}
+                                        <p class="text-sm font-bold text-slate-700 flex items-center gap-2"><x-bx-user class="opacity-40" />{{ $pr->createdBy->name ?? 'Unknown' }}
                                         </p>
-                                        <p class="text-xs font-medium text-slate-500 flex items-center gap-2"><i
-                                                class="bx bx-building-house opacity-40"></i>{{ $pr->from_department }}
+                                        <p class="text-xs font-medium text-slate-500 flex items-center gap-2"><x-bx-building-house class="opacity-40" />{{ $pr->from_department }}
                                             ({{ $pr->branch->value ?? $pr->branch }})</p>
                                     </div>
                                 </div>
@@ -83,11 +81,9 @@
                                     <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">
                                         Timeline & Destination</p>
                                     <div class="space-y-1">
-                                        <p class="text-sm font-bold text-slate-700 flex items-center gap-2"><i
-                                                class="bx bx-calendar opacity-40"></i>{{ \Carbon\Carbon::parse($pr->date_pr)->format('d M Y') }}
+                                        <p class="text-sm font-bold text-slate-700 flex items-center gap-2"><x-bx-calendar class="opacity-40" />{{ \Carbon\Carbon::parse($pr->date_pr)->format('d M Y') }}
                                         </p>
-                                        <p class="text-xs font-medium text-slate-500 flex items-center gap-2"><i
-                                                class="bx bx-right-arrow-alt opacity-40"></i>To:
+                                        <p class="text-xs font-medium text-slate-500 flex items-center gap-2"><x-bx-right-arrow-alt class="opacity-40" />To:
                                             {{ $pr->to_department->value ?? $pr->to_department }}</p>
                                     </div>
                                 </div>
@@ -201,7 +197,7 @@
                                 <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100 flex gap-4">
                                     <div
                                         class="h-8 w-8 rounded-lg bg-amber-200 flex items-center justify-center text-amber-700 shrink-0">
-                                        <i class="bx bxs-quote-alt-left text-lg"></i></div>
+                                        <x-bxs-quote-alt-left class="w-5 h-5" /></div>
                                     <div>
                                         <p
                                             class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1 leading-none">
@@ -258,8 +254,7 @@
                         preview</p>
                     <a href="{{ $prId ? route('purchase-requests.show', $prId) : '#' }}"
                         class="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 group">
-                        Full Detail <i
-                            class="bx bx-right-arrow-alt transition-transform group-hover:translate-x-1"></i>
+                        Full Detail <x-bx-right-arrow-alt class="transition-transform group-hover:translate-x-1" />
                     </a>
                 </div>
             </div>

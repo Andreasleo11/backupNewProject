@@ -33,7 +33,7 @@
                                     <td>
                                         <a href=" {{ route('pt.detail', ['id' => $report->id]) }}"
                                             class="btn btn-secondary my-1 me-1">
-                                            <i class='bx bx-info-circle'></i> <span
+                                            <x-bx-info-circle class="" /> <span
                                                 class="d-none d-sm-inline ">Detail</span>
                                         </a>
                                     </td>

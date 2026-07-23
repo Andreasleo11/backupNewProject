@@ -31,7 +31,7 @@
                             } catch (error) {
                                 console.error(error);
                                 this.sidebarHtml =
-                                    '<div class="p-8 text-center"><i class="bx bx-error text-3xl text-rose-500 mb-2"></i><p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Failed to load content</p></div>';
+                                    '<div class="p-8 text-center"><x-bx-error class="w-8 h-8 text-rose-500 mb-2" /><p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Failed to load content</p></div>';
                             } finally {
                                 this.detailLoading = false;
                             }
@@ -61,7 +61,7 @@
 
             <a href="{{ route('hrd.importantDocs.create') }}"
                 class="inline-flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-6 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95">
-                <i class="bx bx-plus-circle mr-2 text-lg"></i>
+                <x-bx-plus-circle class="mr-2 w-5 h-5" />
                 Add Document
             </a>
         </div>
@@ -144,13 +144,13 @@
                                     x-show="$store.docLibrary.activeStatus !== ''"
                                     class="px-2 text-[10px] font-black text-indigo-600 hover:scale-110 transition-transform"
                                     title="Clear Filters">
-                                    <i class="bx bx-x-circle text-lg"></i>
+                                    <x-bx-x-circle class="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
                     @else
                         <div class="flex items-center gap-3 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
-                            <i class="bx bx-trash-alt text-amber-500 text-xl"></i>
+                            <x-bx-trash-alt class="text-amber-500 w-5 h-5" />
                             <span class="text-[11px] font-bold text-amber-700 leading-tight">You are in the Trash. Documents
                                 here have been soft-deleted and can be restored or permanently purged.</span>
                         </div>
@@ -162,9 +162,9 @@
                     <button type="button" @click="filtersOpen = !filtersOpen"
                         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all"
                         :class="filtersOpen ? 'ring-2 ring-indigo-500/20 border-indigo-500 text-indigo-700 bg-indigo-50/50' : ''">
-                        <i class="bx bx-filter-alt"></i>
+                        <x-bx-filter-alt class="" />
                         More Filters
-                        <i class="bx bx-chevron-down transition-transform" :class="filtersOpen ? 'rotate-180' : ''"></i>
+                        <x-bx-chevron-down class="transition-transform" x-bind:class="filtersOpen ? 'rotate-180' : ''" />
                     </button>
 
                     {{-- Elegant Filter Dropdown --}}
@@ -181,7 +181,7 @@
                             <div class="relative group">
                                 <div
                                     class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-                                    <i class="bx bx-tag-alt"></i>
+                                    <x-bx-tag-alt class="" />
                                 </div>
                                 <select id="typeFilter"
                                     class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all appearance-none">
@@ -201,7 +201,7 @@
                                 <input type="hidden" name="tab" value="{{ $tab }}">
                                 <div
                                     class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-500 transition-colors">
-                                    <i class="bx bx-timer"></i>
+                                    <x-bx-timer class="" />
                                 </div>
                                 <select name="threshold" onchange="this.form.submit()"
                                     class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all appearance-none">
@@ -250,18 +250,18 @@
                                     class="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                                     <h2
                                         class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <i class="bx bx-file text-indigo-500"></i> Quick Document View
+                                        <x-bx-file class="text-indigo-500" /> Quick Document View
                                     </h2>
                                     <div class="flex items-center gap-1">
                                         <a :href="'{{ route('hrd.importantDocs.detail', '') }}/' + $store.docLibrary.detailId"
                                             title="Open Full Page View"
                                             class="rounded-full p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all">
-                                            <i class="bx bx-expand-alt text-xl"></i>
+                                            <x-bx-expand-alt class="w-5 h-5" />
                                         </a>
                                         <button type="button" @click="$store.docLibrary.detailOpen = false"
                                             title="Close Sidebar"
                                             class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
-                                            <i class="bx bx-x text-2xl"></i>
+                                            <x-bx-x class="w-6 h-6" />
                                         </button>
                                     </div>
                                 </div>

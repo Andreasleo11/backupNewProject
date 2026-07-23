@@ -14,7 +14,7 @@
                 {{-- Count --}}
                 <div class="flex items-center gap-2 pr-4 border-r border-slate-700">
                     <div class="h-7 w-7 rounded-lg bg-indigo-600 flex items-center justify-center">
-                        <i class='bx bx-check text-white text-sm'></i>
+                        <x-bx-check class="text-white w-4 h-4" />
                     </div>
                     {{-- Filter unique forms selected since multiple employees from same form could be selected --}}
                     <span class="text-sm font-black text-white" x-text="[...new Set(selectedIds)].length + ' Forms Selected'"></span>
@@ -27,11 +27,11 @@
                         wire:target="signSelected"
                         class="h-9 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2 disabled:opacity-50">
                         <span wire:loading.remove wire:target="signSelected">
-                            <i class='bx bx-check-double text-base'></i>
+                            <x-bx-check-double class="w-4 h-4" />
                             Sign Selected
                         </span>
                         <span wire:loading wire:target="signSelected">
-                            <i class='bx bx-loader-alt animate-spin text-base'></i>
+                            <x-bx-loader-alt class="animate-spin w-4 h-4" />
                             Signing...
                         </span>
                     </button>

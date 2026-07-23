@@ -27,7 +27,7 @@
                 <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-                            <i class='bx bx-file-find text-2xl'></i>
+                            <x-bx-file-find class="w-6 h-6" />
                         </div>
                         <div>
                             <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">Batch Approval Snapshot</h3>
@@ -36,7 +36,7 @@
                     </div>
                     <button @click="$wire.showSnapshot = false"
                         class="h-10 w-10 rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center text-slate-400">
-                        <i class='bx bx-x text-2xl'></i>
+                        <x-bx-x class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -70,7 +70,7 @@
                                     <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Start</p>
                                     <p class="text-xs font-black text-slate-700">{{ $snapshot['date_range']['start'] ?? '—' }}</p>
                                 </div>
-                                <i class='bx bx-right-arrow-alt text-slate-300'></i>
+                                <x-bx-right-arrow-alt class="text-slate-300" />
                                 <div class="flex-1 p-3 rounded-xl bg-slate-50 border border-slate-100">
                                     <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">End</p>
                                     <p class="text-xs font-black text-slate-700">{{ $snapshot['date_range']['end'] ?? '—' }}</p>
@@ -93,7 +93,7 @@
                     @if (!empty($warnings))
                         <div class="p-6 rounded-3xl bg-rose-50 border border-rose-100 space-y-4">
                             <div class="flex items-center gap-3 text-rose-600">
-                                <i class='bx bx-error-alt text-2xl'></i>
+                                <x-bx-error-alt class="w-6 h-6" />
                                 <h4 class="text-sm font-black uppercase tracking-tight">Risk Anomalies Detected</h4>
                             </div>
                             <div class="space-y-3">
@@ -130,18 +130,18 @@
                                                 wire:target="excludeConflictingForms"
                                                 class="flex-1 h-10 rounded-xl bg-white border border-rose-200 text-[10px] font-black text-rose-700 uppercase tracking-widest hover:bg-rose-100 transition-all flex items-center justify-center gap-2">
                                                 <span wire:loading.remove wire:target="excludeConflictingForms">
-                                                    <i class='bx bx-filter-alt text-sm'></i>
+                                                    <x-bx-filter-alt class="w-4 h-4" />
                                                     Exclude {{ count($conflictingFormIds) }} Conflicting {{ count($conflictingFormIds) === 1 ? 'Form' : 'Forms' }}
                                                 </span>
                                                 <span wire:loading wire:target="excludeConflictingForms">
-                                                    <i class='bx bx-loader-alt animate-spin text-sm'></i> Updating…
+                                                    <x-bx-loader-alt class="animate-spin w-4 h-4" /> Updating…
                                                 </span>
                                             </button>
                                         @endif
 
                                         <button type="button" wire:click="acknowledgeWarnings"
                                             class="flex-1 h-10 rounded-xl bg-amber-50 border border-amber-200 text-[10px] font-black text-amber-700 uppercase tracking-widest hover:bg-amber-100 transition-all flex items-center justify-center gap-2">
-                                            <i class='bx bx-check-shield text-sm'></i>
+                                            <x-bx-check-shield class="w-4 h-4" />
                                             Acknowledge & Continue
                                         </button>
                                     </div>
@@ -149,7 +149,7 @@
                             @else
                                 <div class="pt-3 border-t border-emerald-200/50">
                                     <div class="flex items-center gap-2 text-emerald-600">
-                                        <i class='bx bx-check-circle text-lg'></i>
+                                        <x-bx-check-circle class="w-5 h-5" />
                                         <p class="text-[10px] font-black uppercase tracking-widest">Warnings acknowledged — you may proceed</p>
                                     </div>
                                 </div>
@@ -158,7 +158,7 @@
                     @else
                         <div class="p-8 rounded-3xl bg-emerald-50 border border-emerald-100 text-center">
                             <div class="h-12 w-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-100">
-                                <i class='bx bx-check text-2xl'></i>
+                                <x-bx-check class="w-6 h-6" />
                             </div>
                             <h4 class="text-sm font-black text-emerald-900 uppercase">Heuristics Clear</h4>
                             <p class="text-xs text-emerald-600 mt-1">No session overlaps or threshold violations detected in this batch.</p>
@@ -189,7 +189,7 @@
                             class="flex-[1.5] h-12 rounded-2xl bg-emerald-600 text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all">
                             <span wire:loading.remove wire:target="bulkApprove">Confirm Batch Approval</span>
                             <span wire:loading wire:target="bulkApprove">
-                                <i class='bx bx-loader-alt animate-spin'></i> Signing…
+                                <x-bx-loader-alt class="animate-spin" /> Signing…
                             </span>
                         </button>
                     @endif
@@ -214,7 +214,7 @@
                 <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-rose-50 blur-2xl pointer-events-none"></div>
                 <div class="relative z-10">
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                        <i class='bx bx-trash text-3xl'></i>
+                        <x-bx-trash class="w-8 h-8" />
                     </div>
                     <h3 class="text-base font-black text-slate-800">Delete OT-{{ $pendingDeleteId }}?</h3>
                     <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
@@ -227,7 +227,7 @@
                         </button>
                         <button wire:click="deleteConfirmed" wire:loading.attr="disabled"
                             class="flex-1 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white shadow-md shadow-rose-500/20 hover:bg-rose-700 disabled:opacity-50 transition-all">
-                            <i class='bx bx-trash'></i> Delete
+                            <x-bx-trash class="" /> Delete
                         </button>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                 <div class="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-orange-50 blur-2xl pointer-events-none"></div>
                 <div class="relative z-10">
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
-                        <i class='bx bx-x-circle text-3xl'></i>
+                        <x-bx-x-circle class="w-8 h-8" />
                     </div>
                     <h3 class="text-base font-black text-slate-800">Cancel OT-{{ $pendingCancelId }}?</h3>
                     <p class="mt-2 text-xs text-slate-500 leading-relaxed mb-5">
@@ -264,7 +264,7 @@
                         </button>
                         <button wire:click="cancelConfirmed" wire:loading.attr="disabled"
                             class="flex-1 rounded-xl bg-orange-600 py-2.5 text-xs font-black text-white shadow-md shadow-orange-500/20 hover:bg-orange-700 disabled:opacity-50 transition-all">
-                            <i class='bx bx-x-circle'></i> Cancel Form
+                            <x-bx-x-circle class="" /> Cancel Form
                         </button>
                     </div>
                 </div>

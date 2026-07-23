@@ -20,7 +20,7 @@
         <span
             class="ml-1 inline-flex h-7 w-7 items-center justify-center 
                    rounded-full bg-slate-800 text-slate-50 text-xs">
-            <i class='bx bxs-lock-alt text-[0.8rem]'></i>
+            <x-bxs-lock-alt class="text-[0.8rem]" />
         </span>
     @endif
 @elseif($report->rejected_at && $hoursDifference !== null && $hoursDifference < 24)
@@ -39,7 +39,7 @@
             <span
                 class="ml-1 inline-flex h-7 w-7 items-center justify-center 
                        rounded-full bg-slate-100 text-slate-500">
-                <i class='bx bx-mail-send text-[0.9rem]'></i>
+                <x-bx-mail-send class="text-[0.9rem]" />
             </span>
         @endif
     @endif
@@ -58,7 +58,7 @@
         <span
             class="ml-1 inline-flex h-7 w-7 items-center justify-center 
                    rounded-full bg-slate-100 text-slate-500">
-            <i class='bx bx-mail-send text-[0.9rem]'></i>
+            <x-bx-mail-send class="text-[0.9rem]" />
         </span>
     @endif
 @endif

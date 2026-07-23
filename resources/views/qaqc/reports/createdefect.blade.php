@@ -150,7 +150,7 @@
                                                                             @method('DELETE')
                                                                             <button type="submit"
                                                                                 class="btn btn-danger btn-sm">
-                                                                                <i class='bx bx-trash-alt'></i>
+                                                                                <x-bx-trash-alt class="" />
                                                                             </button>
                                                                         </form>
                                                                     </td>

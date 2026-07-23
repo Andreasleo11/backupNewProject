@@ -12,7 +12,7 @@
         
         <button wire:click="openCreateModal" 
             class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all">
-            <i class='bx bx-plus text-lg'></i>
+            <x-bx-plus class="w-5 h-5" />
             Add New Locker
         </button>
     </div>
@@ -21,7 +21,7 @@
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-6">
         <div class="p-6 bg-slate-50/30 flex flex-col md:flex-row items-center gap-4">
             <div class="relative flex-1 w-full">
-                <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
+                <x-bx-search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input type="text" wire:model.live.debounce.300ms="search" 
                     placeholder="Search locker number or location..." 
                     class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
@@ -81,12 +81,12 @@
                                 <div class="flex items-center justify-center gap-2">
                                     <button wire:click="openEditModal({{ $locker->id }})" 
                                         class="h-9 w-9 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
-                                        <i class='bx bx-edit-alt text-lg'></i>
+                                        <x-bx-edit-alt class="w-5 h-5" />
                                     </button>
                                     <button onclick="confirm('Are you sure you want to delete this locker?') || event.stopImmediatePropagation()" 
                                         wire:click="delete({{ $locker->id }})" 
                                         class="h-9 w-9 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-                                        <i class='bx bx-trash text-lg'></i>
+                                        <x-bx-trash class="w-5 h-5" />
                                     </button>
                                 </div>
                             </td>
@@ -96,7 +96,7 @@
                             <td colspan="4" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-4">
-                                        <i class='bx bx-cabinet text-3xl'></i>
+                                        <x-bx-cabinet class="w-8 h-8" />
                                     </div>
                                     <h3 class="text-slate-800 font-bold">No lockers found</h3>
                                     <p class="text-slate-500 text-sm mt-1">Try adjusting your search or add a new locker unit.</p>
@@ -140,7 +140,7 @@
                             <p class="text-xs text-slate-500 font-medium mt-0.5">{{ $editingId ? 'Modify existing locker details' : 'Configure a new locker unit' }}</p>
                         </div>
                         <button @click="isModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                            <i class='bx bx-x text-2xl'></i>
+                            <x-bx-x class="w-6 h-6" />
                         </button>
                     </div>
 

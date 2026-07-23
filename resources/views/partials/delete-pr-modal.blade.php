@@ -40,13 +40,13 @@
                             class="bg-gradient-to-r from-rose-50 to-white border-b border-rose-100 px-5 py-4 flex items-center justify-between">
                             <h5 class="font-bold text-slate-800 flex items-center gap-2">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
-                                    <i class="bx bx-trash text-lg"></i>
+                                    <x-bx-trash class="w-5 h-5" />
                                 </div>
                                 Soft Delete Request
                             </h5>
                             <button type="button" @click="show = false"
                                 class="text-slate-400 hover:text-slate-600 transition-colors">
-                                <i class="bx bx-x text-2xl"></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
 
@@ -58,7 +58,7 @@
                                 to the trash?
                             </p>
                             <p class="text-xs text-slate-500 font-medium mt-3 flex items-center gap-1">
-                                <i class="bx bx-info-circle"></i> This record will be soft-deleted.
+                                <x-bx-info-circle class="" /> This record will be soft-deleted.
                             </p>
                         </div>
 
@@ -70,7 +70,7 @@
                                 wire:loading.attr="disabled"
                                 wire:target="deletePurchaseRequest"
                                 class="bg-rose-500 hover:bg-rose-600 hover:shadow-lg hover:shadow-rose-200 text-white border-0 rounded-lg text-sm px-4 py-2 font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
-                                <i class="bx bx-trash" wire:loading.class="bx-spin" wire:target="deletePurchaseRequest"></i>
+                                <x-bx-trash class="w-4 h-4" wire:loading.class="animate-spin" wire:target="deletePurchaseRequest" />
                                 <span wire:loading.remove wire:target="deletePurchaseRequest">Yes, Delete</span>
                                 <span wire:loading wire:target="deletePurchaseRequest">Deleting...</span>
                             </button>

@@ -84,7 +84,7 @@
                 Cancel
             </a>
             <button type="submit" wire:loading.attr="disabled" wire:target="saveRule" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50 shadow-sm">
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="saveRule"></i>
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="saveRule" />
                 <span wire:loading.remove wire:target="saveRule">Create & Continue to Steps</span>
                 <span wire:loading wire:target="saveRule">Saving...</span>
             </button>

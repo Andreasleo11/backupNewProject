@@ -13,10 +13,10 @@
 
     if (!function_exists('sortIcon')) {
         function sortIcon($field, $current, $dir) {
-            if ($current !== $field) return "<i class='bx bx-sort text-slate-300'></i>";
+            if ($current !== $field) return '<x-bx-sort class="text-slate-300 w-4 h-4" />';
             return $dir === 'asc'
-                ? "<i class='bx bx-sort-up text-indigo-500 ml-1'></i>"
-                : "<i class='bx bx-sort-down text-indigo-500 ml-1'></i>";
+                ? '<x-bx-sort-up class="text-indigo-500 ml-1 w-4 h-4" />'
+                : '<x-bx-sort-down class="text-indigo-500 ml-1 w-4 h-4" />';
         }
     }
 
@@ -28,7 +28,7 @@
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm py-20 px-6 text-center">
         <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
             <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                <i class='bx bx-time text-3xl opacity-50'></i>
+                <x-bx-time class="w-8 h-8 opacity-50" />
             </div>
             <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No overtime requests yet</h5>
             <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">
@@ -101,7 +101,28 @@
 
                                 @if ($canApprove)
                                     <td class="px-4 py-3 text-center">
-                                        <div class="w-4 h-4 mx-auto"></div>
+                                        @php
+                                            $groupFormIds = $group->headers->pluck('id')->map(fn($id) => (string) $id)->toArray();
+                                        @endphp
+                                        {{-- Group-level checkbox: toggles all forms in this date group --}}
+                                        <input type="checkbox"
+                                            class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer transition-all"
+                                            :checked="(() => { const ids = {{ Js::from($groupFormIds) }}; return ids.length > 0 && ids.every(id => selectedIds.includes(id)); })()"
+                                            @change="(() => {
+                                                const ids = {{ Js::from($groupFormIds) }};
+                                                if ($event.target.checked) {
+                                                    const merged = [...new Set([...selectedIds, ...ids])];
+                                                    selectedIds = merged;
+                                                } else {
+                                                    selectedIds = selectedIds.filter(id => !ids.includes(id));
+                                                }
+                                            })()"
+                                        >
+                                        {{-- Hidden row-checkboxes so header "check all" can discover these form IDs --}}
+                                        @foreach ($groupFormIds as $formId)
+                                            <input type="checkbox" x-model="selectedIds" value="{{ $formId }}"
+                                                class="row-checkbox hidden">
+                                        @endforeach
                                     </td>
                                 @endif
 
@@ -139,7 +160,7 @@
                                 {{-- Status --}}
                                 <td class="px-4 py-3 text-center">
                                     <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $group->consolidated_status['classes'] }}">
-                                        <i class="bx {{ $group->consolidated_status['icon'] }} text-xs"></i>
+                                        <x-icon :name="$group->consolidated_status['icon']" class="w-3 h-3" />
                                         {{ $group->consolidated_status['label'] }}
                                         @if($group->consolidated_status['stage'] != 'signing')
                                             <span class="opacity-50">
@@ -169,7 +190,7 @@
                                     @endphp
                                     <a href="{{ route('overtime.consolidated', ['date' => $group->date] + $consolidatedFilters) }}"
                                         class="inline-flex items-center gap-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all">
-                                        View <i class='bx bx-right-arrow-alt'></i>
+                                        View <x-bx-right-arrow-alt class="" />
                                     </a>
                                 </td>
                             </tr>
@@ -178,7 +199,7 @@
                                 <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-20 text-center">
                                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                         <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                                            <i class='bx bx-calendar-x text-3xl opacity-50'></i>
+                                            <x-bx-calendar-x class="w-8 h-8 opacity-50" />
                                         </div>
                                         <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No groups found</h5>
                                         <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">Try adjusting your date range or filters.</p>
@@ -241,7 +262,7 @@
                                 {{-- Status --}}
                                 <td class="px-4 py-3 text-center">
                                     <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide {{ $smart['classes'] }}">
-                                        <i class="bx {{ $smart['icon'] }} text-xs"></i>
+                                        <x-icon :name="$smart['icon']" class="w-3 h-3" />
                                         {{ $smart['label'] }}
                                         @if ($smart['stage'] === 'signing' && isset($smart['current_role']))
                                             <span class="opacity-50">{{ ucwords(str_replace(['_', '-'], ' ', $smart['current_role'])) }}</span>
@@ -256,18 +277,18 @@
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('overtime.detail', $fot->id) }}"
                                             class="inline-flex items-center gap-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-800 hover:text-white hover:border-slate-800 transition-all">
-                                            Manage <i class='bx bx-right-arrow-alt'></i>
+                                            Manage <x-bx-right-arrow-alt class="" />
                                         </a>
                                         @can('cancel', $fot)
                                             <button wire:click="$dispatch('confirm-cancel', { id: {{ $fot->id }} })"
                                                 class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 hover:bg-orange-50 hover:text-orange-500 transition-all" title="Cancel Form">
-                                                <i class='bx bx-x-circle text-sm'></i>
+                                                <x-bx-x-circle class="w-4 h-4" />
                                             </button>
                                         @endcan
                                         @can('delete', $fot)
                                             <button wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
                                                 class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all" title="Delete Form">
-                                                <i class='bx bx-trash text-sm'></i>
+                                                <x-bx-trash class="w-4 h-4" />
                                             </button>
                                         @endcan
                                     </div>
@@ -278,7 +299,7 @@
                                 <td colspan="{{ $canApprove ? 7 : 6 }}" class="px-6 py-20 text-center">
                                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                         <div class="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mb-4 border-2 border-dashed border-slate-100">
-                                            <i class="bx bx-search-alt text-3xl opacity-50"></i>
+                                            <x-bx-search-alt class="w-8 h-8 opacity-50" />
                                         </div>
                                         <h5 class="text-sm font-black text-slate-800 uppercase tracking-tight">No matching requests found</h5>
                                         <p class="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed">

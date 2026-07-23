@@ -19,7 +19,7 @@
                 </li>
                 <li aria-current="page">
                     <div class="flex items-center">
-                        <i class="bx bx-chevron-right text-slate-400 text-lg"></i>
+                        <x-bx-chevron-right class="text-slate-400 w-5 h-5" />
                         <span
                             class="ml-1 text-sm font-medium text-slate-800 md:ml-2">{{ $requirement?->exists ? 'Edit' : 'Create' }}</span>
                     </div>
@@ -30,7 +30,7 @@
         @if ($requirement?->exists)
             <button @click="showDeleteModal = true"
                 class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2 text-sm font-semibold transition-all">
-                <i class="bx bx-trash text-base"></i> Delete
+                <x-bx-trash class="w-4 h-4" /> Delete
             </button>
         @endif
     </div>
@@ -38,14 +38,14 @@
     {{-- Alerts --}}
     @if (session('success'))
         <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex items-start gap-3">
-            <i class="bx bx-check-circle text-emerald-500 text-xl mt-0.5"></i>
+            <x-bx-check-circle class="text-emerald-500 w-5 h-5 mt-0.5" />
             <p class="text-sm font-medium text-emerald-800">{{ session('success') }}</p>
         </div>
     @endif
 
     @if ($errors->any())
         <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-3">
-            <i class="bx bx-x-circle text-rose-500 text-xl mt-0.5"></i>
+            <x-bx-x-circle class="text-rose-500 w-5 h-5 mt-0.5" />
             <div>
                 <p class="text-sm font-bold text-rose-800">Please fix the following issues:</p>
                 <ul class="mt-1 list-disc list-inside text-xs font-medium text-rose-700">
@@ -82,7 +82,7 @@
                         <div
                             class="flex rounded-xl overflow-hidden border {{ $errors->has('code') ? 'border-rose-300' : 'border-slate-200' }} focus-within:ring-2 focus-within:ring-indigo-400 focus-within:border-indigo-400">
                             <span class="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400">
-                                <i class="bx bx-tag text-lg"></i>
+                                <x-bx-tag class="w-5 h-5" />
                             </span>
                             <input type="text" wire:model.live.debounce.400ms="code"
                                 wire:keydown.debounce.400ms="checkCodeUnique" placeholder="ORG_STRUCTURE"
@@ -90,7 +90,7 @@
                             <button type="button"
                                 class="flex items-center px-3 bg-slate-50 border-l border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-white transition-colors"
                                 onclick="navigator.clipboard.writeText('{{ $code }}')" title="Copy Code">
-                                <i class="bx bx-copy"></i>
+                                <x-bx-copy class="" />
                             </button>
                         </div>
                         <p class="text-xs text-slate-400 mt-1.5">Uppercase, digits, /, _ or -.</p>
@@ -98,7 +98,7 @@
                         @if (!is_null($code_is_unique))
                             <p
                                 class="text-xs font-semibold mt-1 flex items-center gap-1 {{ $code_is_unique ? 'text-emerald-500' : 'text-rose-500' }}">
-                                <i class="bx {{ $code_is_unique ? 'bx-check-circle' : 'bx-x-circle' }}"></i>
+                                <x-icon :name="$code_is_unique ? 'bx-check-circle' : 'bx-x-circle'" />
                                 {{ $code_is_unique ? 'Available' : 'Already used' }}
                             </p>
                         @endif
@@ -151,7 +151,7 @@
                                 {{ $p['label'] }}
                                 <button type="button" wire:click="removePreset('{{ $p['key'] }}')"
                                     class="text-slate-400 hover:text-rose-500 transition-colors ml-1 leading-none rounded-full">
-                                    <i class="bx bx-x text-sm"></i>
+                                    <x-bx-x class="w-4 h-4" />
                                 </button>
                             </span>
                         @endforeach
@@ -183,13 +183,13 @@
                                     <div
                                         class="w-4 h-4 rounded border {{ $isActive ? 'bg-indigo-500 border-indigo-500' : 'bg-white border-slate-300' }} transition-colors flex items-center justify-center">
                                         @if ($isActive)
-                                            <i class="bx bx-check text-white text-xs"></i>
+                                            <x-bx-check class="text-white w-3 h-3" />
                                         @endif
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-1.5 mb-1">
-                                        <i class="bx {{ $icons[$key] ?? 'bx-file' }} text-base"></i>
+                                        <x-icon :name="$icons[$key] ?? 'bx-file'" class="w-4 h-4" />
                                         <span
                                             class="text-sm font-semibold {{ $isActive ? 'text-indigo-900' : 'text-slate-700' }}">{{ $p['label'] }}</span>
                                     </div>
@@ -204,8 +204,9 @@
                     <div class="mt-4">
                         <button type="button" @click="showCustomMimes = !showCustomMimes"
                             class="text-xs font-semibold text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition-colors">
-                            Advanced: add specific custom types <i class="bx"
-                                :class="showCustomMimes ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+                            Advanced: add specific custom types
+                            <x-bx-chevron-up class="w-4 h-4 inline" x-show="showCustomMimes" x-cloak />
+                            <x-bx-chevron-down class="w-4 h-4 inline" x-show="!showCustomMimes" x-cloak />
                         </button>
                         <div x-show="showCustomMimes" class="mt-3 p-4 rounded-xl bg-slate-50 border border-slate-200"
                             x-collapse>
@@ -216,7 +217,7 @@
                                         {{ $m }}
                                         <button type="button" wire:click="removeCustom({{ $i }})"
                                             class="text-slate-400 hover:text-rose-500 transition-colors ml-1">
-                                            <i class="bx bx-x"></i>
+                                            <x-bx-x class="" />
                                         </button>
                                     </span>
                                 @empty
@@ -227,7 +228,7 @@
                                 class="flex rounded-lg overflow-hidden border border-slate-300 focus-within:ring-2 focus-within:ring-indigo-400 focus-within:border-indigo-400">
                                 <span
                                     class="flex items-center px-3 bg-slate-100 border-r border-slate-200 text-slate-500">
-                                    <i class="bx bx-plus"></i>
+                                    <x-bx-plus class="" />
                                 </span>
                                 <input type="text" wire:model.defer="custom_input"
                                     wire:keydown.enter.prevent="addCustom"
@@ -312,7 +313,7 @@
                     </a>
                     <button wire:click="save" wire:loading.attr="disabled"
                         class="px-6 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 shadow-sm transition-all flex items-center gap-1.5">
-                        <i class="bx bx-check text-lg"></i>
+                        <x-bx-check class="w-5 h-5" />
                         <span wire:loading.remove wire:target="save">Save Requirement</span>
                         <span wire:loading wire:target="save">Saving…</span>
                     </button>
@@ -386,7 +387,7 @@
                         @if ($requires_approval)
                             <span
                                 class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                <i class="bx bx-shield-alt-2"></i> Required
+                                <x-bx-shield-alt-2 class="" /> Required
                             </span>
                         @else
                             <span
@@ -447,7 +448,7 @@
                                 <div class="sm:flex sm:items-start">
                                     <div
                                         class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        <i class="bx bx-error text-xl text-rose-600"></i>
+                                        <x-bx-error class="w-5 h-5 text-rose-600" />
                                     </div>
                                     <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                                         <h3 class="text-lg font-bold leading-6 text-slate-900">Delete Requirement</h3>

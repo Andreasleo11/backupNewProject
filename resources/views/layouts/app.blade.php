@@ -28,7 +28,6 @@
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     @stack('extraCss')
@@ -67,7 +66,6 @@
     </div>
 
     @stack('extraJs')
-    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" defer></script>
 </body>
 
 </html>

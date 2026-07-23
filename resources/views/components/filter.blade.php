@@ -9,7 +9,7 @@
         {{-- Toggle button --}}
         <button id="toggleFilters" type="button"
             class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-            <i class='bx bx-filter-alt mr-1 text-base'></i>
+            <x-bx-filter-alt class="mr-1 w-4 h-4" />
             <span class="filter-toggle-text">
                 {{ $filtersApplied ? 'Hide Filters' : 'Show Filters' }}
             </span>

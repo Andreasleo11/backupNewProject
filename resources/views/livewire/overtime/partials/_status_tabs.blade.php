@@ -89,7 +89,7 @@
                         ? 'bg-white text-indigo-600 font-black shadow-sm'
                         : 'text-slate-500 font-bold hover:text-slate-700' }}">
 
-                <i class="bx {{ $tab['icon'] }} text-sm {{ $isActive ? 'text-indigo-500' : '' }}"></i>
+                <x-icon :name="$tab['icon']" class="w-4 h-4 {{ $isActive ? 'text-indigo-500' : '' }}" />
                 {{ $tab['label'] }}
 
                 @if ($tab['count'] !== null)

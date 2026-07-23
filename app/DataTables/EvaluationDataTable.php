@@ -124,7 +124,7 @@ class EvaluationDataTable extends DataTable
 
                 if ($isLocked) {
                     return '<button disabled class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400 cursor-not-allowed" title="Locked: already approved">
-                        <i class="bx bx-lock-alt"></i> Locked
+                        ' . svg('bx-lock-alt', 'w-4 h-4')->toHtml() . ' Locked
                     </button>';
                 }
 
@@ -147,7 +147,7 @@ class EvaluationDataTable extends DataTable
                 $onclick = "window.dispatchEvent(new CustomEvent('open-evaluate-modal', { detail: { fetchUrl: '{$fetchUrl}', updateUrl: '{$updateUrl}' } }))";
 
                 return "<button onclick=\"{$onclick}\" class=\"inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors {$style}\">
-                    <i class=\"bx {$icon}\"></i> {$label}
+                    " . svg($icon, 'w-4 h-4')->toHtml() . " {$label}
                 </button>";
             })
             ->addColumn('approval_status', function (Employee $row) {
@@ -172,11 +172,11 @@ class EvaluationDataTable extends DataTable
                 $sakit = (int) ($row->att_sakit ?? 0);
 
                 if (!$row->has_attendance) {
-                    return '<span class="text-slate-400 font-semibold text-xs italic"><i class="bx bx-info-circle"></i> Data belum ada</span>';
+                    return '<span class="text-slate-400 font-semibold text-xs italic">' . svg('bx-info-circle', 'w-4 h-4')->toHtml() . ' Data belum ada</span>';
                 }
 
                 if ($alpha === 0 && $telat === 0 && $izin === 0 && $sakit === 0) {
-                    return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
+                    return '<span class="text-emerald-600 font-semibold text-xs">' . svg('bx-check-circle', 'w-4 h-4')->toHtml() . ' Sempurna</span>';
                 }
 
                 $badges = [];

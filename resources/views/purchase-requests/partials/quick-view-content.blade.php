@@ -164,7 +164,7 @@
                 <button type="button" id="qv-approve-btn-{{ $prId }}"
                     onclick="window.qvPromptApprove('{{ $approveUrl }}', '{{ $csrfToken }}')"
                     class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 transition-all hover:-translate-y-0.5">
-                    <i class="bx bx-check-double text-lg"></i>
+                    <x-bx-check-double class="w-5 h-5" />
                     Approve
                 </button>
             </div>

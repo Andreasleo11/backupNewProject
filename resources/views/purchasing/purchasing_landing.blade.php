@@ -197,7 +197,7 @@
                                         <td>
                                             <a href="{{ route('purchaserequest.detail', ['id' => $pr->id]) }}"
                                                 class="btn btn-secondary">
-                                                <i class='bx bx-info-circle'></i> Detail
+                                                <x-bx-info-circle class="" /> Detail
                                             </a>
                                             @php
                                                 $user = Auth::user();
@@ -206,7 +206,7 @@
                                             {{-- Edit Feature --}}
                                             {{-- @if (($pr->status == 1 && $user->specification->name == 'PURCHASER') || ($pr->status == 6 && $user->is_head == 1) || ($pr->status == 2 && ($user->department->name == 'PERSONALIA' && $user->is_head == 1)))
                                             <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
-                                                <i class='bx bx-edit'></i> Edit
+                                                <x-bx-edit class="" /> Edit
                                             </a>
                                         @endif --}}
 
@@ -218,7 +218,7 @@
                                                 ])
                                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                                     data-bs-target="#delete-pr-modal-{{ $pr->id }}">
-                                                    <i class='bx bx-trash-alt'></i> <span
+                                                    <x-bx-trash-alt class="" /> <span
                                                         class="d-none d-sm-inline">Delete</span>
                                                 </button>
                                             @endif

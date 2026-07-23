@@ -31,7 +31,7 @@
 
             <!-- Icon + Date Info -->
             <div class="flex items-center gap-2 min-w-0 flex-1">
-                <i class='bx bx-calendar text-xl text-amber-600 flex-shrink-0'></i>
+                <x-bx-calendar class="w-5 h-5 text-amber-600 flex-shrink-0" />
                 
                 <div class="min-w-0 flex-1">
                     <h3 class="text-sm font-semibold text-slate-900 truncate">
@@ -51,13 +51,13 @@
                 wire:loading.attr="disabled"
                 @click.stop
                 class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-emerald-600 rounded-2xl hover:bg-white transition-all flex-shrink-0">
-            <i class='bx bx-check text-xl'></i>
+            <x-bx-check class="w-5 h-5" />
         </button>
 
         <!-- Expand Button -->
         <button type="button"
                 class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-amber-600 rounded-2xl hover:bg-white transition-all flex-shrink-0">
-            <i class='bx {{ $isExpanded ? "bx-chevron-up" : "bx-chevron-down" }} text-xl'></i>
+            <x-icon :name="$isExpanded ? 'bx-chevron-up' : 'bx-chevron-down'" class="w-5 h-5" />
         </button>
     </div>
 
@@ -73,13 +73,13 @@
                     <button @click="viewMode = 'grid'"
                             :class="viewMode === 'grid' ? 'bg-indigo-100 text-indigo-700 font-medium shadow-sm' : 'text-slate-600 hover:text-slate-700'"
                             class="px-3 py-1.5 rounded-[14px] flex items-center gap-1.5 transition-all">
-                        <i class='bx bx-grid-alt text-sm'></i> 
+                        <x-bx-grid-alt class="w-4 h-4" /> 
                         <span>Grid</span>
                     </button>
                     <button @click="viewMode = 'list'"
                             :class="viewMode === 'list' ? 'bg-indigo-100 text-indigo-700 font-medium shadow-sm' : 'text-slate-600 hover:text-slate-700'"
                             class="px-3 py-1.5 rounded-[14px] flex items-center gap-1.5 transition-all">
-                        <i class='bx bx-list-ul text-sm'></i> 
+                        <x-bx-list-ul class="w-4 h-4" /> 
                         <span>List</span>
                     </button>
                 </div>
@@ -204,7 +204,7 @@
                                         @click.prevent
                                         class="text-xs font-medium px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg whitespace-nowrap transition-colors cursor-pointer border-0">
                                         {{ $monthlyHours }}h / {{ $activeDays }}d
-                                        <i class='bx bx-chevron-down ml-1 text-[10px]'></i>
+                                        <x-bx-chevron-down class="ml-1 text-[10px]" />
                                     </button>
                                 </div>
                             @endif

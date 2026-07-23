@@ -24,7 +24,7 @@
 
                 <div class="relative">
                     <div class="h-12 w-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-5">
-                        <i class='bx bx-x text-2xl'></i>
+                        <x-bx-x class="w-6 h-6" />
                     </div>
 
                     <h3 class="text-xl font-black text-slate-800 tracking-tight">Reject Overtime Form</h3>
@@ -40,7 +40,7 @@
 
                         @error('rejectReason')
                             <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mt-2 flex items-center gap-1">
-                                <i class='bx bx-error-circle'></i> {{ $message }}
+                                <x-bx-error-circle class="" /> {{ $message }}
                             </p>
                         @enderror
                     </div>
@@ -58,7 +58,7 @@
                                 Reject Form
                             </span>
                             <span wire:loading wire:target="submitReject">
-                                <i class='bx bx-loader-alt animate-spin text-sm'></i>
+                                <x-bx-loader-alt class="animate-spin w-4 h-4" />
                                 Processing...
                             </span>
                         </button>

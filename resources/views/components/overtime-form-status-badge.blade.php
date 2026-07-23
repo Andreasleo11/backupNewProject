@@ -14,6 +14,6 @@
 <span
     class="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide
              {{ $meta['classes'] }}">
-    <i class="bx {{ $meta['icon'] }}"></i>
+    <x-icon :name="$meta['icon']" />
     {{ $meta['label'] }}
 </span>

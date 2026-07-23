@@ -93,7 +93,7 @@
                                     <td class="text-end pe-3">
                                         <a href="{{ route('adjustview', ['report_id' => $report->report_id]) }}"
                                             class="btn btn-sm btn-outline-secondary">
-                                            <i class='bx bx-info-circle'></i>
+                                            <x-bx-info-circle class="" />
                                             <span class="d-none d-sm-inline ms-1">Detail</span>
                                         </a>
 
@@ -108,7 +108,7 @@
                             @empty
                                 <tr>
                                     <td colspan="6" class="py-5 text-center text-muted">
-                                        <i class='bx bx-file-blank fs-2 d-block mb-2'></i>
+                                        <x-bx-file-blank class="fs-2 d-block mb-2" />
                                         <div class="fw-semibold">Belum ada Form Adjust</div>
                                         <div class="small">
                                             Form Adjust akan muncul di sini setelah proses verifikasi selesai.

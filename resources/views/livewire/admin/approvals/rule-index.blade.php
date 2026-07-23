@@ -114,10 +114,10 @@
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('admin.approval-rules.edit', $rule->id) }}" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="Edit Rule & Steps">
-                                        <i class="bx bx-pencil text-lg"></i>
+                                        <x-bx-pencil class="w-5 h-5" />
                                     </a>
                                     <button wire:click="confirmDelete({{ $rule->id }})" class="p-1 text-slate-400 hover:text-red-600 transition-colors" title="Delete Rule">
-                                        <i class="bx bx-trash text-lg"></i>
+                                        <x-bx-trash class="w-5 h-5" />
                                     </button>
                                 </div>
                             </td>
@@ -126,7 +126,7 @@
                         <tr>
                             <td colspan="7" class="px-4 py-8 text-center text-slate-500">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class='bx bx-git-branch text-4xl text-slate-300 mb-2'></i>
+                                    <x-bx-git-branch class="w-9 h-9 text-slate-300 mb-2" />
                                     <p class="text-sm font-medium text-slate-900">No rules found</p>
                                     <p class="text-xs text-slate-500 mt-1">Try adjusting your filters or search query.</p>
                                 </div>
@@ -165,7 +165,7 @@
         <div class="p-6">
             <div class="flex items-center gap-3 mb-4">
                 <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <i class='bx bx-trash text-xl text-red-600'></i>
+                    <x-bx-trash class="w-5 h-5 text-red-600" />
                 </div>
                 <h2 class="text-lg font-bold text-slate-900">Delete Rule</h2>
             </div>
@@ -174,7 +174,7 @@
                 <div class="mb-4 rounded-md bg-amber-50 p-3 border border-amber-200">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <i class="bx bx-error text-amber-400 text-lg mt-0.5"></i>
+                            <x-bx-error class="text-amber-400 w-5 h-5 mt-0.5" />
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-amber-800">Warning: Active Requests</h3>
@@ -195,7 +195,7 @@
                 </button>
                 <button wire:click="executeDelete" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
-                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeDelete"></i>
+                    <x-bx-loader-alt class="animate-spin" wire:loading wire:target="executeDelete" />
                     <span wire:loading.remove wire:target="executeDelete">Delete Rule</span>
                     <span wire:loading wire:target="executeDelete">Deleting...</span>
                 </button>

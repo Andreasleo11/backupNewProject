@@ -16,7 +16,7 @@
             </a>
             @if(!$this->rule->is_current)
                 <div class="px-3 py-1.5 rounded-md text-sm font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    <i class="bx bx-error-circle mr-1"></i> Cannot edit legacy version
+                    <x-bx-error-circle class="mr-1" /> Cannot edit legacy version
                 </div>
             @endif
         </div>
@@ -90,7 +90,7 @@
                     <div class="pt-4 border-t border-slate-100 flex justify-end">
                         <button type="submit" wire:loading.attr="disabled" wire:target="updateRule" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50 shadow-sm w-full justify-center">
                             <span wire:loading.remove wire:target="updateRule">Update Rule Settings</span>
-                            <span wire:loading wire:target="updateRule"><i class='bx bx-loader-alt animate-spin mr-1'></i> Updating...</span>
+                            <span wire:loading wire:target="updateRule"><x-bx-loader-alt class="animate-spin mr-1" /> Updating...</span>
                         </button>
                     </div>
                 @endif
@@ -107,7 +107,7 @@
                     </div>
                     @if($this->rule->is_current)
                         <button wire:click="openCreateStep" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-slate-50 bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
-                            <i class='bx bx-plus'></i> Add Step
+                            <x-bx-plus class="" /> Add Step
                         </button>
                     @endif
                 </div>
@@ -116,7 +116,7 @@
                     @if($this->steps->isEmpty())
                         <div class="h-full flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 rounded-lg bg-white">
                             <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3 text-slate-400">
-                                <i class='bx bx-git-branch text-2xl'></i>
+                                <x-bx-git-branch class="w-6 h-6" />
                             </div>
                             <h4 class="text-sm font-medium text-slate-900 mb-1">No workflow steps defined</h4>
                             <p class="text-xs text-slate-500 mb-4 max-w-sm">This rule will automatically approve targets without any human intervention. Add steps to require approvals.</p>
@@ -159,10 +159,10 @@
                                                 </div>
                                                 <div class="text-sm font-semibold text-slate-900 mt-1.5">
                                                     @if ($step->approver_type === 'role')
-                                                        <i class='bx bx-shield-quarter text-slate-400 mr-1'></i>
+                                                        <x-bx-shield-quarter class="text-slate-400 mr-1" />
                                                         {{ $step->role?->name ?? 'Unknown Role (ID: ' . $step->approver_id . ')' }}
                                                     @else
-                                                        <i class='bx bx-user text-slate-400 mr-1'></i>
+                                                        <x-bx-user class="text-slate-400 mr-1" />
                                                         {{ $step->user?->name ?? 'Unknown User (ID: ' . $step->approver_id . ')' }}
                                                         @if ($step->user?->email)
                                                             <span class="text-xs font-normal text-slate-500 ml-1">({{ $step->user->email }})</span>
@@ -174,11 +174,11 @@
                                             @if($this->rule->is_current)
                                                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button wire:click="openEditStep({{ $step->id }})" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Edit Step">
-                                                        <i class='bx bx-pencil'></i>
+                                                        <x-bx-pencil class="" />
                                                     </button>
                                                     <div x-data="{ confirmingDelete: false }" class="relative">
                                                         <button x-show="!confirmingDelete" @click="confirmingDelete = true" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete Step">
-                                                            <i class='bx bx-trash'></i>
+                                                            <x-bx-trash class="" />
                                                         </button>
                                                         <div x-show="confirmingDelete" @click.away="confirmingDelete = false" class="absolute right-0 top-0 bg-white border border-red-200 shadow-lg rounded-md p-2 flex items-center gap-2 z-20 min-w-max">
                                                             <span class="text-xs font-medium text-red-600 whitespace-nowrap">Delete step?</span>
@@ -196,7 +196,7 @@
                             {{-- End Node Bubble --}}
                             <div class="relative z-10 flex items-start gap-4">
                                 <div class="flex-shrink-0 w-11 h-11 rounded-full bg-slate-100 border-2 border-slate-200 text-slate-400 flex items-center justify-center mt-1 shadow-sm">
-                                    <i class='bx bx-flag text-xl'></i>
+                                    <x-bx-flag class="w-5 h-5" />
                                 </div>
                                 <div class="flex-1 flex items-center h-11 mt-1">
                                     <span class="text-xs font-medium text-slate-500 uppercase tracking-widest">Pipeline End</span>
@@ -267,7 +267,7 @@
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" wire:click="$set('showStepModal', false)" class="px-4 py-2 rounded-md border border-slate-200 text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors">Cancel</button>
                     <button type="submit" class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-slate-900 text-slate-50 text-sm font-medium hover:bg-slate-900/90 transition-colors disabled:opacity-50" wire:loading.attr="disabled" wire:target="saveStep">
-                        <i class='bx bx-loader-alt animate-spin mr-1' wire:loading wire:target="saveStep"></i>
+                        <x-bx-loader-alt class="animate-spin mr-1" wire:loading wire:target="saveStep" />
                         <span wire:loading.remove wire:target="saveStep">{{ $editingStepId ? 'Save Changes' : 'Add to Pipeline' }}</span>
                         <span wire:loading wire:target="saveStep">Saving...</span>
                     </button>
@@ -280,7 +280,7 @@
     <x-modal wire:model="showVersionWarningModal" maxWidth="sm">
         <div class="p-6">
             <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 mb-4">
-                <i class="bx bx-error text-2xl text-amber-600"></i>
+                <x-bx-error class="w-6 h-6 text-amber-600" />
             </div>
             <h3 class="text-lg font-bold text-center text-slate-900 mb-2">Active Requests Running</h3>
             <p class="text-sm text-center text-slate-500 mb-6">

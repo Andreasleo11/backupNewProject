@@ -13,7 +13,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
-                <i class="bx bx-check-shield text-white text-2xl"></i>
+                <x-bx-check-shield class="text-white w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Review Uploads</h1>
@@ -22,7 +22,7 @@
         </div>
         <button wire:click="exportCsv"
             class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-4 py-2 text-sm font-semibold shadow-sm transition-all">
-            <i class="bx bx-download text-base"></i> Export Data
+            <x-bx-download class="w-4 h-4" /> Export Data
         </button>
     </div>
 
@@ -31,7 +31,7 @@
         <div class="flex flex-wrap items-center gap-3">
             {{-- Search --}}
             <div class="relative flex-1 min-w-[240px]">
-                <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input type="text" wire:model.live.debounce.300ms="q"
                     placeholder="Search by file, requirement, dept…"
                     class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
@@ -169,7 +169,7 @@
                                         {{ ucfirst($u->status) }}
                                     </span>
                                     @if ($u->review_notes)
-                                        <i class="bx bx-comment-detail text-slate-400 text-sm" title="Has notes"></i>
+                                        <x-bx-comment-detail class="text-slate-400 w-4 h-4" title="Has notes" />
                                     @endif
                                 </div>
                             </td>
@@ -197,7 +197,7 @@
                                 <a href="{{ URL::signedRoute('uploads.download', ['upload' => $u->id]) }}"
                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors"
                                     title="Download">
-                                    <i class="bx bx-download text-lg"></i>
+                                    <x-bx-download class="w-5 h-5" />
                                 </a>
                                 @can('approve-requirements')
                                     <button wire:click="openDecision({{ $u->id }})"
@@ -210,7 +210,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-16 text-center">
-                                <i class="bx bx-folder-open text-4xl text-slate-300"></i>
+                                <x-bx-folder-open class="w-9 h-9 text-slate-300" />
                                 <p class="text-sm font-medium text-slate-500 mt-2">No uploads match your filters.</p>
                                 <button wire:click="$set('q', ''); $set('status', 'all')"
                                     class="mt-2 text-xs text-indigo-600 hover:underline">Clear filters</button>
@@ -244,11 +244,11 @@
                     @can('approve-requirements')
                         <button wire:click="bulkApprove"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-sm transition-colors">
-                            <i class="bx bx-check"></i> Approve
+                            <x-bx-check class="" /> Approve
                         </button>
                         <button wire:click="bulkReject"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold shadow-sm transition-colors">
-                            <i class="bx bx-x"></i> Reject
+                            <x-bx-x class="" /> Reject
                         </button>
                     @endcan
                     <button wire:click="clearSelection"
@@ -286,7 +286,7 @@
                                     <h2 class="text-lg font-bold text-slate-800">Review Submission</h2>
                                     <button @click="decisionPanelOpen = false"
                                         class="text-slate-400 hover:text-slate-600 transition-colors">
-                                        <i class="bx bx-x text-2xl"></i>
+                                        <x-bx-x class="w-6 h-6" />
                                     </button>
                                 </div>
 
@@ -342,7 +342,7 @@
                                                         rel="noopener"
                                                         class="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
                                                         title="Download">
-                                                        <i class="bx bx-download text-lg"></i>
+                                                        <x-bx-download class="w-5 h-5" />
                                                     </a>
                                                 </div>
 
@@ -383,12 +383,12 @@
                                             <button
                                                 wire:click="reject({{ $uploadId }}); decisionPanelOpen = false"
                                                 class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 text-sm font-semibold transition-all">
-                                                <i class="bx bx-x text-lg"></i> Reject
+                                                <x-bx-x class="w-5 h-5" /> Reject
                                             </button>
                                             <button
                                                 wire:click="approve({{ $uploadId }}); decisionPanelOpen = false"
                                                 class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shadow-sm shadow-emerald-200 transition-all">
-                                                <i class="bx bx-check text-lg"></i> Approve
+                                                <x-bx-check class="w-5 h-5" /> Approve
                                             </button>
                                         </div>
                                     @endif

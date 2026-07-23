@@ -30,24 +30,27 @@ class Bell extends Component
         $this->unreadCount = $user ? $user->unreadNotifications()->count() : 0;
     }
 
-    public function markAsRead(string $id): ?string
+    public function markAsRead(string $id)
     {
         $user = auth()->user();
         if (! $user) {
-            return null;
+            return;
         }
 
-        $notification = $user->notifications()->whereKey($id)->firstOrFail();
+        $notification = $user->notifications()->whereKey($id)->first();
 
-        if ($notification->read_at === null) {
+        if ($notification && is_null($notification->read_at)) {
             $notification->markAsRead();
             $this->refreshCount();
         }
 
-        // Return the action URL so Alpine can navigate to it
-        return data_get($notification->data, 'action_url')
-            ?? data_get($notification->data, 'url')
+        $url = data_get($notification?->data, 'action_url')
+            ?? data_get($notification?->data, 'url')
             ?? null;
+
+        if ($url) {
+            return $this->redirect($url, navigate: true);
+        }
     }
 
     public function markAllAsRead(): void
@@ -57,7 +60,7 @@ class Bell extends Component
             return;
         }
 
-        $user->unreadNotifications->markAsRead();
+        $user->unreadNotifications()->update(['read_at' => now()]);
         $this->refreshCount();
     }
 

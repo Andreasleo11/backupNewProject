@@ -22,7 +22,7 @@
             class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-100 group">
             <div
                 class="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-200 transition-colors">
-                <i class="bx bx-file text-xl"></i>
+                <x-bx-file class="w-5 h-5" />
             </div>
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Reports</p>
@@ -35,7 +35,7 @@
             class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-emerald-100 group">
             <div
                 class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors">
-                <i class="bx bx-check-double text-xl"></i>
+                <x-bx-check-double class="w-5 h-5" />
             </div>
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approved</p>
@@ -48,7 +48,7 @@
             class="glass-card premium-shadow p-4 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-amber-100 group">
             <div
                 class="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
-                <i class="bx bx-time text-xl"></i>
+                <x-bx-time class="w-5 h-5" />
             </div>
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">In Review</p>
@@ -61,7 +61,7 @@
             class="glass-card premium-shadow p-4 border-l-4 border-indigo-500 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-100 group">
             <div
                 class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition-colors">
-                <i class="bx bx-stats text-xl"></i>
+                <x-bx-stats class="w-5 h-5" />
             </div>
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Month Total</p>
@@ -77,7 +77,7 @@
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
                 <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="bx bx-list-ul text-indigo-500"></i>
+                    <x-bx-list-ul class="text-indigo-500" />
                     Report Overview
                 </h3>
             </div>
@@ -102,7 +102,7 @@
                             });
                         }">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
-                                <i class="bx bx-calendar text-slate-400 text-sm"></i>
+                                <x-bx-calendar class="text-slate-400 w-4 h-4" />
                             </span>
                             <input x-ref="picker" type="text"
                                 class="block w-44 rounded-lg border border-slate-200 bg-white/50 pl-8 pr-3 py-1.5
@@ -115,8 +115,8 @@
                     <button wire:click="prepareGeneration" wire:loading.attr="disabled"
                         class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2
                                    text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 group">
-                        <i class="bx bx-plus-circle mr-2 text-[1rem] group-hover:rotate-90 transition-transform duration-300"
-                            wire:loading.remove wire:target="prepareGeneration"></i>
+                        <x-bx-plus-circle class="w-4 h-4 mr-2 group-hover:rotate-90 transition-transform duration-300"
+                            wire:loading.remove wire:target="prepareGeneration" />
                         <span class="animate-spin h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full mr-2"
                             wire:loading wire:target="prepareGeneration"></span>
                         Generate Summary
@@ -235,7 +235,7 @@
                             class="inline-flex w-full items-center justify-center rounded-md border
                                    border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700
                                    shadow-sm hover:bg-slate-50">
-                            <i class="bx bx-filter-alt-off mr-1 text-[0.9rem]"></i>
+                            <x-bx-reset class="w-4 h-4 mr-1" />
                             Clear
                         </button>
                     </div>
@@ -422,7 +422,7 @@
                                             class="inline-flex items-center rounded-full border border-emerald-100
                                                    bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
                                             title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
-                                            <i class="bx bx-trending-up mr-1 text-[0.9rem]"></i>
+                                            <x-bx-trending-up class="mr-1 text-[0.9rem]" />
                                             Rp {{ number_format($m['diff'], 0, ',', '.') }}
                                             <span class="ml-1">
                                                 ({{ number_format($m['pct'], 2, ',', '.') }}%)
@@ -433,7 +433,7 @@
                                             class="inline-flex items-center rounded-full border border-rose-100
                                                    bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700"
                                             title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
-                                            <i class="bx bx-trending-down mr-1 text-[0.9rem]"></i>
+                                            <x-bx-trending-down class="mr-1 text-[0.9rem]" />
                                             Rp {{ number_format($m['diff'], 0, ',', '.') }}
                                             <span class="ml-1">
                                                 ({{ number_format($m['pct'], 2, ',', '.') }}%)
@@ -444,7 +444,7 @@
                                             class="inline-flex items-center rounded-full border border-slate-200
                                                    bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600"
                                             title="Prev: Rp {{ number_format($m['prev'], 0, ',', '.') }}">
-                                            <i class="bx bx-minus mr-1 text-[0.9rem]"></i>
+                                            <x-bx-minus class="mr-1 text-[0.9rem]" />
                                             0 (0%)
                                         </span>
                                     @endif
@@ -458,8 +458,7 @@
                                             class="inline-flex items-center rounded-lg border border-slate-200
                                                    bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700
                                                    shadow-sm hover:bg-slate-50 hover:border-slate-300 hover:shadow transition-all active:scale-95 group/btn">
-                                            <i
-                                                class="bx bx-show mr-1.5 text-[1rem] text-slate-400 group-hover/btn:text-indigo-500 transition-colors"></i>
+                                            <x-bx-show class="mr-1.5 text-[1rem] text-slate-400 group-hover/btn:text-indigo-500 transition-colors" />
                                             Detail
                                         </a>
 
@@ -487,8 +486,7 @@
                                                    bg-indigo-50/50 px-3 py-1.5 text-[11px] font-bold text-indigo-700
                                                    shadow-sm hover:bg-indigo-100/80 transition-all active:scale-95 group/clone"
                                             title="Clone to Next Month">
-                                            <i
-                                                class="bx bx-duplicate mr-1.5 text-[1rem] text-indigo-400 group-hover/clone:rotate-12 transition-transform"></i>
+                                            <x-bx-duplicate class="mr-1.5 text-[1rem] text-indigo-400 group-hover/clone:rotate-12 transition-transform" />
                                             Clone
                                         </button>
                                     </div>
@@ -500,7 +498,7 @@
                                     <div class="flex flex-col items-center text-center max-w-sm mx-auto">
                                         <div
                                             class="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 ring-1 ring-slate-100">
-                                            <i class="bx bx-file-find text-4xl text-slate-300"></i>
+                                            <x-bx-file-find class="w-9 h-9 text-slate-300" />
                                         </div>
                                         <h4 class="font-bold text-slate-700 mb-1">No reports found</h4>
                                         <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">
@@ -511,7 +509,7 @@
                                             <a href="#monthPicker"
                                                 class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2
                                                       text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
-                                                <i class="bx bx-plus-circle mr-2 text-[1rem]"></i>
+                                                <x-bx-plus-circle class="mr-2 text-[1rem]" />
                                                 Generate First Summary
                                             </a>
                                         @endif
@@ -551,7 +549,7 @@
             <div class="sm:flex sm:items-start">
                 <div
                     class="mx-auto flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 sm:mx-0 sm:h-12 sm:w-12">
-                    <i class="bx bx-file text-2xl text-indigo-600"></i>
+                    <x-bx-file class="w-6 h-6 text-indigo-600" />
                 </div>
                 <div class="mt-4 text-center sm:mt-0 sm:ml-5 sm:text-left w-full">
                     <h3 class="text-xl font-extrabold leading-tight text-slate-900" id="modal-title">
@@ -593,19 +591,19 @@
                                             @if ($item['status'] === 'APPROVED')
                                                 <span
                                                     class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-100/50">
-                                                    <i class="bx bxs-check-circle mr-1.5"></i> Approved
+                                                    <x-bxs-check-circle class="mr-1.5" /> Approved
                                                 </span>
                                             @elseif($item['status'] === 'MISSING')
                                                 @php $allApproved = false; @endphp
                                                 <span
                                                     class="inline-flex items-center rounded-lg bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-100/50">
-                                                    <i class="bx bxs-error-circle mr-1.5"></i> Missing
+                                                    <x-bxs-error-circle class="mr-1.5" /> Missing
                                                 </span>
                                             @else
                                                 @php $allApproved = false; @endphp
                                                 <span
                                                     class="inline-flex items-center rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-100/50">
-                                                    <i class="bx bxs-time mr-1.5"></i> {{ $item['status'] }}
+                                                    <x-bxs-time class="mr-1.5" /> {{ $item['status'] }}
                                                 </span>
                                             @endif
                                         </td>
@@ -619,7 +617,7 @@
                         <div class="mt-4 rounded-lg bg-amber-50 p-3 border border-amber-200">
                             <div class="flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bx bxs-info-circle text-amber-400"></i>
+                                    <x-bxs-info-circle class="text-amber-400" />
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-[11px] font-medium text-amber-800 leading-normal">

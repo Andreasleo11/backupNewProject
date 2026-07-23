@@ -17,7 +17,7 @@
             </li>
             <li>
                 <div class="flex items-center">
-                    <i class="bx bx-chevron-right text-slate-400 text-lg"></i>
+                    <x-bx-chevron-right class="text-slate-400 w-5 h-5" />
                     <a href="{{ route('requirements.edit', $req) }}"
                         class="ml-1 text-sm font-medium text-slate-500 hover:text-indigo-600 md:ml-2 transition-colors">
                         {{ $req->code }}
@@ -26,7 +26,7 @@
             </li>
             <li aria-current="page">
                 <div class="flex items-center">
-                    <i class="bx bx-chevron-right text-slate-400 text-lg"></i>
+                    <x-bx-chevron-right class="text-slate-400 w-5 h-5" />
                     <span class="ml-1 text-sm font-medium text-slate-800 md:ml-2">Departments</span>
                 </div>
             </li>
@@ -38,7 +38,7 @@
         <div class="flex items-center gap-3">
             <div
                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
-                <i class="bx bx-buildings text-white text-2xl"></i>
+                <x-bx-buildings class="text-white w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-800">{{ $req->name }}</h1>
@@ -67,7 +67,7 @@
                     @if ($req->requires_approval)
                         <span
                             class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-violet-50 text-violet-700 border border-violet-200">
-                            <i class="bx bx-shield-alt-2"></i> Approval required
+                            <x-bx-shield-alt-2 class="" /> Approval required
                         </span>
                     @endif
                 </div>
@@ -75,7 +75,7 @@
         </div>
         <a href="{{ route('requirements.index') }}"
             class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-4 py-2 text-sm font-semibold transition-all">
-            <i class="bx bx-arrow-back text-base"></i> Back to Requirements
+            <x-bx-arrow-back class="w-4 h-4" /> Back to Requirements
         </a>
     </div>
 
@@ -104,7 +104,7 @@
     <div class="glass-card px-5 py-4 mb-5 flex flex-wrap items-center gap-3">
         {{-- Search --}}
         <div class="relative flex-1 min-w-[200px]">
-            <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search department…"
                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
         </div>
@@ -186,17 +186,17 @@
                         <button x-data
                             x-on:click="$dispatch('trigger-upload-modal', { reqId: {{ $req->id }}, deptId: {{ $row['dept']->id }} })"
                             class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 px-3 py-1.5 text-xs font-semibold shadow-sm transition-all">
-                            <i class="bx bx-upload text-sm"></i> Upload
+                            <x-bx-upload class="w-4 h-4" /> Upload
                         </button>
                         <a href="{{ route('departments.compliance', $row['dept']) }}"
                             class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm shadow-indigo-200 transition-all">
-                            Manage <i class="bx bx-chevron-right text-sm"></i>
+                            Manage <x-bx-chevron-right class="w-4 h-4" />
                         </a>
                     </div>
                 </div>
             @empty
                 <div class="py-16 text-center">
-                    <i class="bx bx-ghost text-4xl text-slate-300"></i>
+                    <x-bx-ghost class="w-9 h-9 text-slate-300" />
                     <p class="text-sm font-medium text-slate-500 mt-2">No departments assigned to this requirement.</p>
                 </div>
             @endforelse

@@ -34,12 +34,12 @@
                 {{-- Panel Header --}}
                 <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
                     <div class="flex items-center gap-2 text-slate-700">
-                        <i class='bx bx-slider-alt text-base'></i>
+                        <x-bx-slider-alt class="w-4 h-4" />
                         <span class="text-sm font-black">Filters & Options</span>
                     </div>
                     <button @click="filtersOpen = false"
                         class="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
-                        <i class='bx bx-x text-xl'></i>
+                        <x-bx-x class="w-5 h-5" />
                     </button>
                 </div>
 
@@ -57,31 +57,31 @@
                                 @if ($range)
                                     <button wire:click="clearFilter('range')"
                                         class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-100 px-2 py-1 text-[10px] font-black text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all">
-                                        {{ strtoupper($range) }} <i class='bx bx-x text-xs'></i>
+                                        {{ strtoupper($range) }} <x-bx-x class="w-3 h-3" />
                                     </button>
                                 @endif
                                 @if ($startDate && $endDate)
                                     <button wire:click="clearFilter('dates')"
                                         class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-100 px-2 py-1 text-[10px] font-black text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all">
-                                        {{ date('d M y', strtotime($startDate)) }} – {{ date('d M y', strtotime($endDate)) }} <i class='bx bx-x text-xs'></i>
+                                        {{ date('d M y', strtotime($startDate)) }} – {{ date('d M y', strtotime($endDate)) }} <x-bx-x class="w-3 h-3" />
                                     </button>
                                 @endif
                                 @if ($dept)
                                     <button wire:click="clearFilter('dept')"
                                         class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-100 px-2 py-1 text-[10px] font-black text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all">
-                                        {{ collect($departments)->firstWhere('id', $dept)['name'] ?? 'Dept' }} <i class='bx bx-x text-xs'></i>
+                                        {{ collect($departments)->firstWhere('id', $dept)['name'] ?? 'Dept' }} <x-bx-x class="w-3 h-3" />
                                     </button>
                                 @endif
                                 @if ($search)
                                     <button wire:click="clearFilter('search')"
                                         class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-100 px-2 py-1 text-[10px] font-black text-indigo-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all">
-                                        "{{ Str::limit($search, 12) }}" <i class='bx bx-x text-xs'></i>
+                                        "{{ Str::limit($search, 12) }}" <x-bx-x class="w-3 h-3" />
                                     </button>
                                 @endif
                             </div>
                             <button wire:click="resetFilters; filtersOpen = false"
                                 class="text-[10px] font-black text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest">
-                                <i class='bx bx-refresh text-xs'></i> Reset All
+                                <x-bx-refresh class="w-3 h-3" /> Reset All
                             </button>
                         </div>
                         <div class="h-px bg-slate-100"></div>
@@ -140,7 +140,7 @@
                                 <input x-ref="fpStart" type="text" placeholder="Start date" readonly
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-2.5 pr-7 text-xs font-medium text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow">
                                 <span class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-slate-300">
-                                    <i class='bx bx-calendar text-sm'></i>
+                                    <x-bx-calendar class="w-4 h-4" />
                                 </span>
                             </div>
                             <span class="text-slate-300 text-xs font-bold shrink-0">→</span>
@@ -148,7 +148,7 @@
                                 <input x-ref="fpEnd" type="text" placeholder="End date" readonly
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-2.5 pr-7 text-xs font-medium text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow">
                                 <span class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-slate-300">
-                                    <i class='bx bx-calendar text-sm'></i>
+                                    <x-bx-calendar class="w-4 h-4" />
                                 </span>
                             </div>
                         </div>
@@ -214,10 +214,10 @@
                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tools</p>
                             <button type="button" wire:click="exportCsv" wire:loading.attr="disabled"
                                 class="w-full flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                                <i class='bx bx-export text-slate-400 text-base'></i>
+                                <x-bx-export class="text-slate-400 w-4 h-4" />
                                 <span wire:loading.remove wire:target="exportCsv">Export CSV</span>
                                 <span wire:loading wire:target="exportCsv" class="flex items-center gap-1.5">
-                                    <i class='bx bx-loader-alt animate-spin text-indigo-500'></i> Exporting…
+                                    <x-bx-loader-alt class="animate-spin text-indigo-500" /> Exporting…
                                 </span>
                             </button>
                         </div>

@@ -96,7 +96,7 @@
                             <td class="px-4 py-3 text-center">
                                 @if($role->name === 'super-admin')
                                     <span class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-100">
-                                        <i class="bx bx-infinite"></i> All
+                                        <x-bx-infinite class="" /> All
                                     </span>
                                 @else
                                     <span class="inline-flex items-center justify-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
@@ -107,13 +107,13 @@
                             <td class="px-4 py-3 text-right space-x-1">
                                 @can('role.update')
                                     <a href="{{ route('admin.roles.edit', $role->id) }}" class="p-1.5 rounded text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors inline-block" title="Edit Role">
-                                        <i class="bx bx-edit-alt"></i>
+                                        <x-bx-edit-alt class="" />
                                     </a>
                                 @endcan
                                 @if (!in_array($role->name, ['super-admin', 'admin']))
                                     @can('role.delete')
                                         <button wire:click="confirmDelete({{ $role->id }})" class="p-1.5 rounded text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Delete Role">
-                                            <i class="bx bx-trash"></i>
+                                            <x-bx-trash class="" />
                                         </button>
                                     @endcan
                                 @endif
@@ -123,7 +123,7 @@
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-slate-500">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="bx bx-shield-x text-4xl mb-2 text-slate-300"></i>
+                                    <x-bx-shield-x class="w-9 h-9 mb-2 text-slate-300" />
                                     <p>No roles found matching your criteria.</p>
                                 </div>
                             </td>
@@ -162,7 +162,7 @@
                 <div class="mb-4 rounded-md bg-amber-50 p-3 border border-amber-200">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <i class="bx bx-error text-amber-400 text-lg mt-0.5"></i>
+                            <x-bx-error class="text-amber-400 w-5 h-5 mt-0.5" />
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-amber-800">Warning: Active Assignments</h3>
@@ -181,7 +181,7 @@
                 </button>
                 <button wire:click="executeDelete" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
-                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeDelete"></i>
+                    <x-bx-loader-alt class="animate-spin" wire:loading wire:target="executeDelete" />
                     <span wire:loading.remove wire:target="executeDelete">Yes, Delete Role</span>
                     <span wire:loading wire:target="executeDelete">Deleting...</span>
                 </button>
@@ -201,7 +201,7 @@
                 <div class="mb-4 rounded-md bg-amber-50 p-3 border border-amber-200">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <i class="bx bx-error text-amber-400 text-lg mt-0.5"></i>
+                            <x-bx-error class="text-amber-400 w-5 h-5 mt-0.5" />
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-amber-800">Warning: Active Assignments</h3>
@@ -220,7 +220,7 @@
                 </button>
                 <button wire:click="executeBulkDelete" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
-                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeBulkDelete"></i>
+                    <x-bx-loader-alt class="animate-spin" wire:loading wire:target="executeBulkDelete" />
                     <span wire:loading.remove wire:target="executeBulkDelete">Yes, Delete All</span>
                     <span wire:loading wire:target="executeBulkDelete">Deleting...</span>
                 </button>

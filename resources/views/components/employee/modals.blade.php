@@ -36,7 +36,7 @@
                 <div class="px-8 py-6 bg-white border-b border-slate-100 flex items-center justify-between shrink-0">
                     <div class="flex items-center gap-4">
                         <div class="h-12 w-12 flex items-center justify-center rounded-2xl {{ $isHistorical ? 'bg-slate-900' : 'bg-blue-600' }} text-white shadow-lg">
-                            <i class='bx {{ $isHistorical ? 'bx-history font-light' : 'bx-sync animate-spin-slow' }} text-2xl'></i>
+                            <x-icon :name="$isHistorical ? 'bx-history' : 'bx-sync'" class="w-6 h-6 {{ $isHistorical ? 'font-light' : 'animate-spin-slow' }}" />
                         </div>
                         <div>
                             <h3 class="text-xl font-black text-slate-900 leading-none">
@@ -63,7 +63,7 @@
                                 @if(isset($modalData['parameters']['date_range']) && in_array('attendance', $phases))
                                     @php $dr = $modalData['parameters']['date_range']; @endphp
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-slate-100 text-slate-500 ml-2">
-                                        <i class='bx bx-calendar mr-1'></i>
+                                        <x-bx-calendar class="mr-1" />
                                         {{ \Carbon\Carbon::parse($dr['resolved_from'])->format('d M') }} &rarr; {{ \Carbon\Carbon::parse($dr['resolved_to'])->format('d M Y') }}
                                     </span>
                                 @endif
@@ -72,7 +72,7 @@
                     </div>
                     <button wire:click="{{ $isHistorical ? 'closeLog' : 'cancelSync' }}"
                         class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-all">
-                        <i class='bx bx-x text-2xl'></i>
+                        <x-bx-x class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -85,7 +85,7 @@
                         <button wire:click="$set('previewPhase', 'employees')" 
                             class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'employees' ? 'bg-white border-blue-500 ring-1 ring-blue-500' : 'bg-white border-blue-100 hover:border-blue-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 shrink-0">
-                                <i class='bx bx-user text-lg'></i>
+                                <x-bx-user class="w-5 h-5" />
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Employee Master</p>
@@ -106,7 +106,7 @@
                         <button wire:click="$set('previewPhase', 'annual_leave')" 
                             class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'annual_leave' ? 'bg-white border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border-emerald-100 hover:border-emerald-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 shrink-0">
-                                <i class='bx bx-calendar-check text-lg'></i>
+                                <x-bx-calendar-check class="w-5 h-5" />
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Annual Leave</p>
@@ -125,7 +125,7 @@
                         <button wire:click="$set('previewPhase', 'attendance')" 
                             class="flex items-center gap-3 p-3 rounded-2xl border transition-all text-left shadow-sm {{ $previewPhase === 'attendance' ? 'bg-white border-purple-500 ring-1 ring-purple-500' : 'bg-white border-purple-100 hover:border-purple-300' }}">
                             <div class="h-9 w-9 flex items-center justify-center rounded-xl bg-purple-100 text-purple-600 shrink-0">
-                                <i class='bx bx-time text-lg'></i>
+                                <x-bx-time class="w-5 h-5" />
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Attendance</p>
@@ -180,7 +180,7 @@
                                     <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-{{ $meta[0] }}-200 transition-all">
                                         <div class="flex items-center justify-between mb-4">
                                             <div class="h-12 w-12 flex items-center justify-center rounded-2xl bg-{{ $meta[0] }}-100 text-{{ $meta[0] }}-600">
-                                                <i class='bx bx-{{ $meta[1] }} text-2xl'></i>
+                                                <x-icon :name="'bx-' . $meta[1]" class="w-6 h-6" />
                                             </div>
                                             <span class="text-4xl font-black text-slate-900">{{ count($modalData[$previewPhase]['details'][$key] ?? []) }}</span>
                                         </div>
@@ -189,7 +189,7 @@
                                         </p>
                                         <button wire:click="$set('previewTab', '{{ $key }}')"
                                             class="mt-4 flex items-center gap-2 text-[11px] font-black text-{{ $meta[0] }}-600 uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-                                            View Details <i class='bx bx-right-arrow-alt text-lg'></i>
+                                            View Details <x-bx-right-arrow-alt class="w-5 h-5" />
                                         </button>
                                     </div>
                                 @endforeach
@@ -197,7 +197,7 @@
                                 <div class="col-span-full mt-4 p-6 bg-slate-900 rounded-3xl flex items-center justify-between shadow-xl">
                                     <div class="flex items-center gap-6">
                                         <div class="h-14 w-14 flex items-center justify-center rounded-2xl bg-white/10 text-white shrink-0">
-                                            <i class='bx bx-shield-quarter text-lg'></i>
+                                            <x-bx-shield-quarter class="w-5 h-5" />
                                         </div>
                                         <div>
                                             <p class="text-xs font-bold text-white uppercase tracking-wide mb-1">
@@ -272,7 +272,7 @@
                                                                     <span class="w-24 text-[9px] font-bold text-slate-400 uppercase truncate" title="{{ str_replace('_', ' ', $field) }}">{{ str_replace('_', ' ', $field) }}</span>
                                                                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200">
                                                                         <span class="text-[10px] font-medium text-slate-500 line-through decoration-slate-400">{{ $val['old'] ?? '---' }}</span>
-                                                                        <i class='bx bx-right-arrow-alt text-blue-500'></i>
+                                                                        <x-bx-right-arrow-alt class="text-blue-500" />
                                                                         <span class="text-[10px] font-bold text-slate-900">{{ $val['new'] ?? '---' }}</span>
                                                                     </div>
                                                                 </div>
@@ -324,7 +324,7 @@
                             <button wire:click="confirmSync"
                                 class="relative group inline-flex items-center gap-3 px-8 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all uppercase tracking-widest">
                                 <span>Sync to Database</span>
-                                <i class='bx bx-right-arrow-alt text-xl group-hover:translate-x-1 transition-transform'></i>
+                                <x-bx-right-arrow-alt class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
                         @elseif($previewTab !== 'summary')
                             <button wire:click="$set('previewTab', 'summary')"

@@ -3,7 +3,7 @@
     $dir = $direction ?? 'asc';
 @endphp
 @if ($active)
-    <i class="bx {{ $dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down' }} ms-1 small align-middle"></i>
+    <x-icon :name="$dir === 'asc' ? 'bx-sort-up' : 'bx-sort-down'" class="ms-1 align-middle" />
 @else
-    <i class="bx bx-sort ms-1 small align-middle text-muted"></i>
+    <x-bx-sort class="ms-1 small align-middle text-muted" />
 @endif

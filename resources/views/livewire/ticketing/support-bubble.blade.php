@@ -1,4 +1,4 @@
-<div class="fixed bottom-6 right-6 z-[100]" wire:poll.30s="checkUpdates">
+<div class="fixed bottom-6 right-6 z-[100]">
     {{-- Bubble Button --}}
     <button wire:click="toggle"
         class="relative flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-2xl shadow-indigo-500/30 hover:bg-slate-800 transition-transform hover:scale-105">
@@ -30,7 +30,7 @@
         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-        x-transition:leave-end="opacity-0 translate-y-8 scale-95" @click.away="$wire.set('isOpen', false)"
+        x-transition:leave-end="opacity-0 translate-y-8 scale-95" @click.away="show = false"
         class="absolute bottom-20 right-0 w-[400px] rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[600px]"
         x-cloak>
         {{-- Header --}}

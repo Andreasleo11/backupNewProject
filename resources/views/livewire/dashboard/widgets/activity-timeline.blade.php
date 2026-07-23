@@ -47,7 +47,7 @@
                         {{-- Icon Dot --}}
                         <div
                             class="absolute left-0 top-0.5 h-8 w-8 rounded-full {{ $color }} border-4 border-white shadow-sm flex items-center justify-center z-10 transition-transform group-hover/activity:scale-110">
-                            <i class='bx bx-{{ $icon }} text-sm'></i>
+                            <x-icon :name="'bx-' . $icon" class="w-4 h-4" />
                         </div>
 
                         <div class="flex flex-col">

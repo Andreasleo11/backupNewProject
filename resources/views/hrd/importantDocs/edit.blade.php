@@ -33,7 +33,7 @@
                 </a>
                 <a href="{{ route('hrd.importantDocs.index') }}"
                     class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                    <i class="bx bx-arrow-back mr-1.5"></i> Back
+                    <x-bx-arrow-back class="mr-1.5" /> Back
                 </a>
             </div>
         </div>
@@ -58,7 +58,7 @@
             <div class="flex items-center gap-4">
                 <div
                     class="h-12 w-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                    <i class="bx bx-file text-2xl"></i>
+                    <x-bx-file class="w-6 h-6" />
                 </div>
                 <div>
                     <h2 class="text-sm font-bold text-slate-900">{{ $importantDoc->name }}</h2>
@@ -177,7 +177,7 @@
                                     <template x-for="file in selectedFiles" :key="file.name">
                                         <div
                                             class="flex items-center gap-2 p-2 bg-white rounded-lg border border-indigo-50 shadow-sm animate-in slide-in-from-bottom-1 duration-200">
-                                            <i class="bx bx-paperclip text-indigo-400"></i>
+                                            <x-bx-paperclip class="text-indigo-400" />
                                             <div class="min-w-0">
                                                 <p class="text-[10px] font-bold text-slate-700 truncate capitalize"
                                                     x-text="file.name"></p>
@@ -211,7 +211,7 @@
                     </a>
                     <button type="submit"
                         class="inline-flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-8 text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
-                        <i class="bx bx-save mr-1.5 text-base"></i>
+                        <x-bx-save class="mr-1.5 w-4 h-4" />
                         Update Document
                     </button>
                 </div>
@@ -243,7 +243,7 @@
 
                         <div
                             class="group relative flex flex-col items-center p-4 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:border-indigo-100 hover:shadow-md transition-all">
-                            <i class="bx {{ $icon }} text-3xl mb-2"></i>
+                            <x-icon :name="$icon" class="w-8 h-8 mb-2" />
                             <div class="text-center min-w-0 w-full">
                                 <p class="text-[11px] font-bold text-slate-700 truncate px-2"
                                     title="{{ $file->name }}">{{ $file->name }}</p>
@@ -258,7 +258,7 @@
                                 <button type="submit"
                                     class="h-7 w-7 rounded-lg bg-white border border-rose-100 text-rose-500 hover:bg-rose-700 hover:text-white transition-all shadow-sm flex items-center justify-center"
                                     title="Remove Attachment">
-                                    <i class="bx bx-trash text-sm"></i>
+                                    <x-bx-trash class="w-4 h-4" />
                                 </button>
                             </form>
                         </div>

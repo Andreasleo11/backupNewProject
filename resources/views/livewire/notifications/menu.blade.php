@@ -8,7 +8,7 @@
       if (open && !ready) { ready = true; $wire.set('ready', true); }
       $nextTick(() => { if (open) $refs.menu?.focus(); });
     ">
-        <i class='bx bx-bell fs-5'></i>
+        <x-bx-bell class="fs-5" />
 
         {{-- Floating badge with subtle pulse --}}
         <span class="badge-floating {{ $unreadCount ? '' : 'd-none' }}">
@@ -26,12 +26,12 @@
         {{-- Header --}}
         <div class="notif-header d-flex align-items-center justify-content-between px-3 py-2">
             <div class="d-flex align-items-center gap-2">
-                <i class="bx bx-bell fs-5"></i>
+                <x-bx-bell class="fs-5" />
                 <span class="fw-semibold">Notifications</span>
             </div>
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-outline-light" wire:click="refreshUnread" title="Refresh">
-                    <i class='bx bx-refresh'></i>
+                    <x-bx-refresh class="" />
                 </button>
                 @if ($unreadCount > 0)
                     <button class="btn btn-sm btn-primary" wire:click="markAllRead">
@@ -110,7 +110,7 @@
                 @empty
                     <div class="list-group-item text-center py-5">
                         <div class="text-muted">
-                            <i class="bx bx-inbox fs-1 d-block mb-2"></i>
+                            <x-bxs-inbox class="w-8 h-8 d-block mb-2 text-slate-300 mx-auto" />
                             No notifications yet
                         </div>
                     </div>
@@ -138,7 +138,7 @@
                     <div class="d-flex align-items-center gap-2">
                         @if ($selected)
                             <span class="notif-icon notif-icon--{{ $selected['category'] ?? 'info' }} notif-icon--sm">
-                                <i class="{{ $selected['icon'] ?? 'bx bx-bell' }}"></i>
+                                <x-icon :name="str_replace(['bx ', 'bx-'], ['', 'bx-'], $selected['icon'] ?? 'bx-bell')" class="w-4 h-4" />
                             </span>
                         @endif
                         <h6 class="modal-title mb-0" id="notificationModalLabel">

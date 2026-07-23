@@ -9,7 +9,7 @@
         <div class="max-w-6xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
             <button @click="closeMode()"
                 class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                <i class="bx bx-x text-2xl"></i>
+                <x-bx-x class="w-6 h-6" />
             </button>
 
             <div class="flex-1 text-center px-4">
@@ -25,7 +25,7 @@
 
             <button wire:click="skip"
                 class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-200 transition-colors">
-                <i class="bx bx-skip-next text-2xl"></i>
+                <x-bx-skip-next class="w-6 h-6" />
             </button>
         </div>
     </div>
@@ -45,7 +45,7 @@
 
                             <div
                                 class="h-20 w-20 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner mb-4 border border-indigo-100/50">
-                                <i class="bx bx-user text-4xl"></i>
+                                <x-bx-user class="w-9 h-9" />
                             </div>
 
                             <h3 class="text-xl font-black text-slate-800 tracking-tight">
@@ -119,7 +119,7 @@
             <div class="flex flex-col items-center justify-center h-full p-6 text-center">
                 <div
                     class="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500 mb-6">
-                    <i class="bx bx-check-double text-5xl"></i>
+                    <x-bx-check-double class="w-12 h-12" />
                 </div>
                 <h3 class="text-xl font-black text-slate-800 mb-2">Semua Selesai!</h3>
                 <p class="text-slate-500 font-medium">Tidak ada lagi pegawai yang perlu dinilai.</p>
@@ -141,7 +141,7 @@
                 <button wire:click="previous"
                     class="w-14 lg:w-32 h-14 shrink-0 flex items-center justify-center gap-2 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-bold transition-all disabled:opacity-50"
                     {{ $currentStep <= 1 ? 'disabled' : '' }}>
-                    <i class="bx bx-chevron-left text-3xl"></i>
+                    <x-bx-chevron-left class="w-8 h-8" />
                     <span class="hidden lg:inline">Seblmnya</span>
                 </button>
                 <button wire:click="saveGrade"
@@ -151,8 +151,8 @@
                     </div>
                     <span wire:loading.remove wire:target="saveGrade">Simpan & Lanjut</span>
                     <span wire:loading wire:target="saveGrade" class="animate-pulse">Menyimpan...</span>
-                    <i class="bx bx-right-arrow-alt text-2xl group-hover:translate-x-1 transition-transform"
-                        wire:loading.remove wire:target="saveGrade"></i>
+                    <x-bx-right-arrow-alt class="w-6 h-6 group-hover:translate-x-1 transition-transform"
+                        wire:loading.remove wire:target="saveGrade" />
                 </button>
             </div>
         </div>

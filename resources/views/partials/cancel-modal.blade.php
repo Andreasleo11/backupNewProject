@@ -15,11 +15,11 @@
         <button type="button" @click="open = true"
             class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all active:scale-95"
             title="{{ $buttonLabel }}">
-            <i class="bx bx-x-circle text-lg"></i>
+            <x-bx-x-circle class="w-5 h-5" />
         </button>
     @else
         <button type="button" @click="open = true" class="{{ $triggerClass }}">
-            <i class="bx bx-x-circle text-lg"></i>
+            <x-bx-x-circle class="w-5 h-5" />
             <span>{{ $buttonLabel }}</span>
         </button>
     @endif
@@ -43,7 +43,7 @@
                             <div class="flex items-center gap-3">
                                 <div
                                     class="flex h-10 w-10 items-center justify-center rounded-full bg-white bg-opacity-20">
-                                    <i class="bx bx-x-circle text-2xl text-white"></i>
+                                    <x-bx-x-circle class="w-6 h-6 text-white" />
                                 </div>
                                 <h3 class="text-lg font-semibold text-white" id="cancel-modal-title">
                                     {!! $title !!}
@@ -51,7 +51,7 @@
                             </div>
                             <button type="button" @click="open = false"
                                 class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
-                                <i class='bx bx-x text-2xl'></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
 
                         <div class="mb-6">
                             <div class="mb-4 flex items-start gap-3 rounded-lg bg-rose-50 p-4 border border-rose-100">
-                                <i class='bx bx-error-circle text-xl text-rose-600'></i>
+                                <x-bx-error-circle class="w-5 h-5 text-rose-600" />
                                 <div class="text-sm text-rose-800">
                                     <p class="font-medium">Are you sure you want to cancel this
                                         {{ strtolower($entityName) }}?</p>
@@ -93,7 +93,7 @@
                             </button>
                             <button type="submit" :disabled="description.trim().length === 0"
                                 class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-200 transition-all hover:bg-rose-700 hover:-translate-y-0.5 hover:shadow-rose-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="bx bx-check-circle"></i>
+                                <x-bx-check-circle class="" />
                                 <span>{{ $confirmLabel }}</span>
                             </button>
                         </div>

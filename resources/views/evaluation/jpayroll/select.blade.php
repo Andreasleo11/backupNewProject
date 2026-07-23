@@ -10,7 +10,7 @@
     <div class="flex items-center gap-4 mb-6">
         <div
             class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
-            <i class="bx bx-export text-white text-2xl"></i>
+            <x-bx-export class="text-white w-6 h-6" />
         </div>
         <div>
             <h1 class="text-xl font-bold text-slate-800">Export JPayroll — Yayasan</h1>
@@ -24,7 +24,7 @@
         {{-- Card header --}}
         <div class="bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5">
             <h2 class="text-base font-bold text-white flex items-center gap-2">
-                <i class="bx bx-calendar"></i> Pilih Bulan & Tahun
+                <x-bx-calendar class="" /> Pilih Bulan & Tahun
             </h2>
             <p class="text-xs text-white/70 mt-1">
                 Data yang sudah <strong class="text-white">dept_approved</strong> akan diproses dan dikategorisasi ke nilai
@@ -64,7 +64,7 @@
 
             {{-- Info note --}}
             <div class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex gap-3 items-start">
-                <i class="bx bx-info-circle text-amber-500 text-lg mt-0.5 shrink-0"></i>
+                <x-bx-info-circle class="text-amber-500 w-5 h-5 mt-0.5 shrink-0" />
                 <p class="text-xs text-amber-700 m-0">
                     Hanya karyawan Yayasan dengan masa kerja <strong>≥ 6 bulan</strong> pada periode ini yang akan diproses.
                 </p>
@@ -73,7 +73,7 @@
             <div class="flex justify-end pt-1">
                 <button type="submit"
                     class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all">
-                    <i class="bx bx-search-alt"></i>
+                    <x-bx-search-alt class="" />
                     Lihat Status
                 </button>
             </div>

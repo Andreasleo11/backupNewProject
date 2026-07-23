@@ -11,7 +11,7 @@
         <div class="flex items-center gap-4">
             <div
                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
-                <i class="bx bx-buildings text-white text-2xl"></i>
+                <x-bx-buildings class="text-white w-6 h-6" />
             </div>
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Status Departemen — JPayroll</h1>
@@ -25,7 +25,7 @@
         </div>
         <a href="{{ route('evaluation.jpayroll.select') }}"
             class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 transition-colors">
-            <i class="bx bx-arrow-back"></i> Ganti Periode
+            <x-bx-arrow-back class="" /> Ganti Periode
         </a>
     </div>
 
@@ -72,7 +72,7 @@
                     </div>
                 @empty
                     <div class="px-6 py-10 text-center">
-                        <i class="bx bx-folder-open text-4xl text-slate-300"></i>
+                        <x-bx-folder-open class="w-9 h-9 text-slate-300" />
                         <p class="text-sm text-slate-400 mt-2">Tidak ada data departemen untuk periode ini.</p>
                     </div>
                 @endforelse
@@ -102,7 +102,7 @@
                            {{ $readyCount > 0
                                ? 'bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-0.5 shadow-indigo-200'
                                : 'bg-slate-300 cursor-not-allowed opacity-60' }}">
-                        <i class="bx bx-download text-base"></i>
+                        <x-bx-download class="w-4 h-4" />
                         Download Excel
                     </button>
                 </form>

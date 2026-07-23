@@ -89,10 +89,10 @@
                             <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-medium text-slate-400">
                                 <li><a href="{{ route('home') }}"
                                         class="hover:text-indigo-600 transition-colors">Dashboard</a></li>
-                                <li><i class="bx bx-chevron-right"></i></li>
+                                <li><x-bx-chevron-right class="" /></li>
                                 <li><a href="{{ route('monthly-budget-summary.index') }}"
                                         class="hover:text-indigo-600 transition-colors">Budget Summaries</a></li>
-                                <li><i class="bx bx-chevron-right"></i></li>
+                                <li><x-bx-chevron-right class="" /></li>
                                 <li class="text-slate-600">Detail</li>
                             </ol>
                         </nav>
@@ -100,7 +100,7 @@
                         <div class="flex items-center gap-3">
                             <div
                                 class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-                                <i class="bx bx-file-blank text-white text-2xl"></i>
+                                <x-bx-file-blank class="text-white w-6 h-6" />
                             </div>
                             <div>
                                 <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
@@ -131,14 +131,14 @@
                                 <button type="button"
                                     class="inline-flex items-center px-4 py-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors"
                                     x-data @click="$dispatch('open-modal', { id: 'upload-files-modal' })">
-                                    <i class="bx bx-upload text-lg mr-2"></i> Upload
+                                    <x-bx-upload class="w-5 h-5 mr-2" /> Upload
                                 </button>
                                 <div class="w-px h-4 bg-slate-200"></div>
                                 <form action="{{ route('monthly-budget-summary.refresh', $report->id) }}" method="POST">
                                     @csrf
                                     <button type="submit"
                                         class="inline-flex items-center px-4 py-2 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors">
-                                        <i class="bx bx-refresh text-lg mr-2"></i> Refresh
+                                        <x-bx-refresh class="w-5 h-5 mr-2" /> Refresh
                                     </button>
                                 </form>
                             </div>
@@ -147,7 +147,7 @@
 
                         <a href="{{ route('monthly-budget-summary.export-pdf', $report->id) }}"
                             class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
-                            <i class="bx bxs-file-pdf text-base"></i>
+                            <x-bxs-file-pdf class="w-4 h-4" />
                             Export PDF
                         </a>
                     </div>
@@ -165,7 +165,7 @@
                         <div class="mt-4 flex items-center gap-2">
                             <span
                                 class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-600 ring-1 ring-emerald-100">
-                                <i class="bx bx-trending-up"></i> +{{ number_format($report->mom['pct'] ?? 0, 1) }}%
+                                <x-bx-trending-up class="" /> +{{ number_format($report->mom['pct'] ?? 0, 1) }}%
                             </span>
                             <span class="text-[10px] font-bold text-slate-400">vs last month</span>
                         </div>
@@ -180,7 +180,7 @@
                             {{ collect($report->details)->pluck('dept_no')->unique()->count() }} <span
                                 class="text-sm text-slate-400 font-bold uppercase tracking-widest">Active</span></h4>
                         <div class="mt-4 flex items-center gap-2 text-slate-400">
-                            <i class="bx bx-buildings text-sm"></i>
+                            <x-bx-buildings class="w-4 h-4" />
                             <span class="text-[10px] font-bold">Consolidated from approved reports</span>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                         <h4 class="text-2xl font-black text-slate-800">{{ count($report->details) }} <span
                                 class="text-sm text-slate-400 font-bold uppercase tracking-widest">Entries</span></h4>
                         <div class="mt-4 flex items-center gap-2 text-slate-400">
-                            <i class="bx bx-list-check text-sm"></i>
+                            <x-bx-list-check class="w-4 h-4" />
                             <span class="text-[10px] font-bold">Line items identified across depts</span>
                         </div>
                     </div>
@@ -278,7 +278,7 @@
                                                     <td rowspan="{{ $rowspanCount }}"
                                                         class="px-4 py-4 text-left align-top font-black text-slate-800 border-r border-slate-50 group-hover:text-indigo-600 transition-colors">
                                                         <div class="flex items-center gap-2">
-                                                            <i class="bx bx-package text-indigo-400 text-sm"></i>
+                                                            <x-bx-package class="text-indigo-400 w-4 h-4" />
                                                             {{ $group['name'] }}
                                                         </div>
                                                     </td>
@@ -336,7 +336,7 @@
                                                             <button type="button"
                                                                 class="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 hover:-translate-y-0.5 shadow-sm transition-all active:scale-95 flex items-center justify-center"
                                                                 @click="$dispatch('open-modal', { id: 'edit-monthly-budget-report-summary-detail-{{ $item['id'] }}' })">
-                                                                <i class='bx bx-edit'></i>
+                                                                <x-bx-edit class="" />
                                                             </button>
 
                                                             @include('partials.delete-confirmation-modal', [
@@ -408,7 +408,7 @@
                         </div>
                         <h3
                             class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-4 flex items-center gap-2">
-                            <i class="bx bx-pen text-indigo-500"></i> Local Draft
+                            <x-bx-pen class="text-indigo-500" /> Local Draft
                         </h3>
                         <p class="text-xs text-slate-500 font-medium leading-relaxed mb-6">
                             This summary is currently in <span class="text-indigo-600 font-black">Draft</span> mode. You
@@ -418,7 +418,7 @@
                             @csrf
                             <button type="submit"
                                 class="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 active:scale-95">
-                                <i class="bx bx-paper-plane text-base"></i> Sign & Start Approval
+                                <x-bx-paper-plane class="w-4 h-4" /> Sign & Start Approval
                             </button>
                         </form>
                     </div>
@@ -431,12 +431,12 @@
                         </div>
                         <h3
                             class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-6 flex items-center gap-2">
-                            <i class="bx bx-bolt-circle text-amber-500"></i> Review Portal
+                            <x-bx-bolt-circle class="text-amber-500" /> Review Portal
                         </h3>
                         <div class="space-y-4">
                             <button type="button" @click="$dispatch('open-approve-modal')"
                                 class="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-1 active:scale-95">
-                                <i class="bx bx-check-double text-base"></i> Approve Report
+                                <x-bx-check-double class="w-4 h-4" /> Approve Report
                             </button>
 
                             <div class="grid grid-cols-2 gap-3 pt-2">
@@ -456,7 +456,7 @@
                 {{-- Workflow History --}}
                 <div class="glass-card p-8 premium-shadow">
                     <h3 class="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-800 mb-8">
-                        <i class="bx bx-history text-indigo-500 text-xl"></i> Approval Trail
+                        <x-bx-history class="text-indigo-500 w-5 h-5" /> Approval Trail
                     </h3>
                     <div class="relative px-2">
                         @include('partials.workflow-timeline', ['record' => $report])

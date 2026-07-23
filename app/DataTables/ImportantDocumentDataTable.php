@@ -48,13 +48,13 @@ class ImportantDocumentDataTable extends DataTable
                                     <form method="POST" action="' . route('hrd.importantDocs.restore', $row->id) . '" onsubmit="return confirm(\'Restore this document?\')">
                                         ' . csrf_field() . '
                                         <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors" title="Restore">
-                                            <i class="bx bx-undo text-lg"></i>
+                                            ' . svg('bx-undo', 'w-5 h-5')->toHtml() . '
                                         </button>
                                     </form>
                                     <form method="POST" action="' . route('hrd.importantDocs.forceDelete', $row->id) . '" onsubmit="return confirm(\'Permanently delete this? This cannot be undone.\')">
                                         ' . csrf_field() . ' ' . method_field('DELETE') . '
                                         <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Permanent Delete">
-                                            <i class="bx bx-trash-alt text-lg"></i>
+                                            ' . svg('bx-trash-alt', 'w-5 h-5')->toHtml() . '
                                         </button>
                                     </form>
                                 </div>';
@@ -63,16 +63,16 @@ class ImportantDocumentDataTable extends DataTable
                     return '<div class="flex items-center justify-center gap-1.5">
                         <button type="button" @click="$store.docLibrary.openDetail(' . $row->id . ')"
                             class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Quick View">
-                            <i class="bx bx-show text-lg"></i>
+                            ' . svg('bx-show', 'w-5 h-5')->toHtml() . '
                         </button>
                         <a href="' . route('hrd.importantDocs.edit', $row->id) . '"
                             class="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
-                            <i class="bx bx-edit text-lg"></i>
+                            ' . svg('bx-edit', 'w-5 h-5')->toHtml() . '
                         </a>
                         <div x-data="{ open: false }" class="inline-block">
                             <button type="button" @click="open = true"
                                 class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                                <i class="bx bx-trash text-lg"></i>
+                                ' . svg('bx-trash', 'w-5 h-5')->toHtml() . '
                             </button>
                             <template x-teleport="body">
                                 <div>
@@ -81,9 +81,9 @@ class ImportantDocumentDataTable extends DataTable
                                         <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
                                             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50">
                                                 <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                                                    <i class="bx bx-error-circle text-rose-500"></i> Delete Confirmation
+                                                    ' . svg('bx-error-circle', 'w-4 h-4 text-rose-500')->toHtml() . ' Delete Confirmation
                                                 </h2>
-                                                <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><i class="bx bx-x text-xl"></i></button>
+                                                <button type="button" @click="open = false" class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600">' . svg('bx-x', 'w-5 h-5')->toHtml() . '</button>
                                             </div>
                                             <div class="px-6 py-6 text-sm text-slate-600">Are you sure you want to delete this document? This action can be undone by an administrator.</div>
                                             <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 bg-slate-50">
@@ -91,7 +91,7 @@ class ImportantDocumentDataTable extends DataTable
                                                 <form method="POST" action="' . route('hrd.importantDocs.delete', $row->id) . '">
                                                     ' . csrf_field() . ' ' . method_field('DELETE') . '
                                                     <button type="submit" class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700">
-                                                        <i class="bx bx-trash-alt mr-1.5"></i>Confirm Delete
+                                                        ' . svg('bx-trash-alt', 'w-4 h-4 mr-1.5')->toHtml() . 'Confirm Delete
                                                     </button>
                                                 </form>
                                             </div>

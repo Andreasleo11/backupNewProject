@@ -11,12 +11,12 @@
         <button type="button" @click="open = true"
             class="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all active:scale-95"
             title="{{ $buttonLabel }}">
-            <i class="bx bx-trash-alt text-lg"></i>
+            <x-bx-trash-alt class="w-5 h-5" />
         </button>
     @else
         <button type="button" @click="open = true"
             class="inline-flex items-center rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
-            <i class="bx bx-trash-alt mr-1 text-[0.9rem]"></i>
+            <x-bx-trash-alt class="mr-1 text-[0.9rem]" />
             <span class="hidden sm:inline">{{ $buttonLabel }}</span>
         </button>
     @endif
@@ -35,12 +35,12 @@
                     class="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden transform transition-all">
                     <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
                         <h2 class="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                            <i class="bx bx-error-circle text-rose-500"></i>
+                            <x-bx-error-circle class="text-rose-500" />
                             {!! $title !!}
                         </h2>
                         <button type="button" @click="open = false"
                             class="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                            <i class="bx bx-x text-xl"></i>
+                            <x-bx-x class="w-5 h-5" />
                         </button>
                     </div>
 
@@ -59,7 +59,7 @@
                             @method('DELETE')
                             <button type="submit"
                                 class="inline-flex items-center rounded-xl bg-rose-600 px-6 py-2 text-xs font-bold text-white hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all hover:scale-105 active:scale-95">
-                                <i class="bx bx-trash-alt mr-1.5 text-[0.9rem]"></i>
+                                <x-bx-trash-alt class="mr-1.5 text-[0.9rem]" />
                                 Confirm Delete
                             </button>
                         </form>

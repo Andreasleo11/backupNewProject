@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-4">
-                <i class='bx bx-history text-xs'></i>
+                <x-bx-history class="w-3 h-3" />
                 System Integrity
             </div>
             <h1 class="text-4xl font-black text-slate-800 tracking-tight">
@@ -20,7 +20,7 @@
 
         <a href="{{ route('lockers.dashboard') }}"
            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white text-slate-700 text-sm font-bold border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-            <i class='bx bx-grid-alt text-lg'></i>
+            <x-bx-grid-alt class="w-5 h-5" />
             Dashboard
         </a>
     </div>
@@ -30,7 +30,7 @@
         <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
             {{-- Search --}}
             <div class="relative group">
-                <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg group-focus-within:text-indigo-500 transition-colors'></i>
+                <x-bx-search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="search"
@@ -189,7 +189,7 @@
                                 <div class="hidden md:flex relative z-10">
                                     <div class="w-8 flex justify-center">
                                         <div class="w-8 h-8 rounded-xl {{ $iconBg }} flex items-center justify-center shadow-lg border-4 border-white group-hover:scale-110 transition-transform">
-                                            <i class='bx {{ $icon }} text-base'></i>
+                                            <x-icon :name="$icon" class="w-4 h-4" />
                                         </div>
                                     </div>
                                 </div>
@@ -206,7 +206,7 @@
                                         <div class="flex gap-4">
                                             {{-- Mobile Icon --}}
                                             <div class="md:hidden w-10 h-10 rounded-xl {{ $iconBg }} flex items-center justify-center shrink-0">
-                                                <i class='bx {{ $icon }} text-lg'></i>
+                                                <x-icon :name="$icon" class="w-5 h-5" />
                                             </div>
 
                                             <div>
@@ -230,7 +230,7 @@
                                                 <div class="mt-3 flex flex-wrap items-center gap-2">
                                                     @if($lockerNumber)
                                                         <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
-                                                            <i class='bx bx-box text-slate-400'></i>
+                                                            <x-bx-box class="text-slate-400" />
                                                             <span class="text-[10px] font-black text-slate-600 uppercase">
                                                                 {{ $lockerNumber }}
                                                             </span>
@@ -238,7 +238,7 @@
                                                     @endif
 
                                                     <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
-                                                        <i class='bx bx-user text-slate-400'></i>
+                                                        <x-bx-user class="text-slate-400" />
                                                         <span class="text-[10px] font-bold text-slate-600">
                                                             {{ $log->causer?->name ?? 'System' }}
                                                         </span>
@@ -310,7 +310,7 @@
                 {{-- Empty State --}}
                 <div class="py-20 text-center bg-white rounded-[3rem] border border-slate-100 shadow-sm">
                     <div class="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-6">
-                        <i class='bx bx-ghost text-5xl'></i>
+                        <x-bx-ghost class="w-12 h-12" />
                     </div>
                     <h3 class="text-2xl font-bold text-slate-800">
                         No events found

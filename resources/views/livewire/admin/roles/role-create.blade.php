@@ -109,7 +109,7 @@
                 Cancel
             </a>
             <button type="submit" wire:loading.attr="disabled" wire:target="save" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50 shadow-sm">
-                <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="save"></i>
+                <x-bx-loader-alt class="animate-spin" wire:loading wire:target="save" />
                 <span wire:loading.remove wire:target="save">Create Role</span>
                 <span wire:loading wire:target="save">Saving...</span>
             </button>

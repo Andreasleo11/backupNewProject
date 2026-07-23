@@ -110,7 +110,7 @@
         @empty
             <div class="card shadow-sm">
                 <div class="card-body text-center py-5 text-muted">
-                    <i class='bx bx-file-blank fs-1 d-block mb-2'></i>
+                    <x-bx-file-blank class="fs-1 d-block mb-2" />
                     <div class="fw-semibold">Belum ada data Monthly Report</div>
                     <div class="small">Silakan buat report VQC terlebih dahulu, lalu coba buka halaman ini lagi.</div>
                 </div>

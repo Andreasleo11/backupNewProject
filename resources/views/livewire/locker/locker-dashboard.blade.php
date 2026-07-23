@@ -14,7 +14,7 @@
         <div class="flex items-center gap-3">
             <a href="{{ route('lockers.manage') }}" 
                 class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-slate-700 text-sm font-bold border border-slate-200 shadow-sm hover:bg-slate-50 transition-all">
-                <i class='bx bx-cog text-lg'></i>
+                <x-bx-cog class="w-5 h-5" />
                 Manage Units
             </a>
         </div>
@@ -25,7 +25,7 @@
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                    <i class='bx bx-check-circle text-2xl'></i>
+                    <x-bx-check-circle class="w-6 h-6" />
                 </div>
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-slate-400">Available</p>
@@ -36,7 +36,7 @@
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
-                    <i class='bx bx-user text-2xl'></i>
+                    <x-bx-user class="w-6 h-6" />
                 </div>
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-slate-400">Occupied</p>
@@ -47,7 +47,7 @@
         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <div class="flex items-center gap-4">
                 <div class="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
-                    <i class='bx bx-wrench text-2xl'></i>
+                    <x-bx-wrench class="w-6 h-6" />
                 </div>
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-slate-400">Maintenance</p>
@@ -61,7 +61,7 @@
     <div class="bg-white/60 backdrop-blur-md rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-8">
         <div class="p-4 flex flex-col md:flex-row items-center gap-4">
             <div class="relative flex-1 w-full">
-                <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg'></i>
+                <x-bx-search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input type="text" wire:model.live.debounce.300ms="search" 
                     placeholder="Search locker # or location..." 
                     class="w-full pl-11 pr-4 py-2.5 bg-white/80 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
@@ -101,7 +101,7 @@
                             @if($locker->status === 'occupied' && $locker->currentAssignment && $locker->currentAssignment->incidents()->where('is_paid', false)->exists())
                                 <div class="group/fine relative">
                                     <span class="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white animate-pulse">
-                                        <i class='bx bxs-error-circle'></i>
+                                        <x-bxs-error-circle class="" />
                                     </span>
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/fine:block w-32 px-2 py-1 bg-slate-900 text-white text-[9px] rounded shadow-xl z-20 text-center">
                                         Unpaid fines active
@@ -123,7 +123,7 @@
                         <div class="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm">
-                                    <i class='bx bx-user text-xl'></i>
+                                    <x-bx-user class="w-5 h-5" />
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-xs font-black text-slate-800 truncate">{{ $locker->currentAssignment->employee->name }}</p>
@@ -132,7 +132,7 @@
                                 <button wire:click="openIncidentModal({{ $locker->currentAssignment->id }})" 
                                     class="h-8 w-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all shadow-sm group/btn"
                                     title="Report Issue">
-                                    <i class='bx bx-error text-lg'></i>
+                                    <x-bx-error class="w-5 h-5" />
                                 </button>
                             </div>
 
@@ -168,7 +168,7 @@
                         </button>
                     @elseif ($locker->status === 'available')
                         <div class="mt-4 py-8 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 rounded-3xl">
-                            <i class='bx bx-plus-circle text-2xl text-slate-200 mb-2'></i>
+                            <x-bx-plus-circle class="w-6 h-6 text-slate-200 mb-2" />
                             <p class="text-xs font-bold text-slate-300 uppercase">Empty Unit</p>
                         </div>
                         
@@ -178,7 +178,7 @@
                         </button>
                     @else
                         <div class="mt-4 py-8 flex flex-col items-center justify-center bg-amber-50/50 rounded-3xl border border-amber-100">
-                            <i class='bx bx-error-circle text-2xl text-amber-200 mb-2'></i>
+                            <x-bx-error-circle class="w-6 h-6 text-amber-200 mb-2" />
                             <p class="text-xs font-bold text-amber-400 uppercase tracking-widest">Out of Service</p>
                         </div>
                         <button disabled class="w-full mt-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed">
@@ -190,7 +190,7 @@
         @empty
             <div class="col-span-full py-20 text-center">
                 <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
-                    <i class='bx bx-search text-4xl'></i>
+                    <x-bx-search class="w-9 h-9" />
                 </div>
                 <h3 class="text-xl font-bold text-slate-800">No lockers found matching your criteria</h3>
                 <p class="text-slate-500 mt-1">Try adjusting your search or filters.</p>
@@ -229,7 +229,7 @@
                             <p class="text-xs text-slate-500 font-medium mt-0.5">Select an employee to allocate this unit</p>
                         </div>
                         <button @click="isAssignModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                            <i class='bx bx-x text-2xl'></i>
+                            <x-bx-x class="w-6 h-6" />
                         </button>
                     </div>
 
@@ -238,7 +238,7 @@
                         <div class="relative">
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Search Employee</label>
                             <div class="relative">
-                                <i class='bx bx-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'></i>
+                                <x-bx-user class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input type="text" wire:model.live.debounce.300ms="employeeSearch" 
                                     placeholder="Type name or NIK..." 
                                     class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 transition-all">
@@ -315,7 +315,7 @@
                             <p class="text-xs text-slate-500 font-medium mt-0.5">Log an incident or issue a fine</p>
                         </div>
                         <button @click="isIncidentModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                            <i class='bx bx-x text-2xl'></i>
+                            <x-bx-x class="w-6 h-6" />
                         </button>
                     </div>
 

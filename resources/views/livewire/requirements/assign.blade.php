@@ -17,7 +17,7 @@
             </li>
             <li aria-current="page">
                 <div class="flex items-center">
-                    <i class="bx bx-chevron-right text-slate-400 text-lg"></i>
+                    <x-bx-chevron-right class="text-slate-400 w-5 h-5" />
                     <span class="ml-1 text-sm font-medium text-slate-800 md:ml-2">Assign to Departments</span>
                 </div>
             </li>
@@ -66,7 +66,7 @@
                 {{-- Department Assignment Section --}}
                 <div class="mb-4 flex flex-wrap gap-3 items-center justify-between">
                     <div class="relative flex-1 min-w-[240px]">
-                        <i class="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <x-bx-search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input type="text" wire:model.live.debounce.250ms="deptSearch"
                             placeholder="Search departments by name or code…"
                             class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none">
@@ -142,13 +142,13 @@
                             wire:confirm="Are you sure you want to completely unassign the selected departments? This will detach them from this requirement."
                             wire:loading.attr="disabled"
                             class="px-4 py-2 rounded-xl text-sm font-semibold border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 disabled:opacity-50 transition-colors flex items-center gap-1.5">
-                            <i class="bx bx-unlink"></i> Unassign
+                            <x-bx-unlink class="" /> Unassign
                         </button>
                     @endif
 
                     <button wire:click="save" @disabled(!$requirement_id || count($department_ids) === 0) wire:loading.attr="disabled"
                         class="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-1.5">
-                        <i class="bx bx-check"></i> Save Assignments
+                        <x-bx-check class="" /> Save Assignments
                     </button>
                 </div>
             </div>
@@ -195,7 +195,7 @@
                             @if ($req->requires_approval)
                                 <span
                                     class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                    <i class="bx bx-shield-alt-2"></i> Required
+                                    <x-bx-shield-alt-2 class="" /> Required
                                 </span>
                             @else
                                 <span
@@ -222,7 +222,7 @@
                     </div>
                 @else
                     <div class="py-6 text-center border-t border-slate-100 mt-4">
-                        <i class="bx bx-file-blank text-3xl text-slate-200"></i>
+                        <x-bx-file-blank class="w-8 h-8 text-slate-200" />
                         <p class="text-xs text-slate-400 mt-2">Select a requirement from the dropdown to see its
                             specifications here.</p>
                     </div>
@@ -271,7 +271,7 @@
                                 <div class="flex items-start gap-3">
                                     <div
                                         class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                                        <i class="bx bx-buildings text-slate-400"></i>
+                                        <x-bx-buildings class="text-slate-400" />
                                     </div>
                                     <div>
                                         <p class="text-sm font-semibold text-slate-700">

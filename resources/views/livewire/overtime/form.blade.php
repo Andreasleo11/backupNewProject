@@ -11,7 +11,7 @@
             <div class="flex items-center gap-4">
                 <a href="{{ $formId ? route('overtime.detail', $formId) : route('overtime.index') }}"
                     class="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all">
-                    <i class='bx bx-arrow-back text-lg'></i>
+                    <x-bx-arrow-back class="w-5 h-5" />
                 </a>
                 <div class="h-4 w-px bg-slate-200"></div>
                 <h1 class="text-sm font-black text-slate-900 tracking-tight uppercase">
@@ -26,14 +26,14 @@
                     <span class="text-[10px] font-bold uppercase tracking-widest"
                         :class="stage >= 0 ? 'text-slate-900' : 'text-slate-400'">Context</span>
                 </div>
-                <i class='bx bx-chevron-right text-slate-300'></i>
+                <x-bx-chevron-right class="text-slate-300" />
                 <div class="flex items-center gap-2">
                     <span class="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black border-2"
                         :class="stage >= 1 ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 text-slate-400'">2</span>
                     <span class="text-[10px] font-bold uppercase tracking-widest"
                         :class="stage >= 1 ? 'text-slate-900' : 'text-slate-400'">Schedule</span>
                 </div>
-                <i class='bx bx-chevron-right text-slate-300'></i>
+                <x-bx-chevron-right class="text-slate-300" />
                 <div class="flex items-center gap-2">
                     <span class="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black border-2"
                         :class="stage >= 2 ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 text-slate-400'">3</span>
@@ -59,7 +59,7 @@
                         <div class="flex items-center gap-4">
                             <div
                                 class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-                                <i class='bx bx-buildings text-xl'></i></div>
+                                <x-bx-buildings class="w-5 h-5" /></div>
                             <div>
                                 <h2 class="text-sm font-black text-slate-900 uppercase tracking-tight">1. Assignment
                                     Context</h2>
@@ -69,8 +69,7 @@
                                     x-show="stage > 0" x-text="'Branch: ' + branch"></p>
                             </div>
                         </div>
-                        <i class='bx bx-chevron-down text-slate-300 text-lg transition-transform'
-                            :class="stage === 0 ? 'rotate-180' : ''"></i>
+                        <x-bx-chevron-down class="w-5 h-5 text-slate-300 transition-transform" x-bind:class="stage === 0 ? 'rotate-180' : ''" />
                     </div>
 
                     <div class="p-6 space-y-6" x-show="stage === 0" x-collapse>
@@ -94,8 +93,7 @@
                                     </div>
                                 @endif
                                 @error('dept_id')
-                                    <p class="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-tight"><i
-                                            class='bx bx-error-circle'></i> {{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-tight"><x-bx-error-circle class="" /> {{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
@@ -109,8 +107,7 @@
                                     <option value="Karawang">Karawang</option>
                                 </select>
                                 @error('branch')
-                                    <p class="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-tight"><i
-                                            class='bx bx-error-circle'></i> {{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-tight"><x-bx-error-circle class="" /> {{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -137,7 +134,7 @@
                                     class="h-11 px-8 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-3 disabled:opacity-30 disabled:grayscale">
                                     <span x-show="!validating">Continue to Timing</span>
                                     <span x-show="validating">Verifying...</span>
-                                    <i class='bx bx-loader-alt animate-spin text-lg' x-show="validating"></i>
+                                    <x-bx-loader-alt class="animate-spin w-5 h-5" x-show="validating" />
                                 </button>
                             </div>
                         </div>
@@ -155,7 +152,7 @@
                         <div class="flex items-center gap-4">
                             <div
                                 class="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                                <i class='bx bx-calendar-event text-xl'></i></div>
+                                <x-bx-calendar-event class="w-5 h-5" /></div>
                             <div>
                                 <h2 class="text-sm font-black text-slate-900 uppercase tracking-tight">2. Schedule
                                     Settings</h2>
@@ -171,13 +168,13 @@
                                     class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                                     :class="!show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
                                         'text-slate-500 hover:text-slate-700'">
-                                    <i class='bx bx-calendar-event mr-2'></i>Same Day
+                                    <x-bx-calendar-event class="mr-2" />Same Day
                                 </button>
                                 <button type="button" @click="show_date_override = true"
                                     class="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                                     :class="show_date_override ? 'bg-white text-indigo-700 shadow-lg' :
                                         'text-slate-500 hover:text-slate-700'">
-                                    <i class='bx bx-calendar-week mr-2'></i>Multi-Day
+                                    <x-bx-calendar-week class="mr-2" />Multi-Day
                                 </button>
                             </div>
                         </div>
@@ -330,7 +327,7 @@
                                 class="h-14 px-10 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:-translate-y-0.5 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span x-show="!validating">Continue to Roster</span>
                                 <span x-show="validating">Verifying...</span>
-                                <i class='bx bx-loader-alt animate-spin text-lg' x-show="validating"></i>
+                                <x-bx-loader-alt class="animate-spin w-5 h-5" x-show="validating" />
                             </button>
                         </div>
 
@@ -358,9 +355,8 @@
                                 <span class="text-base font-black uppercase tracking-tight leading-none"
                                     x-show="running">Checking Integrity...</span>
                             </div>
-                            <i class='bx bx-shield-quarter text-2xl group-hover:rotate-12 transition-transform'
-                                x-show="!running"></i>
-                            <i class='bx bx-loader-alt animate-spin text-2xl' x-show="running"></i>
+                            <x-bx-shield-quarter class="w-6 h-6 group-hover:rotate-12 transition-transform" x-show="!running" x-cloak />
+                            <x-bx-loader-alt class="animate-spin w-6 h-6" x-show="running" />
                         </button>
                     </div>
 
@@ -370,7 +366,7 @@
                         <div class="flex items-center gap-4 mb-6">
                             <div
                                 class="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl">
-                                <i class='bx bx-check-double'></i>
+                                <x-bx-check-double class="" />
                             </div>
                             <div>
                                 <h4 class="text-sm font-black text-slate-900 uppercase tracking-tight">Integrity
@@ -385,11 +381,9 @@
                                 :class="integrityResults.structural === 'passed' ? 'bg-emerald-50' : (integrityResults
                                     .structural === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
                                 <div class="flex items-center gap-4">
-                                    <i class='bx'
-                                        :class="integrityResults.structural === 'passed' ?
-                                            'bx-check-double text-emerald-500 text-xl' : (integrityResults
-                                                .structural === 'failed' ? 'bx-error-circle text-rose-500 text-xl' :
-                                                'bx-list-check text-slate-400 text-xl')"></i>
+                                    <x-bx-check-double class="w-5 h-5 text-emerald-500" x-show="integrityResults.structural === 'passed'" x-cloak />
+                                    <x-bx-error-circle class="w-5 h-5 text-rose-500" x-show="integrityResults.structural === 'failed'" x-cloak />
+                                    <x-bx-list-check class="w-5 h-5 text-slate-400" x-show="integrityResults.structural !== 'passed' && integrityResults.structural !== 'failed'" x-cloak />
                                     <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Data
                                         alignment guard</p>
                                 </div>
@@ -402,10 +396,9 @@
                                 :class="integrityResults.local === 'passed' ? 'bg-emerald-50' : (integrityResults
                                     .local === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
                                 <div class="flex items-center gap-4">
-                                    <i class='bx'
-                                        :class="integrityResults.local === 'passed' ? 'bx-data text-emerald-500 text-xl' : (
-                                            integrityResults.local === 'failed' ?
-                                            'bx-error-alt text-rose-500 text-xl' : 'bx-data text-slate-400 text-xl')"></i>
+                                    <x-bx-data class="w-5 h-5 text-emerald-500" x-show="integrityResults.local === 'passed'" x-cloak />
+                                    <x-bx-error-alt class="w-5 h-5 text-rose-500" x-show="integrityResults.local === 'failed'" x-cloak />
+                                    <x-bx-data class="w-5 h-5 text-slate-400" x-show="integrityResults.local !== 'passed' && integrityResults.local !== 'failed'" x-cloak />
                                     <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">Data &
                                         conflict integrity guard</p>
                                 </div>
@@ -418,11 +411,9 @@
                                 :class="integrityResults.payroll === 'passed' ? 'bg-emerald-50' : (integrityResults
                                     .payroll === 'failed' ? 'bg-rose-50' : 'bg-slate-50')">
                                 <div class="flex items-center gap-4">
-                                    <i class='bx'
-                                        :class="integrityResults.payroll === 'passed' ?
-                                            'bx-network-chart text-emerald-500 text-xl' : (integrityResults
-                                                .payroll === 'failed' ? 'bx-bolt-circle text-rose-500 text-xl' :
-                                                'bx-network-chart text-slate-400 text-xl')"></i>
+                                    <x-bx-network-chart class="w-5 h-5 text-emerald-500" x-show="integrityResults.payroll === 'passed'" x-cloak />
+                                    <x-bx-bolt-circle class="w-5 h-5 text-rose-500" x-show="integrityResults.payroll === 'failed'" x-cloak />
+                                    <x-bx-network-chart class="w-5 h-5 text-slate-400" x-show="integrityResults.payroll !== 'passed' && integrityResults.payroll !== 'failed'" x-cloak />
                                     <p class="text-[10px] font-black uppercase tracking-tight text-slate-700">JPayroll
                                         live verify</p>
                                 </div>
@@ -445,9 +436,8 @@
                                     <span class="text-base font-black uppercase tracking-tight leading-none"
                                         wire:loading wire:target="submit">Finalizing...</span>
                                 </div>
-                                <i class='bx bx-check-shield text-2xl text-indigo-300 group-hover:scale-110 transition-transform'
-                                    wire:loading.remove></i>
-                                <i class='bx bx-loader-alt animate-spin text-2xl' wire:loading></i>
+                                <x-bx-check-shield class="w-6 h-6 text-indigo-300 group-hover:scale-110 transition-transform" wire:loading.remove />
+                                <x-bx-loader-alt class="animate-spin w-6 h-6" wire:loading />
                             </button>
                         </div>
                     </div>

@@ -23,8 +23,8 @@ class DepartmentsDataTable extends DataTable
             ->addColumn(
                 'action',
                 '
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-department-modal-{{$id}}"><i class="bx bx-edit"></i></button>
-                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{$id}}"><i class="bx bx-trash"></i></button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-department-modal-{{$id}}">' . svg('bx-edit', 'w-4 h-4')->toHtml() . '</button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{$id}}">' . svg('bx-trash', 'w-4 h-4')->toHtml() . '</button>
             ',
             )
             ->editColumn(

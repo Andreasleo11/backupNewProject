@@ -7,7 +7,7 @@
         @endphp
         <a href="{{ $backUrl }}"
             class="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shrink-0 hover:scale-105 hover:bg-slate-800 transition-all">
-            <i class='bx bx-arrow-back text-2xl'></i>
+            <x-bx-arrow-back class="w-6 h-6" />
         </a>
         
         <div>
@@ -25,7 +25,7 @@
     {{-- Search Bar (Primary) --}}
     <div class="flex-1 max-w-lg relative group">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <i class='bx bx-search text-slate-400 group-focus-within:text-indigo-500 transition-colors text-xl'></i>
+            <x-bx-search class="text-slate-400 group-focus-within:text-indigo-500 transition-colors w-5 h-5" />
         </div>
         <input type="text" wire:model.live.debounce.400ms="search"
             placeholder="Search employee, NIK, or task..."
@@ -48,7 +48,7 @@
                 @endforeach
             </select>
             <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                <i class='bx bx-chevron-down text-slate-400 text-base'></i>
+                <x-bx-chevron-down class="text-slate-400 w-4 h-4" />
             </div>
         </div>
 
@@ -57,9 +57,9 @@
             class="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-all flex items-center justify-center"
             title="{{ $viewMode === 'flattened' ? 'Switch to Grouped View' : 'Switch to Flattened View' }}">
             @if($viewMode === 'flattened')
-                <i class='bx bx-list-ul text-lg'></i>
+                <x-bx-list-ul class="w-5 h-5" />
             @else
-                <i class='bx bx-category text-lg'></i>
+                <x-bx-category class="w-5 h-5" />
             @endif
         </button>
 
@@ -68,7 +68,7 @@
             <button wire:click="$dispatch('openPushAllConfirmation')"
                 class="h-10 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 border border-indigo-600 text-white text-sm font-medium transition-all flex items-center gap-2"
                 title="Push all eligible overtime data to JPayroll">
-                <i class='bx bx-cloud-upload text-base'></i>
+                <x-bx-cloud-upload class="w-4 h-4" />
                 <span class="hidden sm:inline">Push All</span>
             </button>
         @endif
@@ -78,7 +78,7 @@
     <div class="flex items-center bg-white rounded-2xl border border-slate-200/60 p-1.5 shadow-sm overflow-hidden shrink-0">
         <div class="flex items-center px-4 py-2 gap-2 border-r border-slate-100">
             <div class="h-6 w-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <i class='bx bx-check-double text-xs'></i>
+                <x-bx-check-double class="w-3 h-3" />
             </div>
             <div>
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Approved</div>
@@ -87,7 +87,7 @@
         </div>
         <div class="flex items-center px-4 py-2 gap-2 border-r border-slate-100">
             <div class="h-6 w-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                <i class='bx bx-time-five text-xs'></i>
+                <x-bx-time-five class="w-3 h-3" />
             </div>
             <div>
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Pending</div>
@@ -96,7 +96,7 @@
         </div>
         <div class="flex items-center px-4 py-2 gap-2">
             <div class="h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-                <i class='bx bx-x text-xs'></i>
+                <x-bx-x class="w-3 h-3" />
             </div>
             <div>
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Rejected</div>

@@ -31,7 +31,7 @@
                 <div class="bg-indigo-600 px-6 py-5 flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-bold text-white shadow-sm flex items-center gap-2">
-                            <i class="bx bx-upload text-xl"></i> Document Upload
+                            <x-bx-upload class="w-5 h-5" /> Document Upload
                         </h3>
                         <p class="text-[11px] text-indigo-100 mt-0.5">Submitting requirement #{{ $requirementId }} for
                             {{ $department?->name }}</p>
@@ -39,7 +39,7 @@
                     <button type="button" @click="open = false"
                         class="text-indigo-200 hover:text-white transition-colors">
                         <span class="sr-only">Close</span>
-                        <i class="bx bx-x text-2xl"></i>
+                        <x-bx-x class="w-6 h-6" />
                     </button>
                 </div>
 
@@ -53,8 +53,7 @@
                                 <div
                                     class="mt-1 flex justify-center rounded-xl border border-dashed border-slate-300 px-6 py-8 hover:bg-slate-50 hover:border-indigo-300 transition-colors group relative cursor-pointer">
                                     <div class="text-center">
-                                        <i
-                                            class="bx bx-cloud-upload text-4xl text-slate-300 group-hover:text-indigo-400 mb-2 transition-colors"></i>
+                                        <x-bx-cloud-upload class="w-9 h-9 text-slate-300 group-hover:text-indigo-400 mb-2 transition-colors" />
                                         <div class="flex text-sm text-slate-600 justify-center">
                                             <div
                                                 class="relative cursor-pointer rounded-md font-medium text-indigo-600 focus-within:outline-none hover:text-indigo-500">
@@ -77,7 +76,7 @@
                                         @if ($file && !$errors->has('file'))
                                             <div wire:loading.remove wire:target="file"
                                                 class="mt-2 text-xs font-semibold text-emerald-600 flex justify-center items-center gap-1">
-                                                <i class="bx bx-check-circle text-sm"></i> File staged:
+                                                <x-bx-check-circle class="w-4 h-4" /> File staged:
                                                 {{ $file->getClientOriginalName() }}
                                             </div>
                                         @endif
@@ -97,7 +96,7 @@
                                     class="flex rounded-xl overflow-hidden border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-400">
                                     <span
                                         class="flex items-center px-3 bg-slate-50 border-r border-slate-200 text-slate-400">
-                                        <i class="bx bx-calendar"></i>
+                                        <x-bx-calendar class="" />
                                     </span>
                                     <input type="date" wire:model="valid_from"
                                         class="w-full py-2 px-3 text-sm outline-none text-slate-700">
@@ -108,7 +107,7 @@
                         </div>
                     @else
                         <div class="py-8 text-center">
-                            <i class="bx bx-folder-open text-4xl text-slate-300 mb-2"></i>
+                            <x-bx-folder-open class="w-9 h-9 text-slate-300 mb-2" />
                             <p class="text-sm font-medium text-slate-500">Please select a requirement from the table
                                 first.</p>
                         </div>
@@ -123,7 +122,7 @@
                     </button>
                     <button type="button" wire:click="save" wire:loading.attr="disabled" @disabled(!$file || !$requirementId)
                         class="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-1.5">
-                        <i class="bx bx-upload"></i> Save Document
+                        <x-bx-upload class="" /> Save Document
                     </button>
                 </div>
             </div>

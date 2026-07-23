@@ -32,7 +32,7 @@
                     <div class="flex items-center gap-4">
                         <div
                             class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
-                            <i class="bx bx-edit text-xl"></i>
+                            <x-bx-edit class="w-5 h-5" />
                         </div>
                         <div>
                             <h5 class="font-bold text-slate-800 m-0 text-lg">Lembar Penilaian</h5>
@@ -43,11 +43,11 @@
                         <button type="button" @click="showGuide = !showGuide"
                             :class="showGuide ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100'"
                             class="border-none rounded-lg p-2 transition-colors focus:outline-none">
-                            <i class="bx bx-info-circle text-2xl"></i>
+                            <x-bx-info-circle class="w-6 h-6" />
                         </button>
                         <button type="button" @click="closeModal()"
                             class="text-slate-400 hover:text-slate-500 bg-slate-100 border-none hover:bg-slate-200 rounded-lg p-2 transition-colors focus:outline-none">
-                            <i class="bx bx-x text-2xl"></i>
+                            <x-bx-x class="w-6 h-6" />
                         </button>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                         <div class="flex items-center gap-4">
                             <div
                                 class="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-lg shadow-sm shrink-0">
-                                <i class="bx bx-user"></i>
+                                <x-bx-user class="" />
                             </div>
                             <div>
                                 <h6 class="font-bold text-slate-800 m-0 text-lg" x-text="record.name"></h6>
@@ -145,7 +145,7 @@
                             {{-- Absence Penalties — from Calc::getPenalties() --}}
                             <div>
                                 <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-time'></i> Penilaian Absensi (Otomatis)
+                                    <x-bx-time class="" /> Penilaian Absensi (Otomatis)
                                 </h6>
                                 <p class="mb-1 text-indigo-700">Total Poin Kehadiran Maksimal: <strong
                                         class="text-indigo-900">40</strong></p>
@@ -162,7 +162,7 @@
                             {{-- NEW SYSTEM: Yayasan / Magang — from Calc::getScoreMaps() --}}
                             <div x-show="record.isNewSystem" style="display: none;">
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Yayasan /
+                                    <x-bx-bar-chart-alt-2 class="" /> Kriteria Nilai (Sistem Yayasan /
                                     Magang)
                                 </h6>
                                 <div class="overflow-x-auto rounded-lg border border-indigo-200/60">
@@ -196,7 +196,7 @@
                             {{-- OLD SYSTEM: Regular — from Calc::getOldScoreMaps() --}}
                             <div x-show="!record.isNewSystem" style="display: none;">
                                 <h6 class="font-bold mb-3 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai (Sistem Regular)
+                                    <x-bx-bar-chart-alt-2 class="" /> Kriteria Nilai (Sistem Regular)
                                 </h6>
                                 <p class="text-xs text-indigo-700 mb-2">Base score: <strong>40</strong> + jumlah
                                     kriteria − penalti absensi.</p>
@@ -233,7 +233,7 @@
                             {{-- Grade cut-offs --}}
                             <div>
                                 <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2">
-                                    <i class='bx bx-target-lock'></i> Target Grade Akhir
+                                    <x-bx-target-lock class="" /> Target Grade Akhir
                                 </h6>
                                 <div class="flex flex-wrap gap-2 text-xs">
                                     @foreach ($modalGradeCutoffs as $g => $info)
@@ -252,7 +252,7 @@
                     <div x-show="record.isNewSystem" style="display: none;">
                         <h6
                             class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Dasar
+                            <x-bx-check-double class="text-indigo-500" /> Kriteria Penilaian Dasar
                         </h6>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <template x-for="(label, field) in newFieldsConfig" :key="field">
@@ -275,7 +275,7 @@
                     <div x-show="!record.isNewSystem" style="display: none;">
                         <h6
                             class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Khusus
+                            <x-bx-check-double class="text-indigo-500" /> Kriteria Penilaian Khusus
                         </h6>
                         <div
                             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border border-slate-100 rounded-xl p-4 bg-white shadow-sm">
@@ -308,7 +308,7 @@
                     class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
                     <span x-show="isSubmitting"
                         class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent mr-1"></span>
-                    <i x-show="!isSubmitting" class="bx bx-save"></i>
+                    <x-bx-save class="w-4 h-4" x-show="!isSubmitting" x-cloak />
                     <span x-text="isSubmitting ? 'Menyimpan...' : 'Simpan Nilai'"></span>
                 </button>
             </div>

@@ -24,14 +24,14 @@
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                                            <i class='bx bx-fingerprint text-lg'></i>
+                                            <x-bx-fingerprint class="w-5 h-5" />
                                         </div>
                                         <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Employee 
                                             Audit Desk</h2>
                                     </div>
                                     <button @click="$wire.closeAudit()"
                                         class="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-sm text-slate-400 hover:text-slate-900 transition-all">
-                                        <i class='bx bx-x text-2xl'></i>
+                                        <x-bx-x class="w-6 h-6" />
                                     </button>
                                 </div>
 
@@ -65,7 +65,7 @@
                                     <div class="flex items-center justify-between">
                                         <h4
                                             class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <i class='bx bx-trending-up text-blue-500'></i> Performance & Metrics
+                                            <x-bx-trending-up class="text-blue-500" /> Performance & Metrics
                                         </h4>
                                         <span class="text-[10px] font-bold text-slate-300 uppercase">Recent
                                             Cycles</span>
@@ -96,8 +96,8 @@
                                                         </div>
                                                         <button @click="expanded = !expanded"
                                                             class="h-7 w-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all">
-                                                            <i class='bx text-lg transition-transform duration-300'
-                                                                :class="expanded ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+                                                            <x-bx-chevron-up class="w-5 h-5 transition-transform duration-300" x-show="expanded" x-cloak />
+                                                            <x-bx-chevron-down class="w-5 h-5 transition-transform duration-300" x-show="!expanded" x-cloak />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -156,7 +156,7 @@
                                                             class="p-3 bg-blue-50/50 rounded-xl border border-blue-100/50">
                                                             <p
                                                                 class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                                                <i class='bx bx-comment-detail'></i> Evaluation Note
+                                                                <x-bx-comment-detail class="" /> Evaluation Note
                                                             </p>
                                                             <p
                                                                 class="text-[10px] font-medium text-slate-600 italic leading-relaxed">
@@ -169,7 +169,7 @@
                                         @empty
                                             <div
                                                 class="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 rounded-[2rem] bg-slate-50/30">
-                                                <i class='bx bx-file-blank text-3xl text-slate-200 mb-2'></i>
+                                                <x-bx-file-blank class="w-8 h-8 text-slate-200 mb-2" />
                                                 <p
                                                     class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                                     No evaluation records found</p>
@@ -182,7 +182,7 @@
                                 <section class="space-y-4">
                                     <h4
                                         class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <i class='bx bx-shield-x text-rose-500'></i> Disciplinary Desk
+                                        <x-bx-shield-x class="text-rose-500" /> Disciplinary Desk
                                     </h4>
                                     <div class="space-y-4">
                                         @forelse($selectedEmployee->warningLogs->sortByDesc('Date')->take(3) as $log)
@@ -209,7 +209,7 @@
                                                 class="p-6 bg-emerald-50/30 border border-emerald-100 rounded-[2rem] flex items-center gap-4">
                                                 <div
                                                     class="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                                                    <i class='bx bx-check-shield text-xl'></i>
+                                                    <x-bx-check-shield class="w-5 h-5" />
                                                 </div>
                                                 <div>
                                                     <p class="text-[10px] font-black text-emerald-900 uppercase">
@@ -256,7 +256,7 @@
                                     }">
                                     <div class="flex items-center justify-between">
                                         <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <i class='bx bx-calendar-check text-emerald-500'></i> Attendance Context
+                                            <x-bx-calendar-check class="text-emerald-500" /> Attendance Context
                                         </h4>
                                         <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                                             <button @click="filter = 'mtd'" :class="filter === 'mtd' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'" class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all">MTD</button>
@@ -282,7 +282,7 @@
                                             <template x-if="infractions.length === 0">
                                                 <div class="flex items-center justify-center py-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                                                     <div class="flex items-center gap-2 text-emerald-400">
-                                                        <i class='bx bx-check-shield text-xl'></i>
+                                                        <x-bx-check-shield class="w-5 h-5" />
                                                         <span class="text-xs font-bold tracking-widest uppercase">Perfect Attendance</span>
                                                     </div>
                                                 </div>
@@ -316,7 +316,7 @@
                                 class="px-8 py-8 border-t border-slate-100 bg-slate-50/80 backdrop-blur-md flex gap-4">
                                 <button
                                     class="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
-                                    Full Profile <i class='bx bx-link-external'></i>
+                                    Full Profile <x-bx-link-external class="" />
                                 </button>
                                 <button @click="$wire.closeAudit()"
                                     class="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-2xl shadow-slate-200 hover:shadow-slate-300 hover:-translate-y-0.5 active:translate-y-0 transition-all">

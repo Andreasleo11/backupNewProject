@@ -24,7 +24,7 @@
 
             <a href="{{ route('hrd.importantDocs.index') }}"
                 class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                <i class="bx bx-arrow-back mr-1.5"></i> Back to List
+                <x-bx-arrow-back class="mr-1.5" /> Back to List
             </a>
         </div>
 
@@ -133,7 +133,7 @@
                                     <template x-for="file in selectedFiles" :key="file.name">
                                         <div
                                             class="flex items-center gap-2 p-2 bg-white rounded-lg border border-indigo-50 shadow-sm animate-in slide-in-from-bottom-1 duration-200">
-                                            <i class="bx bx-paperclip text-indigo-400"></i>
+                                            <x-bx-paperclip class="text-indigo-400" />
                                             <div class="min-w-0">
                                                 <p class="text-[10px] font-bold text-slate-700 truncate capitalize"
                                                     x-text="file.name"></p>
@@ -167,7 +167,7 @@
                     </button>
                     <button type="submit"
                         class="inline-flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-8 text-xs font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
-                        <i class="bx bx-check-circle mr-1.5 text-base"></i>
+                        <x-bx-check-circle class="mr-1.5 w-4 h-4" />
                         Save Document
                     </button>
                 </div>

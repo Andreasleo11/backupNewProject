@@ -19,8 +19,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    {{-- Boxicons CDN --}}
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
     {{-- SweetAlert2 CSS --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -94,7 +92,6 @@
             ->join('')
         : 'U';
     $searchableMenu = App\Services\NavigationService::getSearchableMenu() ?? [];
-    $currentBranch = $user->employee?->branch;
     $appName = config('app.name');
     $words = preg_split('/\s+/', trim($appName));
     $appAcronym = '';
@@ -119,6 +116,8 @@
             ).length;
         }
     }'
+    @keydown.window.cmd.b.prevent="sidebarCollapsed = !sidebarCollapsed"
+    @keydown.window.ctrl.b.prevent="sidebarCollapsed = !sidebarCollapsed"
     x-cloak>
     {{-- Top-level Progress Bar for any Livewire transition --}}
     <div wire:loading.delay.shorter class="fixed top-0 left-0 right-0 z-[200] pointer-events-none">
@@ -187,18 +186,26 @@
                 @include('new.layouts.partials.sidebar-nav', ['isMobile' => true])
             </div>
 
-            <div class="border-t border-slate-100/60 p-5 bg-slate-50/50">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+            <div class="border-t border-slate-100/60 p-4 bg-slate-50/50">
+                <div class="flex items-center gap-3 mb-4 px-1">
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
                         {{ strtoupper(mb_substr($initials, 0, 2)) }}
                     </div>
                     <div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
-                        <p class="text-[13px] font-bold text-slate-800 truncate leading-none pt-[1px]">
-                            {{ $user->name ?? 'User' }}</p>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 leading-none">
-                            Authenticated</p>
+                        <p class="text-[13px] font-bold text-slate-800 truncate leading-none pt-[1px]">{{ $user->name ?? 'User' }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 leading-none">{{ $user->email ?? '' }}</p>
                     </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <a href="{{ route('account.security') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-200/50 transition-colors">
+                        <span class="w-5 h-5 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'shield'])</span> Security Settings
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors">
+                            <span class="w-5 h-5 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'logout'])</span> Sign out
+                        </button>
+                    </form>
                 </div>
             </div>
         </aside>
@@ -247,15 +254,91 @@
 
         {{-- Main area --}}
         <div class="flex-1 flex flex-col min-w-0">
-            @include('new.layouts.partials.topbar')
+            {{-- Desktop Minimal Topbar --}}
+            <header class="hidden md:flex h-16 items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md px-6 sticky top-0 z-40 transition-all duration-300">
+                {{-- Command Palette Trigger --}}
+                <button type="button" @click="$dispatch('open-cmd-k')"
+                    class="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all duration-200 group border border-slate-200/60">
+                    <svg class="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                    <span class="text-xs font-semibold text-slate-500">Quick search commands...</span>
+                    <span class="ml-4 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-slate-400 shadow-sm border border-slate-200">Ctrl K</span>
+                </button>
+                <div class="flex items-center gap-4">
+                    @livewire('notifications.bell')
+
+                    <div class="relative" x-data="{ userMenuOpen: false }">
+                        <button type="button" @click="userMenuOpen = !userMenuOpen"
+                            @click.outside="userMenuOpen = false"
+                            class="flex items-center gap-3 p-1 rounded-2xl hover:bg-slate-50 transition-all duration-300 group">
+                            <div class="text-right pr-1.5 hidden lg:block">
+                                <div class="text-[13px] font-bold text-slate-900 leading-tight">{{ $user?->name ?? 'User' }}</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ $user?->email ?? '' }}</div>
+                            </div>
+                            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-100 group-hover:scale-105 transition-all shrink-0">
+                                {{ strtoupper(mb_substr($initials ?? 'U', 0, 2)) }}
+                            </div>
+                            <svg class="h-4 w-4 text-slate-400 transition-transform duration-300"
+                                :class="userMenuOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {{-- Profile Dropdown --}}
+                        <div x-show="userMenuOpen" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                            class="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-2 premium-shadow ring-1 ring-slate-900/5 focus:outline-none z-[100]"
+                            x-cloak>
+                            
+                            <div class="px-2 py-2 mb-1 border-b border-slate-100 lg:hidden">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
+                                <p class="text-sm font-bold text-slate-900 truncate mt-0.5">{{ $user?->name ?? 'User' }}</p>
+                            </div>
+                            
+                            <a href="{{ route('account.security') }}" class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-medium">
+                                <span class="w-4 h-4 text-slate-400 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'shield'])</span> Security Settings
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="mt-1 border-t border-slate-100 pt-1">
+                                @csrf
+                                <button type="submit" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-medium">
+                                    <span class="w-4 h-4 text-rose-500 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'logout'])</span> Sign out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {{-- Mobile Minimal Header --}}
+            <header class="md:hidden h-16 flex items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md px-4 sticky top-0 z-40">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-sm shrink-0">
+                        <img class="h-5 w-5 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
+                    </div>
+                    <span class="text-[15px] font-extrabold text-slate-900 leading-none tracking-tight">{{ config('app.name') }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    @livewire('notifications.bell')
+                    <button type="button" @click="sidebarOpen = true"
+                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
 
             {{-- Main content --}}
             <main class="flex-1 overflow-y-auto px-6 py-8 md:px-10 md:py-10 scroll-smooth custom-scrollbar">
                 <div class="max-w-7xl mx-auto space-y-6">
-                    <livewire:layout.flash-messages />
 
                     <div x-data="{ loaded: false }" x-init="$nextTick(() => { setTimeout(() => loaded = true, 50) })"
-                        :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
+                        :class="loaded ? 'opacity-100' : 'opacity-0 translate-y-4'"
                         class="transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1)">
                         @yield('content')
                         {{ $slot ?? '' }}
@@ -269,6 +352,7 @@
     @livewireScripts
     @stack('modals')
 
+    <livewire:navigation.command-palette />
     <livewire:ticketing.support-bubble />
 
     {{-- ============================================================ --}}
@@ -317,6 +401,20 @@
                         window.__toastReady = true;
                         window.__toastQueue.forEach(d => this.addToast(d));
                         window.__toastQueue = [];
+
+                        // Flash Session Bridge
+                        @if (session()->has('success'))
+                            this.addToast({ type: 'success', message: @json(session('success')) });
+                        @endif
+                        @if (session()->has('error'))
+                            this.addToast({ type: 'error', message: @json(session('error')) });
+                        @endif
+                        @if (session()->has('warning'))
+                            this.addToast({ type: 'warning', message: @json(session('warning')) });
+                        @endif
+                        @if (session()->has('info'))
+                            this.addToast({ type: 'info', message: @json(session('info')) });
+                        @endif
                     },
 
                     addToast(data) {

@@ -17,7 +17,7 @@
                 {{-- Count — PR style --}}
                 <div class="flex items-center gap-2 pr-4 border-r border-slate-700">
                     <div class="h-7 w-7 rounded-lg bg-indigo-600 flex items-center justify-center">
-                        <i class='bx bx-check text-white text-sm'></i>
+                        <x-bx-check class="text-white w-4 h-4" />
                     </div>
                     <span class="text-sm font-black text-white" x-text="selectedIds.length + ' selected'"></span>
                 </div>
@@ -29,7 +29,7 @@
                         class="h-9 px-5 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20">
                         <span wire:loading.remove wire:target="loadSnapshot">Review & Sign Selected</span>
                         <span wire:loading wire:target="loadSnapshot" class="flex items-center gap-1.5">
-                            <i class='bx bx-loader-alt animate-spin'></i> Analyzing…
+                            <x-bx-loader-alt class="animate-spin" /> Analyzing…
                         </span>
                     </button>
                     <button type="button" @click="selectedIds = []"

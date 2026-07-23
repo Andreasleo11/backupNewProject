@@ -78,13 +78,7 @@
 
                     <li>
                         {{-- Click marks as read + navigates to action_url if present --}}
-                        <button type="button" wire:click.prevent="markAsRead('{{ $n['id'] }}')"
-                            x-on:click="
-                                    $wire.markAsRead('{{ $n['id'] }}').then(url => {
-                                        if (url) window.location.href = url;
-                                    });
-                                    open = false;
-                                "
+                        <button type="button" wire:click="markAsRead('{{ $n['id'] }}')" @click="open = false"
                             class="group flex w-full items-start gap-3 p-2.5 text-left rounded-xl transition-all duration-200
                                        {{ $n['is_unread'] ? 'bg-blue-50/60 hover:bg-blue-50' : 'hover:bg-slate-50' }}">
 

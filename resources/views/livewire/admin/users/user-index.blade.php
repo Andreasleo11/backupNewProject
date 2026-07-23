@@ -114,18 +114,18 @@
                             <td class="px-4 py-3 text-right space-x-1">
                                 @can('user.update')
                                     <button wire:click="openPasswordModal({{ $user->id }})" class="p-1.5 rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors" title="Change Password">
-                                        <i class="bx bx-key"></i>
+                                        <x-bx-key class="" />
                                     </button>
                                     <a href="{{ route('admin.users.edit', $user->id) }}" class="p-1.5 rounded text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors inline-block" title="Edit User">
-                                        <i class="bx bx-edit-alt"></i>
+                                        <x-bx-edit-alt class="" />
                                     </a>
                                     @if($user->active)
                                         <button wire:click="confirmSuspend({{ $user->id }})" class="p-1.5 rounded text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors" title="Suspend User">
-                                            <i class="bx bx-block"></i>
+                                            <x-bx-block class="" />
                                         </button>
                                     @else
                                         <button wire:click="toggleStatus({{ $user->id }})" class="p-1.5 rounded text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" title="Restore User">
-                                            <i class="bx bx-check-shield"></i>
+                                            <x-bx-check-shield class="" />
                                         </button>
                                     @endif
                                 @endcan
@@ -135,7 +135,7 @@
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-slate-500">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="bx bx-user-x text-4xl mb-2 text-slate-300"></i>
+                                    <x-bx-user-x class="w-9 h-9 mb-2 text-slate-300" />
                                     <p>No users found matching your criteria.</p>
                                 </div>
                             </td>
@@ -195,7 +195,7 @@
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="savePassword" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="savePassword"></i>
+                        <x-bx-loader-alt class="animate-spin" wire:loading wire:target="savePassword" />
                         <span wire:loading.remove wire:target="savePassword">Update Password</span>
                         <span wire:loading wire:target="savePassword">Updating...</span>
                     </button>
@@ -214,7 +214,7 @@
                     Cancel
                 </button>
                 <button wire:click="executeSuspend" wire:loading.attr="disabled" class="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50">
-                    <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeSuspend"></i>
+                    <x-bx-loader-alt class="animate-spin" wire:loading wire:target="executeSuspend" />
                     <span wire:loading.remove wire:target="executeSuspend">Yes, Suspend User</span>
                     <span wire:loading wire:target="executeSuspend">Suspending...</span>
                 </button>
@@ -248,7 +248,7 @@
                         Cancel
                     </button>
                     <button type="submit" wire:loading.attr="disabled" wire:target="executeBulkRole" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-slate-900/90 transition-colors disabled:opacity-50">
-                        <i class='bx bx-loader-alt animate-spin' wire:loading wire:target="executeBulkRole"></i>
+                        <x-bx-loader-alt class="animate-spin" wire:loading wire:target="executeBulkRole" />
                         <span wire:loading.remove wire:target="executeBulkRole">Assign Role</span>
                         <span wire:loading wire:target="executeBulkRole">Assigning...</span>
                     </button>

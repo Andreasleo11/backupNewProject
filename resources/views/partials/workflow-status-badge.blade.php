@@ -79,7 +79,7 @@
         <span class="{{ $baseClasses }} {{ $cls }}"
             @if ($tooltip) title="{{ $tooltip }}" @endif>
             @if ($icon)
-                <i class='bx {{ $icon }} text-xs opacity-80'></i>
+                <x-icon :name="$icon" class="w-3 h-3 opacity-80" />
             @endif
 
             <span class="relative z-10">{{ $label }}</span>

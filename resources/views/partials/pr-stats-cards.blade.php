@@ -117,7 +117,7 @@
                     </div>
                     <div
                         class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white">
-                        <i class='bx bx-pie-chart-alt text-2xl'></i>
+                        <x-bx-pie-chart-alt class="w-6 h-6" />
                     </div>
                 </div>
             </div>

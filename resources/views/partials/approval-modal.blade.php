@@ -25,7 +25,7 @@
                             <div class="flex items-center gap-3">
                                 <div
                                     class="flex h-10 w-10 items-center justify-center rounded-full bg-white bg-opacity-20">
-                                    <i class='bx bx-check-circle text-2xl text-white'></i>
+                                    <x-bx-check-circle class="w-6 h-6 text-white" />
                                 </div>
                                 <h3 class="text-lg font-semibold text-white" id="approve-modal-title">
                                     {{ $title }}
@@ -33,7 +33,7 @@
                             </div>
                             <button type="button" @click="open = false"
                                 class="rounded-lg p-1 text-white hover:bg-white hover:bg-opacity-20">
-                                <i class='bx bx-x text-2xl'></i>
+                                <x-bx-x class="w-6 h-6" />
                             </button>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                         <div class="mb-6 space-y-4">
                             {{-- Info Alert --}}
                             <div class="flex items-start gap-3 rounded-lg bg-emerald-50 p-4 border border-emerald-100">
-                                <i class='bx bx-info-circle text-xl text-emerald-600 mt-0.5'></i>
+                                <x-bx-info-circle class="w-5 h-5 text-emerald-600 mt-0.5" />
                                 <div class="text-sm text-emerald-800">
                                     <p class="font-bold">You are about to approve this {{ strtolower($entityName) }}.
                                     </p>
@@ -74,7 +74,7 @@
                             </button>
                             <button type="submit"
                                 class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-0.5 hover:shadow-emerald-300">
-                                <i class='bx bx-check-double'></i>
+                                <x-bx-check-double class="" />
                                 <span>{{ $buttonLabel }}</span>
                             </button>
                         </div>

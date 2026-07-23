@@ -13,7 +13,7 @@
     <div class="mx-auto max-w-3xl px-4 py-16 text-center">
         <div class="glass-card p-10 border border-amber-200 bg-amber-50/60 space-y-4">
             <div class="mx-auto h-16 w-16 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-500">
-                <i class="bx bx-trash text-4xl"></i>
+                <x-bx-trash class="w-9 h-9" />
             </div>
             <h1 class="text-xl font-bold text-slate-800">Fitur Telah Dihapus</h1>
             <p class="text-sm text-slate-600">
@@ -22,7 +22,7 @@
             </p>
             <a href="{{ route('evaluation.index') }}"
                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 transition-all">
-                <i class="bx bx-arrow-back"></i> Ke Evaluasi Karyawan
+                <x-bx-arrow-back class="" /> Ke Evaluasi Karyawan
             </a>
         </div>
     </div>

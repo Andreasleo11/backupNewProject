@@ -61,7 +61,7 @@
                             @if ($useExcel)
                                 <button type="button" wire:click="$dispatch('download-template')"
                                     class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-1.5 text-[10px] font-black text-indigo-600 hover:bg-indigo-100 hover:-translate-y-0.5 active:scale-95 transition-all">
-                                    <i class="bx bx-download"></i>
+                                    <x-bx-download class="" />
                                     TEMPLATE
                                 </button>
                             @endif
@@ -77,7 +77,7 @@
                         <div class="space-y-1">
                             <h3
                                 class="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                <i class="bx bx-list-check text-indigo-600 text-lg"></i>
+                                <x-bx-list-check class="text-indigo-600 w-5 h-5" />
                                 Budget Items Details
                             </h3>
                             <p class="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">Enter
@@ -85,7 +85,7 @@
                         </div>
                         <button type="button" wire:click="addItem"
                             class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-[10px] font-black text-white shadow-xl shadow-slate-900/10 transition-all hover:bg-slate-800 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 uppercase tracking-widest">
-                            <i class="bx bx-plus text-sm"></i>
+                            <x-bx-plus class="w-4 h-4" />
                             Add Item
                         </button>
                     </div>
@@ -183,7 +183,7 @@
                                         <td class="px-4 py-3 text-center">
                                             <button type="button" wire:click="removeItem({{ $index }})"
                                                 class="p-1.5 rounded-lg bg-rose-50 text-rose-400 hover:text-rose-600 hover:bg-rose-100 hover:scale-110 active:scale-90 transition-all">
-                                                <i class="bx bx-trash text-sm"></i>
+                                                <x-bx-trash class="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
@@ -193,7 +193,7 @@
                                             <div class="flex flex-col items-center gap-4">
                                                 <div
                                                     class="h-16 w-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-200 group-hover:scale-110 transition-transform duration-500">
-                                                    <i class="bx bx-receipt text-3xl"></i>
+                                                    <x-bx-receipt class="w-8 h-8" />
                                                 </div>
                                                 <div class="space-y-1">
                                                     <p
@@ -252,7 +252,7 @@
                         <div class="relative z-0 flex flex-col items-center justify-center text-center space-y-4">
                             <div
                                 class="w-20 h-20 rounded-2xl bg-white shadow-xl shadow-indigo-200/50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform duration-500">
-                                <i class="bx bx-upload text-4xl"></i>
+                                <x-bx-upload class="w-9 h-9" />
                             </div>
                             <div>
                                 <h4 class="text-sm font-black text-indigo-900 uppercase tracking-widest">
@@ -269,7 +269,7 @@
                             @if ($excel_file)
                                 <div
                                     class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black border border-emerald-100 uppercase tracking-widest">
-                                    <i class="bx bx-check-circle text-xs"></i>
+                                    <x-bx-check-circle class="w-3 h-3" />
                                     File Selected
                                 </div>
                             @endif
@@ -289,7 +289,7 @@
 
                     <button type="button" wire:click="signAndSubmit"
                         class="inline-flex w-full sm:w-auto items-center justify-center rounded-xl bg-indigo-600 px-10 py-3.5 text-xs font-black text-white shadow-2xl shadow-indigo-200 transition-all hover:bg-indigo-700 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 group uppercase tracking-widest">
-                        <i class="bx bx-send mr-2 text-sm group-hover:translate-x-1 transition-transform"></i>
+                        <x-bx-send class="mr-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         Sign & Submit
                     </button>
                 </div>

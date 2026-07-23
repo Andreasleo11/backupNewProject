@@ -21,7 +21,7 @@
             <div class="flex items-center gap-4">
                 <div
                     class="h-14 w-14 rounded-2xl bg-white/50 backdrop-blur-md border border-current/20 flex items-center justify-center text-current shadow-sm">
-                    <i class="bx bx-file text-3xl"></i>
+                    <x-bx-file class="w-8 h-8" />
                 </div>
                 <div>
                     <h2 class="text-lg font-bold">{{ $importantDoc->name }}</h2>
@@ -83,7 +83,7 @@
 
         @if ($importantDoc->files->isEmpty())
             <div class="p-8 text-center">
-                <i class="bx bx-paperclip text-3xl text-slate-300 mb-2"></i>
+                <x-bx-paperclip class="w-8 h-8 text-slate-300 mb-2" />
                 <p class="text-xs text-slate-500">No attachments found.</p>
             </div>
         @else
@@ -103,7 +103,7 @@
                     <div
                         class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 group hover:border-indigo-200 transition-all">
                         <div class="flex items-center gap-3 overflow-hidden">
-                            <i class="bx {{ $icon }} text-2xl"></i>
+                            <x-icon :name="$icon" class="w-6 h-6" />
                             <div class="truncate">
                                 <p class="text-[11px] font-bold text-slate-700 truncate">{{ $file->name }}</p>
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">{{ $extension }}</p>
@@ -111,7 +111,7 @@
                         </div>
                         <a href="{{ asset('storage/importantDocuments/' . $file->name) }}" target="_blank"
                             class="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-xs">
-                            <i class="bx bx-download text-sm"></i>
+                            <x-bx-download class="w-4 h-4" />
                         </a>
                     </div>
                 @endforeach
@@ -126,7 +126,7 @@
         <div class="flex items-center gap-2">
             <a href="{{ route('hrd.importantDocs.edit', $importantDoc->id) }}"
                 class="inline-flex h-8 items-center px-3 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-all">
-                <i class="bx bx-edit mr-1"></i> Edit
+                <x-bx-edit class="mr-1" /> Edit
             </a>
         </div>
     </div>

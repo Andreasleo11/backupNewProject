@@ -41,7 +41,7 @@
         </div>
 
         <div class="p-3 rounded-2xl {{ $colorClasses }} border transition-all group-hover:scale-110 duration-500">
-            <i class='bx bx-{{ $icon }} text-xl'></i>
+            <x-icon :name="'bx-' . $icon" class="w-5 h-5" />
         </div>
     </div>
 </div>

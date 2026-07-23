@@ -53,13 +53,13 @@
                                 <h5 class="font-bold text-slate-800 flex items-center gap-2">
                                     <div
                                         class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                                        <i class="bx bx-edit text-lg"></i>
+                                        <x-bx-edit class="w-5 h-5" />
                                     </div>
                                     Edit PO Number
                                 </h5>
                                 <button type="button" @click="show = false"
                                     class="text-slate-400 hover:text-slate-600 transition-colors">
-                                    <i class="bx bx-x text-2xl"></i>
+                                    <x-bx-x class="w-6 h-6" />
                                 </button>
                             </div>
 
@@ -73,7 +73,7 @@
                                         request.</p>
 
                                     <div class="relative">
-                                        <i class="bx bx-hash absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
+                                        <x-bx-hash class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
                                         <input id="po_number_input" type="text" x-model="currentPo"
                                             class="w-full border border-slate-200 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5 pl-10 pr-3 bg-white transition-colors placeholder:text-slate-400"
                                             placeholder="e.g. PO-2026-001">
@@ -94,7 +94,7 @@
                                     wire:loading.attr="disabled"
                                     wire:target="updatePoNumber"
                                     class="bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200 text-white border-0 rounded-lg text-sm px-4 py-2 font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <i class="bx bx-save" wire:loading.class="animate-spin" wire:target="updatePoNumber"></i>
+                                    <x-bx-save class="" wire:loading.class="animate-spin" wire:target="updatePoNumber" />
                                     <span wire:loading.remove wire:target="updatePoNumber">Save Changes</span>
                                     <span wire:loading wire:target="updatePoNumber">Saving...</span>
                                 </button>
