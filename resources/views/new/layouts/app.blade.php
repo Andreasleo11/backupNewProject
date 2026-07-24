@@ -312,10 +312,19 @@
     <script>
         // Global toast queue — collects toasts before Alpine is ready
         window.__toastQueue = [];
+        window.__lastToast = { message: '', time: 0 };
         window.__toastAdd = function(data) {
             // Normalize payload: Livewire 3 PHP dispatch() wraps as [{...}], $dispatch sends {...}
             if (Array.isArray(data)) data = data[0];
             if (!data || typeof data !== 'object') return;
+            
+            const now = Date.now();
+            const msg = data.message || data.body || '';
+            if (window.__lastToast.message === msg && (now - window.__lastToast.time) < 100) {
+                return;
+            }
+            window.__lastToast = { message: msg, time: now };
+
             if (window.__toastReady) {
                 window.__toastHandler(data);
             } else {

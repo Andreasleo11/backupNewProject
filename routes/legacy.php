@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 
     // Super Admin (legacy)
-    Route::get('/change-password', [SuperAdminHomeController::class, 'index'])->name('changeemail.page');
+    Route::get('/change-password', [SuperAdminHomeController::class, 'index'])->name('changepassword.page');
     Route::post('/change-password', [SuperAdminHomeController::class, 'changePassword'])->name('changeemail');
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
