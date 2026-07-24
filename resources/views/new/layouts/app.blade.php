@@ -288,14 +288,11 @@
 
             {{-- Main content --}}
             <main class="flex-1 overflow-y-auto px-6 py-8 md:px-10 md:py-10 scroll-smooth custom-scrollbar">
-                <div class="max-w-7xl mx-auto space-y-6">
-
-                    <div x-data="{ loaded: false }" x-init="$nextTick(() => { setTimeout(() => loaded = true, 50) })"
-                        :class="loaded ? 'opacity-100' : 'opacity-0 translate-y-4'"
-                        class="transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1)">
-                        @yield('content')
-                        {{ $slot ?? '' }}
-                    </div>
+                <div x-data="{ loaded: false }" x-init="$nextTick(() => { setTimeout(() => loaded = true, 50) })"
+                    :class="loaded ? 'opacity-100' : 'opacity-0 translate-y-4'"
+                    class="transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1)">
+                    @yield('content')
+                    {{ $slot ?? '' }}
                 </div>
             </main>
         </div>
