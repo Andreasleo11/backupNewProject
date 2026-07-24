@@ -25,55 +25,23 @@
 
 
 
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-        }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(24px) saturate(160%);
-            -webkit-backdrop-filter: blur(24px) saturate(160%);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
-            border-radius: 1.5rem;
-        }
-
-        .main-gradient {
-            background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.04), transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.04), transparent 40%),
-                #f8fafc;
-        }
-
-        .premium-shadow {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(203, 213, 225, 0.5);
-            border-radius: 20px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(148, 163, 184, 0.8);
-        }
-    </style>
+    <script>
+        // Global toast initialization to prevent timing issues with Vite modules
+        window.__toastQueue = [];
+        window.__toastReady = false;
+        window.__toastAdd = function (data) {
+            if (Array.isArray(data)) data = data[0];
+            if (typeof data === 'string') data = { message: data, type: 'info' };
+            if (!data || typeof data !== 'object') return;
+            if (window.__toastReady && typeof window.__toastHandler === 'function') {
+                window.__toastHandler(data);
+            } else {
+                window.__toastQueue.push(data);
+            }
+        };
+    </script>
 
     @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
 
@@ -104,9 +72,12 @@
     class="min-h-screen main-gradient text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900"
     x-data='{
         sidebarOpen: false,
-        sidebarCollapsed: $persist(false),
+        sidebarCollapsed: localStorage.getItem("sidebarCollapsed") === "true",
         q: "",
         searchableMenu: @json($searchableMenu),
+        init() {
+            this.$watch("sidebarCollapsed", val => localStorage.setItem("sidebarCollapsed", val));
+        },
         getSearchResultCount() {
             if (!this.q) return 0;
             const query = this.q.toLowerCase();
@@ -125,28 +96,7 @@
             class="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 w-full animate-[progress_1s_ease-in-out_infinite] origin-left">
         </div>
     </div>
-    <style>
-        @keyframes progress {
-            0% {
-                transform: scaleX(0);
-                opacity: 0;
-            }
 
-            10% {
-                opacity: 1;
-            }
-
-            80% {
-                transform: scaleX(0.85);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scaleX(1);
-                opacity: 0;
-            }
-        }
-    </style>
 
     {{-- Mobile sidebar --}}
     <div class="md:hidden" x-show="sidebarOpen" x-transition.opacity>
@@ -214,7 +164,7 @@
     <div class="min-h-screen flex">
         {{-- Desktop sidebar --}}
         <aside
-            class="hidden md:flex flex-col border-r border-slate-200/60 bg-white/80 backdrop-blur-xl transition-all duration-500 ease-in-out sticky top-0 h-screen z-50 overflow-hidden"
+            class="hidden md:flex flex-col border-r border-slate-200/60 bg-white/95 backdrop-blur-sm transition-all duration-500 ease-in-out sticky top-0 h-screen z-50 overflow-hidden"
             :class="sidebarCollapsed ? 'w-[5rem]' : 'w-72'">
             {{-- Header --}}
             <div class="flex items-center h-16 border-b border-slate-100"
@@ -255,7 +205,7 @@
         {{-- Main area --}}
         <div class="flex-1 flex flex-col min-w-0">
             {{-- Desktop Minimal Topbar --}}
-            <header class="hidden md:flex h-16 items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md px-6 sticky top-0 z-40 transition-all duration-300">
+            <header class="hidden md:flex h-16 items-center justify-between border-b border-slate-200/60 bg-white/90 backdrop-blur-sm px-6 sticky top-0 z-40 transition-all duration-300">
                 {{-- Command Palette Trigger --}}
                 <button type="button" @click="$dispatch('open-cmd-k')"
                     class="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-slate-100/80 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all duration-200 group border border-slate-200/60">
@@ -300,6 +250,9 @@
                                 <p class="text-sm font-bold text-slate-900 truncate mt-0.5">{{ $user?->name ?? 'User' }}</p>
                             </div>
                             
+                            <a href="{{ route('signatures.manage') }}" class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-medium">
+                                <span class="w-4 h-4 text-slate-400 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'document-text'])</span> Manage Signature
+                            </a>
                             <a href="{{ route('account.security') }}" class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-medium">
                                 <span class="w-4 h-4 text-slate-400 flex items-center justify-center">@include('new.layouts.partials.nav-icon', ['name' => 'shield'])</span> Security Settings
                             </a>
@@ -315,7 +268,7 @@
             </header>
 
             {{-- Mobile Minimal Header --}}
-            <header class="md:hidden h-16 flex items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md px-4 sticky top-0 z-40">
+            <header class="md:hidden h-16 flex items-center justify-between border-b border-slate-200/60 bg-white/90 backdrop-blur-sm px-4 sticky top-0 z-40">
                 <div class="flex items-center gap-3">
                     <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-sm shrink-0">
                         <img class="h-5 w-5 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
@@ -428,19 +381,26 @@
                             progress: 100
                         };
                         this.toasts.push(toast);
-                        this.$nextTick(() => {
-                            toast.visible = true;
-                            const steps = duration / 100;
-                            let step = 0;
-                            toast._timer = setInterval(() => {
-                                step++;
-                                toast.progress = 100 - (step / steps * 100);
-                                if (step >= steps) {
-                                    clearInterval(toast._timer);
-                                    this.removeToast(id);
-                                }
-                            }, 100);
-                        });
+                        
+                        // Use setTimeout to guarantee browser render cycle completes
+                        setTimeout(() => {
+                            // Fetch the reactive proxy from the array, do not mutate the raw object!
+                            const reactiveToast = this.toasts.find(t => t.id === id);
+                            if (reactiveToast) {
+                                reactiveToast.visible = true;
+                                
+                                const steps = duration / 100;
+                                let step = 0;
+                                reactiveToast._timer = setInterval(() => {
+                                    step++;
+                                    reactiveToast.progress = 100 - (step / steps * 100);
+                                    if (step >= steps) {
+                                        clearInterval(reactiveToast._timer);
+                                        this.removeToast(id);
+                                    }
+                                }, 100);
+                            }
+                        }, 50);
                     },
 
                     removeToast(id) {

@@ -1,4 +1,4 @@
-// import './bootstrap';
+import './layout.js';
 import 'laravel-datatables-vite';
 import TomSelect from 'tom-select';
 import { Fancybox } from '@fancyapps/ui';
