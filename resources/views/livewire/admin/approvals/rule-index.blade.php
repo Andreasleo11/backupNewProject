@@ -47,6 +47,18 @@
             </div>
             
             <div class="flex items-center gap-3 w-full sm:w-auto">
+                <select wire:model.live="modelTypeFilter" class="h-9 rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
+                    <option value="">All Form Types</option>
+                    @foreach($this->availableModelTypes as $type)
+                        <option value="{{ $type }}">{{ class_basename($type) }}</option>
+                    @endforeach
+                </select>
+
+                <label class="inline-flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap hidden md:flex">
+                    <input type="checkbox" wire:model.live="currentVersionOnly" class="rounded border-slate-300 text-slate-900 focus:ring-slate-950" />
+                    Current versions
+                </label>
+
                 <select wire:model.live="statusFilter" class="h-9 rounded-md border border-slate-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
                     <option value="all">All Statuses</option>
                     <option value="active">Active</option>
@@ -113,6 +125,9 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    <button wire:click="duplicateRule({{ $rule->id }})" class="p-1 text-slate-400 hover:text-amber-600 transition-colors" title="Duplicate Rule">
+                                        <x-bx-copy class="w-5 h-5" />
+                                    </button>
                                     <a href="{{ route('admin.approval-rules.edit', $rule->id) }}" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="Edit Rule & Steps">
                                         <x-bx-pencil class="w-5 h-5" />
                                     </a>

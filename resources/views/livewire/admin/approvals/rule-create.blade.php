@@ -14,12 +14,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             {{-- Target Model --}}
             <div class="relative md:col-span-2">
-                <input type="text" wire:model.defer="rule_model_type" id="rule_model_type" autofocus
-                    class="peer block w-full rounded-md border border-slate-200 bg-transparent px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950 placeholder-transparent"
-                    placeholder="App\Models\Document">
-                <label for="rule_model_type" class="absolute left-4 -top-2.5 bg-white px-1 text-xs font-medium text-slate-500 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-slate-900">
-                    Target Model Class (e.g. App\Models\Invoice) <span class="text-red-500">*</span>
+                <label for="rule_model_type" class="block text-xs font-semibold text-slate-500 mb-1">
+                    Target Form / Module <span class="text-red-500">*</span>
                 </label>
+                <select wire:model.defer="rule_model_type" id="rule_model_type" autofocus
+                    class="block w-full rounded-md border border-slate-200 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
+                    <option value="">— Select a registered form —</option>
+                    @foreach($availableModules as $className => $label)
+                        <option value="{{ $className }}">{{ $label }} ({{ class_basename($className) }})</option>
+                    @endforeach
+                </select>
                 @error('rule_model_type')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
             </div>
 
@@ -65,18 +69,45 @@
             </div>
         </div>
 
-        {{-- JSON Editor --}}
-        <div class="space-y-1">
-            <div class="flex justify-between items-center mb-1">
-                <label class="block text-sm font-bold text-slate-700">
-                    Match Expression (JSON)
-                </label>
-                <span class="text-xs text-slate-500 font-mono">{"field": "value"}</span>
+        {{-- Condition Builder --}}
+        <div class="space-y-3 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-bold text-slate-700">Trigger Conditions</label>
+                <button type="button" wire:click="addCondition" class="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded transition-colors">+ Add Condition</button>
             </div>
-            <textarea wire:model.defer="rule_match_expr_raw" rows="6"
-                class="flex w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-mono focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors shadow-inner" placeholder='{}'></textarea>
-            <p class="text-xs text-slate-500 mt-1">Leave as <code>{}</code> to match all instances of the target model.</p>
-            @error('rule_match_expr_raw')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+            
+            @if(count($ruleConditions) === 0)
+                <div class="text-sm text-slate-500 italic p-4 bg-slate-50 rounded-md border border-slate-200 border-dashed text-center">
+                    No conditions set. This rule will match ALL requests for the selected form.
+                </div>
+            @else
+                <div class="space-y-3">
+                    @foreach($ruleConditions as $index => $condition)
+                        <div class="flex items-start gap-3 relative group">
+                            <div class="flex-1 space-y-1">
+                                <div class="flex gap-3">
+                                    <input type="text" wire:model.defer="ruleConditions.{{ $index }}.field" placeholder="Field (e.g. status)" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                    <select wire:model.defer="ruleConditions.{{ $index }}.operator" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                        <option value="==">Equals</option>
+                                        <option value="in">In List</option>
+                                        <option value="not_in">Not In List</option>
+                                        <option value=">">Greater Than</option>
+                                        <option value=">=">Greater Than or Equal</option>
+                                        <option value="<=">Less Than or Equal</option>
+                                        <option value="any">Contains Any Tag</option>
+                                    </select>
+                                    <input type="text" wire:model.defer="ruleConditions.{{ $index }}.value" placeholder="Value (comma-separated for lists)" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                </div>
+                                @error('ruleConditions.'.$index.'.field')<p class="text-xs text-red-500">{{ $message }}</p>@enderror
+                            </div>
+                            <button type="button" wire:click="removeCondition({{ $index }})" class="p-2 text-slate-400 hover:text-red-600 transition-colors bg-white rounded-md border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50" title="Remove Condition">
+                                <x-bx-x class="w-5 h-5" />
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-xs text-slate-500 leading-tight">Note: 'Greater/Less Than' operators only work on the <strong>amount</strong> field. 'Contains Any Tag' only works on the <strong>tags</strong> field.</p>
+            @endif
         </div>
 
         <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 mt-6">

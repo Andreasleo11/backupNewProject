@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Admin\Approvals;
 
+use App\Infrastructure\Approval\Services\ApprovableModuleScanner;
 use App\Infrastructure\Persistence\Eloquent\Models\RuleStepTemplate;
 use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -16,13 +19,18 @@ class RuleBuilder extends Component
     public bool $showVersionWarningModal = false;
     public int $activeRequestsCount = 0;
 
+    public array $availableModules = [];
+    public string $approverSearch = '';
+    public array $approverResults = [];
+    public bool $showVersionHistory = false;
+
     // Rule Form State
     public string $rule_model_type = '';
     public string $rule_code = '';
     public string $rule_name = '';
     public bool $rule_active = true;
     public int $rule_priority = 10;
-    public string $rule_match_expr_raw = '{}';
+    public array $ruleConditions = [];
 
     // Step Form State
     public ?int $editingStepId = null;
@@ -36,6 +44,7 @@ class RuleBuilder extends Component
     public function mount(int $ruleId)
     {
         $this->ruleId = $ruleId;
+        $this->availableModules = (new ApprovableModuleScanner)->scan();
         $this->loadRule();
     }
 
@@ -54,6 +63,21 @@ class RuleBuilder extends Component
             ->get();
     }
 
+    #[Computed]
+    public function versionHistory()
+    {
+        return RuleTemplate::withTrashed()
+            ->where('version_uuid', $this->rule->version_uuid)
+            ->withCount('steps')
+            ->orderByDesc('version_number')
+            ->get();
+    }
+
+    public function switchToVersion(int $ruleId): void
+    {
+        $this->redirectRoute('admin.approval-rules.edit', ['id' => $ruleId]);
+    }
+
     private function loadRule()
     {
         $rule = $this->rule;
@@ -62,7 +86,79 @@ class RuleBuilder extends Component
         $this->rule_name = $rule->name;
         $this->rule_active = (bool) $rule->active;
         $this->rule_priority = (int) $rule->priority;
-        $this->rule_match_expr_raw = json_encode($rule->match_expr ?? [], JSON_PRETTY_PRINT);
+        $this->parseMatchExpr($rule->match_expr ?? []);
+    }
+
+    private function parseMatchExpr(array $expr): void
+    {
+        $this->ruleConditions = [];
+        foreach ($expr as $k => $v) {
+            if ($k === 'amount_gt') {
+                $this->ruleConditions[] = ['field' => 'amount', 'operator' => '>', 'value' => $v];
+            } elseif ($k === 'amount_gte') {
+                $this->ruleConditions[] = ['field' => 'amount', 'operator' => '>=', 'value' => $v];
+            } elseif ($k === 'amount_lte') {
+                $this->ruleConditions[] = ['field' => 'amount', 'operator' => '<=', 'value' => $v];
+            } elseif ($k === 'any_tags') {
+                $this->ruleConditions[] = ['field' => 'tags', 'operator' => 'any', 'value' => is_array($v) ? implode(', ', $v) : $v];
+            } elseif (str_ends_with($k, '_in')) {
+                $this->ruleConditions[] = ['field' => substr($k, 0, -3), 'operator' => 'in', 'value' => is_array($v) ? implode(', ', $v) : $v];
+            } elseif (str_ends_with($k, '_not_in')) {
+                $this->ruleConditions[] = ['field' => substr($k, 0, -7), 'operator' => 'not_in', 'value' => is_array($v) ? implode(', ', $v) : $v];
+            } else {
+                $this->ruleConditions[] = ['field' => $k, 'operator' => '==', 'value' => is_array($v) ? implode(', ', $v) : $v];
+            }
+        }
+    }
+
+    private function compileMatchExpr(): array
+    {
+        $expr = [];
+        foreach ($this->ruleConditions as $condition) {
+            $field = trim($condition['field'] ?? '');
+            $operator = $condition['operator'] ?? '==';
+            $value = $condition['value'] ?? '';
+
+            if (empty($field)) continue;
+
+            if (in_array($operator, ['in', 'not_in', 'any'])) {
+                $valueArray = array_map('trim', explode(',', (string)$value));
+                $value = array_filter($valueArray, fn($v) => $v !== '');
+                if (empty($value)) continue;
+            } else {
+                if (is_numeric($value)) {
+                    $value = $value + 0;
+                }
+            }
+
+            if ($field === 'amount' && $operator === '>') {
+                $expr['amount_gt'] = $value;
+            } elseif ($field === 'amount' && $operator === '>=') {
+                $expr['amount_gte'] = $value;
+            } elseif ($field === 'amount' && $operator === '<=') {
+                $expr['amount_lte'] = $value;
+            } elseif ($field === 'tags' && $operator === 'any') {
+                $expr['any_tags'] = $value;
+            } elseif ($operator === 'in') {
+                $expr[$field . '_in'] = $value;
+            } elseif ($operator === 'not_in') {
+                $expr[$field . '_not_in'] = $value;
+            } else {
+                $expr[$field] = $value;
+            }
+        }
+        return $expr;
+    }
+
+    public function addCondition(): void
+    {
+        $this->ruleConditions[] = ['field' => '', 'operator' => '==', 'value' => ''];
+    }
+
+    public function removeCondition(int $index): void
+    {
+        unset($this->ruleConditions[$index]);
+        $this->ruleConditions = array_values($this->ruleConditions);
     }
 
     public function updateRule()
@@ -75,18 +171,12 @@ class RuleBuilder extends Component
             'rule_name' => ['required', 'string', 'max:255'],
             'rule_active' => ['boolean'],
             'rule_priority' => ['integer', 'min:0'],
-            'rule_match_expr_raw' => ['nullable', 'string'],
+            'ruleConditions.*.field' => ['required', 'string'],
+        ], [
+            'ruleConditions.*.field.required' => 'All condition fields must have a name.',
         ]);
 
-        $matchExpr = [];
-        if (trim($this->rule_match_expr_raw) !== '') {
-            try {
-                $matchExpr = json_decode($this->rule_match_expr_raw, true, 512, JSON_THROW_ON_ERROR);
-                if (! is_array($matchExpr)) throw new \RuntimeException();
-            } catch (\Throwable $e) {
-                throw ValidationException::withMessages(['rule_match_expr_raw' => 'Invalid JSON']);
-            }
-        }
+        $matchExpr = $this->compileMatchExpr();
 
         $data = [
             'model_type' => $this->rule_model_type,
@@ -140,6 +230,15 @@ class RuleBuilder extends Component
         $this->step_approver_id = $step->approver_id;
         $this->step_final = (bool) $step->final;
         $this->step_parallel_group = (bool) $step->parallel_group;
+
+        if ($this->step_approver_type === 'user' && $step->user) {
+            $this->approverSearch = $step->user->name;
+        } elseif ($this->step_approver_type === 'role' && $step->role) {
+            $this->approverSearch = $step->role->name;
+        } else {
+            $this->approverSearch = '';
+        }
+
         $this->showStepModal = true;
     }
 
@@ -194,8 +293,45 @@ class RuleBuilder extends Component
             'step_approver_id',
             'step_final',
             'step_parallel_group',
+            'approverSearch',
+            'approverResults',
         ]);
         $this->step_approver_type = 'user';
+    }
+
+    public function updatedStepApproverType(): void
+    {
+        $this->approverSearch = '';
+        $this->approverResults = [];
+        $this->step_approver_id = null;
+    }
+
+    public function updatedApproverSearch(): void
+    {
+        if (strlen($this->approverSearch) < 2) {
+            $this->approverResults = [];
+            return;
+        }
+
+        if ($this->step_approver_type === 'user') {
+            $this->approverResults = User::where('name', 'like', "%{$this->approverSearch}%")
+                ->orWhere('email', 'like', "%{$this->approverSearch}%")
+                ->limit(10)
+                ->get(['id', 'name', 'email'])
+                ->toArray();
+        } else {
+            $this->approverResults = Role::where('name', 'like', "%{$this->approverSearch}%")
+                ->limit(10)
+                ->get(['id', 'name'])
+                ->toArray();
+        }
+    }
+
+    public function selectApprover(int $id, string $name): void
+    {
+        $this->step_approver_id = $id;
+        $this->approverSearch = $name;
+        $this->approverResults = [];
     }
 
     public function render()

@@ -33,8 +33,13 @@
                 <fieldset @if(!$this->rule->is_current) disabled @endif class="space-y-4">
                     {{-- Target Model --}}
                     <div class="space-y-1">
-                        <label class="block text-xs font-semibold text-slate-500">Target Model Class</label>
-                        <input type="text" wire:model.defer="rule_model_type" class="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors">
+                        <label class="block text-xs font-semibold text-slate-500">Target Form / Module</label>
+                        <select wire:model.defer="rule_model_type" class="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors">
+                            <option value="">— Select a registered form —</option>
+                            @foreach($availableModules as $className => $label)
+                                <option value="{{ $className }}">{{ $label }} ({{ class_basename($className) }})</option>
+                            @endforeach
+                        </select>
                         @error('rule_model_type')<p class="text-xs text-red-500">{{ $message }}</p>@enderror
                     </div>
 
@@ -70,14 +75,45 @@
                         </label>
                     </div>
 
-                    {{-- JSON Editor --}}
-                    <div class="space-y-1 pt-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-xs font-semibold text-slate-500">Match Expression (JSON)</label>
+                    {{-- Condition Builder --}}
+                    <div class="space-y-2 pt-2 border-t border-slate-100">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-semibold text-slate-500">Trigger Conditions</label>
+                            <button type="button" wire:click="addCondition" class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors">+ Add Condition</button>
                         </div>
-                        <textarea wire:model.defer="rule_match_expr_raw" rows="4"
-                            class="block w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950 transition-colors shadow-inner"></textarea>
-                        @error('rule_match_expr_raw')<p class="text-xs text-red-500">{{ $message }}</p>@enderror
+                        
+                        @if(count($ruleConditions) === 0)
+                            <div class="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-md border border-slate-200 border-dashed text-center">
+                                No conditions set. This rule will match ALL requests for the selected form.
+                            </div>
+                        @else
+                            <div class="space-y-2">
+                                @foreach($ruleConditions as $index => $condition)
+                                    <div class="flex items-start gap-2 relative group">
+                                        <div class="flex-1 space-y-1">
+                                            <div class="flex gap-2">
+                                                <input type="text" wire:model.defer="ruleConditions.{{ $index }}.field" placeholder="Field (e.g. status)" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                                <select wire:model.defer="ruleConditions.{{ $index }}.operator" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                                    <option value="==">Equals</option>
+                                                    <option value="in">In List</option>
+                                                    <option value="not_in">Not In List</option>
+                                                    <option value=">">Greater Than</option>
+                                                    <option value=">=">Greater Than or Equal</option>
+                                                    <option value="<=">Less Than or Equal</option>
+                                                    <option value="any">Contains Any Tag</option>
+                                                </select>
+                                                <input type="text" wire:model.defer="ruleConditions.{{ $index }}.value" placeholder="Value (comma-separated for lists)" class="w-1/3 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-950">
+                                            </div>
+                                            @error('ruleConditions.'.$index.'.field')<p class="text-[10px] text-red-500">{{ $message }}</p>@enderror
+                                        </div>
+                                        <button type="button" wire:click="removeCondition({{ $index }})" class="p-1.5 text-slate-400 hover:text-red-600 transition-colors bg-white rounded-md border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50" title="Remove Condition">
+                                            <x-bx-x class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="text-[10px] text-slate-400 leading-tight">Note: 'Greater/Less Than' operators only work on the <strong>amount</strong> field. 'Contains Any Tag' only works on the <strong>tags</strong> field.</p>
+                        @endif
                     </div>
 
                     <div class="space-y-1 pt-2">
@@ -95,6 +131,41 @@
                     </div>
                 @endif
             </form>
+
+            {{-- Version History Collapsible --}}
+            <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden mt-6">
+                <button wire:click="$toggle('showVersionHistory')" class="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                    <span class="text-sm font-bold text-slate-800">Version History</span>
+                    <span class="text-xs text-slate-500">{{ $this->versionHistory->count() }} version(s)</span>
+                </button>
+
+                @if($showVersionHistory)
+                <div class="border-t border-slate-100 divide-y divide-slate-50">
+                    @foreach($this->versionHistory as $ver)
+                    <div class="p-3 flex items-center justify-between {{ $ver->id === $ruleId ? 'bg-indigo-50' : '' }}">
+                        <div>
+                            <span class="font-mono text-xs font-bold">v{{ $ver->version_number }}</span>
+                            @if($ver->is_current)
+                                <span class="text-[10px] bg-emerald-100 text-emerald-700 px-1 rounded">Current</span>
+                            @endif
+                            @if($ver->trashed())
+                                <span class="text-[10px] bg-red-100 text-red-600 px-1 rounded">Deleted</span>
+                            @endif
+                            <div class="text-[10px] text-slate-400 mt-0.5">
+                                {{ $ver->created_at->diffForHumans() }}
+                                {{ $ver->version_notes ? '— '.$ver->version_notes : '' }}
+                            </div>
+                        </div>
+                        @if($ver->id !== $ruleId)
+                            <button type="button" wire:click="switchToVersion({{ $ver->id }})" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                                View
+                            </button>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
         </div>
 
         {{-- Right Column: Approval Steps --}}
@@ -172,7 +243,7 @@
                                             </div>
 
                                             @if($this->rule->is_current)
-                                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div class="flex items-center gap-1 opacity-100 transition-opacity">
                                                     <button wire:click="openEditStep({{ $step->id }})" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Edit Step">
                                                         <x-bx-pencil class="" />
                                                     </button>
@@ -236,18 +307,41 @@
                     </div>
                 </div>
 
-                {{-- Approver ID --}}
-                <div class="space-y-1">
-                    <label class="block text-xs font-semibold text-slate-500">Target ID (User/Role ID)</label>
-                    <input type="number" wire:model.defer="step_approver_id" class="block w-full rounded-md border border-slate-200 bg-transparent px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
-                    <p class="text-[10px] text-slate-400">Enter the exact ID of the User or Role.</p>
-                    @error('step_approver_id')<span class="text-xs text-red-500">{{ $message }}</span>@enderror
+                {{-- Approver Search --}}
+                <div class="space-y-1 relative" x-data="{ open: false }" @click.away="open = false">
+                    <label class="block text-xs font-semibold text-slate-500">
+                        {{ $step_approver_type === 'user' ? 'Select User' : 'Select Role' }}
+                    </label>
+                    <input type="text"
+                        wire:model.live.debounce.300ms="approverSearch"
+                        @focus="open = true"
+                        @input="open = true"
+                        placeholder="Type to search (min 2 chars)..."
+                        class="block w-full rounded-md border border-slate-200 bg-transparent px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950">
+                    
+                    {{-- Dropdown results --}}
+                    @if(count($approverResults) > 0)
+                    <div x-show="open" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        @foreach($approverResults as $result)
+                            <button type="button" wire:click="selectApprover({{ $result['id'] }}, '{{ addslashes($result['name']) }}')"
+                                @click="open = false" class="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                                <div class="font-medium text-slate-900">{{ $result['name'] }}</div>
+                                @if(isset($result['email']))
+                                    <div class="text-xs text-slate-500">{{ $result['email'] }}</div>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    <input type="hidden" wire:model="step_approver_id" />
+                    @error('step_approver_id')<span class="text-xs text-red-500">Please select a valid user/role from the dropdown.</span>@enderror
                 </div>
 
                 <div class="flex flex-col gap-3 py-3 border-y border-slate-100 my-4">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" wire:model.defer="step_final" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                         <div class="ml-3">
                             <span class="block text-sm font-medium text-slate-700">Final Step?</span>
                             <span class="block text-[10px] text-slate-500">Must be approved regardless of previous sequence approvals.</span>
@@ -256,7 +350,7 @@
 
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" wire:model.defer="step_parallel_group" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500"></div>
+                        <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500"></div>
                         <div class="ml-3">
                             <span class="block text-sm font-medium text-slate-700">Parallel Step?</span>
                             <span class="block text-[10px] text-slate-500">Runs simultaneously with other parallel steps of the same sequence.</span>

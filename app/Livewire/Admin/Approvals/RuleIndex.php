@@ -19,6 +19,12 @@ class RuleIndex extends Component
     public string $statusFilter = 'all';
 
     #[Url(history: true)]
+    public ?string $modelTypeFilter = null;
+
+    #[Url(history: true)]
+    public bool $currentVersionOnly = true;
+
+    #[Url(history: true)]
     public int $perPage = 10;
 
     // Bulk selection
@@ -37,6 +43,18 @@ class RuleIndex extends Component
     }
 
     public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+        $this->clearSelection();
+    }
+
+    public function updatedModelTypeFilter(): void
+    {
+        $this->resetPage();
+        $this->clearSelection();
+    }
+
+    public function updatedCurrentVersionOnly(): void
     {
         $this->resetPage();
         $this->clearSelection();
@@ -74,9 +92,21 @@ class RuleIndex extends Component
             ->when($this->statusFilter !== 'all', function ($q) {
                 $q->where('active', $this->statusFilter === 'active');
             })
+            ->when($this->modelTypeFilter, function ($q) {
+                $q->where('model_type', $this->modelTypeFilter);
+            })
+            ->when($this->currentVersionOnly, function ($q) {
+                $q->where('is_current', true);
+            })
             ->orderBy('priority')
             ->orderBy('code')
             ->paginate($this->perPage);
+    }
+
+    #[Computed]
+    public function availableModelTypes()
+    {
+        return RuleTemplate::distinct('model_type')->pluck('model_type')->sort();
     }
 
     public function updatedSelectAll($value)
@@ -102,6 +132,35 @@ class RuleIndex extends Component
         RuleTemplate::whereIn('id', $this->selectedRows)->update(['active' => false]);
         $this->clearSelection();
         $this->dispatch('toast', message: 'Selected rules deactivated.', type: 'success');
+    }
+
+    public function duplicateRule(int $id): void
+    {
+        $this->authorize('approval.manage-rules');
+        $source = RuleTemplate::with('steps')->findOrFail($id);
+
+        $clone = RuleTemplate::create([
+            'model_type' => $source->model_type,
+            'code' => $source->code . '-COPY',
+            'name' => $source->name . ' (Copy)',
+            'active' => false,
+            'priority' => $source->priority,
+            'match_expr' => $source->match_expr,
+            'created_by' => auth()->id(),
+        ]);
+
+        foreach ($source->steps as $step) {
+            $clone->steps()->create([
+                'sequence' => $step->sequence,
+                'approver_type' => $step->approver_type,
+                'approver_id' => $step->approver_id,
+                'final' => $step->final,
+                'parallel_group' => $step->parallel_group,
+            ]);
+        }
+
+        $this->dispatch('toast', message: 'Rule duplicated. Edit the copy to customize.', type: 'success');
+        $this->redirectRoute('admin.approval-rules.edit', ['id' => $clone->id]);
     }
 
     public function confirmDelete(int $id): void

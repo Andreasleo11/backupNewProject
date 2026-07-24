@@ -3,7 +3,6 @@
 use App\Http\Controllers\ApprovalSignatureController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\SignatureController;
-use App\Livewire\Admin\Approvals\RuleManager;
 use App\Livewire\Signature\CaptureSignature;
 use App\Livewire\Signature\ManageSignatures;
 use Illuminate\Support\Facades\Route;
