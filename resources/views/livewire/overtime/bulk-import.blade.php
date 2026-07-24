@@ -190,7 +190,7 @@
 
                             <button type="button" wire:click="runIntegrityCheck" wire:loading.attr="disabled"
                                 class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-8 py-3.5 text-xs font-black text-white shadow-xl shadow-indigo-100 hover:bg-slate-900 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <x-icon :name="$isCheckingPayroll ? 'bx-loader-alt' : 'bx-zap'" class="w-5 h-5 {{ $isCheckingPayroll ? 'animate-spin' : '' }}" />
+                                <x-icon :name="$isCheckingPayroll ? 'bx-loader-alt' : 'bxs-zap'" class="w-5 h-5 {{ $isCheckingPayroll ? 'animate-spin' : '' }}" />
                                 {{ $isCheckingPayroll ? 'Running Guards...' : 'Run Integrity Check' }}
                             </button>
                         </div>
